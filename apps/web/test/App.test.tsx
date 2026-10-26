@@ -1,15 +1,19 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { App } from '../src/App';
 import { t } from '../src/i18n';
 
 describe('App', () => {
-  it('affiche le titre et des sections étiquetées', () => {
+  it('accueil : titre, héros et accès au combat', async () => {
     render(<App version="0.0.0" />);
     expect(screen.getByRole('heading', { level: 1, name: 'Outlaw Thesis' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: t('home.pillars.heading') })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: t('home.status.heading') })).toBeInTheDocument();
+    expect(screen.getByText('Pyra')).toBeInTheDocument();
     expect(screen.getByText('Version 0.0.0')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: t('home.play') }));
+    expect(screen.getByRole('heading', { level: 1, name: t('combat.title') })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: t('combat.quit') }));
+    expect(screen.getByRole('button', { name: t('home.play') })).toBeInTheDocument();
   });
 });
 

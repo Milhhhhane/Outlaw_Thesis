@@ -1,52 +1,70 @@
 .home {
-  max-width: 44rem;
+  max-width: 46rem;
   margin: 0 auto;
   padding: var(--space-6) var(--space-4);
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-6);
 }
 
 .home__title {
   margin: 0;
-  font-size: clamp(2.25rem, 7vw, 3.5rem);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--accent);
+  font-family: var(--serif);
+  font-size: clamp(var(--step-3), 9vw, var(--step-4));
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
 }
 
 .home__tagline {
-  margin: var(--space-2) 0 0;
-  font-size: 1.125rem;
-  color: var(--text-muted);
+  margin: var(--space-3) 0 0;
+  font-size: var(--step-1);
+  color: var(--bone-muted);
+  max-width: 34ch;
 }
 
-.home__panel {
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-
-.home__panel h2 {
-  margin: 0 0 var(--space-3);
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.home__panel p {
+/* Les trois héros posés comme trois thèses, chacun marqué par son élément. */
+.home__heroes {
   margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-4);
 }
 
-.home__pillars {
+.home__hero {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  border-left: 4px solid var(--element);
+}
+
+.home__hero-name {
+  font-family: var(--serif);
+  font-size: var(--step-2);
+  line-height: 1.2;
+}
+
+.home__hero-thesis {
+  color: var(--bone-muted);
+  max-width: 60ch;
+}
+
+.home__pillars h2 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+
+.home__pillars ul {
   margin: 0;
   padding-left: 1.25rem;
   display: grid;
   gap: var(--space-2);
+  color: var(--bone-muted);
 }
 
 .home__footer {
-  font-size: 0.875rem;
-  color: var(--text-muted);
+  font-size: var(--step--1);
+  color: var(--bone-muted);
 }
