@@ -2,7 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-## [sprint-0] — 2026-10-26
+## [sprint-1] — 2026-10-26
+
+### Ajouté
+
+- Moteur : les 8 briques (bouclier, tempo, modification de stat, marque, brûlure,
+  étourdissement avec immunité, déclencheurs), durées par tour du porteur, déclencheurs sans
+  chaîne (passifs, objets, modificateurs de donjon), intention des ennemis (`enemyIntent`).
+- Compilation héros + niveau + talents + objets → unité, validation des builds, ennemis par
+  niveau, modificateurs de donjon.
+- Contenu : 3 héros prototypes (Pyra feu/dégâts, Marée eau/soutien, Ronce nature/contrôle), chacun
+  avec 4 sorts, un passif et 3 pages de 5 talents ; 6 types d'ennemis.
+- Simulation : 1 000 combats aléatoires reproductibles, politique d'anticipation, rejeu vérifié.
+
+## [sprint-0] — 2026-10-26 — commit `cf89710`
 
 ### Ajouté
 

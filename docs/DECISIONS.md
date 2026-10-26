@@ -20,6 +20,11 @@ pas ESLint 10. Choix : TS 6.0.3, ESLint 9.39.5. Raison : chaîne complète compa
 **Polices** — Contexte : aucun appel réseau à l'exécution. Choix : polices système. Raison :
 Google Fonts serait un appel réseau.
 
+**Tags de sprint** — Contexte : la session peut pousser `main` mais pas créer de tag (refusé
+par `git push`, par l'API `git/refs` et par l'API des releases : 3 approches). Choix : tags créés en
+local, commit de chaque tag noté dans `CHANGELOG.md`. Raison : le propriétaire peut les publier en
+une fois (Releases → nouveau tag sur le commit indiqué).
+
 **Licence** — Contexte : dépôt sans licence, choix juridique du propriétaire. Choix : aucune
 licence ajoutée. Raison : décision qui ne m'appartient pas ; signalée au propriétaire.
 
@@ -53,9 +58,47 @@ fixe. Raison : la VIT est un levier d'options (plafonnée), pas une stat à mont
 l'attaque de base de chaque unité. Raison : prévision honnête, exacte si personne ne change de
 tempo.
 
-**Briques au sprint 0** — Contexte : le sprint 0 couvre stats, file et réserve. Choix : dégâts,
-soins et points d'équipe ; une configuration avec une autre brique est refusée. Raison : pas
-d'effet ignoré en silence ; le sprint 1 ajoute les 5 autres.
+**Durées** — Contexte : « durée en tours de la cible ». Choix : un effet s'use à la fin de chaque
+tour de son porteur, sauf le tour où il a été posé. Raison : un buff de 2 tours couvre 2 actions,
+qu'on se le donne ou qu'un allié le donne.
+
+**Cumul** — Contexte : le rapport ne dit pas comment les effets se cumulent. Choix : une seule
+altération de chaque sorte (on garde la plus longue durée et la plus forte puissance) ; boucliers
+additifs plafonnés à 60 % des PV max ; modifications de stat additives entre origines, bornées
+(−50 % / +100 %), une même origine remplace. Raison : pas de cumul multiplicatif (risque du rapport).
+
+**Brûlure** — Contexte : « dégâts par tour ». Choix : dégâts fixés à la pose (ATK du lanceur ×
+puissance × atténuation par la DEF), sans élément ni marque, au début du tour de la cible.
+Raison : prévisible et lisible ; le lanceur peut tomber sans changer la brûlure.
+
+**Étourdissement** — Contexte : risque d'enchaînement d'étourdissements. Choix : le tour est sauté
+(l'action annoncée est conservée), puis immunité jusqu'à la fin du prochain tour joué. Raison :
+le contrôle reste fort sans bloquer une unité tout le combat.
+
+**Tempo** — Contexte : avancer une unité. Choix : en unités de temps, jamais avant l'instant
+présent ; sur soi, il s'applique après le délai du sort. Raison : « avancer mon prochain tour »
+garde un sens simple.
+
+**Déclencheurs** — Contexte : « un passif n'en déclenche pas un autre ». Choix : les déclencheurs
+réagissent après la résolution du sort, dans l'ordre des unités ; les effets d'un déclencheur
+n'émettent aucun événement de déclenchement. Leurs calculs utilisent les stats du porteur.
+Raison : aucune chaîne possible, ordre déterministe.
+
+**Sujet « ally »** — Contexte : « les ennemis marqués subissent plus de dégâts de tous les
+alliés ». Choix : « ally » inclut le porteur. Raison : le passif de Ronce vaut aussi pour ses coups.
+
+**Passif de Marée** — Contexte : « sa première compétence coûte 1 point de moins » n'est pas une
+des 8 briques. Choix : la première compétence du combat rembourse 1 point (déclencheur, limite 1
+par combat). Raison : même effet avec les briques existantes ; seule nuance, il faut pouvoir payer
+le coût plein au moment du lancer.
+
+**Objets** — Contexte : « chaque amélioration augmente les valeurs ». Choix : facteur 1 + 15 % par
+niveau sur les pourcentages, seuils et briques ajoutées ; la petite stat totale reste plafonnée à
+8 %. Raison : l'amélioration compte sans casser le plafond.
+
+**Identifiants d'unité** — Contexte : le même héros peut être dans les deux camps (duels miroirs).
+Choix : `h0..h2` pour les héros, `e0..e2` pour l'autre camp ; `kind` porte l'identifiant de contenu.
+Raison : unique, court, stable dans le journal.
 
 **Journal minimal** — Contexte : bruit pour l'interface. Choix : pas d'événement pour un soin nul
 ou une réserve inchangée. Raison : l'interface rejoue chaque événement, chacun doit compter.
@@ -66,6 +109,10 @@ ou une réserve inchangée. Raison : l'interface rejoue chaque événement, chac
 sprint 5. Choix : le mécanisme de déblocage est codé et testé au sprint 4 ; les champs
 `unlocksHero` sont remplis au sprint 5. Raison : le schéma refuse une référence vers un héros
 absent.
+
+**Politique de simulation** — Contexte : il faut jouer des milliers de combats sans humain.
+Choix : anticipation d'un coup (chaque action jouée par le moteur pur, état évalué). Raison :
+générique, sans indice dans le contenu ; on pourra l'approfondir pour R1.
 
 **R1 et R2** — Contexte : « meilleur build », « pire build » non définis. Choix : R1 = duels
 miroirs à niveau égal entre le build le mieux et le moins bien classé par la simulation ; R2 =

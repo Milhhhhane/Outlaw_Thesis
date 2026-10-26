@@ -19,15 +19,17 @@ packages/data ──(contenu validé)──▶ packages/engine ──(état + jo
 
 ## Moteur de combat (`packages/engine`)
 
-| Fichier      | Rôle                                                                         |
-| ------------ | ---------------------------------------------------------------------------- |
-| `types.ts`   | `UnitDef` (unité compilée, immuable), `BattleState`, `Action`, `BattleEvent` |
-| `battle.ts`  | `createBattle`, `step`, `legalActions`, `replay`, validation de la config    |
-| `effects.ts` | les briques d'effet (dégâts, soins, points d'équipe au sprint 0)             |
-| `targets.ts` | résolution des cibles des briques et des règles de cible des scripts         |
-| `queue.ts`   | ordre des tours et file d'initiative projetée                                |
-| `stats.ts`   | stats par niveau, délais, triangle des éléments, VIT plafonnée               |
-| `draft.ts`   | copie de travail d'un pas, réserve de points, fin de combat                  |
+| Fichier       | Rôle                                                                         |
+| ------------- | ---------------------------------------------------------------------------- |
+| `types.ts`    | `UnitDef` (unité compilée, immuable), `BattleState`, `Action`, `BattleEvent` |
+| `battle.ts`   | `createBattle`, `step`, `legalActions`, `replay`, validation de la config    |
+| `effects.ts`  | les 8 briques d'effet, bouclier et altérations                               |
+| `triggers.ts` | déclencheurs : signaux de l'action, filtres, limites, pas de chaîne          |
+| `compile.ts`  | héros + niveau + talents + objets → unité ; ennemis ; modificateurs          |
+| `targets.ts`  | résolution des cibles des briques et des règles de cible des scripts         |
+| `queue.ts`    | ordre des tours et file d'initiative projetée                                |
+| `stats.ts`    | stats par niveau, délais, triangle des éléments, VIT plafonnée               |
+| `draft.ts`    | copie de travail d'un pas, réserve de points, fin de combat                  |
 
 ### Déroulement
 
@@ -53,8 +55,16 @@ de la simulation (règle R1).
 
 ### Journal
 
-`battle_start`, `turn_start`, `cast`, `damage`, `heal`, `points`, `unit_down`, `battle_end`.
-Un événement `points` n'est émis que si la réserve change réellement ; un soin nul n'est pas émis.
+`battle_start`, `turn_start`, `turn_skipped`, `cast`, `trigger_fired`, `damage`, `heal`,
+`shield`, `tempo`, `stat_mod`, `status`, `trigger_added`, `points`, `expired`, `unit_down`,
+`turn_end`, `battle_end`. Un événement `points` n'est émis que si la réserve change réellement ;
+un soin nul n'est pas émis. `enemyIntent(state, id)` donne l'action annoncée d'un ennemi.
+
+### Tour d'une unité
+
+1. Début : brûlure, déclencheurs `turn_start` ; une unité étourdie saute son tour.
+2. Action : coût et gain de points, délai, briques dans l'ordre, puis déclencheurs.
+3. Fin : les durées du porteur s'usent, déclencheurs `turn_end`.
 
 ## Données (`packages/data`)
 

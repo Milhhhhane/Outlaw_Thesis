@@ -25,8 +25,30 @@ affichés ne sont pas dans le contenu : ils vivent dans les fichiers de traducti
 Cibles : `primary` (cibles du sort), `self`, `subject`, `other`, `all_allies`, `other_allies`,
 `all_enemies`, `lowest_hp_ally`, `lowest_hp_enemy`.
 
-État du moteur : `damage`, `heal` et `teamPoints` sont gérés depuis le sprint 0 ; les autres
-arrivent au sprint 1 (une configuration qui les utilise est refusée d'ici là).
+Règles (voir `docs/DECISIONS.md`) :
+
+- Les durées comptent les tours du porteur ; un effet posé pendant son tour ne s'use pas ce tour-là.
+- Une seule altération de chaque sorte par unité ; boucliers additifs plafonnés ; modifications de
+  stat additives bornées, une même origine remplace la précédente.
+- `burn` et `mark` prennent leur puissance par défaut dans `balance.json` si `power` est absent.
+  **Mettre `power` explicitement** si un talent ou un objet doit l'ajuster.
+
+## Déclencheurs
+
+| `on`             | sujet            | `other`               | options           |
+| ---------------- | ---------------- | --------------------- | ----------------- |
+| `combat_start`   | le porteur       | —                     |                   |
+| `turn_start/end` | l'unité qui joue | —                     |                   |
+| `spell_cast`     | le lanceur       | sa première cible     | `slots`           |
+| `damage_dealt`   | l'attaquant      | la victime            | `targetHasStatus` |
+| `damage_taken`   | la victime       | l'attaquant           | `targetHasStatus` |
+| `hp_crossed`     | la victime       | l'attaquant           | `thresholdPct`    |
+| `unit_down`      | l'unité tombée   | celle qui l'a abattue |                   |
+| `status_applied` | l'unité touchée  | le lanceur            | `status`          |
+
+`subject` filtre le sujet par rapport au porteur : `self`, `ally` (porteur compris), `enemy`,
+`any`. `limit` : `per` `combat` ou `turn`. Les effets d'un déclencheur utilisent les stats du
+porteur et ne déclenchent jamais d'autre déclencheur.
 
 ## Héros
 

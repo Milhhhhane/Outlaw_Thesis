@@ -15,7 +15,15 @@ contenu, **jamais les règles du moteur**.
 | Soin              | arrondi(ATK du lanceur × puissance %), plafonné aux PV max                 |
 | Stats au niveau N | base × (1 + croissance × (N − 1) ÷ (niveau max − 1)) ; la VIT ne croît pas |
 
-K = `defenseScale` (100). Avec DEF = K, la moitié des dégâts passe.
+| Marque | dégâts subis × (1 + puissance %), `markBonusPct` par défaut (25) |
+| Brûlure | ATK × puissance % × K ÷ (K + DEF), fixée à la pose, `burnPowerPct` (40) |
+| Bouclier | ATK × puissance %, cumulable jusqu'à `shieldCapPctMaxHp` (60 %) des PV max |
+| Modif. de stat | somme des % bornée à [`statMod.minPct`, `statMod.maxPct`] = [−50, +100] |
+| Tempo | ± montant × 100 centièmes, jamais avant l'instant présent |
+| Étourdissement | tour sauté, puis immunité `stunImmunityTurns` (1) tour |
+
+K = `defenseScale` (100). Avec DEF = K, la moitié des dégâts passe. ATK, DEF et VIT sont les
+stats effectives (modifications comprises).
 
 ## Réserve de points
 
@@ -35,4 +43,7 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 `pnpm sim` écrit `tools/sim/out/results.csv` (colonnes `scenario, battles, wins, win_rate,
 avg_actions`). Sprint 0 : scénarios synthétiques (duels par paire d'éléments, 3 contre 3,
-limite d'actions). Les équipes réelles arrivent au sprint 1, les 20 équipes et R1/R2 au sprint 5.
+limite d'actions). Depuis le sprint 1 : 1 000 combats aléatoires reproductibles (graine 1) — niveau, ordre de
+l'équipe, talents et rencontre tirés au sort — joués par une politique d'anticipation d'un coup,
+chaque journal étant rejoué et comparé. Options : `--battles N`, `--seed S`. Les 20 équipes et
+R1/R2 arrivent au sprint 5.
