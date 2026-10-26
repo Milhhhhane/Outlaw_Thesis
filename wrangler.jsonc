@@ -1,0 +1,11 @@
+{
+  // Site 100 % statique : Workers avec assets statiques (option recommandée par Cloudflare pour les nouveaux projets).
+  // Pas de script Worker, pas de binding. Le nom doit être identique au nom du Worker créé dans le tableau de bord.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "outlaw-thesis",
+  "compatibility_date": "2026-10-13",
+  "assets": {
+    "directory": "./apps/web/dist",
+    "not_found_handling": "single-page-application",
+  },
+}
