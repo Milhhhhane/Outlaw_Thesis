@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.wrangler/
+.dev.vars*
+*.log
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+tools/sim/out/
+playwright-report/
+test-results/

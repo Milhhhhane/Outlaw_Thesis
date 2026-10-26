@@ -1,0 +1,36 @@
+{
+  "name": "outlaw-thesis",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Outlaw Thesis : RPG tactique en navigateur, héros persistants et builds validés par le combat.",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @outlaw/web dev",
+    "build": "pnpm --filter @outlaw/web build",
+    "preview": "pnpm --filter @outlaw/web preview",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --workspace-concurrency=1 typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 test",
+    "sim": "pnpm --filter @outlaw/sim sim",
+    "sim:check": "pnpm --filter @outlaw/sim check",
+    "size": "node scripts/check-bundle-size.mjs",
+    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm sim:check && pnpm build && pnpm size"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "wrangler": "4.152.0"
+  }
+}
