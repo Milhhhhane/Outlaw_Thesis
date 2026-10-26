@@ -200,7 +200,11 @@ describe('ennemis et équipes', () => {
     expect(low.stats).toEqual(content.enemyById.get('thorn_witch')?.stats);
     expect(low.script[0]).toEqual({ spell: 'witch_hex', target: 'highest_atk' });
     const high = compileEnemy(content, 'thorn_witch', 99, 0);
-    expect(high.stats.hp).toBe(Math.round(300 * (1 + balance.progression.growth.enemy.hp)));
+    expect(high.stats.hp).toBe(
+      Math.round(
+        content.enemyById.get('thorn_witch')!.stats.hp * (1 + balance.progression.growth.enemy.hp),
+      ),
+    );
     expect(() => compileEnemy(content, 'ghost', 1, 0)).toThrow(InvalidSetupError);
   });
 

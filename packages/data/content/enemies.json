@@ -2,179 +2,356 @@
   {
     "id": "cinder_hound",
     "element": "fire",
-    "stats": { "hp": 300, "atk": 42, "def": 14, "vit": 112 },
+    "stats": {
+      "hp": 450,
+      "atk": 57,
+      "def": 17,
+      "vit": 112
+    },
     "skills": [
       {
         "id": "hound_bite",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 100 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
       },
       {
         "id": "hound_pounce",
         "slot": "b",
         "targeting": "enemy",
         "effects": [
-          { "kind": "damage", "power": 150 },
-          { "kind": "tempo", "target": "self", "amount": -20 }
+          {
+            "kind": "damage",
+            "power": 150
+          },
+          {
+            "kind": "tempo",
+            "target": "self",
+            "amount": -20
+          }
         ]
       }
     ],
     "script": [
-      { "skill": "hound_bite", "target": "lowest_hp" },
-      { "skill": "hound_bite", "target": "lowest_hp" },
-      { "skill": "hound_pounce", "target": "lowest_hp" }
+      {
+        "skill": "hound_bite",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "hound_bite",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "hound_pounce",
+        "target": "lowest_hp"
+      }
     ]
   },
   {
     "id": "ash_acolyte",
     "element": "fire",
-    "stats": { "hp": 320, "atk": 38, "def": 18, "vit": 98 },
+    "stats": {
+      "hp": 480,
+      "atk": 51,
+      "def": 22,
+      "vit": 98
+    },
     "skills": [
       {
         "id": "acolyte_cinder",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 90 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 90
+          }
+        ]
       },
       {
         "id": "acolyte_ward",
         "slot": "a",
         "targeting": "ally",
-        "effects": [{ "kind": "shield", "power": 120, "duration": 2 }]
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 120,
+            "duration": 2
+          }
+        ]
       },
       {
         "id": "acolyte_flare",
         "slot": "b",
         "targeting": "all_enemies",
         "effects": [
-          { "kind": "damage", "power": 70 },
-          { "kind": "status", "status": "burn", "duration": 1, "power": 30 }
+          {
+            "kind": "damage",
+            "power": 70
+          },
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 1,
+            "power": 30
+          }
         ]
       }
     ],
     "script": [
-      { "skill": "acolyte_cinder", "target": "first" },
-      { "skill": "acolyte_ward", "target": "lowest_hp" },
-      { "skill": "acolyte_flare", "target": "auto" }
+      {
+        "skill": "acolyte_cinder",
+        "target": "first"
+      },
+      {
+        "skill": "acolyte_ward",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "acolyte_flare",
+        "target": "auto"
+      }
     ]
   },
   {
     "id": "brine_crab",
     "element": "water",
-    "stats": { "hp": 420, "atk": 36, "def": 30, "vit": 88 },
+    "stats": {
+      "hp": 630,
+      "atk": 49,
+      "def": 36,
+      "vit": 88
+    },
     "skills": [
       {
         "id": "crab_pinch",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 100 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
       },
       {
         "id": "crab_shell",
         "slot": "a",
         "targeting": "self",
-        "effects": [{ "kind": "shield", "power": 150, "duration": 2 }]
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 150,
+            "duration": 2
+          }
+        ]
       }
     ],
     "script": [
-      { "skill": "crab_pinch", "target": "first" },
-      { "skill": "crab_shell", "target": "auto" },
-      { "skill": "crab_pinch", "target": "first" }
+      {
+        "skill": "crab_pinch",
+        "target": "first"
+      },
+      {
+        "skill": "crab_shell",
+        "target": "auto"
+      },
+      {
+        "skill": "crab_pinch",
+        "target": "first"
+      }
     ]
   },
   {
     "id": "tide_caller",
     "element": "water",
-    "stats": { "hp": 300, "atk": 40, "def": 16, "vit": 104 },
+    "stats": {
+      "hp": 450,
+      "atk": 54,
+      "def": 19,
+      "vit": 104
+    },
     "skills": [
       {
         "id": "caller_splash",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 90 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 90
+          }
+        ]
       },
       {
         "id": "caller_mend",
         "slot": "a",
         "targeting": "ally",
-        "effects": [{ "kind": "heal", "power": 120 }]
+        "effects": [
+          {
+            "kind": "heal",
+            "power": 120
+          }
+        ]
       },
       {
         "id": "caller_surge",
         "slot": "b",
         "targeting": "enemy",
         "effects": [
-          { "kind": "damage", "power": 140 },
-          { "kind": "tempo", "amount": 20 }
+          {
+            "kind": "damage",
+            "power": 140
+          },
+          {
+            "kind": "tempo",
+            "amount": 20
+          }
         ]
       }
     ],
     "script": [
-      { "skill": "caller_splash", "target": "highest_atk" },
-      { "skill": "caller_mend", "target": "lowest_hp" },
-      { "skill": "caller_surge", "target": "highest_atk" }
+      {
+        "skill": "caller_splash",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "caller_mend",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "caller_surge",
+        "target": "highest_atk"
+      }
     ]
   },
   {
     "id": "moss_brute",
     "element": "nature",
-    "stats": { "hp": 460, "atk": 46, "def": 24, "vit": 86 },
+    "stats": {
+      "hp": 690,
+      "atk": 62,
+      "def": 29,
+      "vit": 86
+    },
     "skills": [
       {
         "id": "brute_smash",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 110 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 110
+          }
+        ]
       },
       {
         "id": "brute_roar",
         "slot": "b",
         "targeting": "all_enemies",
         "effects": [
-          { "kind": "damage", "power": 50 },
-          { "kind": "statMod", "stat": "atk", "percent": -15, "duration": 2 }
+          {
+            "kind": "damage",
+            "power": 50
+          },
+          {
+            "kind": "statMod",
+            "stat": "atk",
+            "percent": -15,
+            "duration": 2
+          }
         ]
       }
     ],
     "script": [
-      { "skill": "brute_smash", "target": "first" },
-      { "skill": "brute_smash", "target": "first" },
-      { "skill": "brute_roar", "target": "auto" }
+      {
+        "skill": "brute_smash",
+        "target": "first"
+      },
+      {
+        "skill": "brute_smash",
+        "target": "first"
+      },
+      {
+        "skill": "brute_roar",
+        "target": "auto"
+      }
     ]
   },
   {
     "id": "thorn_witch",
     "element": "nature",
-    "stats": { "hp": 300, "atk": 44, "def": 15, "vit": 106 },
+    "stats": {
+      "hp": 450,
+      "atk": 59,
+      "def": 18,
+      "vit": 106
+    },
     "skills": [
       {
         "id": "witch_lash",
         "slot": "basic",
         "targeting": "enemy",
-        "effects": [{ "kind": "damage", "power": 90 }]
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 90
+          }
+        ]
       },
       {
         "id": "witch_hex",
         "slot": "a",
         "targeting": "enemy",
-        "effects": [{ "kind": "status", "status": "mark", "duration": 2, "power": 20 }]
+        "effects": [
+          {
+            "kind": "status",
+            "status": "mark",
+            "duration": 2,
+            "power": 20
+          }
+        ]
       },
       {
         "id": "witch_bind",
         "slot": "b",
         "targeting": "enemy",
         "effects": [
-          { "kind": "damage", "power": 80 },
-          { "kind": "status", "status": "stun", "duration": 1 }
+          {
+            "kind": "damage",
+            "power": 80
+          },
+          {
+            "kind": "status",
+            "status": "stun",
+            "duration": 1
+          }
         ]
       }
     ],
     "script": [
-      { "skill": "witch_hex", "target": "highest_atk" },
-      { "skill": "witch_lash", "target": "lowest_hp" },
-      { "skill": "witch_bind", "target": "highest_atk" },
-      { "skill": "witch_lash", "target": "lowest_hp" }
+      {
+        "skill": "witch_hex",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "witch_lash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "witch_bind",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "witch_lash",
+        "target": "lowest_hp"
+      }
     ]
   }
 ]
