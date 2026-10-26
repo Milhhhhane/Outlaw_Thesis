@@ -98,7 +98,7 @@ export const balanceSchema = z
     targets: z.strictObject({
       /** R1 : à niveau égal, le meilleur build bat le pire build dans au moins cette part des combats. */
       r1MinWinRate: z.number().min(0).max(1),
-      /** R2 : le meilleur build reste au-dessus de cette part de victoires à niveau recommandé + levelGap. */
+      /** R2 : part de victoires minimale du meilleur build avec r2LevelGap niveaux de retard sur le donjon. */
       r2MinWinRate: z.number().min(0).max(1),
       r2LevelGap: nonNegInt,
       /** Aucun héros indispensable : écart maximal, en points de taux de victoire. */

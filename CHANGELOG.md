@@ -2,7 +2,7 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-## [sprint-1] — 2026-10-26
+## [sprint-1] — 2026-10-26 — commit `8a10c29`
 
 ### Ajouté
 

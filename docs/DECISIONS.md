@@ -116,4 +116,6 @@ générique, sans indice dans le contenu ; on pourra l'approfondir pour R1.
 
 **R1 et R2** — Contexte : « meilleur build », « pire build » non définis. Choix : R1 = duels
 miroirs à niveau égal entre le build le mieux et le moins bien classé par la simulation ; R2 =
-meilleur build au niveau recommandé + 3. Raison : mesurable, déterministe ; à affiner au sprint 5.
+meilleur build avec 3 niveaux de retard sur le niveau recommandé du donjon (« donjon de niveau
+recommandé +3 »), victoire = les 3 combats gagnés. Raison : si R2 échoue, le rapport baisse la
+croissance des stats, ce qui n'aide que des héros en retard de niveau ; mesurable et déterministe.

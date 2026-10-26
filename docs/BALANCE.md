@@ -34,8 +34,8 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 - **R1** : à niveau égal, le meilleur build bat le pire dans au moins `r1MinWinRate` (70 %) des
   combats.
-- **R2** : au niveau recommandé + `r2LevelGap` (3), le meilleur build gagne plus de
-  `r2MinWinRate` (50 %) des combats du donjon.
+- **R2** : avec `r2LevelGap` (3) niveaux de retard sur le niveau recommandé du donjon, le
+  meilleur build termine le donjon (3 combats) dans plus de `r2MinWinRate` (50 %) des cas.
 - **Aucun héros indispensable** : la meilleure équipe sans un héros donné reste à moins de
   `dispensableMaxGapPoints` (10 points) du meilleur taux de victoire.
 
