@@ -1,0 +1,199 @@
+{
+  "id": "maree",
+  "element": "water",
+  "role": "support",
+  "stats": { "hp": 470, "atk": 46, "def": 26, "vit": 100 },
+  "spells": [
+    {
+      "id": "maree_ripple",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [{ "kind": "damage", "power": 90 }]
+    },
+    {
+      "id": "maree_bulwark",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [{ "kind": "shield", "power": 140, "duration": 2 }]
+    },
+    {
+      "id": "maree_tide",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [{ "kind": "heal", "power": 90 }]
+    },
+    {
+      "id": "maree_deluge",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        { "kind": "heal", "power": 110 },
+        { "kind": "statMod", "stat": "def", "percent": 25, "duration": 2 }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "maree_flow",
+    "triggers": [
+      {
+        "on": "spell_cast",
+        "subject": "self",
+        "slots": ["a", "b", "ult"],
+        "limit": { "per": "combat", "count": 1 },
+        "effects": [{ "kind": "teamPoints", "amount": 1 }]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "maree_page_bastion",
+      "nodes": [
+        {
+          "id": "maree_bastion_core",
+          "mods": [
+            { "type": "scaleEffect", "slot": "a", "kind": "shield", "field": "power", "mulPct": 30 }
+          ]
+        },
+        {
+          "id": "maree_bastion_wall",
+          "requires": "maree_bastion_core",
+          "group": "maree_bastion_choice",
+          "mods": [
+            { "type": "retarget", "slot": "a", "targeting": "all_allies" },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "maree_bastion_wave",
+          "requires": "maree_bastion_core",
+          "group": "maree_bastion_choice",
+          "mods": [
+            { "type": "addEffect", "slot": "a", "effect": { "kind": "tempo", "amount": -20 } }
+          ]
+        },
+        {
+          "id": "maree_bastion_ward",
+          "requires": "maree_bastion_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": { "kind": "shield", "power": 70, "duration": 2 }
+            }
+          ]
+        },
+        {
+          "id": "maree_bastion_veil",
+          "requires": "maree_bastion_ward",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": { "kind": "shield", "power": 35, "duration": 1 }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maree_page_source",
+      "nodes": [
+        {
+          "id": "maree_source_core",
+          "mods": [
+            { "type": "scaleEffect", "slot": "b", "kind": "heal", "field": "power", "mulPct": 20 }
+          ]
+        },
+        {
+          "id": "maree_source_spring",
+          "requires": "maree_source_core",
+          "group": "maree_source_choice",
+          "mods": [{ "type": "cost", "slot": "b", "delta": -1 }]
+        },
+        {
+          "id": "maree_source_focus",
+          "requires": "maree_source_core",
+          "group": "maree_source_choice",
+          "mods": [
+            { "type": "retarget", "slot": "b", "targeting": "ally" },
+            { "type": "scaleEffect", "slot": "b", "kind": "heal", "field": "power", "mulPct": 130 }
+          ]
+        },
+        {
+          "id": "maree_source_drops",
+          "requires": "maree_source_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": { "kind": "heal", "target": "lowest_hp_ally", "power": 25 }
+            }
+          ]
+        },
+        {
+          "id": "maree_source_flood",
+          "requires": "maree_source_drops",
+          "mods": [
+            { "type": "scaleEffect", "slot": "ult", "kind": "heal", "field": "power", "mulPct": 35 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "maree_page_current",
+      "nodes": [
+        {
+          "id": "maree_current_core",
+          "mods": [
+            { "type": "addEffect", "slot": "a", "effect": { "kind": "tempo", "amount": -25 } }
+          ]
+        },
+        {
+          "id": "maree_current_tithe",
+          "requires": "maree_current_core",
+          "group": "maree_current_choice",
+          "mods": [
+            { "type": "gain", "delta": 1 },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "maree_current_swell",
+          "requires": "maree_current_core",
+          "group": "maree_current_choice",
+          "mods": [{ "type": "cost", "slot": "ult", "delta": -1 }]
+        },
+        {
+          "id": "maree_current_undertow",
+          "requires": "maree_current_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": { "kind": "tempo", "target": "all_enemies", "amount": 15 }
+            }
+          ]
+        },
+        {
+          "id": "maree_current_wellspring",
+          "requires": "maree_current_undertow",
+          "mods": [
+            { "type": "addEffect", "slot": "ult", "effect": { "kind": "teamPoints", "amount": 2 } }
+          ]
+        }
+      ]
+    }
+  ]
+}

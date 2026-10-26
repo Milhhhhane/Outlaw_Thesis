@@ -1,0 +1,199 @@
+{
+  "id": "pyra",
+  "element": "fire",
+  "role": "damage",
+  "stats": { "hp": 380, "atk": 60, "def": 18, "vit": 108 },
+  "spells": [
+    {
+      "id": "pyra_spark",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [{ "kind": "damage", "power": 100 }]
+    },
+    {
+      "id": "pyra_kindle",
+      "slot": "a",
+      "targeting": "self",
+      "effects": [
+        { "kind": "tempo", "amount": -35 },
+        { "kind": "statMod", "stat": "atk", "percent": 20, "duration": 2 }
+      ]
+    },
+    {
+      "id": "pyra_blaze",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        { "kind": "damage", "power": 165 },
+        { "kind": "status", "status": "burn", "duration": 2, "power": 40 }
+      ]
+    },
+    {
+      "id": "pyra_inferno",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        { "kind": "damage", "power": 150 },
+        { "kind": "status", "status": "burn", "duration": 2, "power": 30 }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "pyra_momentum",
+    "triggers": [
+      {
+        "on": "hp_crossed",
+        "subject": "enemy",
+        "thresholdPct": 50,
+        "effects": [{ "kind": "tempo", "target": "self", "amount": -30 }]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "pyra_page_execution",
+      "nodes": [
+        {
+          "id": "pyra_exe_core",
+          "mods": [
+            { "type": "scaleEffect", "slot": "b", "kind": "damage", "field": "power", "mulPct": 20 }
+          ]
+        },
+        {
+          "id": "pyra_exe_finisher",
+          "requires": "pyra_exe_core",
+          "group": "pyra_exe_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            }
+          ]
+        },
+        {
+          "id": "pyra_exe_cheap",
+          "requires": "pyra_exe_core",
+          "group": "pyra_exe_choice",
+          "mods": [{ "type": "cost", "slot": "b", "delta": -1 }]
+        },
+        {
+          "id": "pyra_exe_focus",
+          "requires": "pyra_exe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "pyra_exe_refund",
+          "requires": "pyra_exe_focus",
+          "mods": [
+            { "type": "addEffect", "slot": "ult", "effect": { "kind": "teamPoints", "amount": 2 } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pyra_page_tempo",
+      "nodes": [
+        {
+          "id": "pyra_tempo_core",
+          "mods": [{ "type": "delay", "slot": "basic", "delta": -15 }]
+        },
+        {
+          "id": "pyra_tempo_surge",
+          "requires": "pyra_tempo_core",
+          "group": "pyra_tempo_choice",
+          "mods": [
+            { "type": "scaleEffect", "slot": "a", "kind": "tempo", "field": "amount", "mulPct": 50 }
+          ]
+        },
+        {
+          "id": "pyra_tempo_relay",
+          "requires": "pyra_tempo_core",
+          "group": "pyra_tempo_choice",
+          "mods": [{ "type": "retarget", "slot": "a", "targeting": "ally" }]
+        },
+        {
+          "id": "pyra_tempo_stride",
+          "requires": "pyra_tempo_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": { "kind": "tempo", "target": "self", "amount": -10 }
+            }
+          ]
+        },
+        {
+          "id": "pyra_tempo_rush",
+          "requires": "pyra_tempo_stride",
+          "mods": [{ "type": "delay", "slot": "ult", "delta": -40 }]
+        }
+      ]
+    },
+    {
+      "id": "pyra_page_embers",
+      "nodes": [
+        {
+          "id": "pyra_embers_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": { "kind": "status", "status": "burn", "duration": 1, "power": 25 }
+            }
+          ]
+        },
+        {
+          "id": "pyra_embers_linger",
+          "requires": "pyra_embers_core",
+          "group": "pyra_embers_choice",
+          "mods": [
+            { "type": "scaleEffect", "slot": "b", "kind": "status", "field": "duration", "add": 1 }
+          ]
+        },
+        {
+          "id": "pyra_embers_wildfire",
+          "requires": "pyra_embers_core",
+          "group": "pyra_embers_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "pyra_embers_stoke",
+          "requires": "pyra_embers_core",
+          "mods": [
+            { "type": "scaleEffect", "slot": "b", "kind": "status", "field": "power", "mulPct": 50 }
+          ]
+        },
+        {
+          "id": "pyra_embers_brand",
+          "requires": "pyra_embers_stoke",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": { "kind": "status", "status": "mark", "duration": 2 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
