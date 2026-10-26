@@ -1,9 +1,13 @@
 import { loadContent } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
+import { availableNodes, randomBuild } from '../src/builds';
+import { createRng } from '../src/rng';
 import { summarize, toCsv } from '../src/run';
-import { sprint0Scenarios } from '../src/scenarios';
+import { randomBattles, sprint0Scenarios } from '../src/scenarios';
+import { validateBuild } from '@outlaw/engine';
 
-const balance = loadContent().balance;
+const content = loadContent();
+const { balance } = content;
 
 describe('simulation', () => {
   const rows = sprint0Scenarios(balance);
@@ -23,10 +27,36 @@ describe('simulation', () => {
     });
   });
 
-  it('le CSV est stable et deux exécutions sont identiques', () => {
+  it('le CSV est stable', () => {
     expect(toCsv(sprint0Scenarios(balance))).toBe(toCsv(rows));
     expect(toCsv([summarize('x', [])])).toBe(
       'scenario,battles,wins,win_rate,avg_actions\nx,0,0,0.0000,0.00\n',
     );
+  });
+
+  it('les combats aléatoires sont reproductibles à graine égale', () => {
+    const a = toCsv(randomBattles(content, { battles: 30, seed: 3 }));
+    expect(toCsv(randomBattles(content, { battles: 30, seed: 3 }))).toBe(a);
+    expect(toCsv(randomBattles(content, { battles: 30, seed: 4 }))).not.toBe(a);
+  });
+});
+
+describe('builds aléatoires', () => {
+  it('dépensent tous les points dans des nœuds valides', () => {
+    const rng = createRng(9);
+    for (let i = 0; i < 100; i++) {
+      const level = rng.int(1, 30);
+      const hero = rng.pick(content.heroes).id;
+      const build = randomBuild(content, hero, level, rng);
+      expect(validateBuild(content, build)).toEqual([]);
+    }
+    const pyra = content.heroById.get('pyra')!;
+    expect(availableNodes(pyra, 1, new Set(), content)).toEqual(['pyra_exe_core']);
+  });
+
+  it('mélange sans perte', () => {
+    const rng = createRng(1);
+    expect(rng.shuffle([1, 2, 3, 4]).sort()).toEqual([1, 2, 3, 4]);
+    expect(() => rng.pick([])).toThrow();
   });
 });

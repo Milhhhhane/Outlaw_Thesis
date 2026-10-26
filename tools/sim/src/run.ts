@@ -1,5 +1,13 @@
 import type { Balance } from '@outlaw/data';
-import { createBattle, step, type BattleResult, type BattleSetup } from '@outlaw/engine';
+import {
+  createBattle,
+  replay,
+  step,
+  type Action,
+  type BattleEvent,
+  type BattleResult,
+  type BattleSetup,
+} from '@outlaw/engine';
 import type { Policy } from './policy';
 
 export interface BattleOutcome {
@@ -7,10 +15,33 @@ export interface BattleOutcome {
   readonly actions: number;
 }
 
-/** Joue un combat jusqu'au bout. Toute erreur du moteur remonte : la simulation ne la masque pas. */
-export function runBattle(setup: BattleSetup, balance: Balance, policy: Policy): BattleOutcome {
-  let state = createBattle(setup, balance).state;
-  while (state.result === null) state = step(state, policy(state)).state;
+/**
+ * Joue un combat jusqu'au bout. Toute erreur du moteur remonte : la simulation ne la masque pas.
+ * Avec verifyReplay, le combat est rejoué à partir de ses actions et le journal doit être identique.
+ */
+export function runBattle(
+  setup: BattleSetup,
+  balance: Balance,
+  policy: Policy,
+  verifyReplay = false,
+): BattleOutcome {
+  const created = createBattle(setup, balance);
+  let state = created.state;
+  const events: BattleEvent[] = [...created.events];
+  const actions: Action[] = [];
+  while (state.result === null) {
+    const action = policy(state);
+    actions.push(action);
+    const next = step(state, action);
+    state = next.state;
+    events.push(...next.events);
+  }
+  if (verifyReplay) {
+    const replayed = replay(setup, balance, actions);
+    if (JSON.stringify(replayed.events) !== JSON.stringify(events)) {
+      throw new Error('journal non rejouable : le rejeu diffère de la partie');
+    }
+  }
   return { result: state.result, actions: state.actionCount };
 }
 

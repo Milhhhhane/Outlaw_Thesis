@@ -10,3 +10,9 @@ duel_nature_vs_water,1,1,1.0000,15.00
 duel_nature_vs_nature,1,1,1.0000,19.00
 trio_mixed,1,1,1.0000,69.00
 action_limit_wall,1,0,0.0000,100.00
+random_level_01_10,318,318,1.0000,19.84
+random_level_11_20,358,358,1.0000,19.40
+random_level_21_30,324,324,1.0000,19.03
+random_1_enemies,343,343,1.0000,8.00
+random_2_enemies,341,341,1.0000,18.58
+random_3_enemies,316,316,1.0000,32.73

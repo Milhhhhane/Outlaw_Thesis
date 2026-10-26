@@ -1,7 +1,16 @@
-import { ELEMENTS, type Balance, type Element } from '@outlaw/data';
-import type { BattleSetup, ResolvedSpell, Side, UnitDef } from '@outlaw/engine';
-import { greedy } from './policy';
-import { runBattle, summarize, type ScenarioRow } from './run';
+import { ELEMENTS, type Balance, type Content, type Element } from '@outlaw/data';
+import {
+  compileEncounter,
+  compileTeam,
+  type BattleSetup,
+  type ResolvedSpell,
+  type Side,
+  type UnitDef,
+} from '@outlaw/engine';
+import { randomBuild } from './builds';
+import { greedy, lookahead } from './policy';
+import { createRng } from './rng';
+import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
  * Sprint 0 : scénarios synthétiques (le contenu des héros arrive au sprint 1).
@@ -31,6 +40,7 @@ function fighter(
   const spell = basic(`${id}_basic`, element, balance);
   return {
     id,
+    kind: id,
     side,
     slot,
     element,
@@ -83,4 +93,48 @@ export function sprint0Scenarios(balance: Balance): ScenarioRow[] {
   rows.push(summarize('action_limit_wall', [runBattle(wall, balance, greedy)]));
 
   return rows;
+}
+
+export interface RandomRunOptions {
+  readonly battles: number;
+  readonly seed: number;
+}
+
+/**
+ * Sprint 1 : combats aléatoires mais reproductibles — niveau, ordre de l'équipe, talents
+ * et rencontre tirés avec une graine fixe. Chaque combat est rejoué pour vérifier le journal.
+ */
+export function randomBattles(content: Content, options: RandomRunOptions): ScenarioRow[] {
+  const rng = createRng(options.seed);
+  const heroes = content.heroes.map((hero) => hero.id);
+  const enemies = content.enemies.filter((enemy) => !enemy.boss).map((enemy) => enemy.id);
+  const byBand = new Map<string, BattleOutcome[]>();
+  const bySize = new Map<string, BattleOutcome[]>();
+  const push = (map: Map<string, BattleOutcome[]>, key: string, outcome: BattleOutcome): void => {
+    map.set(key, [...(map.get(key) ?? []), outcome]);
+  };
+
+  for (let i = 0; i < options.battles; i++) {
+    const level = rng.int(1, content.balance.progression.maxLevel);
+    const order = rng.shuffle(heroes).slice(0, 3);
+    const builds = order.map((hero) => randomBuild(content, hero, level, rng));
+    const size = rng.int(1, 3);
+    const foes = Array.from({ length: size }, () => rng.pick(enemies));
+    const setup: BattleSetup = {
+      units: [...compileTeam(content, builds), ...compileEncounter(content, foes, level)],
+    };
+    const outcome = runBattle(setup, content.balance, lookahead, true);
+    const band = Math.min(2, Math.floor((level - 1) / 10));
+    push(
+      byBand,
+      `random_level_${String(band * 10 + 1).padStart(2, '0')}_${band * 10 + 10}`,
+      outcome,
+    );
+    push(bySize, `random_${size}_enemies`, outcome);
+  }
+  const rows = (map: Map<string, BattleOutcome[]>): ScenarioRow[] =>
+    [...map.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, list]) => summarize(key, list));
+  return [...rows(byBand), ...rows(bySize)];
 }
