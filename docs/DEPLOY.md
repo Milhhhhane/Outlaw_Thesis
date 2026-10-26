@@ -8,7 +8,7 @@ Worker ni binding : pas de D1, KV ni R2). Chaque push sur `main` est construit e
 
 | Réglage                   | Valeur                                          |
 | ------------------------- | ----------------------------------------------- |
-| Dépôt                     | `Milhhhhane/outlaw_thesis` (GitHub)             |
+| Dépôt                     | `Milhhhhane/Outlaw_Thesis` (GitHub)             |
 | Branche de production     | `main`                                          |
 | Nom du Worker             | `outlaw-thesis` (identique à `wrangler.jsonc`)  |
 | Répertoire racine (root)  | `/` (racine du dépôt)                           |
@@ -24,7 +24,7 @@ Cloudflare installe les dépendances lui-même (pnpm détecté par `pnpm-lock.ya
 ## Première mise en place (propriétaire du compte)
 
 1. Tableau de bord Cloudflare → **Workers & Pages** → **Create application** → **GitHub**.
-2. S'authentifier et autoriser l'application GitHub de Cloudflare sur le dépôt `outlaw_thesis`.
+2. S'authentifier et autoriser l'application GitHub de Cloudflare sur le dépôt `Outlaw_Thesis`.
 3. Choisir le dépôt ; nom du projet `outlaw-thesis` ; vérifier les valeurs du tableau ci-dessus ;
    **Save and Deploy**.
 4. L'URL `https://outlaw-thesis.<sous-domaine>.workers.dev` s'affiche à la fin du premier build.
