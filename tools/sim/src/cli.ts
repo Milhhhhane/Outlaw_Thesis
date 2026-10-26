@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '@outlaw/data';
 import { toCsv } from './run';
+import { dungeonRows } from './dungeons';
 import { randomBattles, sprint0Scenarios } from './scenarios';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -27,6 +28,7 @@ const started = performance.now();
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
+  ...dungeonRows(content, option('--runs', 40), option('--seed', 1)),
 ]);
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 

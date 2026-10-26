@@ -16,3 +16,9 @@ random_level_21_30,324,307,0.9475,39.54
 random_1_enemies,343,343,1.0000,14.37
 random_2_enemies,341,341,1.0000,34.53
 random_3_enemies,316,247,0.7816,71.02
+dungeon_ember_wastes_rec,40,40,1.0000,202.00
+dungeon_ember_wastes_minus3,40,40,1.0000,202.00
+dungeon_drowned_halls_rec,40,40,1.0000,190.00
+dungeon_drowned_halls_minus3,40,0,0.0000,141.00
+dungeon_thorn_maze_rec,40,27,0.6750,195.78
+dungeon_thorn_maze_minus3,40,0,0.0000,113.00
