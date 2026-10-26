@@ -13,6 +13,7 @@ export * from './schemas/effects';
 export * from './schemas/enemies';
 export * from './schemas/heroes';
 export * from './schemas/items';
+export * from './schemas/profile';
 
 /** Charge et valide tout le contenu embarqué (aucun appel réseau : tout est statique). */
 export function loadContent(): Content {
