@@ -103,6 +103,24 @@ Raison : unique, court, stable dans le journal.
 **Journal minimal** — Contexte : bruit pour l'interface. Choix : pas d'événement pour un soin nul
 ou une réserve inchangée. Raison : l'interface rejoue chaque événement, chacun doit compter.
 
+## Interface
+
+**Rejeu du journal** — Contexte : « l'interface rejoue le journal et ne calcule rien ». Choix :
+la vue est mise à jour par les valeurs finales portées par chaque événement, puis recalée sur
+l'état. Raison : animation fidèle sans dupliquer une seule règle.
+
+**File d'initiative** — Contexte : rendre le tempo lisible. Choix : ligne de temps à l'échelle
+(marqueurs numérotés à leur instant réel) et liste ordonnée des noms dessous. Raison : les écarts
+se voient, et les noms ne se chevauchent jamais.
+
+**Combat d'essai** — Contexte : critère du sprint 2. Choix : héros niveau 1 sans talent contre
+Acolyte, Brute et Sorcière niveau 1 (bouclier, coup lourd, étourdissement). Raison : le joueur qui
+anticipe gagne, le glouton perd.
+
+**Clavier** — Contexte : accessibilité. Choix : touches 1 à 4 pour les sorts, Échap pour annuler la
+cible, Espace pour passer l'animation ; cibles et sorts sont de vrais boutons. Raison : tout se
+joue aussi sans souris.
+
 ## Planification
 
 **Héros 4 à 6 et donjons 2, 4, 6** — Contexte : le déblocage arrive au sprint 4, ces héros au

@@ -77,3 +77,21 @@ Voir [`CONTENT.md`](CONTENT.md).
 Politique gloutonne déterministe ; sortie CSV stable. `pnpm sim:check` compare à
 `tools/sim/baseline.csv` en CI : tout changement de règle ou d'équilibrage doit être assumé en
 mettant la référence à jour dans le même commit.
+
+## Interface (`apps/web`)
+
+| Fichier               | Rôle                                                                     |
+| --------------------- | ------------------------------------------------------------------------ |
+| `combat/session.ts`   | contenu chargé au démarrage, rencontre d'essai                           |
+| `combat/useBattle.ts` | état du moteur + vue rejouée événement par événement                     |
+| `combat/view.ts`      | vue d'un état, application d'un événement (valeurs déjà dans le journal) |
+| `combat/log.ts`       | phrase française par événement                                           |
+| `combat/*.tsx`        | ligne de temps, cartes d'unité, barre d'action, résultat                 |
+| `i18n/fr.json`        | textes de l'interface ; `content.fr.json` : noms et thèses du contenu    |
+| `i18n/describe.ts`    | descriptions des sorts et passifs générées depuis leurs briques          |
+
+Après chaque action, l'interface reçoit le nouvel état et le journal. Elle rejoue le journal pour
+animer (chaque événement porte ses valeurs finales : PV restants, total de bouclier, réserve), puis
+se recale sur l'état du moteur. Un test vérifie que le rejeu complet tombe exactement sur l'état.
+Mouvement réduit : le journal est appliqué d'un coup. File, actions possibles et intentions viennent
+du moteur (`projectQueue`, `legalActions`, `enemyIntent`).

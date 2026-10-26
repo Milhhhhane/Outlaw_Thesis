@@ -47,3 +47,11 @@ limite d'actions). Depuis le sprint 1 : 1 000 combats aléatoires reproductibles
 l'équipe, talents et rencontre tirés au sort — joués par une politique d'anticipation d'un coup,
 chaque journal étant rejoué et comparé. Options : `--battles N`, `--seed S`. Les 20 équipes et
 R1/R2 arrivent au sprint 5.
+
+## Premier test (sprint 2) : la réserve partagée
+
+Combat d'essai joué par la politique d'anticipation (victoire) : Marée enchaîne les attaques de base
+pour nourrir la réserve (12), Ronce la dépense en marques et entraves (10), Pyra place deux
+Embrasements. La réserve n'atteint jamais son plafond : les points sont rares et disputés, c'est
+l'effet recherché. Point ouvert : aucun ultime n'est lancé (coût 4 trop lourd pour son effet ?),
+à régler au sprint 5. Ce test ne remplace pas un essai humain.

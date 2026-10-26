@@ -2,6 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [sprint-2] — 2026-10-26
+
+### Ajouté
+
+- Écran de combat jouable à la souris et au clavier : file d'initiative en ligne de temps, cartes
+  d'unité (PV, bouclier, altérations, modifications, intention ennemie), réserve, ciblage, journal,
+  résultat ; mobile compris.
+- Textes français de tout le contenu, descriptions des sorts et passifs générées depuis les données.
+- Tests : combat complet joué au clic, rejeu du journal égal à l'état du moteur, textes complets.
+
+### Modifié
+
+- Ennemis renforcés (premier réglage) ; R2 relu : héros avec 3 niveaux de retard sur le donjon.
+
 ## [sprint-1] — 2026-10-26 — commit `8a10c29`
 
 ### Ajouté
