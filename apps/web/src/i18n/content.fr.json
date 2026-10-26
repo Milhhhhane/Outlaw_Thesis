@@ -40,24 +40,46 @@
     "brute_roar": "Rugissement",
     "witch_lash": "Fouet",
     "witch_hex": "Maléfice",
-    "witch_bind": "Lien"
+    "witch_bind": "Lien",
+    "matron_claw": "Griffe",
+    "matron_brand": "Sceau ardent",
+    "matron_eruption": "Éruption",
+    "warden_slam": "Fracas",
+    "warden_wall": "Muraille d'eau",
+    "warden_undertow": "Contre-courant",
+    "bramble_lash": "Fouet de ronces",
+    "bramble_snare": "Étreinte",
+    "bramble_bloom": "Floraison",
+    "bramble_spores": "Spores"
   },
   "passives": {
     "pyra_momentum": "Élan meurtrier",
     "maree_flow": "Courant porteur",
-    "ronce_hunt": "Curée"
+    "ronce_hunt": "Curée",
+    "matron_wrath": "Colère de braise",
+    "warden_depths": "Abysses",
+    "bramble_grief": "Deuil sylvestre",
+    "searing_zeal": "Ferveur ardente",
+    "riptide": "Courant de retour",
+    "bramble_skin": "Peau de ronces"
   },
   "pages": {
     "pyra_page_execution": {
       "name": "Exécution",
       "thesis": "Frapper fort quand ça compte : moins de sorts, plus décisifs."
     },
-    "pyra_page_tempo": { "name": "Élan", "thesis": "Jouer plus souvent que l'adversaire." },
+    "pyra_page_tempo": {
+      "name": "Élan",
+      "thesis": "Jouer plus souvent que l'adversaire."
+    },
     "pyra_page_embers": {
       "name": "Braises",
       "thesis": "Laisser le feu finir le travail entre deux tours."
     },
-    "maree_page_bastion": { "name": "Bastion", "thesis": "Encaisser à la place des autres." },
+    "maree_page_bastion": {
+      "name": "Bastion",
+      "thesis": "Encaisser à la place des autres."
+    },
     "maree_page_source": {
       "name": "Source",
       "thesis": "Soigner moins souvent, mais au bon moment."
@@ -74,7 +96,10 @@
       "name": "Marques",
       "thesis": "Désigner la cible : l'équipe s'en charge."
     },
-    "ronce_page_venom": { "name": "Venin", "thesis": "Affaiblir avant de frapper." }
+    "ronce_page_venom": {
+      "name": "Venin",
+      "thesis": "Affaiblir avant de frapper."
+    }
   },
   "nodes": {
     "pyra_exe_core": "Coup de grâce",
@@ -129,6 +154,37 @@
     "brine_crab": "Crabe saumâtre",
     "tide_caller": "Héraut des marées",
     "moss_brute": "Brute moussue",
-    "thorn_witch": "Sorcière des ronces"
+    "thorn_witch": "Sorcière des ronces",
+    "ember_matron": "Matrone de braise",
+    "abyss_warden": "Gardien des abysses",
+    "elder_bramble": "Ronce ancestrale"
+  },
+  "items": {
+    "ember_charm": "Charme de braise",
+    "tide_pendant": "Pendentif des marées",
+    "iron_band": "Anneau de fer",
+    "hunter_lens": "Lentille du chasseur",
+    "spare_flask": "Fiole de réserve",
+    "quick_spurs": "Éperons vifs",
+    "thorn_ring": "Bague d'épines",
+    "mender_token": "Jeton du guérisseur",
+    "phoenix_feather": "Plume de phénix",
+    "storm_sigil": "Sceau d'orage",
+    "chrono_gear": "Rouage du temps",
+    "aegis_shard": "Éclat d'égide"
+  },
+  "dungeons": {
+    "ember_wastes": {
+      "name": "Landes de braise",
+      "text": "Des chiens de cendre gardent la route. Leur matrone attend au bout."
+    },
+    "drowned_halls": {
+      "name": "Salles englouties",
+      "text": "Le courant vous ralentit dès l'entrée : laissez venir, puis frappez."
+    },
+    "thorn_maze": {
+      "name": "Dédale de ronces",
+      "text": "Chaque coup porté vous écorche : choisissez peu de coups, mais lourds."
+    }
   }
 }

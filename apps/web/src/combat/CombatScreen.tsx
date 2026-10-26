@@ -11,9 +11,16 @@ import './combat.css';
 interface Props {
   readonly setup: BattleSetup;
   readonly onExit: () => void;
+  /** Titre affiché (par défaut « Combat »). */
+  readonly title?: string;
+  /** Dans un donjon : un seul bouton de fin, qui mène à la suite. */
+  readonly finish?: {
+    readonly label: (won: boolean) => string;
+    readonly onClick: (won: boolean) => void;
+  };
 }
 
-export function CombatScreen({ setup, onExit }: Props) {
+export function CombatScreen({ setup, onExit, title, finish }: Props) {
   const { model, busy, act, skip, reset } = useBattle(setup);
   const { state, view } = model;
   // La sélection est liée au héros actif : elle disparaît d'elle-même quand le tour passe.
@@ -113,7 +120,7 @@ export function CombatScreen({ setup, onExit }: Props) {
   return (
     <main className="combat">
       <header className="combat__bar">
-        <h1 className="combat__title">{t('combat.title')}</h1>
+        <h1 className="combat__title">{title ?? t('combat.title')}</h1>
         {busy && (
           <button type="button" className="link-button" onClick={skip}>
             {t('combat.skip')}
@@ -184,12 +191,27 @@ export function CombatScreen({ setup, onExit }: Props) {
           </h2>
           <p>{t('combat.result.actions', { count: state.actionCount })}</p>
           <div className="result__buttons">
-            <button ref={againRef} type="button" className="button" onClick={reset}>
-              {t('combat.again')}
-            </button>
-            <button type="button" className="button button--quiet" onClick={onExit}>
-              {t('combat.home')}
-            </button>
+            {finish !== undefined ? (
+              <button
+                ref={againRef}
+                type="button"
+                className="button"
+                onClick={() => {
+                  finish.onClick(result.winner === 'player');
+                }}
+              >
+                {finish.label(result.winner === 'player')}
+              </button>
+            ) : (
+              <>
+                <button ref={againRef} type="button" className="button" onClick={reset}>
+                  {t('combat.again')}
+                </button>
+                <button type="button" className="button button--quiet" onClick={onExit}>
+                  {t('combat.home')}
+                </button>
+              </>
+            )}
           </div>
         </section>
       )}

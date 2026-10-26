@@ -34,6 +34,8 @@ const passives: Readonly<Record<string, string>> = names.passives;
 const pages: Readonly<Record<string, { name: string; thesis: string }>> = names.pages;
 const nodes: Readonly<Record<string, string>> = names.nodes;
 const enemies: Readonly<Record<string, string>> = names.enemies;
+const items: Readonly<Record<string, string>> = names.items;
+const dungeons: Readonly<Record<string, { name: string; text: string }>> = names.dungeons;
 
 /** Noms du contenu. Un identifiant sans traduction s'affiche tel quel (et un test le signale). */
 export const names_ = {
@@ -45,9 +47,12 @@ export const names_ = {
   pageThesis: (id: string): string => pages[id]?.thesis ?? '',
   node: (id: string): string => nodes[id] ?? id,
   enemy: (id: string): string => enemies[id] ?? id,
+  item: (id: string): string => items[id] ?? id,
+  dungeon: (id: string): string => dungeons[id]?.name ?? id,
+  dungeonText: (id: string): string => dungeons[id]?.text ?? '',
   /** Nom d'une unité de combat d'après son contenu (héros ou ennemi). */
   unit: (kind: string): string => heroes[kind]?.name ?? enemies[kind] ?? kind,
   /** Toutes les entrées, pour les tests de couverture des traductions. */
-  all: { heroes, spells, passives, pages, nodes, enemies },
+  all: { heroes, spells, passives, pages, nodes, enemies, items, dungeons },
 };
 export { names_ as names };

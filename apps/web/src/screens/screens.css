@@ -1,0 +1,501 @@
+/* Camp, fiche de héros, fin de donjon : même langage que l'écran de combat. */
+
+.camp,
+.hero-sheet,
+.rewards,
+.run-end {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.camp__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.camp__title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-3);
+  font-weight: 600;
+  line-height: 1;
+}
+.camp__resources {
+  margin: 0;
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+.camp__gold {
+  color: var(--gold);
+  font-weight: 650;
+}
+.camp__materials {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+.material {
+  min-width: 2.2rem;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  text-align: center;
+}
+.material--1 {
+  border-left: 4px solid #b9ad9c;
+}
+.material--2 {
+  border-left: 4px solid #8ec3f0;
+}
+.material--3 {
+  border-left: 4px solid var(--gold);
+}
+
+.camp__section h2,
+.hero-sheet h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--serif);
+  font-size: var(--step-2);
+  font-weight: 600;
+}
+.hero-sheet > .link-button {
+  justify-self: start;
+  padding-left: 0;
+}
+.camp__hint {
+  margin: 0 0 var(--space-3);
+  color: var(--bone-muted);
+  font-size: var(--step--1);
+  max-width: 70ch;
+}
+.camp__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: baseline;
+  color: var(--bone-muted);
+  font-size: var(--step--1);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 4px solid var(--gold);
+  background: var(--panel);
+}
+.notice--refusal {
+  border-left-color: var(--danger);
+}
+
+/* Équipe */
+.roster {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-3);
+}
+.roster__hero {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--element);
+  border-radius: 4px 4px 10px 10px;
+  background: var(--panel);
+  opacity: 0.75;
+}
+.roster__hero--in {
+  opacity: 1;
+  border-color: var(--gold);
+  border-top-color: var(--element);
+}
+.roster__open {
+  display: grid;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.roster__name {
+  font-family: var(--serif);
+  font-size: var(--step-2);
+  line-height: 1.1;
+}
+.roster__level {
+  color: var(--gold);
+  font-size: var(--step--1);
+}
+.roster__thesis {
+  color: var(--bone-muted);
+  font-size: var(--step--1);
+}
+.roster__hero .link-button {
+  justify-self: start;
+  padding-left: 0;
+}
+
+/* Donjons : une route, d'où la liste ordonnée */
+.dungeons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+.element-mixed {
+  --element: var(--gold);
+}
+.dungeon {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--element);
+  background: var(--panel);
+  border-radius: 0 10px 10px 0;
+}
+.dungeon--locked {
+  opacity: 0.55;
+}
+.dungeon__head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.dungeon__name {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-weight: 600;
+}
+.dungeon__level,
+.dungeon__clears,
+.dungeon__locked {
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.dungeon__text,
+.dungeon__modifier {
+  margin: 0;
+  max-width: 70ch;
+}
+.dungeon__modifier {
+  font-size: var(--step--1);
+  color: var(--gold);
+}
+.dungeon__loot {
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.dungeon__loot summary {
+  cursor: pointer;
+}
+.dungeon__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Objets */
+.inventory {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.inventory__item {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border-left: 3px solid var(--line);
+}
+.inventory__item--rare {
+  border-left-color: var(--gold);
+}
+.inventory__name {
+  font-family: var(--serif);
+}
+.inventory__meta,
+.inventory__max {
+  color: var(--bone-muted);
+  font-size: var(--step--1);
+}
+
+/* Fiche de héros */
+.hero-sheet__header {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-4);
+  border-left: 6px solid var(--element);
+}
+.hero-sheet__name {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-4);
+  line-height: 1;
+}
+.hero-sheet__thesis {
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: var(--step-1);
+  max-width: 60ch;
+}
+.hero-sheet__level {
+  margin: 0;
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+.hero-sheet__level strong {
+  color: var(--gold);
+}
+.hero-sheet__level span {
+  color: var(--bone-muted);
+  font-size: var(--step--1);
+}
+.hero-sheet__xp {
+  display: block;
+  max-width: 24rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.hero-sheet__xp span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+.hero-sheet__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.stats {
+  margin: 0 0 var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+.stats div {
+  padding: var(--space-2);
+  background: var(--panel);
+  text-align: center;
+}
+.stats dt {
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.stats dd {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+}
+
+.spell-list,
+.passive,
+.slots {
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+.spell-list ul,
+.slots__effects {
+  margin: var(--space-1) 0 0;
+  padding-left: 1rem;
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.spell-list__name {
+  margin: 0;
+  font-family: var(--serif);
+}
+.spell-list__name span {
+  font-family: var(--sans);
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.passive li {
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.slots li {
+  display: grid;
+  gap: var(--space-1);
+}
+.slots label {
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.slots select {
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--bone);
+  font: inherit;
+}
+
+.talents__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.talents__head p {
+  margin: 0;
+  color: var(--gold);
+}
+.pages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.page {
+  padding: var(--space-3);
+  background: var(--panel);
+  border-top: 3px solid var(--element);
+}
+.page--locked {
+  opacity: 0.55;
+}
+.page h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+}
+.page__thesis,
+.page__lock {
+  margin: var(--space-1) 0 var(--space-3);
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.page__lock {
+  color: var(--gold);
+}
+.page__nodes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.node {
+  display: grid;
+  gap: var(--space-1);
+}
+.node--child {
+  margin-left: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--line);
+}
+.node__button {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-raised);
+  text-align: left;
+  cursor: pointer;
+}
+.node--choice .node__button {
+  border-style: dashed;
+}
+.node--ready .node__button {
+  border-color: var(--gold);
+  border-style: solid;
+}
+.node--taken .node__button {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+.node__button:disabled {
+  cursor: default;
+}
+.node__name {
+  font-family: var(--serif);
+}
+.node__state {
+  font-size: var(--step--1);
+}
+.node__effects {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.node__rule {
+  list-style: none;
+  margin-left: -1rem;
+  font-style: italic;
+}
+
+/* Fin de donjon */
+.rewards h1,
+.run-end h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-3);
+}
+.rewards h1:focus {
+  outline: none;
+}
+.rewards__item {
+  padding: var(--space-3) var(--space-4);
+  background: var(--panel);
+  border-left: 4px solid var(--line);
+}
+.rewards__item--rare {
+  border-left-color: var(--gold);
+}
+.rewards__item h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+}
+.rewards__item ul,
+.rewards__list {
+  margin: 0;
+  padding-left: 1rem;
+}
+.rewards__level,
+.rewards__unlock {
+  color: var(--gold);
+}
+.rewards .button,
+.run-end .button {
+  justify-self: start;
+}
+
+@media (max-width: 52rem) {
+  .hero-sheet__grid,
+  .pages {
+    grid-template-columns: 1fr;
+  }
+  .inventory__item {
+    grid-template-columns: 1fr;
+  }
+}
