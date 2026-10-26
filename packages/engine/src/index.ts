@@ -14,3 +14,4 @@ export {
   TIME_SCALE,
 } from './stats';
 export type * from './types';
+export * from './progression';
