@@ -15,6 +15,7 @@ import { Rewards } from './Rewards';
 type Phase =
   | { readonly kind: 'fight'; readonly room: number }
   | { readonly kind: 'failed' }
+  | { readonly kind: 'tested' }
   | { readonly kind: 'done'; readonly report: DungeonReport };
 
 /**
@@ -47,14 +48,26 @@ export function DungeonRun({
   const name = names.dungeon(dungeonId);
 
   if (phase.kind === 'done') return <Rewards report={phase.report} onContinue={onExit} />;
-  if (phase.kind === 'failed') {
+  if (phase.kind === 'failed' || phase.kind === 'tested') {
+    const failed = phase.kind === 'failed';
     return (
       <main className="run-end">
-        <h1>{t('run.failed', { dungeon: name })}</h1>
-        <p>{t('run.failed.text')}</p>
-        <button type="button" className="button" onClick={onExit}>
-          {t('run.back')}
-        </button>
+        <h1>{failed ? t('run.failed', { dungeon: name }) : t('test.done', { dungeon: name })}</h1>
+        <p>{failed ? t('run.failed.text') : t('test.done.text')}</p>
+        <div className="result__buttons">
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              setPhase({ kind: 'fight', room: 0 });
+            }}
+          >
+            {t('run.retry')}
+          </button>
+          <button type="button" className="button button--quiet" onClick={onExit}>
+            {t('run.back')}
+          </button>
+        </div>
       </main>
     );
   }
@@ -84,6 +97,11 @@ export function DungeonRun({
           }
           if (!last) {
             setPhase({ kind: 'fight', room: phase.room + 1 });
+            return;
+          }
+          // Mode test : rien n'est gagné, on propose de recommencer.
+          if (profile.testMode) {
+            setPhase({ kind: 'tested' });
             return;
           }
           const outcome = completeDungeon(content, profile, dungeonId);

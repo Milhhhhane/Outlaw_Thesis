@@ -50,7 +50,16 @@
     "bramble_lash": "Fouet de ronces",
     "bramble_snare": "Étreinte",
     "bramble_bloom": "Floraison",
-    "bramble_spores": "Spores"
+    "bramble_spores": "Spores",
+    "tyrant_cleave": "Taille",
+    "tyrant_ignite": "Embrasement du tyran",
+    "tyrant_firestorm": "Tempête de feu",
+    "hydra_bite": "Morsure",
+    "hydra_regrow": "Repousse",
+    "hydra_deluge": "Déferlante",
+    "colossus_crush": "Écrasement",
+    "colossus_quake": "Séisme",
+    "colossus_bark": "Écorce"
   },
   "passives": {
     "pyra_momentum": "Élan meurtrier",
@@ -61,7 +70,14 @@
     "bramble_grief": "Deuil sylvestre",
     "searing_zeal": "Ferveur ardente",
     "riptide": "Courant de retour",
-    "bramble_skin": "Peau de ronces"
+    "bramble_skin": "Peau de ronces",
+    "tyrant_pyre": "Bûcher",
+    "hydra_heads": "Têtes multiples",
+    "colossus_roots": "Racines profondes",
+    "kindling": "Petit bois",
+    "undertow": "Ressac",
+    "spore_haze": "Brume de spores",
+    "discord": "Discorde"
   },
   "pages": {
     "pyra_page_execution": {
@@ -157,7 +173,10 @@
     "thorn_witch": "Sorcière des ronces",
     "ember_matron": "Matrone de braise",
     "abyss_warden": "Gardien des abysses",
-    "elder_bramble": "Ronce ancestrale"
+    "elder_bramble": "Ronce ancestrale",
+    "pyre_tyrant": "Tyran du bûcher",
+    "tidal_hydra": "Hydre des marées",
+    "grove_colossus": "Colosse du bosquet"
   },
   "items": {
     "ember_charm": "Charme de braise",
@@ -185,6 +204,22 @@
     "thorn_maze": {
       "name": "Dédale de ronces",
       "text": "Chaque coup porté vous écorche : choisissez peu de coups, mais lourds."
+    },
+    "cinder_citadel": {
+      "name": "Citadelle de cendre",
+      "text": "L'air brûle : chaque fin de tour coûte un peu de vie. Finissez vite."
+    },
+    "sunken_spire": {
+      "name": "Flèche engloutie",
+      "text": "Chaque sort ennemi se protège d'un bouclier : percez avant de frapper fort."
+    },
+    "verdant_crown": {
+      "name": "Couronne verdoyante",
+      "text": "Les spores vous engourdissent au départ : survivez aux premiers tours."
+    },
+    "broken_crossing": {
+      "name": "Carrefour brisé",
+      "text": "Tous les éléments à la fois, et deux anciens gardiens au bout du chemin."
     }
   }
 }

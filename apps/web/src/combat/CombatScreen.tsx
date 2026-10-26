@@ -1,12 +1,20 @@
 import { enemyIntent, legalActions, type BattleSetup, type ResolvedSpell } from '@outlaw/engine';
 import { useEffect, useRef, useState } from 'react';
-import { names, t } from '../i18n';
+import { names, t, type TextKey } from '../i18n';
 import { ActionBar } from './ActionBar';
 import { InitiativeTrack } from './InitiativeTrack';
 import { content } from './session';
 import { UnitCard } from './UnitCard';
 import { useBattle } from './useBattle';
 import './combat.css';
+
+const HELP: readonly TextKey[] = [
+  'help.queue',
+  'help.reserve',
+  'help.elements',
+  'help.statuses',
+  'help.keys',
+];
 
 interface Props {
   readonly setup: BattleSetup;
@@ -147,6 +155,15 @@ export function CombatScreen({ setup, onExit, title, finish }: Props) {
           ))}
         </ol>
       </section>
+
+      <details className="help">
+        <summary>{t('help.title')}</summary>
+        <ul>
+          {HELP.map((key) => (
+            <li key={key}>{t(key)}</li>
+          ))}
+        </ul>
+      </details>
 
       <section className="side side--player" aria-label={t('combat.heroes')}>
         {selectedSpell !== undefined && (

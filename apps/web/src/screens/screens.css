@@ -499,3 +499,65 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mode test, partage, premiers pas */
+.notice--test {
+  border-left-color: var(--water);
+}
+.notice--page {
+  max-width: 72rem;
+  margin: var(--space-3) auto 0;
+}
+.roster__level-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--bone-muted);
+}
+.roster__level-control input,
+.share input {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel-raised);
+  color: var(--bone);
+  font: inherit;
+}
+.roster__level-control input {
+  width: 4.5rem;
+}
+.share {
+  margin-top: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+.share label {
+  font-family: var(--serif);
+  font-size: var(--step-1);
+}
+.share__row {
+  display: flex;
+  gap: var(--space-2);
+}
+.share__row input {
+  flex: 1;
+  min-width: 0;
+}
+.intro {
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--gold);
+  background: var(--panel);
+}
+.intro h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--serif);
+  font-size: var(--step-1);
+}
+.intro ol {
+  margin: 0 0 var(--space-2);
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-1);
+  max-width: 80ch;
+}

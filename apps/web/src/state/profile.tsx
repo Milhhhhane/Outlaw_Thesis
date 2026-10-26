@@ -25,7 +25,16 @@ interface ProfileApi {
 
 const ProfileContext = createContext<ProfileApi | null>(null);
 
-export function ProfileProvider({ children, initial }: { children: ReactNode; initial?: Profile }) {
+export function ProfileProvider({
+  children,
+  initial,
+  persist = true,
+}: {
+  children: ReactNode;
+  initial?: Profile;
+  /** Faux en mode test : rien n'est sauvegardé. */
+  persist?: boolean;
+}) {
   const [loaded] = useState(() =>
     initial === undefined
       ? loadProfile(content, Date.now())
@@ -35,8 +44,8 @@ export function ProfileProvider({ children, initial }: { children: ReactNode; in
   const [refusal, setRefusal] = useState<Refusal | null>(null);
 
   useEffect(() => {
-    saveProfile(profile);
-  }, [profile]);
+    if (persist) saveProfile(profile);
+  }, [profile, persist]);
 
   const apply = useCallback((outcome: Outcome): boolean => {
     if (!outcome.ok) {

@@ -4,6 +4,8 @@ import {
   heroBuild,
   respec,
   respecCost,
+  setLevel,
+  setUpgrade,
   takeTalent,
   talentPoints,
   unlockedPages,
@@ -14,6 +16,7 @@ import { describeItem, describeNode, describeSpell, describeTrigger } from '../i
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Refusal } from './Refusal';
+import { range } from '../util/range';
 
 /**
  * Fiche d'un héros : tout ce qui est affiché vient de l'unité compilée par le moteur
@@ -40,6 +43,18 @@ export function HeroScreen({
   const maxed = hero.level >= balance.progression.maxLevel;
   const next = xpToNext(hero.level, content);
   const nodeName = (id: string): string => names.node(id);
+  const wornByOther = (uid: number): boolean =>
+    Object.entries(profile.heroes).some(([id, h]) => id !== heroId && h.items.includes(uid));
+  /** En mode test, un seul exemplaire libre de chaque objet est proposé. */
+  const choices = (current: number | null) => {
+    if (!profile.testMode) return profile.items;
+    const seen = new Set<string>();
+    return profile.items.filter((o) => {
+      if (o.uid !== current && (seen.has(o.item) || wornByOther(o.uid))) return false;
+      seen.add(o.item);
+      return true;
+    });
+  };
 
   return (
     <main className={`hero-sheet element-${def.element}`}>
@@ -53,6 +68,23 @@ export function HeroScreen({
           <strong>{t('hero.level', { level: hero.level })}</strong>
           <span>{maxed ? t('hero.xp.max') : t('hero.xp', { xp: hero.xp, next })}</span>
         </p>
+        {profile.testMode && (
+          <label className="roster__level-control">
+            {t('test.level', { hero: names.hero(heroId) })}
+            <select
+              value={hero.level}
+              onChange={(event) => {
+                apply(setLevel(content, profile, heroId, Number(event.target.value)));
+              }}
+            >
+              {range(1, balance.progression.maxLevel).map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {!maxed && (
           <span
             className="hero-sheet__xp"
@@ -128,13 +160,32 @@ export function HeroScreen({
                     <option value="">
                       {uid === null ? t('hero.slot.empty') : t('hero.slot.none')}
                     </option>
-                    {profile.items.map((o) => (
+                    {choices(uid).map((o) => (
                       <option key={o.uid} value={o.uid}>
                         {names.item(o.item)} ({o.upgrade}/
                         {balance.progression.items.maxUpgradeLevel})
                       </option>
                     ))}
                   </select>
+                  {owned !== undefined && profile.testMode && (
+                    <label className="roster__level-control">
+                      {t('test.upgrade', { item: names.item(owned.item) })}
+                      <select
+                        value={owned.upgrade}
+                        onChange={(event) => {
+                          apply(
+                            setUpgrade(content, profile, owned.uid, Number(event.target.value)),
+                          );
+                        }}
+                      >
+                        {range(0, balance.progression.items.maxUpgradeLevel).map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   {item !== undefined && (
                     <ul className="slots__effects">
                       {describeItem(item).map((line, i) => (
