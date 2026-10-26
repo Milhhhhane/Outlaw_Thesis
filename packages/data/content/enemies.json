@@ -653,5 +653,286 @@
         }
       ]
     }
+  },
+  {
+    "id": "pyre_tyrant",
+    "element": "fire",
+    "boss": true,
+    "stats": {
+      "hp": 1650,
+      "atk": 64,
+      "def": 26,
+      "vit": 102
+    },
+    "skills": [
+      {
+        "id": "tyrant_cleave",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 105
+          }
+        ]
+      },
+      {
+        "id": "tyrant_ignite",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 3,
+            "power": 45
+          },
+          {
+            "kind": "status",
+            "status": "mark",
+            "duration": 2,
+            "power": 20
+          }
+        ]
+      },
+      {
+        "id": "tyrant_firestorm",
+        "slot": "ult",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 120
+          },
+          {
+            "kind": "tempo",
+            "amount": 20
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "tyrant_ignite",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "tyrant_cleave",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "tyrant_cleave",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "tyrant_firestorm",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "tyrant_pyre",
+      "triggers": [
+        {
+          "on": "turn_start",
+          "subject": "self",
+          "effects": [
+            {
+              "kind": "damage",
+              "target": "lowest_hp_enemy",
+              "power": 20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "tidal_hydra",
+    "element": "water",
+    "boss": true,
+    "stats": {
+      "hp": 1900,
+      "atk": 56,
+      "def": 30,
+      "vit": 96
+    },
+    "skills": [
+      {
+        "id": "hydra_bite",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 95
+          }
+        ]
+      },
+      {
+        "id": "hydra_regrow",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "heal",
+            "power": 180
+          },
+          {
+            "kind": "statMod",
+            "stat": "def",
+            "percent": 20,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "hydra_deluge",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 75
+          },
+          {
+            "kind": "teamPoints",
+            "amount": -1,
+            "side": "opposing"
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "hydra_bite",
+        "target": "first"
+      },
+      {
+        "skill": "hydra_bite",
+        "target": "last"
+      },
+      {
+        "skill": "hydra_deluge",
+        "target": "auto"
+      },
+      {
+        "skill": "hydra_regrow",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "hydra_heads",
+      "triggers": [
+        {
+          "on": "hp_crossed",
+          "subject": "self",
+          "thresholdPct": 60,
+          "effects": [
+            {
+              "kind": "tempo",
+              "target": "self",
+              "amount": -40
+            },
+            {
+              "kind": "statMod",
+              "target": "self",
+              "stat": "vit",
+              "percent": 20,
+              "duration": 99
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "grove_colossus",
+    "element": "nature",
+    "boss": true,
+    "stats": {
+      "hp": 2100,
+      "atk": 60,
+      "def": 34,
+      "vit": 84
+    },
+    "skills": [
+      {
+        "id": "colossus_crush",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 120
+          }
+        ]
+      },
+      {
+        "id": "colossus_quake",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 80
+          },
+          {
+            "kind": "status",
+            "status": "stun",
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "colossus_bark",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 220,
+            "duration": 2
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "colossus_crush",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "colossus_bark",
+        "target": "auto"
+      },
+      {
+        "skill": "colossus_crush",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "colossus_quake",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "colossus_roots",
+      "triggers": [
+        {
+          "on": "damage_taken",
+          "subject": "self",
+          "limit": {
+            "per": "turn",
+            "count": 1
+          },
+          "effects": [
+            {
+              "kind": "tempo",
+              "target": "other",
+              "amount": 10
+            }
+          ]
+        }
+      ]
+    }
   }
 ]
