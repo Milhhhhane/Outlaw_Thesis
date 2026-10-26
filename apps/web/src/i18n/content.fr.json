@@ -1,0 +1,134 @@
+{
+  "heroes": {
+    "pyra": {
+      "name": "Pyra",
+      "thesis": "Finir le travail : chaque ennemi qui vacille rapproche son prochain tour."
+    },
+    "maree": {
+      "name": "Marée",
+      "thesis": "Tenir la ligne : chaque point dépensé protège toute l'équipe."
+    },
+    "ronce": {
+      "name": "Ronce",
+      "thesis": "Dicter le rythme : marquer, entraver, puis laisser l'équipe frapper."
+    }
+  },
+  "spells": {
+    "pyra_spark": "Étincelle",
+    "pyra_kindle": "Attiser",
+    "pyra_blaze": "Embrasement",
+    "pyra_inferno": "Fournaise",
+    "maree_ripple": "Ressac",
+    "maree_bulwark": "Rempart",
+    "maree_tide": "Marée montante",
+    "maree_deluge": "Déluge",
+    "ronce_thorn": "Épine",
+    "ronce_brand": "Marque des ronces",
+    "ronce_snare": "Entrave",
+    "ronce_thicket": "Fourré hostile",
+    "hound_bite": "Morsure",
+    "hound_pounce": "Bond",
+    "acolyte_cinder": "Cendre",
+    "acolyte_ward": "Garde de cendre",
+    "acolyte_flare": "Flamboiement",
+    "crab_pinch": "Pince",
+    "crab_shell": "Carapace",
+    "caller_splash": "Éclaboussure",
+    "caller_mend": "Reflux",
+    "caller_surge": "Lame de fond",
+    "brute_smash": "Écrasement",
+    "brute_roar": "Rugissement",
+    "witch_lash": "Fouet",
+    "witch_hex": "Maléfice",
+    "witch_bind": "Lien"
+  },
+  "passives": {
+    "pyra_momentum": "Élan meurtrier",
+    "maree_flow": "Courant porteur",
+    "ronce_hunt": "Curée"
+  },
+  "pages": {
+    "pyra_page_execution": {
+      "name": "Exécution",
+      "thesis": "Frapper fort quand ça compte : moins de sorts, plus décisifs."
+    },
+    "pyra_page_tempo": { "name": "Élan", "thesis": "Jouer plus souvent que l'adversaire." },
+    "pyra_page_embers": {
+      "name": "Braises",
+      "thesis": "Laisser le feu finir le travail entre deux tours."
+    },
+    "maree_page_bastion": { "name": "Bastion", "thesis": "Encaisser à la place des autres." },
+    "maree_page_source": {
+      "name": "Source",
+      "thesis": "Soigner moins souvent, mais au bon moment."
+    },
+    "maree_page_current": {
+      "name": "Courant",
+      "thesis": "Nourrir la réserve et le tempo de toute l'équipe."
+    },
+    "ronce_page_snare": {
+      "name": "Entraves",
+      "thesis": "Repousser les tours ennemis jusqu'à l'asphyxie."
+    },
+    "ronce_page_brand": {
+      "name": "Marques",
+      "thesis": "Désigner la cible : l'équipe s'en charge."
+    },
+    "ronce_page_venom": { "name": "Venin", "thesis": "Affaiblir avant de frapper." }
+  },
+  "nodes": {
+    "pyra_exe_core": "Coup de grâce",
+    "pyra_exe_finisher": "Apothéose",
+    "pyra_exe_cheap": "Mèche courte",
+    "pyra_exe_focus": "Fureur froide",
+    "pyra_exe_refund": "Braise récupérée",
+    "pyra_tempo_core": "Gestes vifs",
+    "pyra_tempo_surge": "Rafale",
+    "pyra_tempo_relay": "Passer le flambeau",
+    "pyra_tempo_stride": "Pas de feu",
+    "pyra_tempo_rush": "Hâte incandescente",
+    "pyra_embers_core": "Escarbilles",
+    "pyra_embers_linger": "Feu couvant",
+    "pyra_embers_wildfire": "Incendie",
+    "pyra_embers_stoke": "Tisonner",
+    "pyra_embers_brand": "Fer rouge",
+    "maree_bastion_core": "Digue",
+    "maree_bastion_wall": "Mur d'écume",
+    "maree_bastion_wave": "Vague porteuse",
+    "maree_bastion_ward": "Brise-lames",
+    "maree_bastion_veil": "Voile d'embruns",
+    "maree_source_core": "Source vive",
+    "maree_source_spring": "Résurgence",
+    "maree_source_focus": "Torrent",
+    "maree_source_drops": "Gouttes",
+    "maree_source_flood": "Crue",
+    "maree_current_core": "Contre-courant",
+    "maree_current_tithe": "Dîme de la mer",
+    "maree_current_swell": "Houle",
+    "maree_current_undertow": "Ressac profond",
+    "maree_current_wellspring": "Puits",
+    "ronce_snare_core": "Racines",
+    "ronce_snare_cheap": "Collet",
+    "ronce_snare_quick": "Lasso",
+    "ronce_snare_tangle": "Enchevêtrement",
+    "ronce_snare_drag": "Traîner",
+    "ronce_brand_core": "Stigmate",
+    "ronce_brand_spread": "Semis",
+    "ronce_brand_deep": "Marque profonde",
+    "ronce_brand_prick": "Piqûre",
+    "ronce_brand_hunt": "Battue",
+    "ronce_venom_core": "Sève acide",
+    "ronce_venom_sap": "Saignée",
+    "ronce_venom_rot": "Pourriture",
+    "ronce_venom_numb": "Engourdir",
+    "ronce_venom_wither": "Flétrir"
+  },
+  "enemies": {
+    "cinder_hound": "Molosse de braise",
+    "ash_acolyte": "Acolyte des cendres",
+    "brine_crab": "Crabe saumâtre",
+    "tide_caller": "Héraut des marées",
+    "moss_brute": "Brute moussue",
+    "thorn_witch": "Sorcière des ronces"
+  }
+}
