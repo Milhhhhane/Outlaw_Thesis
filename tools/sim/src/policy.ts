@@ -83,3 +83,20 @@ export const lookahead: Policy = (state) => {
   if (best === undefined) throw new Error('aucune action possible');
   return best;
 };
+
+/**
+ * Joueur débutant : l'ultime dès qu'il est payable, sinon l'attaque de base, sur la première cible
+ * proposée. Sert à vérifier qu'un nouveau venu peut finir les premiers donjons.
+ */
+export const novice: Policy = (state) => {
+  const caster = casterOf(state);
+  const actions = legalActions(state);
+  const slot = (action: Action): string | undefined =>
+    caster.def.spells.find((spell) => spell.id === action.spell)?.slot;
+  const pick =
+    actions.find((a) => slot(a) === 'ult') ??
+    actions.find((a) => slot(a) === 'basic') ??
+    actions[0];
+  if (pick === undefined) throw new Error('aucune action possible');
+  return pick;
+};

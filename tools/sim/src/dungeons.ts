@@ -1,7 +1,7 @@
 import type { Content } from '@outlaw/data';
 import { compileEncounter, compileTeam, type HeroBuild } from '@outlaw/engine';
 import { randomBuild } from './builds';
-import { lookahead, type Policy } from './policy';
+import { lookahead, novice, type Policy } from './policy';
 import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
@@ -65,6 +65,22 @@ export function dungeonRows(content: Content, runs: number, seed: number): Scena
       }
       rows.push(summarize(`dungeon_${dungeon.id}_${label}`, outcomes));
     }
+    // Débutant : sans talent, ultime ou attaque de base. Le premier donjon doit lui rester ouvert.
+    const plain = content.heroes.slice(0, 3).map((hero) => ({
+      hero: hero.id,
+      level: dungeon.recommendedLevel,
+      talents: [],
+      items: [],
+    }));
+    const run = runDungeon(content, dungeon.id, plain, novice);
+    rows.push(
+      summarize(`dungeon_${dungeon.id}_novice`, [
+        {
+          result: { winner: run.cleared ? 'player' : 'enemy', reason: 'annihilation' },
+          actions: run.actions,
+        },
+      ]),
+    );
   }
   return rows;
 }
