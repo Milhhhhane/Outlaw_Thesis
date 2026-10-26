@@ -55,3 +55,11 @@ pour nourrir la réserve (12), Ronce la dépense en marques et entraves (10), Py
 Embrasements. La réserve n'atteint jamais son plafond : les points sont rares et disputés, c'est
 l'effet recherché. Point ouvert : aucun ultime n'est lancé (coût 4 trop lourd pour son effet ?),
 à régler au sprint 5. Ce test ne remplace pas un essai humain.
+
+## Donjons (sprint 3)
+
+`pnpm sim` ajoute `dungeon_<id>_rec` et `dungeon_<id>_minus3` : 40 passages, builds tirés au
+hasard, politique d'anticipation. Constat : au niveau conseillé, 68 à 100 % ; 3 niveaux sous,
+0 % dès le deuxième donjon (mur au 2e combat). R2 n'est donc pas tenue : à régler au sprint 5
+(croissance des stats, puis ennemis). Une politique gloutonne perd même 9 niveaux au-dessus :
+elle achète des sorts utilitaires sans infliger de dégâts et atteint la limite d'actions.

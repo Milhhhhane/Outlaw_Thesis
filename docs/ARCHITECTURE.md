@@ -95,3 +95,11 @@ animer (chaque événement porte ses valeurs finales : PV restants, total de bou
 se recale sur l'état du moteur. Un test vérifie que le rejeu complet tombe exactement sur l'état.
 Mouvement réduit : le journal est appliqué d'un coup. File, actions possibles et intentions viennent
 du moteur (`projectQueue`, `legalActions`, `enemyIntent`).
+
+## Progression
+
+Le profil (`packages/data/src/schemas/profile.ts`) est une donnée validée par Zod. Toute
+modification passe par une fonction pure du moteur (`takeTalent`, `respec`, `equip`,
+`upgradeItem`, `setTeam`, `completeDungeon`…) qui renvoie le nouveau profil ou un refus motivé
+(`not_enough_gold`, `talent_invalid`…), affiché tel quel par l'interface. Le profil est sauvegardé
+après chaque changement.

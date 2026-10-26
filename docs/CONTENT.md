@@ -67,3 +67,16 @@ Mêmes stats que les héros, 1 à 4 sorts, un script de 1 à 6 actions joué en 
 Un objet modifie le passif (`scale`, `addEffect`, `threshold`, `limit`) et peut porter une petite
 stat plafonnée. Un donjon : élément, modificateur, 3 combats (2 salles + boss), récompenses, table
 de butin avec au moins un objet rare.
+
+## Textes
+
+Tout identifiant de contenu a son nom dans `apps/web/src/i18n/content.fr.json` (héros et pages :
+nom et thèse ; donjons : nom et phrase d'ambiance). Un test échoue s'il en manque un. Les
+descriptions (sorts, passifs, talents, objets) sont générées depuis les briques : ne pas les écrire.
+
+## Ajouter un donjon
+
+1. Ennemis et boss dans `content/enemies.json` (un boss : `"boss": true`, seulement au 3e combat).
+2. Le donjon dans `content/dungeons.json` : élément, niveau conseillé, modificateur, 3 combats,
+   récompenses, butin (au moins un objet rare).
+3. Les noms dans `content.fr.json`, puis `pnpm sim` pour voir son taux de réussite.

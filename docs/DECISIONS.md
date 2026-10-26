@@ -121,6 +121,34 @@ anticipe gagne, le glouton perd.
 cible, Espace pour passer l'animation ; cibles et sorts sont de vrais boutons. Raison : tout se
 joue aussi sans souris.
 
+## Progression
+
+**Défaite en donjon** — Contexte : le rapport ne dit rien. Choix : retour au camp sans récompense
+ni pénalité. Raison : on peut toujours rejouer un donjon terminé pour progresser (farm), et
+l'échec invite à changer de build plutôt qu'à punir.
+
+**Ouverture des donjons** — Contexte : 7 donjons en progression. Choix : un donjon s'ouvre quand
+le précédent est terminé (tout est ouvert en mode test). Raison : une route lisible.
+
+**Récompenses** — Contexte : farm et héros au repos. Choix : premier passage complet, rejeu ×
+`replayRewardRate` (1 pour l'instant) ; XP à 50 % pour les héros débloqués hors équipe ; un objet
+par donjon. Raison : le rapport ; réglable sans code.
+
+**Héros débloqué** — Contexte : un héros 4 à 6 rejoint au milieu de la progression. Choix : il
+arrive au niveau recommandé du donjon qui le débloque. Raison : utilisable tout de suite.
+
+**Objets** — Contexte : un objet possédé, plusieurs héros. Choix : un exemplaire ne sert qu'à un
+héros à la fois (l'équiper ailleurs le retire) ; deux exemplaires du même objet sur un héros sont
+refusés. Raison : simple et sans combinaison dégénérée.
+
+**Butin reproductible** — Contexte : le butin est le seul hasard. Choix : générateur à graine
+stockée dans le profil, avancée à chaque tirage. Raison : même profil, même tirage ; testable.
+
+**Sauvegarde** — Contexte : localStorage peut être corrompu, plein ou bloqué. Choix : enveloppe
+`{ version, profile }`, migrations version par version, validation Zod et contrôle du contenu ;
+sauvegarde illisible copiée sous `outlaw-thesis/save.bak` puis nouvelle partie, avec un message.
+Raison : ne jamais bloquer le joueur, ne jamais effacer sans copie.
+
 ## Planification
 
 **Héros 4 à 6 et donjons 2, 4, 6** — Contexte : le déblocage arrive au sprint 4, ces héros au

@@ -2,7 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-## [sprint-2] — 2026-10-26
+## [sprint-3] — 2026-10-26
+
+### Ajouté
+
+- Profil du joueur (schéma Zod) et règles de progression pures : XP et niveaux, talents (points,
+  pages, prérequis, choix exclusifs), respec (premier gratuit, puis or × niveau), 2 emplacements
+  d'objets, 3 niveaux d'amélioration, équipe, énergie à coût nul, récompenses, butin à graine avec
+  rare garanti, déblocage de héros.
+- Contenu : 12 objets, 3 boss, 3 donjons (Landes de braise, Salles englouties, Dédale de ronces).
+- Interface : camp (équipe, donjons, objets), fiche de héros (stats, sorts, passif, objets, pages
+  de talents), donjon en 3 combats, récompenses, sauvegarde locale versionnée.
+- Simulation : taux de réussite des donjons au niveau conseillé et 3 niveaux sous.
+
+## [sprint-2] — 2026-10-26 — commit `be068e4`
 
 ### Ajouté
 
