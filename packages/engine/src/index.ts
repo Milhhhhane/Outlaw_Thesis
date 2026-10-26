@@ -1,12 +1,15 @@
-export { createBattle, legalActions, replay, step, validateSetup } from './battle';
-export { computeDamage, SUPPORTED_EFFECTS } from './effects';
+export { createBattle, enemyIntent, legalActions, replay, step, validateSetup } from './battle';
+export * from './compile';
+export { computeDamage } from './effects';
 export { IllegalActionError, InvalidSetupError } from './errors';
 export { compareTurnOrder, nextActor, projectQueue } from './queue';
 export {
   cappedSpeed,
   effectiveSpeed,
+  effectiveStat,
   elementMultiplier,
   interval,
+  modTotal,
   statsAtLevel,
   TIME_SCALE,
 } from './stats';
