@@ -2,7 +2,24 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-## [sprint-3] — 2026-10-26
+## [sprint-4] — 2026-10-26
+
+### Ajouté
+
+- Contenu : 3 boss de plus (12 types d'ennemis) et 4 donjons (Citadelle de cendre, Flèche
+  engloutie, Couronne verdoyante, Carrefour brisé, ce dernier mixte) : 7 donjons au total.
+- Mode test : bac à sable non sauvegardé, niveaux et améliorations libres, respec gratuit, tous
+  les donjons ouverts, aucune récompense.
+- Planificateur de build partagé par lien (`#build=…`), aussi depuis un onglet déjà ouvert.
+- Premiers pas au camp, aide en combat, relance du donjon après une défaite.
+- Simulation : politique « débutant » et lignes `dungeon_<id>_novice`.
+
+### Modifié
+
+- Premier donjon transformé en tutoriel ; croissance des ennemis provisoire (0,9/0,7/0,7).
+- Réglages de niveau et d'amélioration en menus déroulants.
+
+## [sprint-3] — 2026-10-26 — commit `96e3d62`
 
 ### Ajouté
 

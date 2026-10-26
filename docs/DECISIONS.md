@@ -149,6 +149,33 @@ stockée dans le profil, avancée à chaque tirage. Raison : même profil, même
 sauvegarde illisible copiée sous `outlaw-thesis/save.bak` puis nouvelle partie, avec un message.
 Raison : ne jamais bloquer le joueur, ne jamais effacer sans copie.
 
+## Mode test et partage
+
+**Mode test** — Contexte : « tout débloqué, rien dépensé ni gagné ». Choix : un profil à part,
+jamais sauvegardé (tous les héros au niveau 30 réglable, 3 exemplaires de chaque objet améliorés
+au maximum, respec gratuit, donjons tous ouverts, aucune récompense). Raison : on théorise sans
+toucher à la vraie partie.
+
+**Lien de build** — Contexte : planificateur partagé par URL, sans serveur. Choix : équipe
+(héros, niveau, talents, objets et améliorations) en JSON compact encodé en base64url dans
+`#build=…`, validé au chargement ; un lien abîmé ouvre le mode test par défaut avec un message.
+Raison : le fragment ne part jamais au serveur ; format versionné (`v`).
+
+**Premier donjon** — Contexte : un débutant (ultime ou attaque de base) perdait dès le 2e combat.
+Choix : 1 ennemi, puis 2, puis le boss seul, modificateur adouci, 100 XP. Raison : le premier
+donjon apprend ; le deuxième demande déjà d'utiliser les compétences.
+
+**Joueur débutant en simulation** — Contexte : vérifier l'accessibilité. Choix : politique
+`novice` et lignes `dungeon_<id>_novice`. Raison : suivre en régression que le premier donjon
+reste faisable sans maîtrise.
+
+**Croissance des ennemis provisoire** — Contexte : à 1,6/1,3, les donjons 4 à 7 étaient presque
+infranchissables au niveau conseillé. Choix : 0,9/0,7/0,7 en attendant le sprint 5. Raison :
+garder la progression jouable pour les tests.
+
+**Défaite** — Contexte : « une défaite relance le donjon ». Choix : l'écran d'échec propose de
+relancer le donjon ou de rentrer au camp. Raison : fidèle au rapport, sans forcer.
+
 ## Planification
 
 **Héros 4 à 6 et donjons 2, 4, 6** — Contexte : le déblocage arrive au sprint 4, ces héros au

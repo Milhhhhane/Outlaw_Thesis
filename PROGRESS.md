@@ -1,6 +1,6 @@
 # Avancement
 
-**Sprint en cours : 4 — Donjons et mode test** (sprints 0 à 3 terminés).
+**Sprint en cours : 5 — Équilibrage** (sprints 0 à 4 terminés).
 
 ## Fait
 
@@ -15,16 +15,18 @@
 - Sprint 3 — Progression : profil, XP, talents, respec, objets, améliorations, sauvegarde, camp,
   fiche de héros, 3 donjons. Critère : boucle donjon → récompense → investissement jouée au clic
   (test `apps/web/test/loop.test.tsx`).
+- Sprint 4 — Donjons et mode test : 7 donjons, 12 ennemis, mode test, lien de build, premiers pas,
+  aide. Critère : un testeur naïf automatisé finit la boucle sans aide (ordinateur et mobile) ;
+  test humain à faire avec `docs/PLAYTEST.md`.
 
 ## Reste à faire
 
-- Sprint 4 : 7 donjons, butin avec garantie, mode test, planificateur de build partageable par URL.
 - Sprint 5 : héros 4 à 6, simulation des 20 équipes, réglage R1, R2 et « aucun héros indispensable ».
 
 ## Prochaine action
 
-Sprint 4 : 4 donjons de plus (dont le mixte) et leurs boss, mode test (tout ouvert, respec
-gratuit), planificateur de build partageable par URL, parcours d'un testeur sans aide.
+Sprint 5 : héros 4 à 6 (feu/contrôle, eau/dégâts, nature/soutien) débloqués par les donjons
+2, 4 et 6 ; simulation des 20 équipes ; règles R1, R2 et « aucun héros indispensable ».
 
 ## Déploiement
 
