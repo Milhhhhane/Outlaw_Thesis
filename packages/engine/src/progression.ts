@@ -26,7 +26,9 @@ export type Refusal =
   | 'bad_slot'
   | 'bad_team'
   | 'unknown_dungeon'
-  | 'no_energy';
+  | 'no_energy'
+  | 'test_only'
+  | 'test_mode';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -287,6 +289,8 @@ export function completeDungeon(
 ): Outcome<{ profile: Profile; report: DungeonReport }> {
   const dungeon = content.dungeonById.get(dungeonId);
   if (dungeon === undefined) return refuse('unknown_dungeon');
+  // Mode test : rien n'est gagné.
+  if (profile.testMode) return refuse('test_mode');
   const { balance } = content;
   const firstClear = (profile.dungeons[dungeonId]?.clears ?? 0) === 0;
   const rate = firstClear ? 1 : balance.economy.replayRewardRate;
@@ -374,4 +378,92 @@ export function dungeonOpen(content: Content, profile: Profile, dungeonId: strin
   if (index <= 0) return index === 0;
   const previous = content.dungeons[index - 1];
   return previous !== undefined && (profile.dungeons[previous.id]?.clears ?? 0) > 0;
+}
+
+/** Exemplaires de chaque objet dans le bac à sable : un par membre d'équipe possible. */
+export const SANDBOX_COPIES = 3;
+
+/**
+ * Mode test : tous les héros débloqués, tous les objets disponibles, niveau libre, respec gratuit ;
+ * rien n'y est gagné ni dépensé et rien n'est sauvegardé. `builds` préremplit l'équipe (lien partagé).
+ */
+export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = []): Profile {
+  const { maxLevel, items: rules } = content.balance.progression;
+  const base = newProfile(content);
+  const items = content.items.flatMap((item, i) =>
+    Array.from({ length: SANDBOX_COPIES }, (_, copy) => ({
+      uid: i * SANDBOX_COPIES + copy + 1,
+      item: item.id,
+      upgrade: rules.maxUpgradeLevel,
+    })),
+  );
+  const heroes = Object.fromEntries(
+    content.heroes.map((h) => [h.id, freshHero(maxLevel, rules.slots)]),
+  );
+  builds.forEach((build, member) => {
+    const slots = Array.from({ length: rules.slots }, (_, slot): number | null => {
+      const equipped = build.items[slot];
+      if (equipped === undefined) return null;
+      const index = content.items.findIndex((i) => i.id === equipped.id);
+      if (index < 0) return null;
+      const uid = index * SANDBOX_COPIES + (member % SANDBOX_COPIES) + 1;
+      const owned = items.find((o) => o.uid === uid);
+      if (owned !== undefined) owned.upgrade = equipped.upgrade;
+      return uid;
+    });
+    heroes[build.hero] = {
+      level: build.level,
+      xp: 0,
+      talents: [...build.talents],
+      items: slots,
+      freeRespecUsed: false,
+    };
+  });
+  const all = content.heroes.map((h) => h.id);
+  return {
+    ...base,
+    heroes,
+    unlocked: all,
+    team: builds.length > 0 ? builds.map((b) => b.hero) : base.team,
+    items,
+    nextUid: items.length + 1,
+    testMode: true,
+  };
+}
+
+/** Mode test : change le niveau d'un héros ; les talents en trop sont retirés, du dernier au premier. */
+export function setLevel(
+  content: Content,
+  profile: Profile,
+  heroId: string,
+  level: number,
+): Outcome {
+  if (!profile.testMode) return refuse('test_only');
+  const hero = profile.heroes[heroId];
+  if (hero === undefined) return refuse('unknown_hero');
+  const clamped = Math.min(content.balance.progression.maxLevel, Math.max(1, Math.round(level)));
+  let talents = [...hero.talents];
+  const next = (): HeroBuild => ({ ...heroBuild(profile, heroId), level: clamped, talents });
+  while (talents.length > 0 && validateBuild(content, next()).length > 0)
+    talents = talents.slice(0, -1);
+  return ok(withHero(profile, heroId, { ...hero, level: clamped, xp: 0, talents }));
+}
+
+/** Mode test : règle le niveau d'amélioration d'un objet. */
+export function setUpgrade(
+  content: Content,
+  profile: Profile,
+  uid: number,
+  upgrade: number,
+): Outcome {
+  if (!profile.testMode) return refuse('test_only');
+  if (!profile.items.some((i) => i.uid === uid)) return refuse('unknown_item');
+  const value = Math.min(
+    content.balance.progression.items.maxUpgradeLevel,
+    Math.max(0, Math.round(upgrade)),
+  );
+  return ok({
+    ...profile,
+    items: profile.items.map((i) => (i.uid === uid ? { ...i, upgrade: value } : i)),
+  });
 }

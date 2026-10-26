@@ -13,7 +13,11 @@ import {
   nextRandom,
   respec,
   respecCost,
+  SANDBOX_COPIES,
+  sandboxProfile,
+  setLevel,
   setTeam,
+  setUpgrade,
   starterHeroes,
   takeTalent,
   upgradeCost,
@@ -182,8 +186,8 @@ describe('donjons et butin', () => {
       gold: 80,
       materials: { tier: 1, amount: 4 },
     });
-    expect(first.report.xp.pyra).toEqual({ gained: 60, levels: 1 });
-    expect(first.report.xp.ronce).toEqual({ gained: 30, levels: 0 });
+    expect(first.report.xp.pyra).toEqual({ gained: 100, levels: 1 });
+    expect(first.report.xp.ronce).toEqual({ gained: 50, levels: 1 });
     expect(profile.items).toHaveLength(1);
     expect(profile.dungeons.ember_wastes).toEqual({ clears: 1 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);
@@ -238,5 +242,77 @@ describe('donjons et butin', () => {
     expect(report.unlockedHero).toBe('ronce');
     expect(profile.unlocked).toContain('ronce');
     expect(profile.heroes.ronce?.level).toBe(4);
+  });
+});
+
+describe('mode test', () => {
+  it('tout débloqué, niveau maximum, objets améliorés, rien n’est gagné', () => {
+    const sandbox = sandboxProfile(content);
+    expect(profileSchema.parse(sandbox)).toEqual(sandbox);
+    expect(sandbox.testMode).toBe(true);
+    expect(sandbox.unlocked).toEqual(content.heroes.map((h) => h.id));
+    expect(sandbox.heroes.pyra?.level).toBe(30);
+    expect(sandbox.items).toHaveLength(content.items.length * SANDBOX_COPIES);
+    expect(new Set(sandbox.items.map((i) => i.upgrade))).toEqual(new Set([3]));
+    expect(dungeonOpen(content, sandbox, 'broken_crossing')).toBe(true);
+    expect(completeDungeon(content, sandbox, 'ember_wastes')).toEqual({
+      ok: false,
+      reason: 'test_mode',
+    });
+    expect(respecCost(content, sandbox, 'pyra')).toBe(0);
+  });
+
+  it('préremplit l’équipe depuis des builds partagés', () => {
+    const sandbox = sandboxProfile(content, [
+      {
+        hero: 'ronce',
+        level: 12,
+        talents: ['ronce_snare_core'],
+        items: [{ id: 'storm_sigil', upgrade: 1 }],
+      },
+      {
+        hero: 'pyra',
+        level: 5,
+        talents: [],
+        items: [
+          { id: 'storm_sigil', upgrade: 2 },
+          { id: 'nope', upgrade: 0 },
+        ],
+      },
+    ]);
+    expect(sandbox.team).toEqual(['ronce', 'pyra']);
+    expect(heroBuild(sandbox, 'ronce')).toEqual({
+      hero: 'ronce',
+      level: 12,
+      talents: ['ronce_snare_core'],
+      items: [{ id: 'storm_sigil', upgrade: 1 }],
+    });
+    expect(heroBuild(sandbox, 'pyra').items).toEqual([{ id: 'storm_sigil', upgrade: 2 }]);
+  });
+
+  it('niveau libre : les talents en trop tombent ; amélioration libre', () => {
+    let sandbox = sandboxProfile(content, [
+      {
+        hero: 'pyra',
+        level: 9,
+        talents: ['pyra_exe_core', 'pyra_exe_focus', 'pyra_exe_refund'],
+        items: [],
+      },
+    ]);
+    sandbox = value(setLevel(content, sandbox, 'pyra', 4));
+    expect(sandbox.heroes.pyra).toMatchObject({ level: 4, talents: ['pyra_exe_core'] });
+    expect(value(setLevel(content, sandbox, 'pyra', 99)).heroes.pyra?.level).toBe(30);
+    expect(setLevel(content, sandbox, 'ghost', 3)).toEqual({ ok: false, reason: 'unknown_hero' });
+    expect(setLevel(content, newProfile(content), 'pyra', 3)).toEqual({
+      ok: false,
+      reason: 'test_only',
+    });
+    expect(value(setUpgrade(content, sandbox, 1, 7)).items[0]?.upgrade).toBe(3);
+    expect(value(setUpgrade(content, sandbox, 1, 0)).items[0]?.upgrade).toBe(0);
+    expect(setUpgrade(content, sandbox, 9999, 1)).toEqual({ ok: false, reason: 'unknown_item' });
+    expect(setUpgrade(content, newProfile(content), 1, 1)).toEqual({
+      ok: false,
+      reason: 'test_only',
+    });
   });
 });
