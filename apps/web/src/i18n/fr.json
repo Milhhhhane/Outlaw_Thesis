@@ -1,0 +1,11 @@
+{
+  "app.title": "Outlaw Thesis",
+  "app.tagline": "Trois héros, une réserve commune, aucun hasard en combat.",
+  "home.status.heading": "État du prototype",
+  "home.status.body": "Fondations en place : moteur de combat déterministe, file d'initiative et réserve de points d'équipe. Le combat jouable arrive au sprint 2.",
+  "home.pillars.heading": "Ce qui compte ici",
+  "home.pillars.queue": "La file d'initiative est visible : chaque délai se voit, chaque tempo se joue.",
+  "home.pillars.reserve": "Les points d'équipe se partagent : ce qu'un héros dépense, un autre ne l'aura pas.",
+  "home.pillars.builds": "Les builds changent la façon de jouer, pas seulement les chiffres.",
+  "home.version": "Version {version}"
+}

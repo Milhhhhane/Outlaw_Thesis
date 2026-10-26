@@ -1,0 +1,52 @@
+.home {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.home__title {
+  margin: 0;
+  font-size: clamp(2.25rem, 7vw, 3.5rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.home__tagline {
+  margin: var(--space-2) 0 0;
+  font-size: 1.125rem;
+  color: var(--text-muted);
+}
+
+.home__panel {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.home__panel h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.home__panel p {
+  margin: 0;
+}
+
+.home__pillars {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.home__footer {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}

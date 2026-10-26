@@ -1,0 +1,17 @@
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+import rootPackage from '../../package.json' with { type: 'json' };
+
+export default defineConfig({
+  plugins: [react()],
+  define: { __APP_VERSION__: JSON.stringify(rootPackage.version) },
+  build: {
+    target: 'es2022',
+    sourcemap: false,
+  },
+  test: {
+    environment: 'jsdom',
+    include: ['test/**/*.test.{ts,tsx}'],
+    setupFiles: ['./test/setup.ts'],
+  },
+});
