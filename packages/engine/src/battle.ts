@@ -6,19 +6,24 @@ import {
   closeDraft,
   finish,
   openDraft,
+  signal,
+  unitById,
   type Draft,
   type DraftUnit,
 } from './draft';
-import { applyEffect, SUPPORTED_EFFECTS } from './effects';
+import { applyEffect, hit, statusOf } from './effects';
 import { IllegalActionError, InvalidSetupError } from './errors';
 import { nextActor } from './queue';
-import { cappedSpeed, interval } from './stats';
+import { cappedSpeed, effectiveSpeed, interval } from './stats';
 import { scriptTarget, targetSide } from './targets';
+import { flushSignals } from './triggers';
 import type {
   Action,
   BattleSetup,
   BattleState,
+  Intent,
   ResolvedSpell,
+  StatusState,
   StepResult,
   UnitDef,
   UnitState,
@@ -40,11 +45,6 @@ function validateUnit(def: UnitDef): void {
   if (def.stats.hp <= 0 || def.stats.vit <= 0) fail('PV et VIT doivent être positifs');
   const ids = new Set(def.spells.map((spell) => spell.id));
   if (ids.size !== def.spells.length) fail('sorts en double');
-  for (const spell of def.spells) {
-    for (const effect of spell.effects) {
-      if (!SUPPORTED_EFFECTS.has(effect.kind)) fail(`brique « ${effect.kind} » non gérée`);
-    }
-  }
   if (def.controller === 'policy') {
     const basic = def.spells.find((spell) => spell.slot === 'basic');
     if (basic?.cost !== 0) fail('une unité pilotée doit avoir une attaque de base gratuite');
@@ -84,32 +84,146 @@ function bySideThenSlot(a: UnitDef, b: UnitDef): number {
   return a.slot - b.slot;
 }
 
-function speed(unit: UnitState, balance: Balance): number {
-  return cappedSpeed(unit.def.stats.vit, balance);
+function initialUnit(def: UnitDef, balance: Balance): UnitState {
+  return {
+    def,
+    hp: def.stats.hp,
+    alive: true,
+    nextTime: interval(balance.combat.initialDelay, cappedSpeed(def.stats.vit, balance)),
+    scriptIndex: 0,
+    shield: 0,
+    shieldTurns: 0,
+    shieldSince: 0,
+    statuses: [],
+    mods: [],
+    triggers: def.triggers.map((resolved, index) => ({
+      key: `${def.id}:${resolved.source}#${index}`,
+      source: resolved.source,
+      trigger: resolved.trigger,
+      turns: null,
+      since: 0,
+      uses: 0,
+      turnUses: 0,
+      turnStamp: -1,
+    })),
+  };
+}
+
+function basicDelay(unit: UnitState, balance: Balance): number {
+  return (
+    unit.def.spells.find((spell) => spell.slot === 'basic')?.delay ?? balance.combat.delays.basic
+  );
 }
 
 /** Choisit et valide les cibles d'un sort. */
-function chooseTargets(
-  draft: Draft,
-  caster: DraftUnit,
+function chooseTargets<T extends UnitState>(
+  units: readonly T[],
+  caster: T,
   spell: ResolvedSpell,
   targetId: string | undefined,
-): DraftUnit[] {
+): T[] {
   const side = targetSide(caster, spell);
   if (!needsTarget(spell)) {
     if (targetId !== undefined) {
       throw new IllegalActionError(`« ${spell.id} » ne choisit pas de cible`);
     }
-    return spell.targeting === 'self' ? [caster] : aliveOf(draft.units, side);
+    return spell.targeting === 'self' ? [caster] : aliveOf(units, side);
   }
-  const target = draft.units.find((unit) => unit.def.id === targetId);
+  const target = targetId === undefined ? undefined : unitById(units, targetId);
   if (target?.alive !== true || target.def.side !== side) {
     throw new IllegalActionError(`cible invalide pour « ${spell.id} » : ${String(targetId)}`);
   }
   return [target];
 }
 
-/** Résout un sort : coût, gain, effets dans l'ordre, puis délai avant le prochain tour. */
+/** Durées : chaque effet s'use à la fin d'un tour de son porteur, sauf le tour où il a été posé. */
+function tickDurations(draft: Draft, unit: DraftUnit): void {
+  const now = draft.actionCount;
+  const left = (turns: number, since: number): number => (since < now ? turns - 1 : turns);
+  const expired = (effect: StatusState['kind'] | 'shield' | 'stat_mod' | 'trigger'): void => {
+    draft.events.push({ type: 'expired', unit: unit.def.id, effect });
+  };
+
+  const statuses: StatusState[] = [];
+  for (const status of unit.statuses) {
+    // L'étourdissement se consomme en sautant un tour, pas en fin de tour.
+    const turns = status.kind === 'stun' ? status.turns : left(status.turns, status.since);
+    if (turns > 0) statuses.push(turns === status.turns ? status : { ...status, turns });
+    else expired(status.kind);
+  }
+  unit.statuses = statuses;
+
+  const mods = unit.mods
+    .map((mod) => ({ ...mod, turns: left(mod.turns, mod.since) }))
+    .filter((mod) => mod.turns > 0);
+  if (mods.length < unit.mods.length) expired('stat_mod');
+  unit.mods = mods;
+
+  if (unit.shield > 0) {
+    unit.shieldTurns = left(unit.shieldTurns, unit.shieldSince);
+    if (unit.shieldTurns <= 0) {
+      unit.shield = 0;
+      unit.shieldTurns = 0;
+      expired('shield');
+    }
+  }
+
+  const triggers = unit.triggers
+    .map((t) => (t.turns === null ? t : { ...t, turns: left(t.turns, t.since) }))
+    .filter((t) => t.turns === null || t.turns > 0);
+  if (triggers.length < unit.triggers.length) expired('trigger');
+  unit.triggers = triggers;
+}
+
+function endTurn(draft: Draft, unit: DraftUnit): void {
+  if (unit.alive) tickDurations(draft, unit);
+  draft.events.push({ type: 'turn_end', unit: unit.def.id });
+  signal(draft, { kind: 'turn_end', unit: unit.def.id });
+  flushSignals(draft);
+  checkEnd(draft);
+}
+
+/** Début de tour : brûlure, déclencheurs, étourdissement. Renvoie vrai si l'unité doit agir. */
+function beginTurn(draft: Draft, unit: DraftUnit): boolean {
+  draft.actionCount += 1;
+  draft.clock = unit.nextTime;
+  draft.events.push({ type: 'turn_start', unit: unit.def.id, time: unit.nextTime });
+  const burn = statusOf(unit, 'burn');
+  if (burn !== undefined) hit(draft, burn.source, unit, burn.power, 'burn', 1);
+  signal(draft, { kind: 'turn_start', unit: unit.def.id });
+  flushSignals(draft);
+  checkEnd(draft);
+  if (draft.result !== null || !unit.alive) return false;
+
+  const stun = statusOf(unit, 'stun');
+  if (stun === undefined) return true;
+  draft.events.push({ type: 'turn_skipped', unit: unit.def.id, reason: 'stun' });
+  const others = unit.statuses.filter((status) => status.kind !== 'stun');
+  if (stun.turns > 1) {
+    unit.statuses = [...others, { ...stun, turns: stun.turns - 1 }];
+  } else {
+    const immunity = draft.balance.combat.stunImmunityTurns;
+    unit.statuses =
+      immunity > 0
+        ? [
+            ...others,
+            {
+              kind: 'stun_immunity',
+              turns: immunity,
+              since: draft.actionCount,
+              power: 0,
+              source: unit.def.id,
+            },
+          ]
+        : others;
+    draft.events.push({ type: 'expired', unit: unit.def.id, effect: 'stun' });
+  }
+  unit.nextTime += interval(basicDelay(unit, draft.balance), effectiveSpeed(unit, draft.balance));
+  endTurn(draft, unit);
+  return false;
+}
+
+/** Résout un sort : coût, gain, délai, effets dans l'ordre, puis déclencheurs. */
 function cast(draft: Draft, caster: DraftUnit, spell: ResolvedSpell, targets: DraftUnit[]): void {
   draft.events.push({
     type: 'cast',
@@ -123,23 +237,47 @@ function cast(draft: Draft, caster: DraftUnit, spell: ResolvedSpell, targets: Dr
     if (spell.cost > 0) changePoints(draft, caster.def.side, -spell.cost, 'cost');
     if (spell.gain > 0) changePoints(draft, caster.def.side, spell.gain, 'gain');
   }
-  for (const effect of spell.effects) {
-    applyEffect(draft, { caster, spell, primary: targets }, effect);
-  }
-  caster.nextTime += interval(spell.delay, speed(caster, draft.balance));
+  // Le délai s'applique avant les effets : un effet de tempo sur soi décale ce prochain tour.
+  caster.nextTime += interval(spell.delay, effectiveSpeed(caster, draft.balance));
+  signal(draft, {
+    kind: 'spell_cast',
+    unit: caster.def.id,
+    slot: spell.slot,
+    target: targets[0]?.def.id ?? null,
+  });
+  const ctx = {
+    caster,
+    element: spell.element,
+    source: spell.id,
+    cause: 'spell' as const,
+    primary: targets,
+  };
+  spell.effects.forEach((effect, index) => {
+    applyEffect(draft, ctx, effect, index);
+  });
+  flushSignals(draft);
   checkEnd(draft);
+  if (draft.result === null) endTurn(draft, caster);
 }
 
-function scriptTurn(draft: Draft, unit: DraftUnit): void {
+function scriptStep(unit: UnitState): {
+  spell: ResolvedSpell;
+  rule: UnitDef['script'][number]['target'];
+} {
   const { script } = unit.def;
   const step = script[unit.scriptIndex % script.length];
   const spell = unit.def.spells.find((candidate) => candidate.id === step?.spell);
   if (step === undefined || spell === undefined) {
     throw new InvalidSetupError(`${unit.def.id} : script invalide`);
   }
+  return { spell, rule: step.target };
+}
+
+function scriptTurn(draft: Draft, unit: DraftUnit): void {
+  const { spell, rule } = scriptStep(unit);
   unit.scriptIndex += 1;
-  const target = scriptTarget(draft.units, unit, spell, step.target);
-  cast(draft, unit, spell, chooseTargets(draft, unit, spell, target?.def.id));
+  const target = scriptTarget(draft.units, unit, spell, rule);
+  cast(draft, unit, spell, chooseTargets(draft.units, unit, spell, target?.def.id));
 }
 
 /**
@@ -154,9 +292,7 @@ function settle(draft: Draft): void {
       finish(draft, { winner: 'enemy', reason: 'action_limit' });
       return;
     }
-    draft.actionCount += 1;
-    draft.clock = actor.nextTime;
-    draft.events.push({ type: 'turn_start', unit: actor.def.id, time: actor.nextTime });
+    if (!beginTurn(draft, actor)) continue;
     if (actor.def.controller === 'policy') {
       draft.active = actor.def.id;
       return;
@@ -168,13 +304,7 @@ function settle(draft: Draft): void {
 /** Crée un combat et joue jusqu'au premier tour d'une unité pilotée. */
 export function createBattle(setup: BattleSetup, balance: Balance): StepResult {
   validateSetup(setup);
-  const units: UnitState[] = [...setup.units].sort(bySideThenSlot).map((def) => ({
-    def,
-    hp: def.stats.hp,
-    alive: true,
-    nextTime: interval(balance.combat.initialDelay, cappedSpeed(def.stats.vit, balance)),
-    scriptIndex: 0,
-  }));
+  const units = [...setup.units].sort(bySideThenSlot).map((def) => initialUnit(def, balance));
   const start = balance.combat.teamPoints.start;
   const draft = openDraft({
     balance,
@@ -189,6 +319,7 @@ export function createBattle(setup: BattleSetup, balance: Balance): StepResult {
     type: 'battle_start',
     units: units.map((unit) => ({
       id: unit.def.id,
+      kind: unit.def.kind,
       side: unit.def.side,
       slot: unit.def.slot,
       element: unit.def.element,
@@ -196,6 +327,9 @@ export function createBattle(setup: BattleSetup, balance: Balance): StepResult {
       maxHp: unit.def.stats.hp,
     })),
   });
+  signal(draft, { kind: 'combat_start' });
+  flushSignals(draft);
+  checkEnd(draft);
   settle(draft);
   return closeDraft(draft);
 }
@@ -207,7 +341,7 @@ export function step(state: BattleState, action: Action): StepResult {
     throw new IllegalActionError(`ce n'est pas le tour de ${action.unit}`);
   }
   const draft = openDraft(state);
-  const caster = draft.units.find((unit) => unit.def.id === action.unit);
+  const caster = unitById(draft.units, action.unit);
   const spell = caster?.def.spells.find((candidate) => candidate.id === action.spell);
   if (caster === undefined || spell === undefined) {
     throw new IllegalActionError(`${action.unit} ne connaît pas « ${action.spell} »`);
@@ -215,7 +349,7 @@ export function step(state: BattleState, action: Action): StepResult {
   if (spell.cost > draft.points[caster.def.side]) {
     throw new IllegalActionError(`points d'équipe insuffisants pour « ${spell.id} »`);
   }
-  const targets = chooseTargets(draft, caster, spell, action.target);
+  const targets = chooseTargets(draft.units, caster, spell, action.target);
   draft.active = null;
   cast(draft, caster, spell, targets);
   settle(draft);
@@ -224,7 +358,7 @@ export function step(state: BattleState, action: Action): StepResult {
 
 /** Actions possibles de l'unité active (vide si le combat est terminé). */
 export function legalActions(state: BattleState): Action[] {
-  const caster = state.units.find((unit) => unit.def.id === state.active);
+  const caster = state.active === null ? undefined : unitById(state.units, state.active);
   if (caster === undefined) return [];
   const actions: Action[] = [];
   for (const spell of caster.def.spells) {
@@ -238,6 +372,29 @@ export function legalActions(state: BattleState): Action[] {
     }
   }
   return actions;
+}
+
+/** Prochaine action annoncée d'un ennemi scripté (null pour une unité pilotée ou tombée). */
+export function enemyIntent(state: BattleState, unitId: string): Intent | null {
+  const unit = unitById(state.units, unitId);
+  if (
+    unit === undefined ||
+    !unit.alive ||
+    unit.def.controller !== 'script' ||
+    state.result !== null
+  ) {
+    return null;
+  }
+  const { spell, rule } = scriptStep(unit);
+  const target = scriptTarget(state.units, unit, spell, rule);
+  const targets = chooseTargets(state.units, unit, spell, target?.def.id);
+  return {
+    unit: unit.def.id,
+    spell: spell.id,
+    slot: spell.slot,
+    targets: targets.map((t) => t.def.id),
+    stunned: unit.statuses.some((status) => status.kind === 'stun'),
+  };
 }
 
 /** Rejoue un combat à partir de sa configuration et de ses actions : même entrée, même journal. */

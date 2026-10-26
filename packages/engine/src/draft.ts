@@ -1,4 +1,4 @@
-import type { Balance } from '@outlaw/data';
+import type { Balance, SpellSlot, StatusKind } from '@outlaw/data';
 import type {
   BattleEvent,
   BattleResult,
@@ -10,7 +10,40 @@ import type {
 } from './types';
 
 export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+/**
+ * Unité de travail. Ses champs sont modifiables, mais ses tableaux (altérations, modifications,
+ * déclencheurs) et leurs entrées ne le sont jamais : on les remplace. Une copie superficielle
+ * suffit donc à protéger l'état reçu.
+ */
 export type DraftUnit = Mutable<UnitState>;
+
+/** Ce qui s'est passé pendant une action, en attente d'être proposé aux déclencheurs. */
+export type Signal =
+  | { readonly kind: 'combat_start' }
+  | { readonly kind: 'turn_start' | 'turn_end'; readonly unit: string }
+  | {
+      readonly kind: 'spell_cast';
+      readonly unit: string;
+      readonly slot: SpellSlot;
+      readonly target: string | null;
+    }
+  | {
+      readonly kind: 'damage';
+      readonly dealer: string;
+      readonly victim: string;
+      readonly hpBefore: number;
+      readonly hpAfter: number;
+      readonly maxHp: number;
+      /** Altérations de la victime au moment du coup. */
+      readonly victimStatuses: readonly StatusKind[];
+    }
+  | { readonly kind: 'unit_down'; readonly unit: string; readonly killer: string | null }
+  | {
+      readonly kind: 'status_applied';
+      readonly unit: string;
+      readonly source: string;
+      readonly status: StatusKind;
+    };
 
 /**
  * Copie de travail d'un état, modifiée pendant un pas puis figée en nouvel état.
@@ -25,6 +58,10 @@ export interface Draft {
   active: string | null;
   result: BattleResult | null;
   readonly events: BattleEvent[];
+  /** Signaux à proposer aux déclencheurs une fois l'action résolue. */
+  readonly signals: Signal[];
+  /** Vrai pendant l'effet d'un déclencheur : ses conséquences n'émettent pas de signal (pas de chaîne). */
+  inTrigger: boolean;
 }
 
 export function openDraft(state: BattleState): Draft {
@@ -37,6 +74,8 @@ export function openDraft(state: BattleState): Draft {
     active: state.active,
     result: state.result,
     events: [],
+    signals: [],
+    inTrigger: false,
   };
 }
 
@@ -53,6 +92,10 @@ export function closeDraft(draft: Draft): StepResult {
   return { state, events: [...draft.events] };
 }
 
+export function signal(draft: Draft, value: Signal): void {
+  if (!draft.inTrigger) draft.signals.push(value);
+}
+
 export function opposing(side: Side): Side {
   return side === 'player' ? 'enemy' : 'player';
 }
@@ -60,6 +103,10 @@ export function opposing(side: Side): Side {
 /** Unités vivantes d'un camp, dans l'ordre des emplacements. */
 export function aliveOf<T extends UnitState>(units: readonly T[], side: Side): T[] {
   return units.filter((unit) => unit.alive && unit.def.side === side);
+}
+
+export function unitById<T extends UnitState>(units: readonly T[], id: string): T | undefined {
+  return units.find((unit) => unit.def.id === id);
 }
 
 /**

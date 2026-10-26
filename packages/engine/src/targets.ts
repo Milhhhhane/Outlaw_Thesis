@@ -1,6 +1,5 @@
 import type { EnemyTargetRule, TargetRef } from '@outlaw/data';
 import { aliveOf, opposing } from './draft';
-import { InvalidSetupError } from './errors';
 import type { ResolvedSpell, UnitState } from './types';
 
 /** Unité aux PV les plus bas ; à égalité, l'emplacement le plus bas. */
@@ -52,8 +51,12 @@ export function scriptTarget<T extends UnitState>(
 export interface TargetContext<T extends UnitState> {
   readonly units: readonly T[];
   readonly caster: T;
-  /** Cibles du sort (choisies ou implicites). */
+  /** Cibles du sort (choisies ou implicites) ; vide pour un déclencheur. */
   readonly primary: readonly T[];
+  /** Déclencheur : unité concernée par l'événement. */
+  readonly subject?: T | undefined;
+  /** Déclencheur : l'autre unité de l'événement (victime, attaquant, lanceur de l'altération…). */
+  readonly other?: T | undefined;
 }
 
 /** Unités visées par une brique, vivantes au moment où la brique s'applique. */
@@ -61,12 +64,12 @@ export function resolveRef<T extends UnitState>(ref: TargetRef, ctx: TargetConte
   const { units, caster } = ctx;
   const allies = aliveOf(units, caster.def.side);
   const enemies = aliveOf(units, opposing(caster.def.side));
-  const one = (unit: T | undefined): T[] => (unit === undefined ? [] : [unit]);
+  const one = (unit: T | undefined): T[] => (unit?.alive === true ? [unit] : []);
   switch (ref) {
     case 'primary':
       return ctx.primary.filter((unit) => unit.alive);
     case 'self':
-      return caster.alive ? [caster] : [];
+      return one(caster);
     case 'all_allies':
       return allies;
     case 'other_allies':
@@ -78,7 +81,8 @@ export function resolveRef<T extends UnitState>(ref: TargetRef, ctx: TargetConte
     case 'lowest_hp_enemy':
       return one(lowestHp(enemies));
     case 'subject':
+      return one(ctx.subject);
     case 'other':
-      throw new InvalidSetupError(`cible « ${ref} » réservée aux déclencheurs`);
+      return one(ctx.other);
   }
 }

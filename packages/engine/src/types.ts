@@ -4,8 +4,11 @@ import type {
   Effect,
   Element,
   EnemyTargetRule,
+  EventKind,
+  ModifiableStat,
   Role,
   SpellSlot,
+  StatusKind,
   Targeting,
   Trigger,
 } from '@outlaw/data';
@@ -33,6 +36,7 @@ export interface ResolvedSpell {
 
 /** Un déclencheur posé sur une unité : passif, objet ou modificateur de donjon. */
 export interface ResolvedTrigger {
+  /** Identifiant de contenu de l'origine (passif, modificateur…), affiché par l'interface. */
   readonly source: string;
   readonly trigger: Trigger;
 }
@@ -45,6 +49,8 @@ export interface ScriptStep {
 /** Description complète d'une unité au début d'un combat. Immuable, partagée entre les états. */
 export interface UnitDef {
   readonly id: string;
+  /** Identifiant de contenu (héros ou type d'ennemi) : plusieurs unités peuvent le partager. */
+  readonly kind: string;
   readonly side: Side;
   /** Emplacement dans le camp, de 0 à 2 (de gauche à droite). */
   readonly slot: number;
@@ -64,6 +70,42 @@ export interface BattleSetup {
   readonly units: readonly UnitDef[];
 }
 
+/** Altération en cours. « stun_immunity » protège d'un nouvel étourdissement juste après le premier. */
+export interface StatusState {
+  readonly kind: StatusKind | 'stun_immunity';
+  /** Tours restants de l'unité (étourdissement : tours à sauter). */
+  readonly turns: number;
+  /** Numéro d'action lors de la pose : une altération posée pendant le tour du porteur ne s'use pas ce tour-là. */
+  readonly since: number;
+  /** Marque : bonus de dégâts subis en %. Brûlure : dégâts par tour, calculés à la pose. */
+  readonly power: number;
+  readonly source: string;
+}
+
+export interface StatModState {
+  /** Une même origine sur une même stat remplace au lieu de cumuler. */
+  readonly key: string;
+  readonly stat: ModifiableStat;
+  readonly percent: number;
+  readonly turns: number;
+  readonly since: number;
+  readonly source: string;
+}
+
+export interface TriggerState {
+  readonly key: string;
+  readonly source: string;
+  readonly trigger: Trigger;
+  /** Tours restants du porteur, ou null jusqu'à la fin du combat. */
+  readonly turns: number | null;
+  readonly since: number;
+  /** Utilisations depuis le début du combat. */
+  readonly uses: number;
+  /** Utilisations pendant l'action numéro turnStamp. */
+  readonly turnUses: number;
+  readonly turnStamp: number;
+}
+
 export interface UnitState {
   readonly def: UnitDef;
   readonly hp: number;
@@ -72,6 +114,12 @@ export interface UnitState {
   readonly nextTime: number;
   /** Position dans le script (unités « script »). */
   readonly scriptIndex: number;
+  readonly shield: number;
+  readonly shieldTurns: number;
+  readonly shieldSince: number;
+  readonly statuses: readonly StatusState[];
+  readonly mods: readonly StatModState[];
+  readonly triggers: readonly TriggerState[];
 }
 
 export type BattleEndReason = 'annihilation' | 'action_limit';
@@ -114,10 +162,17 @@ export type Action = CastAction;
 
 export type PointsReason = 'cost' | 'gain' | 'effect';
 
+/** Origine d'un coup ou d'un soin : un sort, une brûlure ou un déclencheur. */
+export type Cause = 'spell' | 'burn' | 'trigger';
+
+export type ExpiringEffect = 'shield' | StatusState['kind'] | 'stat_mod' | 'trigger';
+
 /** Le journal d'événements : l'interface le rejoue pour animer, elle ne calcule rien. */
 export type BattleEvent =
   | { readonly type: 'battle_start'; readonly units: readonly UnitSummary[] }
   | { readonly type: 'turn_start'; readonly unit: string; readonly time: number }
+  | { readonly type: 'turn_skipped'; readonly unit: string; readonly reason: 'stun' }
+  | { readonly type: 'turn_end'; readonly unit: string }
   | {
       readonly type: 'cast';
       readonly unit: string;
@@ -126,21 +181,74 @@ export type BattleEvent =
       readonly targets: readonly string[];
     }
   | {
+      readonly type: 'trigger_fired';
+      readonly unit: string;
+      readonly source: string;
+      readonly on: EventKind;
+    }
+  | {
       readonly type: 'damage';
       readonly source: string;
       readonly target: string;
+      readonly cause: Cause;
+      /** Dégâts du coup, avant absorption par le bouclier. */
       readonly amount: number;
+      readonly absorbed: number;
       /** Multiplicateur d'élément appliqué (1, avantage ou désavantage). */
       readonly multiplier: number;
       readonly hpAfter: number;
+      readonly shieldAfter: number;
       readonly killed: boolean;
     }
   | {
       readonly type: 'heal';
       readonly source: string;
       readonly target: string;
+      readonly cause: Cause;
       readonly amount: number;
       readonly hpAfter: number;
+    }
+  | {
+      readonly type: 'shield';
+      readonly source: string;
+      readonly target: string;
+      readonly amount: number;
+      readonly total: number;
+      readonly turns: number;
+    }
+  | {
+      readonly type: 'tempo';
+      readonly source: string;
+      readonly target: string;
+      /** Décalage réellement appliqué, en centièmes (négatif = avance). */
+      readonly delta: number;
+      readonly nextTime: number;
+    }
+  | {
+      readonly type: 'stat_mod';
+      readonly source: string;
+      readonly target: string;
+      readonly stat: ModifiableStat;
+      readonly percent: number;
+      readonly turns: number;
+      /** Modification totale de la stat après cumul et bornes, en %. */
+      readonly total: number;
+    }
+  | {
+      readonly type: 'status';
+      readonly source: string;
+      readonly target: string;
+      readonly status: StatusKind;
+      readonly turns: number;
+      /** Vrai si l'altération n'a pas pris (immunité à l'étourdissement). */
+      readonly resisted: boolean;
+    }
+  | {
+      readonly type: 'trigger_added';
+      readonly source: string;
+      readonly target: string;
+      readonly key: string;
+      readonly turns: number | null;
     }
   | {
       readonly type: 'points';
@@ -149,6 +257,7 @@ export type BattleEvent =
       readonly total: number;
       readonly reason: PointsReason;
     }
+  | { readonly type: 'expired'; readonly unit: string; readonly effect: ExpiringEffect }
   | { readonly type: 'unit_down'; readonly unit: string }
   | {
       readonly type: 'battle_end';
@@ -158,6 +267,7 @@ export type BattleEvent =
 
 export interface UnitSummary {
   readonly id: string;
+  readonly kind: string;
   readonly side: Side;
   readonly slot: number;
   readonly element: Element;
@@ -174,4 +284,14 @@ export interface StepResult {
 export interface QueueEntry {
   readonly unit: string;
   readonly time: number;
+}
+
+/** Prochaine action annoncée d'un ennemi scripté. */
+export interface Intent {
+  readonly unit: string;
+  readonly spell: string;
+  readonly slot: SpellSlot;
+  readonly targets: readonly string[];
+  /** L'unité est étourdie : cette action sera reportée. */
+  readonly stunned: boolean;
 }

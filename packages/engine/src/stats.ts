@@ -1,4 +1,4 @@
-import type { Balance, BaseStats, Element } from '@outlaw/data';
+import type { Balance, BaseStats, Element, ModifiableStat } from '@outlaw/data';
 import type { UnitState } from './types';
 
 /** Le temps est compté en centièmes d'unité : des entiers, donc aucune dérive de flottants. */
@@ -59,7 +59,20 @@ export function cappedSpeed(vit: number, balance: Balance): number {
   return Math.max(1, Math.min(balance.combat.speedCap, vit));
 }
 
-/** VIT effective de l'unité. */
+/** Modification totale d'une stat, en %, après cumul additif et bornes. */
+export function modTotal(unit: UnitState, stat: ModifiableStat, balance: Balance): number {
+  let sum = 0;
+  for (const mod of unit.mods) if (mod.stat === stat) sum += mod.percent;
+  const { minPct, maxPct } = balance.combat.statMod;
+  return Math.min(maxPct, Math.max(minPct, sum));
+}
+
+/** Stat effective (non arrondie) : stat de l'unité × (1 + modifications). */
+export function effectiveStat(unit: UnitState, stat: ModifiableStat, balance: Balance): number {
+  return unit.def.stats[stat] * (1 + modTotal(unit, stat, balance) / 100);
+}
+
+/** VIT effective de l'unité, modifications comprises, plafonnée. */
 export function effectiveSpeed(unit: UnitState, balance: Balance): number {
-  return cappedSpeed(unit.def.stats.vit, balance);
+  return cappedSpeed(effectiveStat(unit, 'vit', balance), balance);
 }

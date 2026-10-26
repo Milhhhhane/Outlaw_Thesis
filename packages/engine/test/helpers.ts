@@ -53,6 +53,7 @@ export function unit(options: UnitOptions): UnitDef {
   const scripted = options.side === 'enemy';
   return {
     id: options.id,
+    kind: options.id,
     side: options.side,
     slot: options.slot ?? 0,
     element,

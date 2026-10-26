@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { createBattle, legalActions, replay, step, validateSetup } from '../src/battle';
-import { applyEffect } from '../src/effects';
-import { openDraft } from '../src/draft';
 import { IllegalActionError, InvalidSetupError } from '../src/errors';
 import { compareTurnOrder, nextActor, projectQueue } from '../src/queue';
 import { elementMultiplier, interval, statsAtLevel, TIME_SCALE } from '../src/stats';
@@ -173,7 +171,7 @@ describe('actions', () => {
     expect(hurt?.hp).toBe(400 - 42 * 2);
     result = step(state, { type: 'cast', unit: 'h', spell: 'h_a', target: 'h' });
     expect(ofType(result.events, 'heal')).toEqual([
-      { type: 'heal', source: 'h', target: 'h', amount: 50, hpAfter: 366 },
+      { type: 'heal', source: 'h', target: 'h', cause: 'spell', amount: 50, hpAfter: 366 },
     ]);
   });
 
@@ -256,7 +254,9 @@ describe('briques et ciblage', () => {
     expect(ids('all_enemies')).toEqual(['e0']);
     expect(ids('lowest_hp_ally')).toEqual(['p2']);
     expect(ids('lowest_hp_enemy')).toEqual(['e0']);
-    expect(() => ids('subject')).toThrow(InvalidSetupError);
+    expect(ids('subject')).toEqual([]);
+    expect(resolveRef('subject', { ...ctx, subject: e0 }).map((u) => u.def.id)).toEqual(['e0']);
+    expect(resolveRef('other', { ...ctx, other: p0 }).map((u) => u.def.id)).toEqual(['p0']);
     expect(resolveRef('self', { ...ctx, caster: { ...p0, alive: false } })).toEqual([]);
     expect(resolveRef('lowest_hp_enemy', { ...ctx, units: [p0] })).toEqual([]);
   });
@@ -281,18 +281,6 @@ describe('briques et ciblage', () => {
     const casts = ofType(events, 'cast').filter((e) => e.unit === 'e');
     expect(casts.slice(0, 4).map((e) => e.spell)).toEqual(['poke', 'smash', 'poke', 'smash']);
   });
-
-  it('une brique non gérée est refusée', () => {
-    const { state } = createBattle(duel, balance);
-    const draft = openDraft(state);
-    const caster = draft.units[0];
-    if (caster === undefined) throw new Error('unité manquante');
-    const s = spell('x', 'basic', []);
-    const tempo = { kind: 'tempo', target: 'self', amount: 10 } as const;
-    expect(() => {
-      applyEffect(draft, { caster, spell: s, primary: [] }, tempo);
-    }).toThrow(InvalidSetupError);
-  });
 });
 
 describe('validation de la configuration', () => {
@@ -305,13 +293,6 @@ describe('validation de la configuration', () => {
     ['emplacement hors bornes', [{ ...ok, slot: 3 }, foe]],
     ['PV nuls', [{ ...ok, stats: { ...ok.stats, hp: 0 } }, foe]],
     ['sorts en double', [{ ...ok, spells: [...ok.spells, ...ok.spells] }, foe]],
-    [
-      'brique non gérée',
-      [
-        { ...ok, spells: [spell('t', 'basic', [{ kind: 'tempo', target: 'self', amount: 5 }])] },
-        foe,
-      ],
-    ],
     ['pas d’attaque de base gratuite', [{ ...ok, spells: [spell('a', 'a', [hit()])] }, foe]],
     ['script vide', [ok, { ...foe, script: [] }]],
     ['script vers un sort absent', [ok, { ...foe, script: [{ spell: 'nope', target: 'first' }] }]],
