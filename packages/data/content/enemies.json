@@ -353,5 +353,305 @@
         "target": "lowest_hp"
       }
     ]
+  },
+  {
+    "id": "ember_matron",
+    "element": "fire",
+    "boss": true,
+    "stats": {
+      "hp": 1500,
+      "atk": 60,
+      "def": 25,
+      "vit": 95
+    },
+    "skills": [
+      {
+        "id": "matron_claw",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 110
+          }
+        ]
+      },
+      {
+        "id": "matron_brand",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 70
+          },
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 2,
+            "power": 35
+          }
+        ]
+      },
+      {
+        "id": "matron_eruption",
+        "slot": "ult",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 140
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "matron_claw",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "matron_claw",
+        "target": "first"
+      },
+      {
+        "skill": "matron_brand",
+        "target": "auto"
+      },
+      {
+        "skill": "matron_claw",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "matron_eruption",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "matron_wrath",
+      "triggers": [
+        {
+          "on": "hp_crossed",
+          "subject": "self",
+          "thresholdPct": 50,
+          "effects": [
+            {
+              "kind": "statMod",
+              "target": "self",
+              "stat": "atk",
+              "percent": 25,
+              "duration": 99
+            },
+            {
+              "kind": "tempo",
+              "target": "self",
+              "amount": -30
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "abyss_warden",
+    "element": "water",
+    "boss": true,
+    "stats": {
+      "hp": 1700,
+      "atk": 54,
+      "def": 32,
+      "vit": 90
+    },
+    "skills": [
+      {
+        "id": "warden_slam",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 110
+          }
+        ]
+      },
+      {
+        "id": "warden_wall",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 200,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "warden_undertow",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "tempo",
+            "amount": 25
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "warden_slam",
+        "target": "first"
+      },
+      {
+        "skill": "warden_undertow",
+        "target": "auto"
+      },
+      {
+        "skill": "warden_slam",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "warden_wall",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "warden_depths",
+      "triggers": [
+        {
+          "on": "hp_crossed",
+          "subject": "self",
+          "thresholdPct": 50,
+          "effects": [
+            {
+              "kind": "shield",
+              "target": "self",
+              "power": 250,
+              "duration": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "elder_bramble",
+    "element": "nature",
+    "boss": true,
+    "stats": {
+      "hp": 1600,
+      "atk": 58,
+      "def": 28,
+      "vit": 92
+    },
+    "skills": [
+      {
+        "id": "bramble_lash",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
+      },
+      {
+        "id": "bramble_snare",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "status",
+            "status": "stun",
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "bramble_bloom",
+        "slot": "b",
+        "targeting": "all_allies",
+        "effects": [
+          {
+            "kind": "heal",
+            "power": 120
+          }
+        ]
+      },
+      {
+        "id": "bramble_spores",
+        "slot": "ult",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "statMod",
+            "stat": "atk",
+            "percent": -20,
+            "duration": 2
+          },
+          {
+            "kind": "status",
+            "status": "mark",
+            "duration": 2,
+            "power": 20
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "bramble_lash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "bramble_snare",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "bramble_lash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "bramble_spores",
+        "target": "auto"
+      },
+      {
+        "skill": "bramble_bloom",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "bramble_grief",
+      "triggers": [
+        {
+          "on": "unit_down",
+          "subject": "ally",
+          "effects": [
+            {
+              "kind": "statMod",
+              "target": "self",
+              "stat": "atk",
+              "percent": 20,
+              "duration": 99
+            },
+            {
+              "kind": "heal",
+              "target": "self",
+              "power": 150
+            }
+          ]
+        }
+      ]
+    }
   }
 ]

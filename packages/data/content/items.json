@@ -1,1 +1,108 @@
-[]
+[
+  {
+    "id": "ember_charm",
+    "rarity": "common",
+    "stat": { "stat": "atk", "pct": 4 },
+    "mods": [{ "type": "scale", "field": "power", "mulPct": 25 }]
+  },
+  {
+    "id": "tide_pendant",
+    "rarity": "common",
+    "stat": { "stat": "hp", "pct": 5 },
+    "mods": [{ "type": "scale", "field": "amount", "mulPct": 50 }]
+  },
+  {
+    "id": "iron_band",
+    "rarity": "common",
+    "stat": { "stat": "def", "pct": 8 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": { "kind": "shield", "target": "self", "power": 40, "duration": 1 }
+      }
+    ]
+  },
+  {
+    "id": "hunter_lens",
+    "rarity": "common",
+    "stat": { "stat": "atk", "pct": 3 },
+    "mods": [{ "type": "threshold", "delta": 15 }]
+  },
+  {
+    "id": "spare_flask",
+    "rarity": "common",
+    "stat": { "stat": "hp", "pct": 4 },
+    "mods": [{ "type": "limit", "delta": 1 }]
+  },
+  {
+    "id": "quick_spurs",
+    "rarity": "common",
+    "stat": { "stat": "def", "pct": 3 },
+    "mods": [
+      { "type": "addEffect", "effect": { "kind": "tempo", "target": "self", "amount": -10 } }
+    ]
+  },
+  {
+    "id": "thorn_ring",
+    "rarity": "common",
+    "stat": { "stat": "atk", "pct": 3 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": { "kind": "damage", "target": "lowest_hp_enemy", "power": 25 }
+      }
+    ]
+  },
+  {
+    "id": "mender_token",
+    "rarity": "common",
+    "stat": { "stat": "hp", "pct": 6 },
+    "mods": [
+      { "type": "addEffect", "effect": { "kind": "heal", "target": "lowest_hp_ally", "power": 25 } }
+    ]
+  },
+  {
+    "id": "phoenix_feather",
+    "rarity": "rare",
+    "mods": [
+      { "type": "addEffect", "effect": { "kind": "teamPoints", "amount": 1 } },
+      { "type": "scale", "field": "power", "mulPct": 20 }
+    ]
+  },
+  {
+    "id": "storm_sigil",
+    "rarity": "rare",
+    "stat": { "stat": "atk", "pct": 5 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "lowest_hp_enemy",
+          "status": "mark",
+          "duration": 1,
+          "power": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "chrono_gear",
+    "rarity": "rare",
+    "mods": [
+      { "type": "scale", "field": "amount", "mulPct": 100 },
+      { "type": "addEffect", "effect": { "kind": "tempo", "target": "self", "amount": -15 } }
+    ]
+  },
+  {
+    "id": "aegis_shard",
+    "rarity": "rare",
+    "stat": { "stat": "def", "pct": 6 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": { "kind": "shield", "target": "all_allies", "power": 25, "duration": 1 }
+      }
+    ]
+  }
+]

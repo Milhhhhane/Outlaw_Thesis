@@ -1,1 +1,213 @@
-[]
+[
+  {
+    "id": "ember_wastes",
+    "element": "fire",
+    "recommendedLevel": 1,
+    "modifier": {
+      "id": "searing_zeal",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 15,
+                "duration": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["cinder_hound", "ash_acolyte"]
+      },
+      {
+        "enemies": ["cinder_hound", "ash_acolyte", "cinder_hound"]
+      },
+      {
+        "enemies": ["ember_matron", "ash_acolyte"]
+      }
+    ],
+    "rewards": {
+      "xp": 60,
+      "gold": 80,
+      "materials": {
+        "tier": 1,
+        "amount": 4
+      }
+    },
+    "loot": [
+      {
+        "item": "ember_charm",
+        "weight": 4
+      },
+      {
+        "item": "quick_spurs",
+        "weight": 4
+      },
+      {
+        "item": "thorn_ring",
+        "weight": 3
+      },
+      {
+        "item": "mender_token",
+        "weight": 3
+      },
+      {
+        "item": "phoenix_feather",
+        "weight": 1
+      },
+      {
+        "item": "chrono_gear",
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "id": "drowned_halls",
+    "element": "water",
+    "recommendedLevel": 4,
+    "modifier": {
+      "id": "riptide",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "tempo",
+                "target": "self",
+                "amount": 20
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["brine_crab", "tide_caller"]
+      },
+      {
+        "enemies": ["tide_caller", "brine_crab", "tide_caller"]
+      },
+      {
+        "enemies": ["abyss_warden", "tide_caller"]
+      }
+    ],
+    "rewards": {
+      "xp": 380,
+      "gold": 160,
+      "materials": {
+        "tier": 1,
+        "amount": 6
+      }
+    },
+    "loot": [
+      {
+        "item": "tide_pendant",
+        "weight": 4
+      },
+      {
+        "item": "iron_band",
+        "weight": 4
+      },
+      {
+        "item": "spare_flask",
+        "weight": 3
+      },
+      {
+        "item": "mender_token",
+        "weight": 3
+      },
+      {
+        "item": "aegis_shard",
+        "weight": 1
+      },
+      {
+        "item": "chrono_gear",
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "id": "thorn_maze",
+    "element": "nature",
+    "recommendedLevel": 8,
+    "modifier": {
+      "id": "bramble_skin",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_taken",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "damage",
+                "target": "other",
+                "power": 15
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["moss_brute", "thorn_witch"]
+      },
+      {
+        "enemies": ["thorn_witch", "moss_brute", "thorn_witch"]
+      },
+      {
+        "enemies": ["elder_bramble", "moss_brute"]
+      }
+    ],
+    "rewards": {
+      "xp": 1100,
+      "gold": 260,
+      "materials": {
+        "tier": 2,
+        "amount": 4
+      }
+    },
+    "loot": [
+      {
+        "item": "hunter_lens",
+        "weight": 4
+      },
+      {
+        "item": "thorn_ring",
+        "weight": 4
+      },
+      {
+        "item": "iron_band",
+        "weight": 3
+      },
+      {
+        "item": "ember_charm",
+        "weight": 3
+      },
+      {
+        "item": "storm_sigil",
+        "weight": 1
+      },
+      {
+        "item": "phoenix_feather",
+        "weight": 1
+      }
+    ]
+  }
+]
