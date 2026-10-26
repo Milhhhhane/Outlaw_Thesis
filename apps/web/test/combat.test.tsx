@@ -2,6 +2,9 @@ import { createBattle, legalActions, step, type BattleEvent } from '@outlaw/engi
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+
+/** Un combat complet joué au clic : lent sur les machines de CI (Windows surtout). */
+const LONG_UI_TEST = 60_000;
 import { CombatScreen } from '../src/combat/CombatScreen';
 import { content, demoSetup } from '../src/combat/session';
 import { applyEvent, viewFromState, type BattleView } from '../src/combat/view';
@@ -36,25 +39,29 @@ describe('vue rejouée', () => {
 });
 
 describe('écran de combat', () => {
-  it('se joue entièrement à la souris jusqu’au résultat', async () => {
-    const user = userEvent.setup();
-    render(<CombatScreen setup={demoSetup()} onExit={() => undefined} />);
-    for (let turn = 0; turn < 200; turn++) {
-      if (screen.queryByRole('dialog') !== null) break;
-      const actions = screen.getByRole('region', { name: /Au tour de/ });
-      const spells = within(actions)
-        .getAllByRole('button')
-        .filter((b) => !(b as HTMLButtonElement).disabled);
-      // Le sort le plus cher possible, sinon l'attaque de base.
-      await user.click(spells.at(-1)!);
-      const targets = document.querySelectorAll<HTMLButtonElement>('button.unit--targetable');
-      if (targets.length > 0) await user.click(targets[0]!);
-    }
-    const dialog = screen.getByRole('dialog');
-    expect(within(dialog).getByRole('heading')).toHaveTextContent(
-      new RegExp(`${t('combat.result.victory')}|${t('combat.result.defeat')}`),
-    );
-  });
+  it(
+    'se joue entièrement à la souris jusqu’au résultat',
+    async () => {
+      const user = userEvent.setup();
+      render(<CombatScreen setup={demoSetup()} onExit={() => undefined} />);
+      for (let turn = 0; turn < 200; turn++) {
+        if (screen.queryByRole('dialog') !== null) break;
+        const actions = screen.getByRole('region', { name: /Au tour de/ });
+        const spells = within(actions)
+          .getAllByRole('button')
+          .filter((b) => !(b as HTMLButtonElement).disabled);
+        // Le sort le plus cher possible, sinon l'attaque de base.
+        await user.click(spells.at(-1)!);
+        const targets = document.querySelectorAll<HTMLButtonElement>('button.unit--targetable');
+        if (targets.length > 0) await user.click(targets[0]!);
+      }
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).getByRole('heading')).toHaveTextContent(
+        new RegExp(`${t('combat.result.victory')}|${t('combat.result.defeat')}`),
+      );
+    },
+    LONG_UI_TEST,
+  );
 
   it('cible, annulation au clavier et réserve affichée', async () => {
     const user = userEvent.setup();
