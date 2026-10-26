@@ -1,0 +1,12 @@
+scenario,battles,wins,win_rate,avg_actions
+duel_fire_vs_fire,1,1,1.0000,19.00
+duel_fire_vs_water,1,0,0.0000,16.00
+duel_fire_vs_nature,1,1,1.0000,15.00
+duel_water_vs_fire,1,1,1.0000,15.00
+duel_water_vs_water,1,1,1.0000,19.00
+duel_water_vs_nature,1,0,0.0000,16.00
+duel_nature_vs_fire,1,0,0.0000,16.00
+duel_nature_vs_water,1,1,1.0000,15.00
+duel_nature_vs_nature,1,1,1.0000,19.00
+trio_mixed,1,1,1.0000,69.00
+action_limit_wall,1,0,0.0000,100.00

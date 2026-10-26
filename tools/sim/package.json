@@ -1,0 +1,22 @@
+{
+  "name": "@outlaw/sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sim": "tsx src/cli.ts",
+    "check": "tsx src/cli.ts --check",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@outlaw/data": "workspace:*",
+    "@outlaw/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
