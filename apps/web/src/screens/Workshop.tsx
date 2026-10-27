@@ -14,6 +14,7 @@ import { Button, Icon, Panel, Screen, Stepper } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
+import { Glossed } from '../game/Glossed';
 
 /** Pastilles d'amélioration : pleines jusqu'au niveau atteint. */
 export function UpgradePips({ level, max }: { readonly level: number; readonly max: number }) {
@@ -133,7 +134,9 @@ export function Workshop() {
               </p>
               <ul className="effects">
                 {describeItem(item).map((line, i) => (
-                  <li key={i}>{line}</li>
+                  <li key={i}>
+                    <Glossed text={line} />
+                  </li>
                 ))}
               </ul>
               {origin !== undefined && (

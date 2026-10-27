@@ -10,6 +10,7 @@ import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { dustName, names, t, tk } from '../i18n';
 import { ChestArt } from './Chests';
+import { Glossed } from '../game/Glossed';
 
 function Card({
   index,
@@ -94,7 +95,9 @@ export function Rewards({
             <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
             <ul className="reward-card__lines">
               {describeItem(item).map((line, i) => (
-                <li key={i}>{line}</li>
+                <li key={i}>
+                  <Glossed text={line} />
+                </li>
               ))}
             </ul>
             {report.item.isNew && <p className="reward-card__new">{t('reward.item.new')}</p>}
