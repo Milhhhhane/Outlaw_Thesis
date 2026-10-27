@@ -51,3 +51,19 @@ et le cache long des fichiers fingerprintés de `/assets/`.
 Sources : [Static Assets](https://developers.cloudflare.com/workers/static-assets/),
 [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/),
 [Headers](https://developers.cloudflare.com/workers/static-assets/headers/).
+
+## Plein écran et installation
+
+- **Ordinateur, Android, iPad** : bouton « Plein écran » sur l'écran-titre et dans les options,
+  ou touche F11. L'API Fullscreen exige un geste de l'utilisateur (clic, touche), d'où le bouton.
+- **iPhone** : Safari n'offre pas l'API Fullscreen sur iPhone (seulement sur iPad, avec un bouton
+  de sortie imposé). Le jeu se joue sans barre d'adresse une fois installé : Partager, puis
+  « Sur l'écran d'accueil ». Le manifeste (`apps/web/public/manifest.webmanifest`) demande
+  `display: fullscreen`, que iOS ramène à `standalone` ; il ignore `orientation`, d'où l'écran
+  « Tournez votre appareil » en portrait.
+- **Installable sur Chrome** : manifeste avec `name`, `start_url`, `display`, icônes 192 et 512 px,
+  servi en HTTPS ; aucun service worker (le jeu ne promet pas de mode hors ligne).
+
+Sources : [MDN, compatibilité de requestFullscreen](https://github.com/mdn/browser-compat-data)
+(« Only available on iPad, not on iPhone »), [web.dev, critères d'installation](https://web.dev/articles/install-criteria),
+[firt.dev, PWA sur iOS](https://firt.dev/notes/pwa-ios/) (consultés le 27 octobre 2026).

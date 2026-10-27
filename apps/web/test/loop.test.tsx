@@ -2,7 +2,7 @@ import type { Profile } from '@outlaw/data';
 import { newProfile } from '@outlaw/engine';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 /** Trois combats joués au clic : lent sur les machines de CI (Windows surtout). */
 const LONG_UI_TEST = 60_000;
@@ -10,6 +10,9 @@ import { App } from '../src/App';
 import { content } from '../src/combat/session';
 import { names, t } from '../src/i18n';
 
+beforeEach(() => {
+  window.localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+});
 afterEach(() => {
   window.localStorage.clear();
 });
@@ -41,9 +44,15 @@ describe('boucle donjon → récompense → investissement', () => {
     'termine un donjon au clic, reçoit l’objet, l’équipe et prend un talent',
     async () => {
       const user = userEvent.setup();
-      render(<App version="test" initial={leveled(10)} />);
+      render(<App version="test" initial={leveled(10)} start={{ name: 'hub' }} />);
 
-      await user.click(screen.getAllByRole('button', { name: t('hub.dungeon.enter') })[0]!);
+      await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.dungeons')) }));
+      await user.click(screen.getByRole('button', { name: new RegExp(t('map.prepare')) }));
+      await user.click(
+        screen.getByRole('button', {
+          name: new RegExp(t('team.go', { dungeon: names.dungeon('ember_wastes') })),
+        }),
+      );
       for (let room = 1; room <= 3; room++) {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(`combat ${room} sur 3`);
         await playFight(user);
@@ -57,15 +66,19 @@ describe('boucle donjon → récompense → investissement', () => {
       const looted = screen.getByRole('heading', { level: 2, name: /Objet obtenu/ }).textContent;
       await user.click(screen.getByRole('button', { name: t('reward.continue') }));
 
-      // De retour au camp : or gagné, deuxième donjon ouvert, objet dans l'inventaire.
+      // De retour au camp : or gagné, deuxième donjon ouvert, objet à l'atelier.
       expect(screen.getByText(t('hub.gold', { gold: 80 }))).toBeInTheDocument();
-      expect(screen.getAllByRole('button', { name: t('hub.dungeon.enter') })).toHaveLength(2);
+      await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.dungeons')) }));
+      expect(screen.getAllByRole('button', { name: new RegExp(t('map.cleared')) })).toHaveLength(1);
+      expect(screen.getAllByRole('button', { name: new RegExp(t('map.next')) })).toHaveLength(1);
+      await user.keyboard('{Escape}');
       const itemName = looted.replace('Objet obtenu : ', '');
-      expect(
-        within(screen.getByRole('region', { name: t('hub.inventory') })).getByText(itemName),
-      ).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.workshop')) }));
+      expect(screen.getByRole('button', { name: new RegExp(itemName) })).toBeInTheDocument();
+      await user.keyboard('{Escape}');
 
       // Investissement : équiper l'objet sur Pyra et prendre un talent.
+      await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.heroes')) }));
       await user.click(screen.getByRole('button', { name: /Pyra/ }));
       const slot = screen.getByLabelText(t('hero.slot', { n: 1 }));
       await user.selectOptions(
@@ -96,8 +109,10 @@ describe('boucle donjon → récompense → investissement', () => {
   it('un refus du moteur est expliqué', async () => {
     const user = userEvent.setup();
     const profile = { ...newProfile(content), team: ['pyra'] };
-    render(<App version="test" initial={profile} />);
-    await user.click(screen.getAllByRole('button', { name: t('hub.team.remove') })[0]!);
+    render(<App version="test" initial={profile} start={{ name: 'team' }} />);
+    await user.click(
+      screen.getAllByRole('button', { name: t('team.remove', { hero: names.hero('pyra') }) })[0]!,
+    );
     expect(screen.getByRole('alert')).toHaveTextContent(t('refusal.bad_team'));
   });
 });

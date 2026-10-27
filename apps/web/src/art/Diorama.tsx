@@ -11,6 +11,8 @@ interface Props {
   readonly cropTop?: number;
   /** Un feu de camp entre les héros et le décor. */
   readonly campfire?: boolean;
+  /** Décalage horizontal des héros et du feu, en pixels natifs. */
+  readonly offsetX?: number;
 }
 
 /** Pieds des héros autour du feu. */
@@ -21,7 +23,7 @@ const SPOTS: readonly { readonly x: number; readonly y: number }[] = [
 ];
 
 /** Petite scène décorative : un décor de donjon et quelques héros au repos. */
-export function Diorama({ scene, heroes, cropTop = 60, campfire = false }: Props) {
+export function Diorama({ scene, heroes, cropTop = 60, campfire = false, offsetX = 0 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const scale = useScale(ref, STAGE_W);
   const height = STAGE_H - cropTop;
@@ -41,7 +43,7 @@ export function Diorama({ scene, heroes, cropTop = 60, campfire = false }: Props
           if (info === undefined) return null;
           const { x, y } = SPOTS[slot % SPOTS.length] ?? { x: 100, y: 156 };
           const style = {
-            left: x - info.w / 2,
+            left: x - info.w / 2 + offsetX,
             top: y - info.bottom,
             zIndex: y,
             '--delay': `${-slot * 0.4}s`,
@@ -53,7 +55,7 @@ export function Diorama({ scene, heroes, cropTop = 60, campfire = false }: Props
           );
         })}
         {campfire && (
-          <span className="diorama__fire">
+          <span className="diorama__fire" style={{ left: 196 + offsetX }}>
             <PixelSprite name="aura_fire" idle className="diorama__glow" />
             <PixelSprite name="campfire" idle />
           </span>

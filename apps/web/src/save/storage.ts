@@ -73,12 +73,26 @@ export function loadProfile(content: Content, now: number): Loaded {
   }
 }
 
+/** Texte d'une sauvegarde (même format que le stockage local), pour l'exporter. */
+export function exportSave(profile: Profile): string {
+  const envelope: Envelope = { version: profile.version, profile };
+  return JSON.stringify(envelope);
+}
+
 export function saveProfile(profile: Profile): void {
   try {
-    const envelope: Envelope = { version: profile.version, profile };
-    storage()?.setItem(SAVE_KEY, JSON.stringify(envelope));
+    storage()?.setItem(SAVE_KEY, exportSave(profile));
   } catch {
     // Navigation privée ou stockage bloqué : la partie continue sans sauvegarde.
+  }
+}
+
+/** Une partie est-elle enregistrée sur cet appareil ? */
+export function hasSave(): boolean {
+  try {
+    return storage()?.getItem(SAVE_KEY) != null;
+  } catch {
+    return false;
   }
 }
 

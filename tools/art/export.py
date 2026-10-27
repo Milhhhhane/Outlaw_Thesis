@@ -11,6 +11,7 @@ import backgrounds
 import enemies
 import fx
 import heroes
+import icons
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / 'apps' / 'web' / 'src' / 'art'
@@ -21,6 +22,7 @@ def frames():
     for name, fn in {**heroes.ALL, **enemies.ALL}.items():
         out[name] = [fn(f).render() for f in (0, 1)]
     out.update(fx.all_fx())
+    out.update(icons.all_icons())
     return out
 
 
@@ -66,6 +68,19 @@ def frame_png(fill, light, dark, edge, accent):
     return im
 
 
+def app_icons():
+    """Icônes d'installation : Pyra au chapeau sur fond de crépuscule (fond plein, sans transparence)."""
+    out = ROOT / 'apps' / 'web' / 'public' / 'icons'
+    out.mkdir(parents=True, exist_ok=True)
+    pyra = heroes.pyra(0).render()
+    tile = Image.new('RGBA', (48, 48), (0, 0, 0, 0))
+    sky = backgrounds.ember_wastes().crop((200, 80, 248, 128)).convert('RGBA')
+    tile.alpha_composite(sky)
+    tile.alpha_composite(pyra.crop((8, 0, 56, 48)))
+    for size in (180, 192, 512):
+        tile.resize((size, size), Image.NEAREST).convert('RGB').save(out / f'icon-{size}.png', optimize=True)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'bg').mkdir(exist_ok=True)
@@ -92,8 +107,11 @@ def main():
         f'export const SPRITES: SpriteMap = {body};\n'
         f'export const ATLAS_SIZE = {{ w: {atlas.width}, h: {atlas.height} }};\n'
         f'export const GLYPHS = {json.dumps(fx.GLYPHS)};\n'
-        f'export const GROUND_Y = {backgrounds.GROUND};\n',
+        f'export const GROUND_Y = {backgrounds.GROUND};\n'
+        f'export const MAP_NODES: Readonly<Record<string, readonly [number, number]>> = '
+        f'{(pathlib.Path(__file__).with_name("map_nodes.json")).read_text().strip()};\n',
         encoding='utf-8')
+    app_icons()
     print('atlas', atlas.size, 'sprites', len(sprites))
 
 
