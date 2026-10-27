@@ -16,7 +16,7 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-/** Profil neuf, complété. `cendre` n'est pas dans le camp au départ (il ouvre l'invocation). */
+/** Profil neuf, complété. `ressac` n'est pas dans le camp au départ (il ouvre l'invocation). */
 function withStock(patch: Partial<Profile>): Profile {
   return { ...newProfile(content, 11), ...patch };
 }
@@ -76,21 +76,21 @@ describe('écran des coffres', () => {
   it('invoque un héros avec ses fragments, pas avant', async () => {
     const user = userEvent.setup();
     const cost = content.balance.chests.summonCost;
-    const initial = withStock({ fragments: { cendre: cost, ressac: cost - 1 } });
-    expect(initial.unlocked).not.toContain('cendre');
+    const initial = withStock({ fragments: { ressac: cost, seve: cost - 1 } });
+    expect(initial.unlocked).not.toContain('ressac');
     render(<App version="test" initial={initial} start={{ name: 'chests' }} />);
 
     const summon = (hero: string) =>
       within(row(hero)).getByRole('button', { name: t('chests.summon') });
-    expect(summon('ressac')).toBeDisabled();
+    expect(summon('seve')).toBeDisabled();
     // Un héros déjà dans le camp n'a pas de bouton d'invocation.
     expect(within(row('ronce')).queryByRole('button', { name: t('chests.summon') })).toBeNull();
 
-    await user.click(summon('cendre'));
-    expect(within(row('cendre')).queryByRole('button', { name: t('chests.summon') })).toBeNull();
-    expect(within(row('cendre')).getByText(/Niveau 1/)).toBeInTheDocument();
+    await user.click(summon('ressac'));
+    expect(within(row('ressac')).queryByRole('button', { name: t('chests.summon') })).toBeNull();
+    expect(within(row('ressac')).getByText(/Niveau 1/)).toBeInTheDocument();
     const star = content.balance.chests.starCosts[0] ?? 0;
-    expect(within(row('cendre')).getByText(`0 / ${String(star)}`)).toBeInTheDocument();
+    expect(within(row('ressac')).getByText(`0 / ${String(star)}`)).toBeInTheDocument();
   });
 
   it('cible un héros et le retire d’un second clic', async () => {

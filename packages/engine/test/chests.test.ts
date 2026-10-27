@@ -16,6 +16,7 @@ import {
   starCost,
   starsForLevel,
   starUp,
+  levelUpMax,
   summonHero,
   xpToNext,
   type Outcome,
@@ -155,16 +156,16 @@ describe('ouverture d’un coffre', () => {
 
 describe('invocation', () => {
   it('10 fragments invoquent un héros au niveau 1, étoile 0, sans toucher à l’équipe', () => {
-    const profile = withFragments(base(), { cendre: 12 });
-    const summoned = value(summonHero(content, profile, 'cendre'));
-    expect(summoned.unlocked).toContain('cendre');
-    expect(summoned.heroes.cendre).toMatchObject({ level: 1, stars: 0, talents: [] });
-    expect(summoned.fragments.cendre).toBe(2);
+    const profile = withFragments(base(), { ressac: 12 });
+    const summoned = value(summonHero(content, profile, 'ressac'));
+    expect(summoned.unlocked).toContain('ressac');
+    expect(summoned.heroes.ressac).toMatchObject({ level: 1, stars: 0, talents: [] });
+    expect(summoned.fragments.ressac).toBe(2);
     expect(summoned.team).toEqual(profile.team);
   });
 
   it('refuse sans assez de fragments, un héros déjà possédé ou inconnu', () => {
-    expect(reason(summonHero(content, withFragments(base(), { cendre: 9 }), 'cendre'))).toBe(
+    expect(reason(summonHero(content, withFragments(base(), { ressac: 9 }), 'ressac'))).toBe(
       'not_enough_fragments',
     );
     expect(reason(summonHero(content, withFragments(base(), { pyra: 50 }), 'pyra'))).toBe(
@@ -185,15 +186,14 @@ describe('étoiles', () => {
     expect(starCost(content, hero)).toBe(10);
     const raised = value(starUp(content, gate(14), 'pyra'));
     expect(raised.fragments.pyra).toBe(4);
-    expect(raised.heroes.pyra).toMatchObject({ stars: 1, level: 11 });
+    expect(raised.heroes.pyra).toMatchObject({ stars: 1, level: 10 });
     expect(levelCap(raised.heroes.pyra!, content)).toBe(20);
   });
 
-  it('l’XP gardée à la porte sert aussitôt, mais pas plus d’un niveau d’avance', () => {
+  it('l’étoile ne monte pas le niveau : l’XP en banque reste à payer', () => {
     const raised = value(starUp(content, gate(10), 'pyra'));
-    // Plafond atteint avec un niveau d'XP en réserve : un niveau gagné, le reste intact.
-    expect(raised.heroes.pyra!.level).toBe(11);
-    expect(raised.heroes.pyra!.xp).toBe(0);
+    expect(raised.heroes.pyra!.level).toBe(10);
+    expect(raised.heroes.pyra!.xp).toBe(gate(10).heroes.pyra!.xp);
   });
 
   it('la deuxième étoile coûte 20 et il n’y en a pas de troisième au niveau 30', () => {
@@ -210,7 +210,7 @@ describe('étoiles', () => {
     expect(reason(starUp(content, gate(9), 'pyra'))).toBe('not_enough_fragments');
     const early = withFragments(at(base(), 'pyra', { level: 9 }), { pyra: 99 });
     expect(reason(starUp(content, early, 'pyra'))).toBe('not_at_cap');
-    expect(reason(starUp(content, withFragments(base(), { cendre: 99 }), 'cendre'))).toBe(
+    expect(reason(starUp(content, withFragments(base(), { ressac: 99 }), 'ressac'))).toBe(
       'locked_hero',
     );
   });
@@ -247,15 +247,17 @@ describe('coffres des donjons', () => {
     );
   });
 
-  it('au plafond d’étoile, un héros ne dépasse pas le niveau 10 même à coups de donjons', () => {
+  it('au plafond d’étoile, un héros ne dépasse pas le niveau 10 même avec XP et poussière', () => {
     let profile = base();
     for (let i = 0; i < 40; i++) {
       profile = value(completeDungeon(content, profile, 'thorn_maze')).profile;
     }
+    profile = { ...profile, materials: [999, 999, 999] };
+    profile = value(levelUpMax(content, profile, 'pyra'));
     expect(profile.heroes.pyra!.level).toBe(10);
     expect(atStarGate(profile.heroes.pyra!, content)).toBe(true);
     const raised = value(starUp(content, withFragments(profile, { pyra: 10 }), 'pyra'));
-    expect(raised.heroes.pyra!.level).toBeGreaterThan(10);
+    expect(value(levelUpMax(content, raised, 'pyra')).heroes.pyra!.level).toBeGreaterThan(10);
   });
 });
 

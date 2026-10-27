@@ -1,4 +1,4 @@
-import type { Content } from '@outlaw/data';
+import { MAX_SIDE, type Content } from '@outlaw/data';
 import { validateBuild, type HeroBuild } from '@outlaw/engine';
 
 /**
@@ -52,7 +52,7 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
     const raw = JSON.parse(fromBase64Url(code)) as unknown;
     if (typeof raw !== 'object' || raw === null) return null;
     const { v, b } = raw as Record<string, unknown>;
-    if (v !== FORMAT || !Array.isArray(b) || b.length < 1 || b.length > 3) return null;
+    if (v !== FORMAT || !Array.isArray(b) || b.length < 1 || b.length > MAX_SIDE) return null;
     const builds: HeroBuild[] = [];
     for (const entry of b as unknown[]) {
       if (typeof entry !== 'object' || entry === null) return null;

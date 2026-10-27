@@ -4,19 +4,13 @@
  * en ligne droite), puis réécrit dungeons.json. Les PV (durée) ne bougent pas.
  * `pnpm --filter @outlaw/sim tunecurve [tours] [runs]`
  */
-import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { loadContent, type Dungeon } from '@outlaw/data';
 import { pacing } from './pacing';
+import { readDungeons, writeTuning } from './tunefile';
 
-const file = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../packages/data/content/dungeons.json',
-);
 const content = loadContent();
 const { first, last } = content.balance.targets.averageCurve;
-let dungeons: Dungeon[] = JSON.parse(readFileSync(file, 'utf8')) as Dungeon[];
+let dungeons: Dungeon[] = readDungeons();
 const rounds = Number(process.argv[2] ?? 4);
 const runs = Number(process.argv[3] ?? 32);
 
@@ -35,6 +29,8 @@ for (let round = 0; round < rounds; round++) {
       `${dungeon.id} ${(rate * 100).toFixed(0)}→${(target * 100).toFixed(0)} ×${factor.toFixed(2)}`,
     );
     if (Math.abs(rate - target) < 0.04) return dungeon;
+    // Le premier donjon doit rester AU MOINS aussi facile que sa cible : on ne le durcit jamais.
+    if (d === 0 && rate > target) return dungeon;
     return {
       ...dungeon,
       encounters: dungeon.encounters.map((encounter) => {
@@ -47,5 +43,5 @@ for (let round = 0; round < rounds; round++) {
   });
   console.log(`tour ${round + 1} : ${line.join(' | ')}`);
 }
-writeFileSync(file, `${JSON.stringify(dungeons, null, 2)}\n`);
+writeTuning(dungeons);
 console.log('dungeons.json réécrit.');

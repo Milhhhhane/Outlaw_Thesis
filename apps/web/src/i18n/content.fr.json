@@ -355,7 +355,15 @@
     "phoenix_feather": "Plume de phénix",
     "storm_sigil": "Sceau d'orage",
     "chrono_gear": "Rouage du temps",
-    "aegis_shard": "Éclat d'égide"
+    "aegis_shard": "Éclat d'égide",
+    "eternal_ember": "Braise éternelle",
+    "drowned_pearl": "Perle noyée",
+    "verdant_seed": "Graine couronnée",
+    "salt_mirror": "Miroir de sel",
+    "obsidian_fang": "Croc d'obsidienne",
+    "throne_relic": "Relique du trône",
+    "obsidian_shard": "Éclat d'obsidienne",
+    "hollow_seal": "Sceau creux"
   },
   "dungeons": {
     "ember_wastes": {

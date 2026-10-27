@@ -1,4 +1,4 @@
-import { heroStars, talentPoints } from '@outlaw/engine';
+import { canLevelUp, heroStars, talentPoints } from '@outlaw/engine';
 import { HeroSprite } from '../art/HeroSprite';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -50,8 +50,12 @@ export function Heroes() {
                       {t('hero.starsShort', { n: heroStars(hero, content) })}
                     </span>
                     <span className="hero-card__thesis">{names.heroThesis(def.id)}</span>
-                    {free > 0 && (
+                    {free > 0 ? (
                       <span className="hero-card__badge">{t('heroes.points', { n: free })}</span>
+                    ) : (
+                      canLevelUp(content, profile, hero) && (
+                        <span className="hero-card__badge">{t('hero.levelUp.ready')}</span>
+                      )
                     )}
                   </>
                 ) : (

@@ -1,6 +1,6 @@
 # Outlaw Thesis
 
-RPG tactique au tour par tour dans le navigateur. Trois héros contre un à trois ennemis, une file
+RPG tactique au tour par tour dans le navigateur. Quatre héros contre un à quatre ennemis, une file
 d'initiative visible, une réserve de points d'équipe partagée, aucun hasard en combat : seul le
 butin est tiré au sort, hors combat. Les builds (talents, objets) changent la façon de jouer, pas
 seulement les chiffres.

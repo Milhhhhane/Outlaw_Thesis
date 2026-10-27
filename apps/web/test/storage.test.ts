@@ -27,7 +27,7 @@ describe('sauvegarde', () => {
   it('nouvelle partie si rien n’est sauvegardé', () => {
     const { profile, recovered } = loadProfile(content, 1234);
     expect(recovered).toBe(false);
-    expect(profile.team).toEqual(['pyra', 'maree', 'ronce']);
+    expect(profile.team).toEqual(['pyra', 'maree', 'ronce', 'cendre']);
   });
 
   it('sauvegarde illisible : mise de côté, nouvelle partie', () => {

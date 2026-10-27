@@ -1,6 +1,5 @@
 import type { Content, HeroProgress, Profile } from '@outlaw/data';
 import {
-  addXp,
   atStarGate,
   freshHero,
   heroStars,
@@ -124,7 +123,7 @@ export function starUp(content: Content, profile: Profile, heroId: string): Outc
   if (!atStarGate(hero, content)) return refuse('not_at_cap');
   const owned = profile.fragments[heroId] ?? 0;
   if (owned < cost) return refuse('not_enough_fragments');
-  const raised = addXp({ ...hero, stars: heroStars(hero, content) + 1 }, 0, content).hero;
+  const raised = { ...hero, stars: heroStars(hero, content) + 1 };
   return ok({
     ...profile,
     fragments: { ...profile.fragments, [heroId]: owned - cost },

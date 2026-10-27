@@ -26,36 +26,29 @@
     "encounters": [
       {
         "enemies": ["cinder_hound", "cinder_hound"],
-        "hpPct": 131,
-        "atkPct": 72
+        "hpPct": 104,
+        "atkPct": 75
       },
       {
         "enemies": ["cinder_hound", "ash_acolyte"],
-        "hpPct": 146,
-        "atkPct": 72
+        "hpPct": 106,
+        "atkPct": 75
       },
       {
         "enemies": ["ember_matron"],
-        "hpPct": 118,
-        "atkPct": 72
+        "hpPct": 108,
+        "atkPct": 75
       }
     ],
     "rewards": {
-      "xp": 100,
+      "xp": 60,
       "gold": 80,
       "materials": {
         "tier": 1,
         "amount": 4
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "thorn_ring",
-      "mender_token",
-      "phoenix_feather",
-      "chrono_gear"
-    ],
+    "loot": ["ember_charm", "eternal_ember"],
     "map": {
       "x": 42,
       "y": 142,
@@ -87,38 +80,30 @@
     },
     "encounters": [
       {
-        "enemies": ["brine_crab", "tide_caller"],
-        "hpPct": 138,
-        "atkPct": 92
+        "enemies": ["brine_crab", "tide_caller", "brine_crab"],
+        "hpPct": 86,
+        "atkPct": 106
       },
       {
-        "enemies": ["tide_caller", "brine_crab", "tide_caller"],
-        "hpPct": 89,
-        "atkPct": 92
+        "enemies": ["tide_caller", "brine_crab", "tide_caller", "tide_caller"],
+        "hpPct": 73,
+        "atkPct": 106
       },
       {
-        "enemies": ["abyss_warden", "tide_caller"],
-        "hpPct": 92,
-        "atkPct": 92
+        "enemies": ["abyss_warden", "tide_caller", "brine_crab"],
+        "hpPct": 73,
+        "atkPct": 106
       }
     ],
     "rewards": {
-      "xp": 380,
+      "xp": 260,
       "gold": 160,
       "materials": {
         "tier": 1,
-        "amount": 6
+        "amount": 4
       }
     },
-    "loot": [
-      "tide_pendant",
-      "iron_band",
-      "spare_flask",
-      "mender_token",
-      "aegis_shard",
-      "chrono_gear"
-    ],
-    "unlocksHero": "cendre",
+    "loot": ["tide_pendant", "drowned_pearl"],
     "map": {
       "x": 100,
       "y": 120,
@@ -155,34 +140,30 @@
     },
     "encounters": [
       {
-        "enemies": ["moss_brute", "thorn_witch"],
-        "hpPct": 150
+        "enemies": ["moss_brute", "thorn_witch", "moss_brute"],
+        "hpPct": 87,
+        "atkPct": 126
       },
       {
-        "enemies": ["thorn_witch", "moss_brute", "thorn_witch"],
-        "hpPct": 94
+        "enemies": ["thorn_witch", "moss_brute", "thorn_witch", "thorn_witch"],
+        "hpPct": 78,
+        "atkPct": 126
       },
       {
-        "enemies": ["elder_bramble", "moss_brute"],
-        "hpPct": 111
+        "enemies": ["elder_bramble", "moss_brute", "thorn_witch"],
+        "hpPct": 96,
+        "atkPct": 126
       }
     ],
     "rewards": {
-      "xp": 1100,
+      "xp": 470,
       "gold": 260,
       "materials": {
         "tier": 2,
-        "amount": 4
+        "amount": 7
       }
     },
-    "loot": [
-      "hunter_lens",
-      "thorn_ring",
-      "iron_band",
-      "ember_charm",
-      "storm_sigil",
-      "phoenix_feather"
-    ],
+    "loot": ["thorn_ring", "storm_sigil"],
     "map": {
       "x": 66,
       "y": 74,
@@ -217,37 +198,30 @@
     },
     "encounters": [
       {
-        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte"],
-        "hpPct": 99,
-        "atkPct": 86
+        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte", "ash_acolyte"],
+        "hpPct": 90,
+        "atkPct": 109
       },
       {
-        "enemies": ["cinder_hound", "thorn_witch", "ash_acolyte"],
-        "hpPct": 126,
-        "atkPct": 86
+        "enemies": ["cinder_hound", "thorn_witch", "ash_acolyte", "cinder_hound"],
+        "hpPct": 99,
+        "atkPct": 109
       },
       {
         "enemies": ["pyre_tyrant", "ash_acolyte"],
-        "hpPct": 95,
-        "atkPct": 86
+        "hpPct": 113,
+        "atkPct": 109
       }
     ],
     "rewards": {
-      "xp": 2100,
+      "xp": 880,
       "gold": 380,
       "materials": {
         "tier": 2,
-        "amount": 6
+        "amount": 15
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "hunter_lens",
-      "spare_flask",
-      "phoenix_feather",
-      "storm_sigil"
-    ],
+    "loot": ["quick_spurs", "phoenix_feather"],
     "unlocksHero": "ressac",
     "map": {
       "x": 138,
@@ -286,34 +260,30 @@
     },
     "encounters": [
       {
-        "enemies": ["tide_caller", "brine_crab", "cinder_hound"],
-        "hpPct": 90
+        "enemies": ["tide_caller", "brine_crab", "cinder_hound", "tide_caller"],
+        "hpPct": 75,
+        "atkPct": 103
       },
       {
-        "enemies": ["cinder_hound", "ash_acolyte", "tide_caller"],
-        "hpPct": 89
+        "enemies": ["cinder_hound", "ash_acolyte", "tide_caller", "cinder_hound"],
+        "hpPct": 76,
+        "atkPct": 103
       },
       {
         "enemies": ["tidal_hydra", "tide_caller"],
-        "hpPct": 120
+        "hpPct": 142,
+        "atkPct": 103
       }
     ],
     "rewards": {
-      "xp": 3600,
+      "xp": 1200,
       "gold": 520,
       "materials": {
         "tier": 2,
-        "amount": 8
+        "amount": 20
       }
     },
-    "loot": [
-      "tide_pendant",
-      "mender_token",
-      "iron_band",
-      "spare_flask",
-      "aegis_shard",
-      "chrono_gear"
-    ],
+    "loot": ["hunter_lens", "aegis_shard"],
     "map": {
       "x": 196,
       "y": 104,
@@ -347,37 +317,30 @@
     },
     "encounters": [
       {
-        "enemies": ["moss_brute", "thorn_witch", "moss_brute"],
-        "hpPct": 110,
-        "atkPct": 107
+        "enemies": ["moss_brute", "thorn_witch", "moss_brute", "moss_brute"],
+        "hpPct": 68,
+        "atkPct": 160
       },
       {
-        "enemies": ["thorn_witch", "tide_caller", "thorn_witch"],
-        "hpPct": 132,
-        "atkPct": 107
+        "enemies": ["thorn_witch", "tide_caller", "thorn_witch", "thorn_witch"],
+        "hpPct": 88,
+        "atkPct": 160
       },
       {
         "enemies": ["grove_colossus", "thorn_witch"],
-        "hpPct": 72,
-        "atkPct": 107
+        "hpPct": 102,
+        "atkPct": 160
       }
     ],
     "rewards": {
-      "xp": 5400,
+      "xp": 1500,
       "gold": 700,
       "materials": {
         "tier": 3,
-        "amount": 5
+        "amount": 12
       }
     },
-    "loot": [
-      "thorn_ring",
-      "hunter_lens",
-      "mender_token",
-      "iron_band",
-      "storm_sigil",
-      "aegis_shard"
-    ],
+    "loot": ["spare_flask", "verdant_seed"],
     "unlocksHero": "seve",
     "map": {
       "x": 250,
@@ -416,37 +379,30 @@
     },
     "encounters": [
       {
-        "enemies": ["cinder_hound", "tide_caller", "moss_brute"],
-        "hpPct": 115,
-        "atkPct": 130
+        "enemies": ["cinder_hound", "tide_caller", "moss_brute", "cinder_hound"],
+        "hpPct": 74,
+        "atkPct": 184
       },
       {
-        "enemies": ["moss_brute", "ash_acolyte", "brine_crab"],
-        "hpPct": 86,
-        "atkPct": 130
+        "enemies": ["moss_brute", "ash_acolyte", "brine_crab", "moss_brute"],
+        "hpPct": 58,
+        "atkPct": 184
       },
       {
         "enemies": ["ember_matron", "abyss_warden"],
-        "hpPct": 70,
-        "atkPct": 130
+        "hpPct": 64,
+        "atkPct": 184
       }
     ],
     "rewards": {
-      "xp": 7800,
+      "xp": 1700,
       "gold": 950,
       "materials": {
         "tier": 3,
         "amount": 8
       }
     },
-    "loot": [
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear",
-      "aegis_shard",
-      "ember_charm",
-      "tide_pendant"
-    ],
+    "loot": ["mender_token", "chrono_gear"],
     "map": {
       "x": 284,
       "y": 130,
@@ -481,37 +437,30 @@
     },
     "encounters": [
       {
-        "enemies": ["brine_crab", "ash_acolyte", "brine_crab"],
-        "hpPct": 104,
-        "atkPct": 160
+        "enemies": ["brine_crab", "ash_acolyte", "brine_crab", "brine_crab"],
+        "hpPct": 79,
+        "atkPct": 233
       },
       {
-        "enemies": ["tide_caller", "moss_brute", "ash_acolyte"],
-        "hpPct": 115,
-        "atkPct": 160
+        "enemies": ["tide_caller", "moss_brute", "ash_acolyte", "tide_caller"],
+        "hpPct": 92,
+        "atkPct": 233
       },
       {
         "enemies": ["tidal_hydra", "ember_matron"],
-        "hpPct": 75,
-        "atkPct": 160
+        "hpPct": 96,
+        "atkPct": 233
       }
     ],
     "rewards": {
-      "xp": 9500,
+      "xp": 1900,
       "gold": 1100,
       "materials": {
         "tier": 3,
         "amount": 9
       }
     },
-    "loot": [
-      "tide_pendant",
-      "ember_charm",
-      "spare_flask",
-      "aegis_shard",
-      "storm_sigil",
-      "chrono_gear"
-    ],
+    "loot": ["iron_band", "salt_mirror"],
     "map": {
       "x": 262,
       "y": 158,
@@ -550,37 +499,30 @@
     },
     "encounters": [
       {
-        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte"],
-        "hpPct": 115,
-        "atkPct": 115
+        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte", "ash_acolyte"],
+        "hpPct": 90,
+        "atkPct": 194
       },
       {
-        "enemies": ["thorn_witch", "ash_acolyte", "cinder_hound"],
-        "hpPct": 125,
-        "atkPct": 115
+        "enemies": ["thorn_witch", "ash_acolyte", "cinder_hound", "thorn_witch"],
+        "hpPct": 97,
+        "atkPct": 194
       },
       {
         "enemies": ["pyre_tyrant", "ember_matron"],
-        "hpPct": 72,
-        "atkPct": 115
+        "hpPct": 77,
+        "atkPct": 194
       }
     ],
     "rewards": {
-      "xp": 11000,
+      "xp": 2100,
       "gold": 1250,
       "materials": {
         "tier": 3,
         "amount": 10
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "hunter_lens",
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear"
-    ],
+    "loot": ["obsidian_shard", "obsidian_fang"],
     "map": {
       "x": 298,
       "y": 74,
@@ -612,37 +554,30 @@
     },
     "encounters": [
       {
-        "enemies": ["moss_brute", "tide_caller", "ash_acolyte"],
-        "hpPct": 105,
-        "atkPct": 140
+        "enemies": ["moss_brute", "tide_caller", "ash_acolyte", "moss_brute"],
+        "hpPct": 87,
+        "atkPct": 234
       },
       {
-        "enemies": ["thorn_witch", "brine_crab", "cinder_hound"],
-        "hpPct": 105,
-        "atkPct": 140
+        "enemies": ["thorn_witch", "brine_crab", "cinder_hound", "thorn_witch"],
+        "hpPct": 96,
+        "atkPct": 166
       },
       {
         "enemies": ["grove_colossus", "abyss_warden", "ash_acolyte"],
-        "hpPct": 55,
-        "atkPct": 140
+        "hpPct": 59,
+        "atkPct": 234
       }
     ],
     "rewards": {
-      "xp": 13000,
+      "xp": 2400,
       "gold": 1500,
       "materials": {
         "tier": 3,
         "amount": 12
       }
     },
-    "loot": [
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear",
-      "aegis_shard",
-      "thorn_ring",
-      "mender_token"
-    ],
+    "loot": ["hollow_seal", "throne_relic"],
     "map": {
       "x": 294,
       "y": 42,

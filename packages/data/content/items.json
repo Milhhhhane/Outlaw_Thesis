@@ -104,5 +104,125 @@
         "effect": { "kind": "shield", "target": "all_allies", "power": 25, "duration": 1 }
       }
     ]
+  },
+  {
+    "id": "eternal_ember",
+    "rarity": "rare",
+    "stat": { "stat": "atk", "pct": 4 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "atk",
+          "percent": 12,
+          "duration": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "drowned_pearl",
+    "rarity": "rare",
+    "stat": { "stat": "hp", "pct": 5 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": { "kind": "shield", "target": "self", "power": 30, "duration": 2 }
+      },
+      { "type": "limit", "delta": 1 }
+    ]
+  },
+  {
+    "id": "verdant_seed",
+    "rarity": "rare",
+    "stat": { "stat": "hp", "pct": 6 },
+    "mods": [
+      { "type": "addEffect", "effect": { "kind": "heal", "target": "all_allies", "power": 12 } },
+      { "type": "scale", "field": "power", "mulPct": 20 }
+    ]
+  },
+  {
+    "id": "salt_mirror",
+    "rarity": "rare",
+    "stat": { "stat": "def", "pct": 6 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_allies",
+          "stat": "def",
+          "percent": 10,
+          "duration": 2
+        }
+      },
+      { "type": "limit", "delta": 1 }
+    ]
+  },
+  {
+    "id": "obsidian_fang",
+    "rarity": "rare",
+    "stat": { "stat": "atk", "pct": 6 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "lowest_hp_enemy",
+          "status": "burn",
+          "duration": 2,
+          "power": 20
+        }
+      },
+      { "type": "scale", "field": "power", "mulPct": 15 }
+    ]
+  },
+  {
+    "id": "throne_relic",
+    "rarity": "rare",
+    "stat": { "stat": "atk", "pct": 7 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_allies",
+          "stat": "atk",
+          "percent": 12,
+          "duration": 2
+        }
+      },
+      { "type": "scale", "field": "amount", "mulPct": 50 }
+    ]
+  },
+  {
+    "id": "obsidian_shard",
+    "rarity": "common",
+    "stat": { "stat": "def", "pct": 4 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": { "kind": "tempo", "target": "lowest_hp_enemy", "amount": 12 }
+      }
+    ]
+  },
+  {
+    "id": "hollow_seal",
+    "rarity": "common",
+    "stat": { "stat": "hp", "pct": 7 },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "def",
+          "percent": 8,
+          "duration": 2
+        }
+      }
+    ]
   }
 ]

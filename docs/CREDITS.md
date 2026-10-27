@@ -25,6 +25,12 @@ source).
   confond avec le S). Licence SIL Open Font License 1.1, texte joint dans
   `apps/web/src/assets/fonts/Silkscreen-OFL.txt`. Source : dépôt google/fonts
   (`ofl/silkscreen`), réduite aux chiffres et convertie en WOFF2 (`SilkscreenDigits.woff2`).
+- Atkinson Hyperlegible, du Braille Institute of America (dessin Applied Design Works ; voir
+  https://github.com/googlefonts/atkinson-hyperlegible), police du texte courant, choisie pour sa
+  lisibilité. Licence SIL Open Font License 1.1, texte joint dans
+  `apps/web/src/assets/fonts/AtkinsonHyperlegible-OFL.txt`. Source : dépôt google/fonts
+  (`ofl/atkinsonhyperlegible`), Regular et Bold réduites aux caractères latins et à la
+  ponctuation française, converties en WOFF2 (nom de la police inchangé).
 - Repli : polices système.
 
 ## Personnages

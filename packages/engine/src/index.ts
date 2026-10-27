@@ -15,5 +15,7 @@ export {
   TIME_SCALE,
 } from './stats';
 export type * from './types';
+export * from './loot';
+export * from './items';
 export * from './progression';
 export * from './chests';

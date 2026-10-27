@@ -1,10 +1,14 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
   atStarGate,
+  canLevelUp,
   compileHero,
   equip,
   heroBuild,
   heroStars,
+  levelUp,
+  levelUpCost,
+  levelUpMax,
   respec,
   respecCost,
   setLevel,
@@ -24,9 +28,10 @@ import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
-import { names, t, tk } from '../i18n';
+import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
+import { Glossed } from '../game/Glossed';
 
 type Tab = 'stats' | 'talents' | 'items';
 
@@ -280,7 +285,9 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
             </h3>
             <ul className="effects">
               {describeNode(node, def).map((line, i) => (
-                <li key={i}>{line}</li>
+                <li key={i}>
+                  <Glossed text={line} />
+                </li>
               ))}
             </ul>
             {node.requires !== undefined && (
@@ -389,7 +396,9 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
             {item !== undefined && (
               <ul className="effects">
                 {describeItem(item).map((line, i) => (
-                  <li key={i}>{line}</li>
+                  <li key={i}>
+                    <Glossed text={line} />
+                  </li>
                 ))}
               </ul>
             )}
@@ -494,6 +503,7 @@ export function HeroSheet({
   const maxed = hero.level >= balance.progression.maxLevel;
   const next = xpToNext(hero.level, content);
   const gate = atStarGate(hero, content);
+  const cost = levelUpCost(content, hero);
   const gateCost = starCost(content, hero);
   const fragments = profile.fragments[heroId] ?? 0;
 
@@ -525,6 +535,40 @@ export function HeroSheet({
               max: balance.chests.starCosts.length,
             })}
           </p>
+          {!maxed && !gate && !profile.testMode && cost !== null && (
+            <div className="sheet__gate">
+              <p className="hint">
+                {t('hero.levelUp.cost', {
+                  level: hero.level + 1,
+                  xp: cost.xp,
+                  dust: t('dust.amount', {
+                    amount: cost.dust.amount,
+                    dust: dustName(cost.dust.tier),
+                  }),
+                })}
+              </p>
+              <Button
+                size="small"
+                disabled={!canLevelUp(content, profile, hero)}
+                onClick={() => {
+                  apply(levelUp(content, profile, heroId));
+                }}
+              >
+                {t('hero.levelUp')}
+              </Button>
+              {canLevelUp(content, profile, hero) && (
+                <Button
+                  size="small"
+                  variant="quiet"
+                  onClick={() => {
+                    apply(levelUpMax(content, profile, heroId));
+                  }}
+                >
+                  {t('hero.levelUp.max')}
+                </Button>
+              )}
+            </div>
+          )}
           {gate && gateCost !== null && !profile.testMode && (
             <div className="sheet__gate">
               <p>{t('hero.gate', { level: hero.level })}</p>
@@ -576,7 +620,7 @@ export function HeroSheet({
                     <div key={stat}>
                       <dt>
                         <Icon name={STAT_ICON[stat]} size={12} />
-                        {tk(`stat.${stat}`)}
+                        <Glossed text={tk(`stat.${stat}`)} />
                       </dt>
                       <dd>{unit.stats[stat]}</dd>
                     </div>
@@ -590,15 +634,19 @@ export function HeroSheet({
                         {names.spell(spell.id)}
                       </p>
                       <p className="spell-card__meta">
-                        {spell.cost > 0
-                          ? t('combat.spell.cost', { cost: spell.cost })
-                          : t('combat.spell.gain', { gain: spell.gain })}{' '}
-                        · {t('combat.spell.delay', { delay: spell.delay })} ·{' '}
-                        {tk(`combat.target.${spell.targeting}`)}
+                        <Glossed
+                          text={`${
+                            spell.cost > 0
+                              ? t('combat.spell.cost', { cost: spell.cost })
+                              : t('combat.spell.gain', { gain: spell.gain })
+                          } · ${t('combat.spell.delay', { delay: spell.delay })} · ${tk(`combat.target.${spell.targeting}`)}`}
+                        />
                       </p>
                       <ul>
                         {describeSpell(spell).map((line, j) => (
-                          <li key={j}>{line}</li>
+                          <li key={j}>
+                            <Glossed text={line} />
+                          </li>
                         ))}
                       </ul>
                     </li>
@@ -610,7 +658,9 @@ export function HeroSheet({
                   </p>
                   <ul>
                     {unit.triggers.map((resolved, i) => (
-                      <li key={i}>{describeTrigger(resolved.trigger)}</li>
+                      <li key={i}>
+                        <Glossed text={describeTrigger(resolved.trigger)} />
+                      </li>
                     ))}
                   </ul>
                 </div>

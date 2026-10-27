@@ -1,5 +1,5 @@
 import { MAP_SIZE, type Dungeon } from '@outlaw/data';
-import { dungeonOpen, lootRates } from '@outlaw/engine';
+import { dungeonOpen, lootRates, masteryNext, masteryRank } from '@outlaw/engine';
 import { useState } from 'react';
 import { backgroundUrl } from '../art';
 import { PixelSprite } from '../art/Pixel';
@@ -10,6 +10,7 @@ import { Button, Icon, Panel, Screen } from '../game/ui';
 import { describeTrigger } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
+import { Glossed } from '../game/Glossed';
 
 /** Agrandissement de la carte (320 × 180 natifs par chapitre). */
 const MAP_SCALE = 2;
@@ -209,26 +210,33 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
               <p className="map__text">{names.dungeonText(dungeon.id)}</p>
               <p className="map__modifier">
                 <strong>{names.passive(dungeon.modifier.id)}</strong>{' '}
-                {dungeon.modifier.rules
-                  .map((rule) =>
-                    t('hub.dungeon.modifier', {
-                      side: tk(`hub.dungeon.side.${rule.appliesTo}`),
-                      text: lowerFirst(describeTrigger(rule.trigger)),
-                    }),
-                  )
-                  .join(' ')}
+                <Glossed
+                  text={dungeon.modifier.rules
+                    .map((rule) =>
+                      t('hub.dungeon.modifier', {
+                        side: tk(`hub.dungeon.side.${rule.appliesTo}`),
+                        text: lowerFirst(describeTrigger(rule.trigger)),
+                      }),
+                    )
+                    .join(' ')}
+                />
               </p>
               <p className="map__loot">
                 <span className="hint">{t('map.loot')} : </span>
-                {lootRates(content, dungeon).map((rate, i) => (
+                {lootRates(
+                  content,
+                  dungeon,
+                  masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0),
+                ).map((rate, i) => (
                   <span
                     key={rate.item}
                     className={
                       content.itemById.get(rate.item)?.rarity === 'rare' ? 'map__loot-rare' : ''
                     }
                   >
-                    {i > 0 ? ', ' : ''}
-                    {names.item(rate.item)} {Math.round(rate.pct)} %
+                    {i > 0 ? ' · ' : ''}
+                    <Icon name={`item_${rate.item}`} />{' '}
+                    {t('map.itemRate', { item: names.item(rate.item), pct: Math.round(rate.pct) })}
                   </span>
                 ))}
                 {status(dungeon.id) !== 'cleared' &&
@@ -236,10 +244,22 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
                     <span className="hint"> · {t('map.firstRare')}</span>
                   )}
               </p>
-              <p className="hint">
+              <p
+                className="hint"
+                title={t('map.pity', { count: content.balance.economy.loot.rarePity })}
+              >
                 {(profile.dungeons[dungeon.id]?.clears ?? 0) > 0
                   ? t('hub.dungeon.clears', { count: profile.dungeons[dungeon.id]?.clears ?? 0 })
                   : t('hub.dungeon.new')}
+                {' · '}
+                {t('map.mastery', {
+                  rank: masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0),
+                  max: content.balance.economy.loot.mastery.clears.length,
+                })}
+                {masteryNext(content, profile.dungeons[dungeon.id]?.clears ?? 0) !== null &&
+                  ` (${t('map.mastery.next', {
+                    next: masteryNext(content, profile.dungeons[dungeon.id]?.clears ?? 0) ?? 0,
+                  })})`}
               </p>
             </div>
             {status(dungeon.id) === 'locked' ? (

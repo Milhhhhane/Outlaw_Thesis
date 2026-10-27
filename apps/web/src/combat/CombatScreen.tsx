@@ -21,6 +21,7 @@ import { anchorOf, Stage } from './Stage';
 import { useBattle } from './useBattle';
 import type { UnitView } from './view';
 import './combat.css';
+import { Glossed } from '../game/Glossed';
 
 /** Pause (ms, à vitesse normale) entre deux décisions du combat automatique. */
 const AUTO_DELAY = 400;
@@ -327,7 +328,9 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         </p>
         <ul>
           {describeSpell(shownSpell).map((line, i) => (
-            <li key={i}>{line}</li>
+            <li key={i}>
+              <Glossed text={line} />
+            </li>
           ))}
         </ul>
       </>
@@ -372,11 +375,6 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         >
           {t('combat.auto')}
         </Button>
-        {busy && (
-          <Button variant="ghost" size="small" icon="speed" onClick={skip}>
-            {t('combat.skip')}
-          </Button>
-        )}
       </header>
 
       <section className="battle__units" aria-label={t('combat.units')}>

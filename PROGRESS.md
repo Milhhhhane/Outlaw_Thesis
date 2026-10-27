@@ -45,6 +45,10 @@
 - Lot 12 — Carte pilotée par les données (place, repère et chapitre dans `dungeons.json`),
   butin en liste avec poids par rareté, rare au premier passage, doublons démontés ; liste de
   contrôle « Ajouter un donjon » dans `docs/CONTENT.md`.
+- Lot 13 — Équipes de quatre héros (`teamSize`), Cendre au départ, salles de 3–4 ennemis,
+  donjons reconvergés ; outils de réglage corrigés.
+- Lot 14 — Texte courant en police lisible (Atkinson Hyperlegible), lexique survolable sur les
+  termes de règle, barre d'initiative à huit unités.
 
 - Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,
@@ -53,6 +57,12 @@
 - Combat automatique : bouton « Auto » (touche A), règle déterministe du moteur indépendante de la
   taille des équipes, mesurée à 58 % de donjons réussis contre 51 % pour le joueur moyen simulé et
   85 % pour l'expert. Équipes de 4 héros : chantier à faire, liste dans `docs/ARCHITECTURE.md`.
+- Grind (PR A) — butin exclusif par donjon (commun + rare), copies pour améliorer les objets,
+  maîtrise de donjon, rare garanti par donjon, bouton « Rejouer », collection à l'atelier.
+  Espérances de farm calculées dans `docs/BALANCE.md` ; à confirmer au test humain.
+- Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
+  recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
+  en CI). Or non recalibré.
 
 ## Reste à faire (hors code)
 

@@ -2,6 +2,76 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
+
+### Modifié
+
+- L'XP se met en banque ; chaque niveau se paie en XP et en poussière du palier (brute jusqu'au
+  niveau 7, fine de 8 à 21, pure dès 22, quantité croissante). Boutons « Niveau suivant » et
+  « Monter au maximum » sur la fiche, badge « Niveau prêt » dans la galerie et sur la carte de
+  récompense. Les sauvegardes gardent leurs niveaux.
+- XP et poussière des donjons recalibrées pour le farm automatique : 6 à 16 passages gagnants
+  entre deux donjons, 7 à 8 par donjon final, 89 au total (avant : 4 à 5, puis moins d'un).
+- `pnpm --filter @outlaw/sim farm` : calculateur de rythme ; bornes vérifiées en CI.
+
+## [Non publié] — 2026-10-27 — grind : butin unique, copies, maîtrise
+
+### Ajouté
+
+- Chaque donjon a son butin exclusif : un objet commun et un rare qu'on ne trouve nulle part
+  ailleurs (8 objets ajoutés, 20 au total). L'atelier devient une collection : objets trouvés ou
+  à trouver, avec le donjon où les farmer.
+- Copies : un objet déjà possédé donne une copie ; l'améliorer coûte des copies (1, 2, 3), de
+  l'or et de la poussière du palier du donjon d'origine. Les copies en trop se dissolvent en
+  poussière ; un objet au maximum dissout directement.
+- Maîtrise de donjon (rangs à 5, 15, 40 et 100 victoires) : plus de chances de rare et de
+  poussière ; rare garanti au premier passage et au plus tard au 10ᵉ passage sans rare.
+- Bouton « Rejouer » sur l'écran de récompenses.
+- Poussière affichée en trois paliers : brute, fine, pure.
+
+### Modifié
+
+- Les sauvegardes existantes restent valides : les exemplaires en double d'un même objet sont
+  fusionnés en copies au chargement (le plus amélioré est gardé, un objet porté n'est jamais retiré).
+- Coût d'amélioration d'un objet : copies + or + poussière (avant : or + matériaux).
+
+## [lot-14] — 2026-10-27 — texte lisible et lexique
+
+### Ajouté
+
+- Lexique survolable : dans les descriptions de sorts, talents, objets, passifs et modificateurs
+  de donjon, chaque terme de règle (Avance, Retarde, Délai, Coût, Brûlure, Marque, Étourdi,
+  Bouclier, ATK, DEF, VIT, PV, durées, éléments) explique ce qu'il fait au survol, au clavier
+  (Tab) et au toucher. Textes dans `glossary.*`, motifs dans `game/Glossed.tsx`.
+
+### Modifié
+
+- Texte courant en Atkinson Hyperlegible (OFL) : descriptions, aides, journal, cartes ; la
+  police pixel reste pour les titres, les boutons et les chiffres. +42 Ko de polices.
+- Barre d'initiative : à huit unités, portrait et délai seulement, le nom au survol et pour
+  l'unité qui joue.
+
+### Supprimé
+
+- Le bouton « Passer l'animation » du combat ; Espace garde le raccourci.
+- Le test de bout en bout des récompenses joue en Auto (le clic naïf perdait parfois à quatre).
+
+## [lot-13] — 2026-10-27 — équipes de quatre
+
+### Modifié
+
+- Quatre héros par équipe (`balance.progression.teamSize`), quatre ennemis au plus par combat ;
+  Cendre fait partie de l'équipe de départ. Scène en deux rangs en quinconce, quatre
+  emplacements sur l'écran d'équipe, lien de partage à quatre builds.
+- Donjons rééquilibrés pour quatre : salles de 3–4 ennemis, PV et ATK reconvergés par les outils ;
+  courbe 100 / 75 / 71 / 65 / 63 / 54 / 58 / 42 / 38 / 31 %. `pacing.floor` 10 → 8.
+
+### Corrigé
+
+- `autotune` et `tunecurve` mesuraient sans les valeurs par défaut des schémas (modificateurs de
+  donjon ignorés) ; `autotune` effaçait `atkPct` quand les PV retombaient à 100 % ; `tunecurve`
+  ne durcit plus le premier donjon au-dessus de sa cible.
+
 ## [Non publié] — 2026-10-27 — combat automatique
 
 ### Ajouté

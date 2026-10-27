@@ -183,7 +183,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   const profile = {
     ...base,
     chests: { bronze: 1, gold: 1 },
-    fragments: { cendre: cost },
+    fragments: { ressac: cost },
     focus: 'pyra',
   };
   await page.addInitScript(
@@ -199,10 +199,10 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   await page.getByRole('button', { name: /^Coffres/ }).click();
   await noScroll(page);
 
-  // Cendre a assez de fragments : une invocation, et le bouton disparaît.
-  const cendre = page.locator('.frag-row', { hasText: 'Cendre' });
-  await cendre.getByRole('button', { name: 'Invoquer' }).click();
-  await expect(cendre.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
+  // Ressac a assez de fragments : une invocation, et le bouton disparaît.
+  const ressac = page.locator('.frag-row', { hasText: 'Ressac' });
+  await ressac.getByRole('button', { name: 'Invoquer' }).click();
+  await expect(ressac.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
 
   // Le coffre d'or : la fenêtre d'ouverture tient en entier, même avec beaucoup de héros tirés.
   await page.locator('.chest-card', { hasText: "Coffre d'or" }).getByRole('button').click();
@@ -223,7 +223,7 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   test.skip(portrait(page), 'portrait');
   const content = loadContent();
   const base = newProfile(content, 5, 0);
-  // Pire cas : première victoire du donjon 2 = objet, coffre, nouveau héros, trois XP, or, matériaux.
+  // Pire cas : première victoire du donjon 2 = objet, coffre, quatre XP, or, poussière.
   const profile = {
     ...base,
     dungeons: { ember_wastes: { clears: 1 } },
@@ -244,8 +244,12 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await page.getByRole('button', { name: /^Donjons/ }).click();
   await page.getByRole('button', { name: /Préparer/ }).click();
   await page.getByRole('button', { name: /^Partir/ }).click();
+  // Auto joue : la règle « dernier sort, première cible » de `fight` perd la salle 2 de ce donjon
+  // (sorts de soutien enchaînés), même au niveau 30.
+  await page.getByRole('button', { name: 'Auto', exact: true }).click();
   for (let room = 1; room <= 3; room++) {
-    await fight(page, false);
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.outcome')).toContainText('Victoire');
     await page.locator('.outcome button').first().click();
     if (!(await page.locator('.battle').isVisible())) break;
   }
