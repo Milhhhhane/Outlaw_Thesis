@@ -2,7 +2,10 @@ export { createBattle, enemyIntent, legalActions, replay, step, validateSetup } 
 export * from './compile';
 export { computeDamage } from './effects';
 export { IllegalActionError, InvalidSetupError } from './errors';
+export { defaultAction } from './fallback';
+export { canonicalState, hashState } from './hash';
 export { compareTurnOrder, nextActor, projectQueue } from './queue';
+export { DEFAULT_RULES, rulesOf } from './rules';
 export {
   cappedSpeed,
   effectiveSpeed,

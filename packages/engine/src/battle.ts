@@ -14,15 +14,19 @@ import {
 import { applyEffect, hit, statusOf } from './effects';
 import { IllegalActionError, InvalidSetupError } from './errors';
 import { nextActor } from './queue';
+import { rulesOf } from './rules';
 import { cappedSpeed, effectiveSpeed, interval } from './stats';
 import { scriptTarget, targetSide } from './targets';
 import { flushSignals } from './triggers';
 import type {
   Action,
+  BattleResult,
+  BattleRules,
   BattleSetup,
   BattleState,
   Intent,
   ResolvedSpell,
+  Side,
   StatusState,
   StepResult,
   UnitDef,
@@ -60,7 +64,19 @@ function validateUnit(def: UnitDef): void {
   }
 }
 
+function validateRules(rules: BattleRules): void {
+  const sides: readonly string[] = ['player', 'enemy'];
+  const limits: readonly string[] = ['enemy_wins', 'hp_ratio'];
+  if (!sides.includes(rules.firstSide)) {
+    throw new InvalidSetupError(`règles : camp prioritaire inconnu « ${rules.firstSide} »`);
+  }
+  if (!limits.includes(rules.limit)) {
+    throw new InvalidSetupError(`règles : limite inconnue « ${rules.limit} »`);
+  }
+}
+
 export function validateSetup(setup: BattleSetup): void {
+  if (setup.rules !== undefined) validateRules(setup.rules);
   const ids = new Set<string>();
   const slots = new Set<string>();
   for (const def of setup.units) {
@@ -79,9 +95,12 @@ export function validateSetup(setup: BattleSetup): void {
   }
 }
 
-function bySideThenSlot(a: UnitDef, b: UnitDef): number {
-  if (a.side !== b.side) return a.side === 'player' ? -1 : 1;
-  return a.slot - b.slot;
+/** Camp prioritaire en tête (les héros par défaut), puis emplacement croissant. */
+function bySideThenSlot(firstSide: Side): (a: UnitDef, b: UnitDef) => number {
+  return (a, b) => {
+    if (a.side !== b.side) return a.side === firstSide ? -1 : 1;
+    return a.slot - b.slot;
+  };
 }
 
 function initialUnit(def: UnitDef, balance: Balance): UnitState {
@@ -280,16 +299,42 @@ function scriptTurn(draft: Draft, unit: DraftUnit): void {
   cast(draft, unit, spell, chooseTargets(draft.units, unit, spell, target?.def.id));
 }
 
+/** Ratio de PV d'un camp comme fraction entière : PV restants sur PV max (unités tombées comprises). */
+function hpFraction(draft: Draft, side: Side): { hp: number; max: number } {
+  let hp = 0;
+  let max = 0;
+  for (const unit of draft.units) {
+    if (unit.def.side !== side) continue;
+    hp += unit.hp;
+    max += unit.def.stats.hp;
+  }
+  return { hp, max };
+}
+
+/**
+ * Résultat à la limite d'actions. « enemy_wins » (PvE) : défaite des héros. « hp_ratio » : le camp au
+ * plus grand ratio de PV restants gagne, égalité = pas de vainqueur. Comparaison par produits en croix
+ * (des entiers) pour ne dépendre d'aucun arrondi.
+ */
+function limitResult(draft: Draft): BattleResult {
+  if (rulesOf(draft).limit === 'enemy_wins') return { winner: 'enemy', reason: 'action_limit' };
+  const player = hpFraction(draft, 'player');
+  const enemy = hpFraction(draft, 'enemy');
+  const diff = player.hp * enemy.max - enemy.hp * player.max;
+  const winner: Side | null = diff > 0 ? 'player' : diff < 0 ? 'enemy' : null;
+  return { winner, reason: 'action_limit' };
+}
+
 /**
  * Fait avancer le temps : joue les tours scriptés jusqu'au tour d'une unité pilotée
  * (qui devient « active ») ou jusqu'à la fin du combat.
  */
 function settle(draft: Draft): void {
   while (draft.result === null) {
-    const actor = nextActor(draft.units);
+    const actor = nextActor(draft.units, rulesOf(draft).firstSide);
     if (actor === null) throw new InvalidSetupError('aucune unité vivante');
     if (draft.actionCount >= draft.balance.combat.actionLimit) {
-      finish(draft, { winner: 'enemy', reason: 'action_limit' });
+      finish(draft, limitResult(draft));
       return;
     }
     if (!beginTurn(draft, actor)) continue;
@@ -304,10 +349,13 @@ function settle(draft: Draft): void {
 /** Crée un combat et joue jusqu'au premier tour d'une unité pilotée. */
 export function createBattle(setup: BattleSetup, balance: Balance): StepResult {
   validateSetup(setup);
-  const units = [...setup.units].sort(bySideThenSlot).map((def) => initialUnit(def, balance));
+  const units = [...setup.units]
+    .sort(bySideThenSlot(rulesOf(setup).firstSide))
+    .map((def) => initialUnit(def, balance));
   const start = balance.combat.teamPoints.start;
   const draft = openDraft({
     balance,
+    ...(setup.rules === undefined ? {} : { rules: setup.rules }),
     units,
     clock: 0,
     points: { player: start, enemy: start },
