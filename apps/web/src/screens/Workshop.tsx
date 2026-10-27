@@ -64,7 +64,7 @@ export function Workshop() {
                         setSelected(o.uid);
                       }}
                     >
-                      <Icon name="item" size={24} />
+                      <Icon name={`item_${o.item}`} size={24} />
                       <span className="item-card__name">{names.item(o.item)}</span>
                       <UpgradePips level={o.upgrade} max={max} />
                     </button>

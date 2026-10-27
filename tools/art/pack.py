@@ -116,8 +116,27 @@ def all_chests():
     return {f'chest_{name}': chest(*params) for name, params in CHESTS.items()}
 
 
+# arme tenue par chaque héros : (tuile de la planche, rotation de teinte, saturation ×, valeur ×)
+WEAPONS = {
+    'pyra': ('weapon_red_magic_staff', 0, 1.1, 1.0),
+    'cendre': ('weapon_red_magic_staff', 30, 0.4, 0.8),
+    'maree': ('weapon_knight_sword', 0, 1.0, 1.0),
+    'ressac': ('weapon_duel_sword', 150, 1.0, 1.0),
+    'ronce': ('weapon_spear', 60, 1.0, 0.9),
+    'seve': ('weapon_green_magic_staff', 0, 1.0, 1.0),
+}
+
+
+def weapon(sheet_name, hue, sat, val):
+    x, y, w, h, _ = TILES[sheet_name]
+    im = recolor(SHEET.crop((x, y, x + w, y + h)), hue, sat, val)
+    return [im.resize((w * SCALE, h * SCALE), Image.NEAREST)]
+
+
 def all_characters():
     out = {}
+    for name, (src, hue, sat, val) in WEAPONS.items():
+        out[f'weapon_{name}'] = weapon(src, hue, sat, val)
     for name, (src, hue, sat, val) in HEROES.items():
         out[name] = character(src, hue, sat, val, flip=False)
     for name, (src, hue, sat, val) in ENEMIES.items():

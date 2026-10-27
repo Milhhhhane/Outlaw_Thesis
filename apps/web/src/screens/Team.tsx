@@ -1,5 +1,6 @@
 import { dungeonOpen, heroBuild, setLevel, setTeam } from '@outlaw/engine';
 import { useState } from 'react';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -67,7 +68,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
             >
               <PixelSprite name="pedestal" className="pedestal" />
               <span className="team__sprite">
-                <PixelSprite name={id} idle />
+                <HeroSprite name={id} idle />
               </span>
               <span className="team__name">{names.hero(id)}</span>
               <span className="team__meta">
@@ -114,7 +115,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
                   }}
                 >
                   <span className="roster__portrait">
-                    <PixelSprite name={id} />
+                    <HeroSprite name={id} />
                   </span>
                   <span className="roster__name">{names.hero(id)}</span>
                   <span className="roster__level">{t('hub.level', { level: hero.level })}</span>

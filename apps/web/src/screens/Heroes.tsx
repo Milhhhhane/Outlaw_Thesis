@@ -1,5 +1,5 @@
 import { heroStars, talentPoints } from '@outlaw/engine';
-import { PixelSprite } from '../art/Pixel';
+import { HeroSprite } from '../art/HeroSprite';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { Screen } from '../game/ui';
@@ -40,7 +40,7 @@ export function Heroes() {
                 }}
               >
                 <span className="hero-card__sprite">
-                  <PixelSprite name={def.id} idle={unlocked} />
+                  <HeroSprite name={def.id} idle={unlocked} />
                 </span>
                 <span className="hero-card__name">{unlocked ? names.hero(def.id) : '???'}</span>
                 {unlocked ? (

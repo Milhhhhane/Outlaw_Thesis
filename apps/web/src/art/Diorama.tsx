@@ -1,6 +1,7 @@
 import { useRef, type CSSProperties } from 'react';
 import { backgroundUrl, sprite } from '.';
 import { STAGE_H, STAGE_W } from '../combat/Stage';
+import { HeroSprite } from './HeroSprite';
 import { PixelSprite } from './Pixel';
 import { useScale } from './useScale';
 
@@ -50,7 +51,7 @@ export function Diorama({ scene, heroes, cropTop = 60, campfire = false, offsetX
           } as CSSProperties;
           return (
             <span key={kind} className="diorama__unit" style={style}>
-              <PixelSprite name={kind} idle />
+              <HeroSprite name={kind} idle />
             </span>
           );
         })}

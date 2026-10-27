@@ -97,3 +97,15 @@
   left: -12px;
   top: 16px;
 }
+
+/* Héros avec arme : même boîte que le sprite ; l'arme est posée au bout du bras avant. */
+.hero-sprite {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-sprite__weapon {
+  z-index: 1;
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 100%;
+}
