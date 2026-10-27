@@ -72,5 +72,16 @@ export function OptionsProvider({ children }: { readonly children: ReactNode }) 
 
 /** Réglages courants ; hors du jeu (écran isolé), ceux enregistrés sur l'appareil. */
 export function useOptions(): OptionsApi {
-  return useContext(OptionsContext) ?? { options: load(), set: () => undefined };
+  return (
+    useContext(OptionsContext) ?? {
+      options: load(),
+      set: (change) => {
+        try {
+          window.localStorage.setItem(OPTIONS_KEY, JSON.stringify({ ...load(), ...change }));
+        } catch {
+          // Stockage bloqué : rien à retenir.
+        }
+      },
+    }
+  );
 }

@@ -65,6 +65,52 @@ d'elles n'est plus tenue. Définitions exactes dans `tools/sim/src/rules.ts` :
 3. Constat : les équipes avec un contrôleur (Ronce, Cendre) sont les plus robustes ; aucune n'est
    pourtant indispensable au sens de la règle. À surveiller si de nouveaux héros arrivent.
 
+## Lot 7 : combats plus courts et plus durs
+
+Mesure (`pnpm sim`, module `tools/sim/src/pacing.ts`) : pour chaque donjon, 16 équipes de 3
+héros tirées au hasard (builds aléatoires), au niveau conseillé, jouées par deux politiques.
+Durées en **actions de joueur** (un tour d'équipe ≈ 3), politique experte ; « Expert » et
+« Moyen » : part des donjons terminés au niveau conseillé.
+
+- **Expert** : anticipation d'un coup (chaque action jouée par le moteur, état évalué).
+- **Joueur moyen** : une décision sur quatre sous-optimale (une autre action, au hasard) ; les
+  autres à anticipation limitée, moitié règle simple du glouton (le sort le plus cher payable sur
+  l'ennemi le plus affaibli, sans regarder les menaces), moitié anticipation d'un coup.
+  Déterministe par graine. Avec la seule anticipation, l'écart expert / moyen restait sous
+  15 points quel que soit le réglage ; avec le seul glouton, il dépassait 50 points.
+
+Leviers (côté monstres uniquement) :
+
+- `balance.json` → `enemyScale` : **PV × 0,55, ATK × 1,85** pour tous les ennemis (après la
+  croissance par niveau). Deux nombres à retoucher librement ; `pnpm --filter @outlaw/sim tune
+'{"enemyScale":{"hp":0.6,"atk":1.7}}'` montre l'effet sans rien écrire.
+- `dungeons.json` → `hpPct` par combat (78 à 159 %) : règle la durée combat par combat. Calculé
+  par `pnpm --filter @outlaw/sim autotune` (vise 19 actions par combat, 25 par boss, en remontant
+  les combats dont le plus court passe sous le plancher), puis retouché à la main.
+- Menaces plus marquées, dans les scripts existants (une grosse action tous les 3 à 5 coups) :
+  puissance de Bond 170, Éruption 190, Tempête de feu 160, Déferlante 100, Séisme 110, Lame de fond 180, Rugissement 80, Flamboiement 90, Contre-courant 90 (en % d'ATK). PV de base revus : boss allégés (950 à 1 650),
+  Sorcière 540, Héraut 420, Acolyte 540, Crabe 520.
+- Combats : donjon 1, combat 1 à deux molosses ; Citadelle, combat 2 : molosse, sorcière,
+  acolyte ; Flèche engloutie : un molosse et un acolyte remplacent un héraut et un crabe.
+
+Résultat : expert **84 %**, joueur moyen **44 %** au niveau conseillé ; R1 86 %, R2 70 % (pire
+donjon, 3 niveaux de retard) ; toutes les durées dans les bornes, planchers compris.
+
+Écarts assumés, à arbitrer par le propriétaire :
+
+- **Plafond du donjon 1 (40 actions)** : incompatible avec les planchers. Le plus court possible
+  est 9 + 12 + 21 = 42 actions ; avec la dispersion des équipes, la moyenne ne descend pas sous
+  ~55 sans faire passer des combats sous le plancher. Plafond fixé à 60 dans `balance.json`.
+- **Plafond des autres donjons (66)** : même cause (plancher 12 tenu par l'équipe la plus rapide,
+  qui va environ deux fois plus vite que la moyenne). Plafond fixé à 72.
+- **Aucun héros indispensable** (nouvelle définition : part des donjons terminés avec 3 niveaux
+  de retard, joueur moyen, 6 builds par équipe et par donjon) : **non tenue, écart 17 points**.
+  La meilleure équipe (Ronce, Cendre, Ressac) passe 50 % des donjons ; sans Ressac, la meilleure
+  tombe à 33 %. Les équipes avec Marée ou Sève, jouées sans finesse, peinent dans les donjons
+  5 à 7. La cause est dans les héros, que ce lot ne devait pas toucher : la mesure est affichée
+  par `pnpm sim:check` mais ne bloque pas la CI. Piste : rendre les sorts de soutien plus
+  rentables ou plus simples à bien jouer.
+
 ## Règles (rappel des cibles)
 
 - **R1** : à niveau égal, le meilleur build bat le pire dans au moins `r1MinWinRate` (70 %) des

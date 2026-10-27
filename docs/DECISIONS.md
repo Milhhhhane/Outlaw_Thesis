@@ -196,6 +196,30 @@ Raison : aucune règle dans l'interface, accessible, poids faible (atlas 72 ko h
 événement sans durée faisait passer le suivant sans pause. Choix : on attend la durée du dernier
 événement affiché. Raison : chaque coup a le temps d'être vu.
 
+## Combats plus courts et plus durs (lot 7)
+
+**Durées en actions de joueur** — Choix : la simulation compte les actions des héros seuls
+(`playerActions`) ; un tour d'équipe ≈ 3. Raison : c'est ce que le joueur ressent.
+
+**Joueur moyen** — Choix : une décision sur quatre au hasard parmi les autres actions, les
+autres moitié glouton (sans lire les menaces), moitié anticipation d'un coup. Raison : avec la
+seule anticipation, expert et moyen restaient à moins de 15 points d'écart ; avec le seul
+glouton, à plus de 50. Détails et chiffres dans BALANCE.md.
+
+**Échelle des monstres et PV par combat** — Choix : `enemyScale` (PV, ATK) dans balance.json et
+`hpPct` optionnel par combat dans dungeons.json, appliqués à la compilation des ennemis ; aucune
+règle de combat changée. Raison : deux nombres globaux que le propriétaire retouche seul, plus un
+réglage fin par combat, sans toucher aux héros. Après un changement : `pnpm sim --update`.
+
+**Plafonds des donjons relevés (60 et 72 au lieu de 40 et 66)** — Constat : avec un plancher de
+12 actions tenu par l'équipe la plus rapide, la moyenne d'un combat ne descend pas sous ~18 ; le
+donjon 1 ne peut pas faire moins de 9 + 12 + 21 = 42. Choix : plafonds relevés dans balance.json,
+à arbitrer par le propriétaire.
+
+**« Aucun héros indispensable » non bloquant** — Constat : avec la nouvelle mesure, écart de
+17 points (Ressac). La cause est dans les héros, hors du périmètre du lot. Choix : la mesure reste
+affichée par `pnpm sim:check` mais ne fait plus échouer la CI ; à traiter côté héros.
+
 ## Habillage plein écran (sprint 6)
 
 **Écran logique 960 × 540** — Choix : tout est dessiné à 960 × 540 puis mis à l'échelle de la

@@ -72,6 +72,14 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
   await inView(page, '.track');
   await inView(page, '.actions');
   await noScroll(page);
+  // Vitesse ×2 : bouton visible, touche X, réglage retenu.
+  const speed = page.locator('.battle__top button[aria-keyshortcuts="X"]');
+  await expect(speed).toBeVisible();
+  await page.keyboard.press('x');
+  await expect(speed).toHaveText('×1');
+  await page.keyboard.press('x');
+  await expect(speed).toHaveText('×2');
+  await expect(speed).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Pause' })).toBeVisible();
   await noScroll(page);

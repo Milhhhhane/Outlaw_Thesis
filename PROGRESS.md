@@ -28,6 +28,10 @@
   fiche à onglets et arbres de talents, carte des donjons. Critère : aucun défilement et boucle
   jouable au clic et au clavier à 5 résolutions (`pnpm e2e`).
 
+- Lot 7 — Combats plus courts et plus durs : durées et taux de victoire mesurés et tenus en CI
+  (expert 84 %, joueur moyen 44 %), vitesse ×2 en combat. Ouvert : « aucun héros indispensable »
+  (17 points, cause côté héros) et plafonds de durée des donjons relevés (voir BALANCE.md).
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

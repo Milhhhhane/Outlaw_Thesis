@@ -202,17 +202,17 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
 export function eventDuration(event: BattleEvent): number {
   switch (event.type) {
     case 'cast':
-      return 480;
+      return 380;
     case 'damage':
     case 'heal':
     case 'shield':
-      return 340;
+      return 260;
     case 'status':
     case 'tempo':
     case 'turn_skipped':
     case 'unit_down':
     case 'trigger_fired':
-      return 260;
+      return 200;
     default:
       return 0;
   }

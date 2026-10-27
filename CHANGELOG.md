@@ -2,6 +2,24 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-7] — 2026-10-27 — combats plus courts et plus durs
+
+### Ajouté
+
+- Simulation : actions de joueur par combat et par donjon, politique « joueur moyen », bornes de
+  durée et de taux de victoire vérifiées par `pnpm sim:check` ; outils `tune` et `autotune`.
+- `balance.json` : échelle globale des monstres (`enemyScale`, PV × 0,55, ATK × 1,85) ;
+  `dungeons.json` : PV par combat (`hpPct`).
+- Combat : bouton de vitesse ×1/×2 (touche X), retenu dans les options.
+
+### Modifié
+
+- Monstres : grosses actions plus fortes, boss moins épais, trois combats recomposés. Combats
+  normaux ~20 actions de joueur, boss ~26 ; expert 84 %, joueur moyen 44 %.
+- Animations plus courtes (environ 0,6 s par action à vitesse normale).
+- « Aucun héros indispensable » : nouvelle mesure (3 niveaux de retard, joueur moyen), non tenue
+  (17 points), affichée mais non bloquante.
+
 ## [sprint-6] — 2026-10-27 — habillage « jeu plein écran »
 
 ### Ajouté

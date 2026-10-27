@@ -173,7 +173,11 @@ function unitDetail(
 }
 
 export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
-  const { options } = useOptions();
+  const { options, set: setOptions } = useOptions();
+  const fast = options.speed !== 'normal';
+  const toggleSpeed = (): void => {
+    setOptions({ speed: fast ? 'normal' : 'fast' });
+  };
   const game = useContext(GameContext);
   const { model, busy, act, skip, reset } = useBattle(setup, speedFactor(options.speed));
   const { state, view } = model;
@@ -241,6 +245,10 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
       if (paused) return;
+      if (event.key === 'x' || event.key === 'X') {
+        toggleSpeed();
+        return;
+      }
       if (event.key === ' ' && busy) {
         event.preventDefault();
         skip();
@@ -314,6 +322,17 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         />
         <h1 className="battle__title">{title ?? t('combat.title')}</h1>
         <InitiativeTrack state={state} />
+        <Button
+          variant={fast ? 'primary' : 'quiet'}
+          size="small"
+          icon="speed"
+          aria-pressed={fast}
+          aria-keyshortcuts="X"
+          title={t('combat.speed.hint')}
+          onClick={toggleSpeed}
+        >
+          {options.speed === 'instant' ? t('combat.speed.instant') : fast ? '×2' : '×1'}
+        </Button>
         {busy && (
           <Button variant="ghost" size="small" icon="speed" onClick={skip}>
             {t('combat.skip')}

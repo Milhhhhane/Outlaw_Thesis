@@ -264,7 +264,7 @@
   "help.reserve": "Réserve : l'attaque de base rapporte 1 point à l'équipe ; les compétences coûtent 1, 2 ou 4 points, à partager entre les trois héros.",
   "help.elements": "Éléments : Feu bat Nature, Nature bat Eau, Eau bat Feu (dégâts ×1,25 ; ×0,8 dans l'autre sens).",
   "help.statuses": "Marque : la cible subit plus de dégâts. Brûlure : dégâts au début de son tour. Étourdi : il passe son tour, puis devient immunisé un tour.",
-  "help.keys": "Clavier : 1 à 4 pour les sorts, Échap pour annuler la cible, Espace pour passer l'animation.",
+  "help.keys": "Clavier : 1 à 4 pour les sorts, Entrée pour valider la cible, Échap pour annuler ou faire une pause, Espace pour passer l'animation, X pour la vitesse ×2.",
   "refusal.test_only": "Réservé au mode test.",
   "refusal.test_mode": "Mode test : aucune récompense.",
   "shell.rotate": "Tournez votre appareil : le jeu se joue en paysage.",
@@ -390,5 +390,7 @@
   "sheet.points": "Points de talent",
   "sheet.cost": "Coût",
   "sheet.gain": "Gain",
-  "sheet.delay": "Délai"
+  "sheet.delay": "Délai",
+  "combat.speed.hint": "Vitesse des animations : ×1 ou ×2 (touche X)",
+  "combat.speed.instant": "Instant."
 }
