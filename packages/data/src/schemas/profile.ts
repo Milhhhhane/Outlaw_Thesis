@@ -25,6 +25,8 @@ export const ownedItemSchema = z.strictObject({
   uid: nonNegInt,
   item: idSchema,
   upgrade: nonNegInt,
+  /** Exemplaires supplémentaires du même objet : ils servent à l'améliorer. Absent des anciennes sauvegardes. */
+  copies: nonNegInt.default(0),
 });
 export type OwnedItem = z.infer<typeof ownedItemSchema>;
 
@@ -47,8 +49,15 @@ export const profileSchema = z.strictObject({
   team: z.array(idSchema).max(3),
   items: z.array(ownedItemSchema),
   nextUid: nonNegInt,
-  dungeons: z.record(idSchema, z.strictObject({ clears: nonNegInt })),
-  /** Donjons terminés depuis le dernier objet rare (garantie). */
+  dungeons: z.record(
+    idSchema,
+    z.strictObject({
+      clears: nonNegInt,
+      /** Passages sans objet rare dans ce donjon (garantie du rare). Absent des anciennes sauvegardes. */
+      dry: nonNegInt.default(0),
+    }),
+  ),
+  /** Ancienne garantie globale du rare : conservée pour les sauvegardes, remplacée par `dungeons[id].dry`. */
   sinceRare: nonNegInt,
   /** Fragments possédés par héros (invocation et étoiles). Absent des anciennes sauvegardes. */
   fragments: z.record(idSchema, nonNegInt).default({}),

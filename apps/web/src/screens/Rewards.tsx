@@ -8,7 +8,7 @@ import { useEscape } from '../game/keys';
 import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
-import { names, t, tk } from '../i18n';
+import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { ChestArt } from './Chests';
 
@@ -49,9 +49,12 @@ function Backdrop({ scene }: { readonly scene: string }) {
 export function Rewards({
   report,
   onContinue,
+  onReplay,
 }: {
   readonly report: DungeonReport;
   readonly onContinue: () => void;
+  /** Relance le même donjon (farm). */
+  readonly onReplay: () => void;
 }) {
   const { profile } = useProfile();
   const { go } = useGame();
@@ -70,7 +73,17 @@ export function Rewards({
       <h1 ref={heading} tabIndex={-1} className="end__title">
         {t('reward.title', { dungeon: names.dungeon(report.dungeon) })}
       </h1>
-      <p className="end__text">{report.firstClear ? t('reward.firstClear') : t('reward.replay')}</p>
+      <p className="end__text">
+        {report.firstClear ? t('reward.firstClear') : t('reward.replay')}{' '}
+        {report.mastery.rankUp
+          ? t('reward.mastery.up', { rank: report.mastery.rank })
+          : report.mastery.next === null
+            ? t('reward.mastery.max', { clears: report.mastery.clears })
+            : t('reward.mastery.next', {
+                next: report.mastery.next,
+                clears: report.mastery.clears,
+              })}
+      </p>
       <ul className="reward-cards" aria-label={t('reward.cards')}>
         {item !== undefined && (
           <Card
@@ -86,12 +99,16 @@ export function Rewards({
                 <li key={i}>{line}</li>
               ))}
             </ul>
+            {report.item.isNew && <p className="reward-card__new">{t('reward.item.new')}</p>}
+            {!report.item.isNew && report.item.salvaged === null && (
+              <p className="hint">{t('reward.item.copy', { n: report.item.copies })}</p>
+            )}
             {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
             {report.item.salvaged !== null && (
               <p className="hint">
                 {t('reward.salvaged', {
                   amount: report.item.salvaged.amount,
-                  tier: report.item.salvaged.tier,
+                  dust: dustName(report.item.salvaged.tier),
                 })}
               </p>
             )}
@@ -148,14 +165,19 @@ export function Rewards({
           <p className="reward-card__big">
             {t('reward.materials', {
               amount: report.materials.amount,
-              tier: report.materials.tier,
+              dust: dustName(report.materials.tier),
             })}
           </p>
         </Card>
       </ul>
-      <Button size="large" onClick={onContinue} className="end__go">
-        {t('reward.continue')}
-      </Button>
+      <div className="outcome__buttons end__go">
+        <Button size="large" variant={report.firstClear ? 'quiet' : 'primary'} onClick={onReplay}>
+          {t('reward.replay.button')}
+        </Button>
+        <Button size="large" variant={report.firstClear ? 'primary' : 'quiet'} onClick={onContinue}>
+          {t('reward.continue')}
+        </Button>
+      </div>
     </main>
   );
 }

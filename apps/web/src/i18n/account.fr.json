@@ -48,7 +48,7 @@
   "account.conflict.date": "Date : {date}",
   "account.conflict.noDate": "Date inconnue",
   "account.conflict.heroes": "Héros : {heroes}",
-  "account.conflict.resources": "Or {gold} · matériaux {materials}",
+  "account.conflict.resources": "Or {gold} · poussière {materials}",
   "account.conflict.clears": "Donjons terminés : {count}",
   "account.error.pseudo_length": "Le pseudo doit faire de 3 à 20 caractères.",
   "account.error.pseudo_chars": "Le pseudo n'accepte que lettres, chiffres, _ et -.",

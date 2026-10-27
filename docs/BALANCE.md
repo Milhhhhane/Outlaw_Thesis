@@ -237,3 +237,23 @@ trois combats sont gagnés ; 300 équipes par donjon, soit une marge d'environ �
   retirer la règle « sort le plus cher d'abord » dans `auto.ts` avant de toucher aux donjons.
 - Ces chiffres valent pour des équipes de 3 ; à refaire dès que les équipes passent à 4
   (`TEAM_SIZE` dans `auto.ts` de la simulation).
+
+## Butin, copies et maîtrise
+
+Valeurs de `balance.json` → `economy.loot` et `progression.items.upgradeCosts`. Espérances
+**calculées**, pas mesurées sur des joueurs ; la simulation ne modélise pas les objets.
+
+- Un passage donne un seul objet : commun 85, rare 15 + 4 par rang de maîtrise (poids). Rare
+  garanti au premier passage et au plus tard au 10ᵉ passage sans rare dans le donjon.
+- Passages gagnants entre deux rares (pitié comprise) : 5,35 au rang 0, 4,27 au rang 2, 3,57 au
+  rang 4. Pendant ce temps le donjon donne en moyenne 27 communs pour 6 utiles : le surplus se dissout en poussière, ce qui finance les améliorations.
+- Coût d'un objet jusqu'au niveau 3 : 6 copies (1 + 2 + 3), 1 200 or et 25 poussières du palier.
+- Le rare est le goulot : 6 copies = environ 32 passages gagnants au rang 0, 21 au rang 4. À
+  58 % de réussite d'Auto (voir plus haut) : environ 55 et 37 tentatives.
+- Collection complète (20 objets au niveau 3) : environ 320 passages gagnants (10 donjons × 32) ;
+  les communs arrivent d'eux-mêmes pendant la chasse aux rares. C'est la cible « long terme » ;
+  au rang maximum de maîtrise (100 victoires par donjon) elle serait d'un tiers plus courte.
+- Une copie dissoute rend 3 (commun) ou 4 (rare) poussières du palier de l'objet : moins qu'une
+  amélioration ne coûte, pour que dissoudre ne soit jamais la voie rapide.
+- À vérifier au test humain : si 32 passages pour un rare paraissent trop longs, monter
+  `rareWeightPerRank` ou baisser `rarePity` avant de toucher aux coûts.

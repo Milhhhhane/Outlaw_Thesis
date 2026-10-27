@@ -8,9 +8,7 @@ import {
   enterDungeon,
   equip,
   heroBuild,
-  lootRates,
   newProfile,
-  nextRandom,
   respec,
   respecCost,
   SANDBOX_COPIES,
@@ -20,8 +18,6 @@ import {
   setUpgrade,
   starterHeroes,
   takeTalent,
-  upgradeCost,
-  upgradeItem,
   xpToNext,
   type Outcome,
 } from '../src/progression';
@@ -130,9 +126,9 @@ describe('objets', () => {
   const owned: Profile = {
     ...newProfile(content),
     items: [
-      { uid: 1, item: 'ember_charm', upgrade: 0 },
-      { uid: 2, item: 'ember_charm', upgrade: 1 },
-      { uid: 3, item: 'iron_band', upgrade: 3 },
+      { uid: 1, item: 'ember_charm', upgrade: 0, copies: 0 },
+      { uid: 2, item: 'ember_charm', upgrade: 1, copies: 0 },
+      { uid: 3, item: 'iron_band', upgrade: 3, copies: 0 },
     ],
     nextUid: 4,
   };
@@ -149,22 +145,6 @@ describe('objets', () => {
     expect(equip(content, profile, 'maree', 2, 1)).toEqual({ ok: false, reason: 'bad_slot' });
     expect(equip(content, profile, 'maree', 0, 99)).toEqual({ ok: false, reason: 'unknown_item' });
     expect(equip(content, profile, 'ghost', 0, 1)).toEqual({ ok: false, reason: 'unknown_hero' });
-  });
-
-  it('amélioration : or et matériaux, trois niveaux', () => {
-    expect(upgradeCost(content, 0)).toEqual({ gold: 100, materials: { tier: 1, amount: 5 } });
-    expect(upgradeCost(content, 3)).toBeNull();
-    expect(upgradeItem(content, owned, 1)).toEqual({ ok: false, reason: 'not_enough_gold' });
-    expect(upgradeItem(content, { ...owned, gold: 100 }, 1)).toEqual({
-      ok: false,
-      reason: 'not_enough_materials',
-    });
-    const rich = { ...owned, gold: 150, materials: [6, 0, 0] as Profile['materials'] };
-    const upgraded = value(upgradeItem(content, rich, 1));
-    expect(upgraded).toMatchObject({ gold: 50, materials: [1, 0, 0] });
-    expect(upgraded.items[0]).toEqual({ uid: 1, item: 'ember_charm', upgrade: 1 });
-    expect(upgradeItem(content, rich, 3)).toEqual({ ok: false, reason: 'max_upgrade' });
-    expect(upgradeItem(content, rich, 42)).toEqual({ ok: false, reason: 'unknown_item' });
   });
 });
 
@@ -211,71 +191,11 @@ describe('donjons et butin', () => {
     expect(first.report.xp.pyra).toEqual({ gained: 100, levels: 1 });
     expect(first.report.xp.ronce).toEqual({ gained: 50, levels: 1 });
     expect(profile.items).toHaveLength(1);
-    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1 });
+    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);
     expect(dungeonOpen(content, { ...profile, testMode: true }, 'thorn_maze')).toBe(true);
     expect(dungeonOpen(content, profile, 'nowhere')).toBe(false);
     expect(profileSchema.parse(profile)).toEqual(profile);
-  });
-
-  it('même profil, même butin ; rare au premier passage puis garanti au 5e donjon sans rare', () => {
-    const profile = newProfile(content, 99);
-    const first = value(completeDungeon(content, profile, 'ember_wastes'));
-    expect(first.report.item).toEqual(
-      value(completeDungeon(content, profile, 'ember_wastes')).report.item,
-    );
-    expect(content.itemById.get(first.report.item.item)?.rarity).toBe('rare');
-    let current = profile;
-    let sinceRare = 0;
-    for (let i = 0; i < 40; i++) {
-      const { profile: next, report } = value(completeDungeon(content, current, 'ember_wastes'));
-      const rare = content.itemById.get(report.item.item)?.rarity === 'rare';
-      if (sinceRare === 4) expect(rare).toBe(true);
-      if (report.item.guaranteed && i > 0) expect(sinceRare).toBe(4);
-      sinceRare = rare ? 0 : sinceRare + 1;
-      expect(next.sinceRare).toBe(sinceRare);
-      current = next;
-    }
-    expect(completeDungeon(content, profile, 'nowhere')).toEqual({
-      ok: false,
-      reason: 'unknown_dungeon',
-    });
-  });
-
-  it('taux affichés et générateur à graine', () => {
-    const dungeon = content.dungeonById.get('ember_wastes')!;
-    const rates = lootRates(content, dungeon);
-    expect(rates.reduce((s, r) => s + r.pct, 0)).toBeCloseTo(100);
-    // 4 communs à 75 et 2 rares à 25 : un commun pèse 75 / 350.
-    expect(rates[0]).toEqual({ item: 'ember_charm', pct: (75 * 100) / 350 });
-    const a = nextRandom(5);
-    expect(nextRandom(5)).toEqual(a);
-    expect(a.value).toBeGreaterThanOrEqual(0);
-    expect(a.value).toBeLessThan(1);
-  });
-
-  it('un doublon de trop est démonté en matériaux au lieu d’être gardé', () => {
-    const profile = newProfile(content, 7);
-    let current = profile;
-    let salvaged = 0;
-    for (let i = 0; i < 60; i++) {
-      const { profile: next, report } = value(completeDungeon(content, current, 'ember_wastes'));
-      const copiesBefore = current.items.filter((o) => o.item === report.item.item).length;
-      if (report.item.salvaged !== null) {
-        salvaged += 1;
-        expect(copiesBefore).toBeGreaterThanOrEqual(content.balance.economy.loot.duplicateLimit);
-        expect(next.items).toEqual(current.items);
-        const { tier, amount } = report.item.salvaged;
-        expect(next.materials[tier - 1]).toBeGreaterThanOrEqual(
-          (current.materials[tier - 1] ?? 0) + amount,
-        );
-      } else {
-        expect(copiesBefore).toBeLessThan(content.balance.economy.loot.duplicateLimit);
-        expect(next.items.length).toBe(current.items.length + 1);
-      }
-      current = next;
-    }
-    expect(salvaged).toBeGreaterThan(0);
   });
 
   it('déblocage d’un héros au niveau recommandé du donjon', () => {

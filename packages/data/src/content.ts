@@ -24,6 +24,8 @@ export interface Content {
   enemyById: ReadonlyMap<string, Enemy>;
   itemById: ReadonlyMap<string, Item>;
   dungeonById: ReadonlyMap<string, Dungeon>;
+  /** Donjon qui donne chaque objet : le butin est exclusif, un objet n'a qu'une origine. */
+  itemOrigin: ReadonlyMap<string, string>;
 }
 
 export class ContentError extends Error {
@@ -134,6 +136,7 @@ export function parseContent(raw: RawContent): Content {
     }
   }
 
+  const itemOrigin = new Map<string, string>();
   for (const dungeon of dungeons) {
     const where = `donjon « ${dungeon.id} »`;
     if (dungeon.recommendedLevel > balance.progression.maxLevel) {
@@ -149,20 +152,34 @@ export function parseContent(raw: RawContent): Content {
       if (!isLast && hasBoss) issues.push(`${where} : seul le dernier combat contient un boss`);
     });
     let hasRare = false;
+    let hasCommon = false;
     for (const entry of dungeon.loot) {
       const item = itemById.get(entry);
       if (!item) issues.push(`${where} : objet de butin inconnu « ${entry} »`);
       else if (item.rarity === 'rare') hasRare = true;
+      else hasCommon = true;
+      // Butin exclusif : chaque objet vient d'un seul donjon, c'est ce qui rend le farm ciblé.
+      const origin = itemOrigin.get(entry);
+      if (origin !== undefined && origin !== dungeon.id)
+        issues.push(`${where} : l'objet « ${entry} » est déjà le butin de « ${origin} »`);
+      itemOrigin.set(entry, itemOrigin.get(entry) ?? dungeon.id);
     }
     if (new Set(dungeon.loot).size !== dungeon.loot.length)
       issues.push(`${where} : objet de butin en double`);
     if (!hasRare) issues.push(`${where} : la table de butin doit contenir au moins un objet rare`);
+    if (!hasCommon)
+      issues.push(`${where} : la table de butin doit contenir au moins un objet commun`);
     if (!balance.chests.tiers.some((tier) => tier.id === dungeon.chest)) {
       issues.push(`${where} : palier de coffre inconnu « ${dungeon.chest} »`);
     }
     if (dungeon.unlocksHero !== undefined && !heroById.has(dungeon.unlocksHero)) {
       issues.push(`${where} : héros débloqué inconnu « ${dungeon.unlocksHero} »`);
     }
+  }
+
+  for (const item of items) {
+    if (!itemOrigin.has(item.id))
+      issues.push(`objet « ${item.id} » : aucun donjon ne le donne (butin exclusif obligatoire)`);
   }
 
   for (const a of dungeons) {
@@ -185,5 +202,6 @@ export function parseContent(raw: RawContent): Content {
     enemyById,
     itemById,
     dungeonById,
+    itemOrigin,
   };
 }

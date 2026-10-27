@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { atlasUrl, sprite } from '../art';
 import { ATLAS_SIZE } from '../art/sprites';
-import { t, tk } from '../i18n';
+import { dustName, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { useEscape } from './keys';
 
@@ -224,7 +224,11 @@ export function Resources() {
         {t('hub.gold', { gold: profile.gold })}
       </span>
       {profile.materials.map((amount, tier) => (
-        <span key={tier} className={`resources__mat resources__mat--${tier + 1}`}>
+        <span
+          key={tier}
+          className={`resources__mat resources__mat--${tier + 1}`}
+          title={dustName(tier + 1)}
+        >
           <Icon name="points" />
           {amount}
         </span>

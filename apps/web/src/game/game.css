@@ -962,6 +962,21 @@ button:disabled {
   color: #f4c25a;
 }
 
+.item-card--unknown {
+  opacity: 0.55;
+}
+
+.item-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-card__copies {
+  color: var(--bone);
+  font-size: 14px;
+}
+
 .item-card--on {
   border-image-source: var(--frame-gold);
 }
@@ -1292,6 +1307,12 @@ button:disabled {
 
 .map__loot-rare {
   color: var(--gold);
+}
+
+.reward-card__new {
+  margin: 0;
+  color: var(--gold);
+  font-size: 15px;
 }
 
 .map__level .ok {

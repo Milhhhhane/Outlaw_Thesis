@@ -13,3 +13,5 @@ Idées notées, non codées.
   coffres hors donjons (quêtes, événements), niveau maximum 100 avec d'autres étoiles.
 - Langues autres que le français (l'i18n est prête).
 - Tests de bout en bout Playwright (optionnels pour le MVP).
+- Butin : objets d'événement ou de boss de chapitre hors des dix donjons, échange de copies contre
+  poussière à taux variable, plusieurs exemplaires d'un même objet portés par des héros différents.
