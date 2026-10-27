@@ -27,9 +27,8 @@ function playBattle(): { events: BattleEvent[]; states: number } {
 describe('simulation du champ de bataille', () => {
   it('un combattant tombé reste le même nœud et ne tombe qu’une fois', () => {
     const { events } = playBattle();
-    const downs = events.filter((e) => e.type === 'unit_down');
-    expect(downs.length).toBeGreaterThan(0);
-    const ids = downs.map((e) => (e.type === 'unit_down' ? e.unit : ''));
+    const ids = events.flatMap((e) => (e.type === 'unit_down' ? [e.unit] : []));
+    expect(ids.length).toBeGreaterThan(0);
     expect(new Set(ids).size).toBe(ids.length);
 
     let view: BattleView = viewFromState(createBattle(demoSetup(), content.balance).state);
