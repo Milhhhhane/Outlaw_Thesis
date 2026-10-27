@@ -31,6 +31,16 @@ export interface Flash {
   readonly unit: string;
   readonly text: string;
   readonly tone: 'damage' | 'heal' | 'shield' | 'status' | 'tempo';
+  /** Effet visuel à jouer sur l'unité (nom d'une animation de l'atlas), ou aucun. */
+  readonly fx: string | null;
+}
+
+/** Sort en cours d'animation : le lanceur, ses cibles et son élément. */
+export interface CastView {
+  readonly key: number;
+  readonly unit: string;
+  readonly targets: readonly string[];
+  readonly element: string;
 }
 
 export interface BattleView {
@@ -39,6 +49,7 @@ export interface BattleView {
   readonly flashes: readonly Flash[];
   /** Unité qui vient d'agir (mise en avant pendant l'animation). */
   readonly acting: string | null;
+  readonly cast: CastView | null;
 }
 
 function modsOf(unit: UnitState): Record<string, number> {
@@ -66,6 +77,7 @@ export function viewFromState(state: BattleState): BattleView {
     points: { ...state.points },
     flashes: [],
     acting: null,
+    cast: null,
   };
 }
 
@@ -79,9 +91,16 @@ function flash(
   unit: string,
   text: string,
   tone: Flash['tone'],
+  fx: string | null = null,
 ): BattleView {
-  return { ...view, flashes: [...view.flashes.slice(-5), { key, unit, text, tone }] };
+  return { ...view, flashes: [...view.flashes.slice(-5), { key, unit, text, tone, fx }] };
 }
+
+function elementOf(view: BattleView, id: string): string {
+  return view.units.find((u) => u.id === id)?.element ?? 'fire';
+}
+
+const STATUS_FX: Readonly<Record<string, string>> = { burn: 'burn', stun: 'stun', mark: 'mark' };
 
 /** Applique un événement du journal à la vue. `key` : position de l'événement, pour les animations. */
 export function applyEvent(view: BattleView, event: BattleEvent, key: number): BattleView {
@@ -89,7 +108,16 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
     case 'turn_start':
       return { ...view, acting: event.unit };
     case 'cast':
-      return { ...view, acting: event.unit };
+      return {
+        ...view,
+        acting: event.unit,
+        cast: {
+          key,
+          unit: event.unit,
+          targets: event.targets,
+          element: elementOf(view, event.unit),
+        },
+      };
     case 'damage': {
       const next = update(view, event.target, (u) => ({
         ...u,
@@ -97,7 +125,15 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         shield: event.shieldAfter,
         alive: event.hpAfter > 0,
       }));
-      return flash(next, key, event.target, `−${event.amount - event.absorbed}`, 'damage');
+      const element = event.cause === 'burn' ? 'fire' : elementOf(view, event.source);
+      return flash(
+        next,
+        key,
+        event.target,
+        `−${event.amount - event.absorbed}`,
+        'damage',
+        `burst_${element}`,
+      );
     }
     case 'heal':
       return flash(
@@ -105,6 +141,7 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         key,
         event.target,
         `+${event.amount}`,
+        'heal',
         'heal',
       );
     case 'shield':
@@ -114,21 +151,36 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         event.target,
         `+${event.amount}`,
         'shield',
+        'shield',
       );
     case 'status':
       if (event.resisted) return view;
-      return update(view, event.target, (u) => ({
-        ...u,
-        statuses: [
-          ...u.statuses.filter((s) => s.kind !== event.status),
-          { kind: event.status, turns: event.turns },
-        ],
-      }));
+      return flash(
+        update(view, event.target, (u) => ({
+          ...u,
+          statuses: [
+            ...u.statuses.filter((s) => s.kind !== event.status),
+            { kind: event.status, turns: event.turns },
+          ],
+        })),
+        key,
+        event.target,
+        '',
+        'status',
+        STATUS_FX[event.status] ?? null,
+      );
     case 'stat_mod':
-      return update(view, event.target, (u) => ({
-        ...u,
-        mods: { ...u.mods, [event.stat]: event.total },
-      }));
+      return flash(
+        update(view, event.target, (u) => ({
+          ...u,
+          mods: { ...u.mods, [event.stat]: event.total },
+        })),
+        key,
+        event.target,
+        '',
+        'status',
+        event.percent >= 0 ? 'buff' : 'debuff',
+      );
     case 'tempo':
       return flash(view, key, event.target, event.delta < 0 ? '«' : '»', 'tempo');
     case 'points':
@@ -150,11 +202,11 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
 export function eventDuration(event: BattleEvent): number {
   switch (event.type) {
     case 'cast':
-      return 420;
+      return 480;
     case 'damage':
     case 'heal':
     case 'shield':
-      return 320;
+      return 340;
     case 'status':
     case 'tempo':
     case 'turn_skipped':

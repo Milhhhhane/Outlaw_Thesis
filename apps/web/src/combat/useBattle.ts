@@ -26,6 +26,8 @@ export interface Model {
   readonly queue: readonly BattleEvent[];
   readonly log: readonly LogEntry[];
   readonly counter: number;
+  /** Temps d'affichage (ms) du dernier événement montré, à attendre avant le suivant. */
+  readonly hold: number;
 }
 
 type Msg =
@@ -37,7 +39,12 @@ type Msg =
 const LOG_SIZE = 80;
 
 function withResult(model: Model, result: StepResult): Model {
-  return { ...model, state: result.state, queue: [...model.queue, ...result.events] };
+  return {
+    ...model,
+    state: result.state,
+    queue: [...model.queue, ...result.events],
+    hold: model.queue.length > 0 ? model.hold : 0,
+  };
 }
 
 /** Joue les événements en attente jusqu'au premier qui demande du temps d'affichage (inclus). */
@@ -45,19 +52,21 @@ function advance(model: Model, all: boolean): Model {
   let { view, counter, log } = model;
   const queue = [...model.queue];
   const lines: LogEntry[] = [];
+  let hold = 0;
   for (let event = queue.shift(); event !== undefined; event = queue.shift()) {
     counter += 1;
     view = applyEvent(view, event, counter);
     const text = logLine(event, model.state.units);
     if (text !== null) lines.push({ key: counter, text });
-    if (!all && eventDuration(event) > 0) break;
+    hold = eventDuration(event);
+    if (!all && hold > 0) break;
   }
   if (lines.length > 0) log = [...log, ...lines].slice(-LOG_SIZE);
   if (queue.length === 0) {
     // Fin du rejeu : on se recale exactement sur l'état du moteur.
-    view = { ...viewFromState(model.state), flashes: view.flashes };
+    view = { ...viewFromState(model.state), flashes: view.flashes, cast: view.cast };
   }
-  return { ...model, view, queue, counter, log };
+  return { ...model, view, queue, counter, log, hold };
 }
 
 export function init(setup: BattleSetup): Model {
@@ -77,7 +86,10 @@ export function init(setup: BattleSetup): Model {
     })),
     points: { player: start, enemy: start },
   };
-  return withResult({ setup, state: result.state, view, queue: [], log: [], counter: 0 }, result);
+  return withResult(
+    { setup, state: result.state, view, queue: [], log: [], counter: 0, hold: 0 },
+    result,
+  );
 }
 
 export function reducer(model: Model, msg: Msg): Model {
@@ -111,14 +123,15 @@ export function useBattle(setup: BattleSetup) {
       dispatch({ type: 'flush' });
       return;
     }
-    const delay = eventDuration(next);
+    // On laisse au dernier événement montré le temps de s'afficher avant de jouer le suivant.
+    const delay = model.hold;
     const timer = window.setTimeout(() => {
       dispatch({ type: 'advance' });
     }, delay);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [model.queue, model.counter]);
+  }, [model.queue, model.counter, model.hold]);
 
   const act = useCallback((action: Action) => {
     dispatch({ type: 'act', action });

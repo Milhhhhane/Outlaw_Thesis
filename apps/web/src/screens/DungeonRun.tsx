@@ -87,6 +87,7 @@ export function DungeonRun({
       key={phase.room}
       setup={setup}
       title={t('run.room', { dungeon: name, n: phase.room + 1 })}
+      scene={dungeonId}
       onExit={onExit}
       finish={{
         label: (won) => (!won ? t('run.back') : last ? t('run.claim') : t('run.next')),

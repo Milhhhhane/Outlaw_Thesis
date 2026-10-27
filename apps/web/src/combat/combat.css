@@ -501,3 +501,347 @@
   gap: var(--space-1);
   max-width: 80ch;
 }
+
+/* --- Champ de bataille en pixel art ------------------------------------------------------- */
+.stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 3px solid #07050a;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 2px #5a4664,
+    0 10px 30px rgb(0 0 0 / 45%);
+  background: #07050a;
+}
+
+.stage__world {
+  position: absolute;
+  inset: 0 auto auto 0;
+  transform-origin: 0 0;
+  background-size: 320px 180px;
+  image-rendering: pixelated;
+}
+
+.actor {
+  position: absolute;
+  pointer-events: none;
+}
+
+.actor__shadow {
+  position: absolute;
+  left: 50%;
+  width: 30px;
+  height: 5px;
+  margin-left: -15px;
+  border-radius: 50%;
+  background: rgb(10 4 10 / 55%);
+}
+
+.actor--enemy .actor__shadow {
+  width: 38px;
+  margin-left: -19px;
+}
+
+.actor__body {
+  position: absolute;
+  inset: 0;
+  transition:
+    transform 0.16s steps(3, end),
+    filter 0.3s;
+}
+
+.actor--acting .actor__body {
+  animation: actor-lunge 0.42s steps(6, end);
+}
+
+@keyframes actor-lunge {
+  0% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(calc(var(--dir) * -3px));
+  }
+  60% {
+    transform: translateX(calc(var(--dir) * 12px));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.actor__hit {
+  display: block;
+  animation: actor-hit 0.32s steps(1, end);
+}
+
+@keyframes actor-hit {
+  0% {
+    filter: brightness(4) saturate(0);
+    transform: translateX(calc(var(--dir) * -3px));
+  }
+  25% {
+    filter: none;
+    transform: translateX(calc(var(--dir) * 2px));
+  }
+  50% {
+    filter: brightness(2.5) saturate(0.4);
+    transform: translateX(calc(var(--dir) * -1px));
+  }
+  75% {
+    filter: none;
+    transform: none;
+  }
+}
+
+.actor--down .actor__body {
+  filter: grayscale(1) brightness(0.45);
+  opacity: 0.55;
+  transform: translateY(3px);
+}
+
+.actor--active .actor__body {
+  filter: drop-shadow(1px 0 0 #fbe58a) drop-shadow(-1px 0 0 #fbe58a) drop-shadow(0 -1px 0 #fbe58a);
+}
+
+.actor--targetable .actor__body {
+  animation: actor-target 0.8s steps(2, end) infinite;
+}
+
+@keyframes actor-target {
+  0% {
+    filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff)
+      drop-shadow(0 -1px 0 #fff);
+  }
+  50% {
+    filter: drop-shadow(1px 0 0 #e0643a) drop-shadow(-1px 0 0 #e0643a) drop-shadow(0 1px 0 #e0643a)
+      drop-shadow(0 -1px 0 #e0643a);
+  }
+}
+
+.actor__target {
+  position: absolute;
+  inset: 8px 12px 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: crosshair;
+  pointer-events: auto;
+}
+
+.actor__hud {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.actor__bar {
+  position: relative;
+  width: 24px;
+  height: 4px;
+  background: #07050a;
+  box-shadow: inset 0 0 0 1px #07050a;
+}
+
+.actor__hp,
+.actor__shield {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  height: 2px;
+  max-width: 22px;
+  background: linear-gradient(#9de26a 50%, #4a9a3a 50%);
+}
+
+.actor--enemy .actor__hp {
+  background: linear-gradient(#ff8a5a 50%, #c0301a 50%);
+}
+
+.actor__shield {
+  top: 0;
+  height: 1px;
+  background: #8cd0f0;
+}
+
+.actor__marker {
+  width: 5px;
+  height: 3px;
+  margin-bottom: 1px;
+  background: #fbe58a;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  animation: marker-bob 0.6s steps(2, end) infinite;
+}
+
+@keyframes marker-bob {
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+.actor__fx {
+  position: absolute;
+  left: 50%;
+  margin-left: -16px;
+}
+
+.actor__number {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: number-rise 0.9s steps(8, end) forwards;
+}
+
+@keyframes number-rise {
+  0% {
+    transform: translate(-50%, 4px);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -8px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -10px);
+    opacity: 0;
+  }
+}
+
+.stage__aura {
+  position: absolute;
+  animation: aura-fade 0.6s steps(4, end) forwards;
+}
+
+@keyframes aura-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+.stage__bolt {
+  position: absolute;
+  z-index: 400;
+  animation: bolt-fly 0.38s steps(10, end) forwards;
+}
+
+@keyframes bolt-fly {
+  0% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  95% {
+    translate: var(--dx) var(--dy);
+    opacity: 1;
+  }
+  100% {
+    translate: var(--dx) var(--dy);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor__body,
+  .actor__hit,
+  .actor__number,
+  .stage__bolt,
+  .stage__aura,
+  .actor__marker {
+    animation: none !important;
+  }
+
+  .stage__bolt {
+    display: none;
+  }
+}
+
+/* --- Habillage pixel : cadres en 9 tranches, mise en page autour du champ de bataille ---- */
+.unit,
+.actions,
+.spell,
+.log__lines,
+.result {
+  border: 8px solid transparent;
+  border-image: url('../art/panel.png') 4 fill / 8px / 0 stretch;
+  border-radius: 0;
+  background: none;
+  image-rendering: pixelated;
+}
+
+.unit {
+  min-height: 0;
+  padding: var(--space-2) var(--space-3);
+  box-shadow: inset 0 3px 0 var(--element);
+}
+
+.unit--enemy {
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent;
+  box-shadow: inset 0 -3px 0 var(--element);
+}
+
+.unit--active,
+.spell--selected,
+.unit--targetable {
+  border-style: solid;
+  border-image-source: url('../art/button.png');
+}
+
+.spell--ult {
+  border-color: transparent;
+}
+
+.log__lines {
+  padding: var(--space-2) var(--space-3);
+}
+
+@media (width >= 56rem) {
+  .combat {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'bar bar'
+      'track track'
+      'stage stage'
+      'player enemy'
+      'actions actions'
+      'log help';
+  }
+  .combat__bar {
+    grid-area: bar;
+  }
+  .combat .track {
+    grid-area: track;
+  }
+  .stage {
+    grid-area: stage;
+  }
+  .side--player {
+    grid-area: player;
+  }
+  .side--enemy {
+    grid-area: enemy;
+  }
+  .actions {
+    grid-area: actions;
+  }
+  .log {
+    grid-area: log;
+  }
+  .help {
+    grid-area: help;
+  }
+  .result {
+    grid-column: 1 / -1;
+  }
+  .side__row {
+    gap: var(--space-2);
+  }
+  .unit {
+    font-size: var(--step--1);
+  }
+  .unit__name {
+    font-size: var(--step-0);
+  }
+}

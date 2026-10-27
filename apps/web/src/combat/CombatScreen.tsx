@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { names, t, type TextKey } from '../i18n';
 import { ActionBar } from './ActionBar';
 import { InitiativeTrack } from './InitiativeTrack';
+import { Stage } from './Stage';
 import { content } from './session';
 import { UnitCard } from './UnitCard';
 import { useBattle } from './useBattle';
@@ -21,6 +22,8 @@ interface Props {
   readonly onExit: () => void;
   /** Titre affiché (par défaut « Combat »). */
   readonly title?: string;
+  /** Décor du champ de bataille : identifiant du donjon. */
+  readonly scene?: string;
   /** Dans un donjon : un seul bouton de fin, qui mène à la suite. */
   readonly finish?: {
     readonly label: (won: boolean) => string;
@@ -28,7 +31,7 @@ interface Props {
   };
 }
 
-export function CombatScreen({ setup, onExit, title, finish }: Props) {
+export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   const { model, busy, act, skip, reset } = useBattle(setup);
   const { state, view } = model;
   // La sélection est liée au héros actif : elle disparaît d'elle-même quand le tour passe.
@@ -140,6 +143,14 @@ export function CombatScreen({ setup, onExit, title, finish }: Props) {
       </header>
 
       <InitiativeTrack state={state} />
+
+      <Stage
+        view={view}
+        scene={scene ?? 'ember_wastes'}
+        active={active}
+        targets={targets as ReadonlySet<string>}
+        onTarget={onTarget}
+      />
 
       <section className="side side--enemy" aria-label={t('combat.enemies')}>
         <ul className="side__row">{row('enemy')}</ul>

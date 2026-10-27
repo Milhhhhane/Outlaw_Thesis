@@ -89,11 +89,13 @@ export function UnitCard(props: Props) {
         </span>
       )}
       <span className="unit__flashes" aria-hidden="true">
-        {flashes.map((f) => (
-          <span key={f.key} className={`flash flash--${f.tone}`}>
-            {f.text}
-          </span>
-        ))}
+        {flashes
+          .filter((f) => f.text !== '')
+          .map((f) => (
+            <span key={f.key} className={`flash flash--${f.tone}`}>
+              {f.text}
+            </span>
+          ))}
       </span>
     </>
   );

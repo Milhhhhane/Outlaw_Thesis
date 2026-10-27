@@ -176,6 +176,26 @@ garder la progression jouable pour les tests.
 **Défaite** — Contexte : « une défaite relance le donjon ». Choix : l'écran d'échec propose de
 relancer le donjon ou de rentrer au camp. Raison : fidèle au rapport, sans forcer.
 
+## Graphismes
+
+**Pixel art fait main, ombré par script** — Contexte : le propriétaire veut un jeu « super
+beau », en pixel art de qualité, ambiance western mystique au crépuscule. Choix : chaque sprite
+est une pile de formes posées à la main (`tools/art/`), un petit moteur Python choisit les teintes
+(rampes de 4 à 5 couleurs, lumière en haut à gauche, ombres portées, contours sélectifs, matières
+lumineuses) ; l'atlas et les décors sont des PNG commités, régénérés par
+`python3 tools/art/export.py`. Raison : rendu cohérent et retouchable en code, aucun outil ni
+licence tierce, résultat déterministe ; la CI n'a pas besoin de Python.
+
+**Champ de bataille natif 320 × 180** — Choix : le combat se joue sur une scène native de
+320 × 180 pixels agrandie sans lissage à la largeur de l'écran ; héros à gauche, ennemis en
+miroir ; animations en CSS pilotées par le journal (fente, éclair blanc à l'impact, projectile,
+chiffres en police pixel). Les cartes d'unité restent sous la scène pour la lecture et le clavier.
+Raison : aucune règle dans l'interface, accessible, poids faible (atlas 72 ko hors budget JS).
+
+**Rythme du rejeu** — Constat : l'attente se faisait avant l'événement suivant, si bien qu'un
+événement sans durée faisait passer le suivant sans pause. Choix : on attend la durée du dernier
+événement affiché. Raison : chaque coup a le temps d'être vu.
+
 ## Planification
 
 **Héros 4 à 6 et donjons 2, 4, 6** — Contexte : le déblocage arrive au sprint 4, ces héros au

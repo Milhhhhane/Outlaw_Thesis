@@ -84,19 +84,22 @@ button {
 }
 
 .button {
-  padding: var(--space-2) var(--space-5);
-  border: 2px solid var(--gold);
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--ink);
+  padding: var(--space-1) var(--space-4);
+  border: 8px solid transparent;
+  border-image: url('./art/button.png') 4 fill / 8px / 0 stretch;
+  border-radius: 0;
+  background: none;
+  color: #fff4d8;
   font-weight: 650;
+  text-shadow: 0 2px 0 #07050a;
+  image-rendering: pixelated;
   cursor: pointer;
 }
 .button:hover {
-  background: #f0c65a;
+  filter: brightness(1.18);
 }
 .button--quiet {
-  background: transparent;
+  border-image-source: url('./art/panel.png');
   color: var(--gold);
 }
 .button--large {
