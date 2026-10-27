@@ -25,6 +25,8 @@ import { UpgradePips } from './Workshop';
 
 type Tab = 'stats' | 'talents' | 'items';
 
+const STAT_ICON = { hp: 'hp', atk: 'damage', def: 'shield', vit: 'spd' } as const;
+
 /** Icône d'un nœud selon ce qu'il touche (une douzaine d'icônes, teintées par l'élément). */
 export function nodeIcon(node: TalentNode): string {
   const mod = node.mods[0];
@@ -485,6 +487,7 @@ export function HeroSheet({
     <Screen title={names.hero(heroId)} onBack={onBack} className={`sheet element-${def.element}`}>
       <div className="sheet__layout">
         <aside className="sheet__id">
+          <PixelSprite name="pedestal" className="pedestal" />
           <span className="sheet__sprite">
             <PixelSprite name={heroId} idle />
           </span>
@@ -536,7 +539,10 @@ export function HeroSheet({
                 <dl className="stats">
                   {(['hp', 'atk', 'def', 'vit'] as const).map((stat) => (
                     <div key={stat}>
-                      <dt>{tk(`stat.${stat}`)}</dt>
+                      <dt>
+                        <Icon name={STAT_ICON[stat]} size={12} />
+                        {tk(`stat.${stat}`)}
+                      </dt>
                       <dd>{unit.stats[stat]}</dd>
                     </div>
                   ))}

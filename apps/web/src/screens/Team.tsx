@@ -65,6 +65,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
                 toggle(id);
               }}
             >
+              <PixelSprite name="pedestal" className="pedestal" />
               <span className="team__sprite">
                 <PixelSprite name={id} idle />
               </span>

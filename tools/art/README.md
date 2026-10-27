@@ -10,6 +10,7 @@ Tout le pixel art du jeu est original et généré par ces scripts (Python 3, Pi
 | `enemies.py`     | les 12 ennemis (64 × 64, boss en 96 × 96, tournés vers la gauche)     |
 | `fx.py`          | impacts, projectiles, auras, altérations, police 3 × 5                |
 | `backgrounds.py` | un décor 320 × 180 par donjon                                         |
+| `ui.py`          | habillage des menus : fond, cadres bois, planche, corde, cuir, socles |
 | `export.py`      | écrit l'atlas, les décors, les cadres et `sprites.ts` dans le web     |
 | `scene.py`       | aperçu d'une scène complète, pour juger un réglage                    |
 

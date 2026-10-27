@@ -214,6 +214,64 @@ def campfire(frame):
     return im
 
 
+def slash(ramp, frame):
+    """Arc de frappe 48 × 48 devant le lanceur : croissant qui s'ouvre puis se dissipe."""
+    im = canvas(48, 48)
+    cx, cy = 20, 24
+    r_out = 10 + frame * 5
+    width = 5 - frame
+    for y in range(48):
+        for x in range(48):
+            d = math.hypot(x - cx, (y - cy) * 1.1)
+            a = math.atan2(y - cy, x - cx)
+            if r_out - width <= d < r_out and -1.3 < a < 1.3:
+                edge = r_out - d
+                tone = 4 if edge < 1.5 and frame < 2 else (3 if edge < 3 else 2)
+                if frame >= 2 and (x + y) % 2 == 0:
+                    continue
+                put(im, x, y, ramp[tone - (1 if frame == 3 else 0)])
+    return im
+
+
+def dust(frame, seed=3):
+    """Nuage de poussière 32 × 16 au sol (chute, impact)."""
+    im = canvas(32, 16)
+    rnd = random.Random(seed)
+    ramp = ['#2a2230', '#4a4050', '#6c6270', '#9a9098']
+    for i in range(10):
+        a = (i / 10) * math.pi
+        r = 4 + frame * 4 + rnd.random() * 3
+        x, y = 16 + math.cos(a) * r * 1.3, 13 - math.sin(a) * r * 0.5
+        size = 3 - frame if frame < 3 else 1
+        for dx in range(size):
+            for dy in range(size):
+                put(im, x + dx, y + dy, ramp[min(3, 3 - frame + (i % 2))])
+    return im
+
+
+def impact(ramp, frame, seed):
+    """Gros impact 48 × 48 pour les coups lourds : éclat large et éclats longs."""
+    im = canvas(48, 48)
+    rnd = random.Random(seed)
+    cx = cy = 24
+    if frame < 2:
+        for y in range(48):
+            for x in range(48):
+                d = math.hypot(x - cx, y - cy)
+                if d < 7 - frame * 3:
+                    put(im, x, y, '#ffffff' if frame == 0 else ramp[4])
+                elif d < 10 - frame * 2:
+                    put(im, x, y, ramp[4 - frame])
+    for i in range(10):
+        a = i / 10 * math.tau + rnd.random() * 0.3
+        r0 = 4 + frame * 6
+        r1 = r0 + 8 - frame * 2
+        for r in range(int(r0), int(r1)):
+            tone = 4 - frame if r < r0 + 3 else max(0, 3 - frame)
+            put(im, cx + math.cos(a) * r, cy + math.sin(a) * r, ramp[tone])
+    return im
+
+
 def all_fx():
     out = {}
     for el, ramp in ELEMENT.items():
@@ -221,6 +279,9 @@ def all_fx():
         kind = {'fire': 'orb', 'water': 'orb', 'nature': 'thorn'}[el]
         out[f'bolt_{el}'] = [projectile(ramp, f, kind) for f in range(2)]
         out[f'aura_{el}'] = [aura(ramp, f) for f in range(2)]
+        out[f'slash_{el}'] = [slash(ramp, f) for f in range(4)]
+        out[f'impact_{el}'] = [impact(ramp, f, hash(el) % 89) for f in range(4)]
+    out['dust'] = [dust(f) for f in range(4)]
     out['heal'] = [rising(ELEMENT['nature'], f, 5, PLUS) for f in range(4)]
     out['buff'] = [rising(['#3a2208', '#6e4612', '#b07a20', '#e2b440', '#fbe58a'], f, 6, UP) for f in range(4)]
     out['debuff'] = [rising(['#140a1c', '#3c2058', '#5a3478', '#8256a0', '#c8a0f0'], f, 7, DOWN) for f in range(4)]

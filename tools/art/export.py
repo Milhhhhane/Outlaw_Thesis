@@ -12,6 +12,7 @@ import enemies
 import fx
 import heroes
 import icons
+import ui
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / 'apps' / 'web' / 'src' / 'art'
@@ -23,6 +24,7 @@ def frames():
         out[name] = [fn(f).render() for f in (0, 1)]
     out.update(fx.all_fx())
     out.update(icons.all_icons())
+    out.update(ui.all_ui())
     return out
 
 
@@ -99,6 +101,9 @@ def main():
     for name, fn in backgrounds.ALL.items():
         fn().save(OUT / 'bg' / f'{name}.png', optimize=True)
     frame_png('#221b2a', '#5a4664', '#120c16', '#07050a', '#b07a20').save(OUT / 'panel.png', optimize=True)
+    ui.menu_backdrop().save(OUT / 'bg' / 'menu.png', optimize=True)
+    for name, fn in ui.FILES.items():
+        fn().save(OUT / f'{name}.png', optimize=True)
     frame_png('#3a2a20', '#d4a640', '#5a3410', '#07050a', '#fbe58a').save(OUT / 'button.png', optimize=True)
     body = json.dumps(sprites, separators=(',', ':'), sort_keys=True)
     (OUT / 'sprites.ts').write_text(
