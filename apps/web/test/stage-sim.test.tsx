@@ -74,3 +74,42 @@ describe('simulation du champ de bataille', () => {
     expect(shakes).toBeGreaterThan(5);
   });
 });
+
+describe('course de l’attaque de base', () => {
+  it('l’attaquant court vers un ennemi seul, pas pour un sort sur soi', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const active = state.units.find((u) => u.def.id === state.active);
+    expect(active).toBeDefined();
+    if (active === undefined) return;
+    const enemy = state.units.find((u) => u.def.side !== active.def.side);
+    expect(enemy).toBeDefined();
+    if (enemy === undefined) return;
+    let view: BattleView = viewFromState(state);
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: active.def.id, spell: 'x', slot: 'basic', targets: [enemy.def.id] },
+      1,
+    );
+    expect(view.cast?.dash).toBe(true);
+    const { container, rerender } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    const actor = container.querySelector<HTMLElement>(`[data-unit="${active.def.id}"]`);
+    expect(actor?.className).toContain('actor--dash-b');
+    expect(actor?.style.getPropertyValue('--dx')).not.toBe('0px');
+    // Pas de projectile pendant une course : le coup se donne au contact.
+    expect(container.querySelector('.stage__bolt')).toBeNull();
+    expect(container.querySelector('.stage__slash--dash')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: active.def.id, spell: 'y', slot: 'a', targets: [active.def.id] },
+      2,
+    );
+    expect(view.cast?.dash).toBe(false);
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(container.querySelector(`[data-unit="${active.def.id}"]`)?.className).not.toContain(
+      'actor--dash',
+    );
+  });
+});

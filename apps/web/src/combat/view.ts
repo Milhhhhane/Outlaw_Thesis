@@ -47,6 +47,8 @@ export interface CastView {
   readonly element: string;
   /** Ultime : flash d'écran et zoom bref. */
   readonly ult: boolean;
+  /** Attaque de base sur un seul ennemi : le sprite court jusqu'à sa cible et frappe au contact. */
+  readonly dash: boolean;
 }
 
 export interface BattleView {
@@ -121,7 +123,10 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
   switch (event.type) {
     case 'turn_start':
       return { ...view, acting: event.unit };
-    case 'cast':
+    case 'cast': {
+      const caster = view.units.find((u) => u.id === event.unit);
+      const only = event.targets.length === 1 ? event.targets[0] : undefined;
+      const target = view.units.find((u) => u.id === only);
       return {
         ...view,
         acting: event.unit,
@@ -129,10 +134,16 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
           key,
           unit: event.unit,
           targets: event.targets,
-          element: elementOf(view, event.unit),
+          element: caster?.element ?? 'fire',
           ult: event.slot === 'ult',
+          dash:
+            event.slot === 'basic' &&
+            caster !== undefined &&
+            target !== undefined &&
+            target.side !== caster.side,
         },
       };
+    }
     case 'damage': {
       const next = update(view, event.target, (u) => ({
         ...u,

@@ -189,6 +189,134 @@
   }
 }
 
+/* Attaque de base : course jusqu'au contact (--dx, --dy), coup, retour. Durée calée sur le
+   rejeu (lancer 380 ms + coup 260 ms, × --pace) ; deux noms (a/b) pour rejouer sans remonter. */
+.actor--dash .actor__body {
+  transform-origin: 50% 100%;
+}
+
+.actor--dash-a .actor__body {
+  animation: actor-dash-a calc(0.6s * var(--pace, 1)) steps(12, end);
+}
+
+.actor--dash-b .actor__body {
+  animation: actor-dash-b calc(0.6s * var(--pace, 1)) steps(12, end);
+}
+
+/* L'arme balaie à l'arrivée, pas au départ. */
+.actor--dash-a .hero-sprite__weapon {
+  animation: weapon-swing-a calc(0.3s * var(--pace, 1)) steps(5, end) calc(0.17s * var(--pace, 1));
+}
+
+.actor--dash-b .hero-sprite__weapon {
+  animation: weapon-swing-b calc(0.3s * var(--pace, 1)) steps(5, end) calc(0.17s * var(--pace, 1));
+}
+
+@keyframes weapon-swing-a {
+  0% {
+    transform: rotate(calc(var(--tilt, 0deg) - 40deg));
+  }
+  40% {
+    transform: rotate(calc(var(--tilt, 0deg) + 80deg));
+  }
+  100% {
+    transform: rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes weapon-swing-b {
+  0% {
+    transform: rotate(calc(var(--tilt, 0deg) - 40deg));
+  }
+  40% {
+    transform: rotate(calc(var(--tilt, 0deg) + 80deg));
+  }
+  100% {
+    transform: rotate(var(--tilt, 0deg));
+  }
+}
+
+@keyframes actor-dash-a {
+  0% {
+    transform: translate(0, 0);
+  }
+  8% {
+    transform: translate(calc(var(--dir) * -6px), 0) scale(1.12, 0.88);
+  }
+  16% {
+    transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4)) scale(0.9, 1.1);
+  }
+  28% {
+    transform: translate(var(--dx), var(--dy)) scale(1.06, 0.94);
+  }
+  36% {
+    transform: translate(calc(var(--dx) + var(--dir) * 6px), var(--dy))
+      rotate(calc(var(--dir) * 10deg)) scale(0.96, 1.04);
+  }
+  64% {
+    transform: translate(var(--dx), var(--dy));
+  }
+  72% {
+    transform: translate(var(--dx), var(--dy)) scale(1.1, 0.9);
+  }
+  86% {
+    transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4 - 4px)) scale(0.94, 1.06);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes actor-dash-b {
+  0% {
+    transform: translate(0, 0);
+  }
+  8% {
+    transform: translate(calc(var(--dir) * -6px), 0) scale(1.12, 0.88);
+  }
+  16% {
+    transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4)) scale(0.9, 1.1);
+  }
+  28% {
+    transform: translate(var(--dx), var(--dy)) scale(1.06, 0.94);
+  }
+  36% {
+    transform: translate(calc(var(--dx) + var(--dir) * 6px), var(--dy))
+      rotate(calc(var(--dir) * 10deg)) scale(0.96, 1.04);
+  }
+  64% {
+    transform: translate(var(--dx), var(--dy));
+  }
+  72% {
+    transform: translate(var(--dx), var(--dy)) scale(1.1, 0.9);
+  }
+  86% {
+    transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4 - 4px)) scale(0.94, 1.06);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* L'arc de frappe d'une course attend l'arrivée du coureur. */
+.stage__slash--dash {
+  animation: slash-wait calc(0.17s * var(--pace, 1)) steps(1, end) both;
+}
+
+.stage__slash--dash .fx-play {
+  animation-delay: calc(0.17s * var(--pace, 1));
+}
+
+@keyframes slash-wait {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .actor__hit {
   display: block;
   animation: actor-hit 0.32s steps(1, end);

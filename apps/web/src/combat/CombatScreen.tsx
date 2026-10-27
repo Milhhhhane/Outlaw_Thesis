@@ -340,7 +340,13 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   const firstTargetId = view.units.find((u) => targets.has(u.id))?.id;
   return (
     <main className="battle">
-      <Stage view={view} scene={scene ?? 'ember_wastes'} active={active} targets={targets} />
+      <Stage
+        view={view}
+        scene={scene ?? 'ember_wastes'}
+        active={active}
+        targets={targets}
+        pace={speedFactor(options.speed)}
+      />
 
       <header className="battle__top">
         <Button

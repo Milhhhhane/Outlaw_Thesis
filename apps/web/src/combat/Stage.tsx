@@ -78,14 +78,38 @@ function Sparks({
   );
 }
 
+/** Course d'une attaque de base : déplacement (pixels natifs) jusqu'au contact de la cible. */
+export interface Dash {
+  readonly key: number;
+  readonly dx: number;
+  readonly dy: number;
+  /** Profondeur de la cible : le coureur passe devant elle le temps du coup. */
+  readonly z: number;
+}
+
+/** Écart gardé entre les pieds du coureur et ceux de sa cible. */
+const DASH_GAP = 26;
+
+export function dashOf(view: BattleView, unit: UnitView): Dash | undefined {
+  const cast = view.cast;
+  if (cast === null || !cast.dash || cast.unit !== unit.id) return undefined;
+  const target = view.units.find((u) => u.id === cast.targets[0]);
+  if (target === undefined) return undefined;
+  const from = placeOf(unit);
+  const to = placeOf(target);
+  const dir = unit.side === 'player' ? 1 : -1;
+  return { key: cast.key, dx: to.x - dir * DASH_GAP - from.x, dy: to.y - from.y, z: to.y + 1 };
+}
+
 function Actor(props: {
   readonly unit: UnitView;
   readonly active: boolean;
   readonly acting: boolean;
   readonly targetable: boolean;
   readonly flash: Flash | undefined;
+  readonly dash: Dash | undefined;
 }) {
-  const { unit, flash } = props;
+  const { unit, flash, dash } = props;
   const info = sprite(unit.kind);
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
@@ -96,15 +120,20 @@ function Actor(props: {
     top: y - info.bottom,
     width: info.w,
     height: info.h,
-    zIndex: y,
+    // Pendant sa course, l'attaquant passe devant sa cible ; il reprend sa profondeur au tour suivant.
+    zIndex: dash !== undefined && props.acting ? Math.max(y, dash.z) : y,
     '--dir': unit.side === 'player' ? 1 : -1,
     '--delay': `${-(unit.slot * 0.37 + (unit.side === 'enemy' ? 0.2 : 0))}s`,
+    '--dx': dash === undefined ? '0px' : `${dash.dx}px`,
+    '--dy': dash === undefined ? '0px' : `${dash.dy}px`,
   } as CSSProperties;
+  // Deux noms d'animation (a/b) : la course rejoue à chaque attaque sans remonter l'acteur.
   const className = [
     'actor',
     `actor--${unit.side}`,
     props.active ? 'actor--active' : '',
     props.acting ? 'actor--acting' : '',
+    dash === undefined ? '' : `actor--dash actor--dash-${dash.key % 2 === 0 ? 'a' : 'b'}`,
     props.targetable ? 'actor--targetable' : '',
     unit.alive ? '' : 'actor--down',
   ].join(' ');
@@ -161,15 +190,19 @@ function Bolts({ view }: { readonly view: BattleView }) {
   const casterInfo = sprite(caster.kind);
   const chest = from.y - ((casterInfo?.bottom ?? 60) - (casterInfo?.top ?? 0)) / 2;
   const dir = caster.side === 'player' ? 1 : -1;
+  // Course : l'arc de frappe part du point de contact, une fois le coureur arrivé.
+  const dash = cast.dash ? dashOf(view, caster) : undefined;
+  const slashX = from.x + (dash?.dx ?? 0) + dir * 18 - 24;
+  const slashY = chest + (dash?.dy ?? 0) - 24;
   return (
     <>
       <span
         key={`slash${cast.key}`}
-        className="stage__slash"
+        className={dash === undefined ? 'stage__slash' : 'stage__slash stage__slash--dash'}
         style={{
-          left: from.x + dir * 18 - 24,
-          top: chest - 24,
-          zIndex: from.y + 1,
+          left: slashX,
+          top: slashY,
+          zIndex: from.y + (dash?.dy ?? 0) + 2,
           transform: dir < 0 ? 'scaleX(-1)' : undefined,
         }}
       >
@@ -184,7 +217,7 @@ function Bolts({ view }: { readonly view: BattleView }) {
       </span>
       {cast.targets.map((id) => {
         const target = view.units.find((u) => u.id === id);
-        if (target === undefined || target.side === caster.side) return null;
+        if (dash !== undefined || target === undefined || target.side === caster.side) return null;
         const to = placeOf(target);
         const info = sprite(target.kind);
         const toY = to.y - ((info?.bottom ?? 60) - (info?.top ?? 0)) / 2;
@@ -211,18 +244,21 @@ export function Stage({
   scene,
   active,
   targets,
+  pace = 1,
 }: {
   readonly view: BattleView;
   readonly scene: string;
   readonly active: string | null;
   readonly targets: ReadonlySet<string>;
+  /** Multiplicateur de durée des animations (1 normal, 0,5 en ×2), comme pour le rejeu. */
+  readonly pace?: number;
 }) {
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
   const shake = view.shake;
   const ult = view.cast?.ult === true ? view.cast.key : null;
   return (
-    <div className="stage" aria-hidden="true">
+    <div className="stage" aria-hidden="true" style={{ '--pace': pace } as CSSProperties}>
       {/* Secousse et zoom : jamais de clé React ici, sinon tous les acteurs seraient recréés à
           chaque coup et l'animation de chute des unités à terre rejouerait. Le nom de
           l'animation alterne (a/b) pour relancer la secousse sans remonter le conteneur. */}
@@ -257,6 +293,7 @@ export function Stage({
                 acting={view.acting === unit.id && active === null}
                 targetable={targets.has(unit.id)}
                 flash={latest.get(unit.id)}
+                dash={dashOf(view, unit)}
               />
             ))}
             <Bolts view={view} />
