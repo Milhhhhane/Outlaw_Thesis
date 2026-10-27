@@ -4,6 +4,11 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 
 ## [lot-9] — 2026-10-27 — grosse amélioration graphique
 
+### Modifié
+
+- Héros et monstres remplacés par les personnages du « DungeonTileset II » de 0x72 (CC0),
+  recolorés par élément et agrandis ×2 : quatre images de repos, image de dégâts, visages lisibles.
+
 ### Ajouté
 
 - Menus habillés (`tools/art/ui.py`) : fond de nuit derrière les écrans, cadres bois cloutés

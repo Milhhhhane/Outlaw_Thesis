@@ -7,13 +7,15 @@ import { placeOf, Stage, STAGE_W } from '../src/combat/Stage';
 import { viewFromState } from '../src/combat/view';
 
 describe('pixel art', () => {
-  it('chaque héros et chaque ennemi a son sprite, avec deux images de repos', () => {
+  it('chaque héros et chaque ennemi a son sprite, avec quatre images de repos', () => {
     const kinds = [...content.heroes.map((h) => h.id), ...content.enemies.map((e) => e.id)];
     for (const kind of kinds) {
       const info = sprite(kind);
       expect(info, kind).toBeDefined();
-      expect(info?.frames.length).toBe(2);
+      expect(info?.frames.length).toBeGreaterThanOrEqual(4);
     }
+    // Les héros ont en plus une image de dégâts.
+    for (const hero of content.heroes) expect(sprite(hero.id)?.frames.length).toBe(5);
   });
 
   it('chaque donjon a son décor', () => {

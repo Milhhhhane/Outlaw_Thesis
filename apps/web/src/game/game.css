@@ -804,7 +804,7 @@ button:disabled {
 }
 
 .team__sprite .pixel {
-  transform: scale(2);
+  transform: scale(2.5);
   transform-origin: 50% 100%;
 }
 
@@ -873,8 +873,16 @@ button:disabled {
 }
 
 .roster__portrait {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
   width: 64px;
   height: 64px;
+}
+
+.roster__portrait .pixel {
+  transform: scale(1.5);
+  transform-origin: 50% 100%;
 }
 
 .roster__name {
@@ -1035,9 +1043,15 @@ button:disabled {
   height: 96px;
 }
 
+.hero-card__sprite {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
 .hero-card__sprite .pixel {
-  transform: scale(1.5);
-  transform-origin: 0 0;
+  transform: scale(2);
+  transform-origin: 50% 100%;
 }
 
 .hero-card--locked .hero-card__sprite {
@@ -1430,9 +1444,15 @@ button:disabled {
   height: 140px;
 }
 
+.sheet__sprite {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
 .sheet__sprite .pixel {
-  transform: scale(2);
-  transform-origin: 0 0;
+  transform: scale(3);
+  transform-origin: 50% 100%;
 }
 
 .sheet__level {

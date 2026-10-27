@@ -190,6 +190,20 @@
   transform-origin: 50% 100%;
 }
 
+/* Image de dégâts du sprite (5e image, quand elle existe) le temps du choc. */
+.actor__hit .pixel--idle {
+  animation:
+    pixel-idle 0.8s steps(1, end) infinite,
+    pixel-hit 0.3s steps(1, end);
+}
+
+@keyframes pixel-hit {
+  0%,
+  100% {
+    background-position: var(--f4);
+  }
+}
+
 .actor__hit--heavy {
   animation: actor-hit-heavy 0.46s steps(1, end);
 }

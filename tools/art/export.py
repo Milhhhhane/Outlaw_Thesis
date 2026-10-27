@@ -8,10 +8,9 @@ import pathlib
 from PIL import Image
 
 import backgrounds
-import enemies
 import fx
-import heroes
 import icons
+import pack as charpack
 import ui
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -19,9 +18,7 @@ OUT = ROOT / 'apps' / 'web' / 'src' / 'art'
 
 
 def frames():
-    out = {}
-    for name, fn in {**heroes.ALL, **enemies.ALL}.items():
-        out[name] = [fn(f).render() for f in (0, 1)]
+    out = dict(charpack.all_characters())
     out.update(fx.all_fx())
     out.update(icons.all_icons())
     out.update(ui.all_ui())
@@ -74,11 +71,11 @@ def app_icons():
     """Icônes d'installation : Pyra au chapeau sur fond de crépuscule (fond plein, sans transparence)."""
     out = ROOT / 'apps' / 'web' / 'public' / 'icons'
     out.mkdir(parents=True, exist_ok=True)
-    pyra = heroes.pyra(0).render()
+    pyra = charpack.all_characters()['pyra'][0]
     tile = Image.new('RGBA', (48, 48), (0, 0, 0, 0))
     sky = backgrounds.ember_wastes().crop((200, 80, 248, 128)).convert('RGBA')
     tile.alpha_composite(sky)
-    tile.alpha_composite(pyra.crop((8, 0, 56, 48)))
+    tile.alpha_composite(pyra, ((48 - pyra.width) // 2, 48 - pyra.height))
     for size in (180, 192, 512):
         tile.resize((size, size), Image.NEAREST).convert('RGB').save(out / f'icon-{size}.png', optimize=True)
 

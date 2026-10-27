@@ -7,7 +7,7 @@
 }
 
 .pixel--idle {
-  animation: pixel-idle 1.1s steps(1, end) infinite;
+  animation: pixel-idle 0.8s steps(1, end) infinite;
   animation-delay: var(--delay, 0s);
 }
 
@@ -15,8 +15,14 @@
   0% {
     background-position: var(--f0);
   }
-  50% {
+  25% {
     background-position: var(--f1);
+  }
+  50% {
+    background-position: var(--f2);
+  }
+  75% {
+    background-position: var(--f3);
   }
 }
 

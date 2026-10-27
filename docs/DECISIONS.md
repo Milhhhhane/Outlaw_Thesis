@@ -374,3 +374,14 @@ bords nets. Choix : chaque pixel reçoit la contrée la plus proche selon une di
 bruitée, puis une texture par contrée et des repères dessinés aux positions des donjons
 (`map_nodes.json` inchangé). Raison : contours organiques et lisibles, positions des boutons
 conservées, tests de bout en bout intacts.
+
+**Personnages : pack d'artiste plutôt que génération** — Contexte : les héros et monstres générés
+par polygones restaient « des formes empilées », sans visage ni volume ; la méthode plafonne.
+Choix : les personnages du « 16x16 DungeonTileset II » de 0x72, licence CC0 vérifiée sur la page
+itch.io, copiés dans `tools/art/third_party/0x72/` avec leur note de licence, recolorés par
+rotation de teinte (peau préservée) pour coller aux éléments, agrandis ×2 sans lissage, monstres
+retournés ; quatre images de repos et l'image de dégâts du pack. Raison : le brief autorise les
+assets libres crédités ; un rendu professionnel sûr contre un chantier de dessin pixel par pixel
+coûteux et incertain. Limite assumée : les personnages sont au double des pixels du décor
+(mélange de densités courant dans le genre) et le thème glisse du western vers le donjon
+fantastique ; le titre et les textes de jeu restent inchangés.
