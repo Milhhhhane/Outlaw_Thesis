@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { availableNodes, randomBuild } from '../src/builds';
 import { createRng } from '../src/rng';
 import { summarize, toCsv } from '../src/run';
+import { teams } from '../src/rules';
 import { randomBattles, sprint0Scenarios } from '../src/scenarios';
 import { validateBuild } from '@outlaw/engine';
 
@@ -58,5 +59,14 @@ describe('builds aléatoires', () => {
     const rng = createRng(1);
     expect(rng.shuffle([1, 2, 3, 4]).sort()).toEqual([1, 2, 3, 4]);
     expect(() => rng.pick([])).toThrow();
+  });
+});
+
+describe('règles d’équilibre', () => {
+  it('les 20 équipes possibles : 3 héros parmi 6, sans doublon', () => {
+    const all = teams(content);
+    expect(all).toHaveLength(20);
+    expect(new Set(all.map((team) => team.join('+'))).size).toBe(20);
+    expect(all.every((team) => new Set(team).size === 3)).toBe(true);
   });
 });

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '@outlaw/data';
 import { toCsv } from './run';
 import { dungeonRows } from './dungeons';
+import { evaluateRules } from './rules';
 import { randomBattles, sprint0Scenarios } from './scenarios';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,11 +26,20 @@ const option = (name: string, fallback: number): number => {
 
 const content = loadContent();
 const started = performance.now();
+const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
   ...dungeonRows(content, option('--runs', 40), option('--seed', 1)),
+  ...rules.rows,
 ]);
+const { targets } = content.balance;
+const verdicts = [
+  `R1 ${rules.r1.ok ? 'tenue' : 'NON TENUE'} : meilleur build ${(rules.r1.rate * 100).toFixed(0)} % contre le pire (cible ≥ ${targets.r1MinWinRate * 100} %)`,
+  `R2 ${rules.r2.ok ? 'tenue' : 'NON TENUE'} : pire donjon ${(rules.r2.worst * 100).toFixed(0)} % avec ${targets.r2LevelGap} niveaux de retard (cible > ${targets.r2MinWinRate * 100} %)`,
+  `Aucun héros indispensable ${rules.dispensable.ok ? 'tenue' : 'NON TENUE'} : écart maximal ${rules.dispensable.gap.toFixed(0)} points (cible ≤ ${targets.dispensableMaxGapPoints})`,
+];
+const rulesOk = rules.r1.ok && rules.r2.ok && rules.dispensable.ok;
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {
@@ -41,10 +51,13 @@ if (args.has('--check')) {
     process.exit(1);
   }
   console.log(`Simulation conforme à baseline.csv (${seconds} s).`);
+  for (const line of verdicts) console.log(line);
+  if (!rulesOk) process.exit(1);
 } else {
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, csv);
   if (args.has('--update')) writeFileSync(baselinePath, csv);
   process.stdout.write(csv);
+  for (const line of verdicts) console.error(line);
   console.error(`${seconds} s`);
 }
