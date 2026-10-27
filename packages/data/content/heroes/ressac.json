@@ -1,0 +1,313 @@
+{
+  "id": "ressac",
+  "element": "water",
+  "role": "damage",
+  "stats": {
+    "hp": 400,
+    "atk": 58,
+    "def": 20,
+    "vit": 104
+  },
+  "spells": [
+    {
+      "id": "ressac_lash",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 105
+        }
+      ]
+    },
+    {
+      "id": "ressac_crest",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "tempo",
+          "target": "self",
+          "amount": -20
+        }
+      ]
+    },
+    {
+      "id": "ressac_breaker",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 190
+        }
+      ]
+    },
+    {
+      "id": "ressac_tsunami",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 165
+        },
+        {
+          "kind": "tempo",
+          "amount": 20
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "ressac_surge",
+    "triggers": [
+      {
+        "on": "spell_cast",
+        "subject": "self",
+        "slots": ["a", "b", "ult"],
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "self",
+            "amount": -15
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "ressac_page_breaker",
+      "nodes": [
+        {
+          "id": "ressac_break_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_crush",
+          "requires": "ressac_break_core",
+          "group": "ressac_break_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -25,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_wide",
+          "requires": "ressac_break_core",
+          "group": "ressac_break_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -45
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_tide",
+          "requires": "ressac_break_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_flood",
+          "requires": "ressac_break_tide",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ressac_page_ebb",
+      "nodes": [
+        {
+          "id": "ressac_ebb_core",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_drain",
+          "requires": "ressac_ebb_core",
+          "group": "ressac_ebb_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_sap",
+          "requires": "ressac_ebb_core",
+          "group": "ressac_ebb_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": -1,
+                "side": "opposing"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_swell",
+          "requires": "ressac_ebb_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_spring",
+          "requires": "ressac_ebb_swell",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ressac_page_current",
+      "nodes": [
+        {
+          "id": "ressac_cur_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_rip",
+          "requires": "ressac_cur_core",
+          "group": "ressac_cur_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_pull",
+          "requires": "ressac_cur_core",
+          "group": "ressac_cur_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_wake",
+          "requires": "ressac_cur_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_maelstrom",
+          "requires": "ressac_cur_wake",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 150
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

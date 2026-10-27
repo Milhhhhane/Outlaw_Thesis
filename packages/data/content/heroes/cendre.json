@@ -1,0 +1,336 @@
+{
+  "id": "cendre",
+  "element": "fire",
+  "role": "control",
+  "stats": {
+    "hp": 420,
+    "atk": 52,
+    "def": 22,
+    "vit": 106
+  },
+  "spells": [
+    {
+      "id": "cendre_cinder",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 85
+        },
+        {
+          "kind": "tempo",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "id": "cendre_smoke",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": -20,
+          "duration": 2
+        },
+        {
+          "kind": "tempo",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "id": "cendre_dazzle",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "status",
+          "status": "stun",
+          "duration": 1
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "cendre_eclipse",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": 45
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 30
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "cendre_smolder",
+    "triggers": [
+      {
+        "on": "status_applied",
+        "subject": "enemy",
+        "status": "burn",
+        "limit": {
+          "per": "turn",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "subject",
+            "amount": 15
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "cendre_page_haze",
+      "nodes": [
+        {
+          "id": "cendre_haze_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_blind",
+          "requires": "cendre_haze_core",
+          "group": "cendre_haze_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_choke",
+          "requires": "cendre_haze_core",
+          "group": "cendre_haze_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_veil",
+          "requires": "cendre_haze_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_shroud",
+          "requires": "cendre_haze_veil",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cendre_page_embers",
+      "nodes": [
+        {
+          "id": "cendre_slow_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_deep",
+          "requires": "cendre_slow_core",
+          "group": "cendre_slow_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 90
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_cheap",
+          "requires": "cendre_slow_core",
+          "group": "cendre_slow_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_ash",
+          "requires": "cendre_slow_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 1,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_pyre",
+          "requires": "cendre_slow_ash",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 90
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cendre_page_offbeat",
+      "nodes": [
+        {
+          "id": "cendre_beat_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 150
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_push",
+          "requires": "cendre_beat_core",
+          "group": "cendre_beat_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_quick",
+          "requires": "cendre_beat_core",
+          "group": "cendre_beat_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -50
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_step",
+          "requires": "cendre_beat_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_stall",
+          "requires": "cendre_beat_step",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 30
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

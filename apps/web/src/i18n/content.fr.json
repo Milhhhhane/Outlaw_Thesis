@@ -11,6 +11,18 @@
     "ronce": {
       "name": "Ronce",
       "thesis": "Dicter le rythme : marquer, entraver, puis laisser l'équipe frapper."
+    },
+    "cendre": {
+      "name": "Cendre",
+      "thesis": "Voler le temps : chaque brûlure repousse le tour de l'ennemi."
+    },
+    "ressac": {
+      "name": "Ressac",
+      "thesis": "Frapper en vagues : chaque compétence ramène vite le coup suivant."
+    },
+    "seve": {
+      "name": "Sève",
+      "thesis": "Faire durer l'équipe : chaque tour d'un allié commence par un soin."
     }
   },
   "spells": {
@@ -59,7 +71,19 @@
     "hydra_deluge": "Déferlante",
     "colossus_crush": "Écrasement",
     "colossus_quake": "Séisme",
-    "colossus_bark": "Écorce"
+    "colossus_bark": "Écorce",
+    "cendre_cinder": "Escarbille",
+    "cendre_smoke": "Fumée",
+    "cendre_dazzle": "Éblouir",
+    "cendre_eclipse": "Éclipse",
+    "ressac_lash": "Coup de lame",
+    "ressac_crest": "Crête",
+    "ressac_breaker": "Brisant",
+    "ressac_tsunami": "Raz-de-marée",
+    "seve_sap": "Sève amère",
+    "seve_bark": "Écorce",
+    "seve_bloom": "Éclosion",
+    "seve_grove": "Bosquet"
   },
   "passives": {
     "pyra_momentum": "Élan meurtrier",
@@ -77,7 +101,10 @@
     "kindling": "Petit bois",
     "undertow": "Ressac",
     "spore_haze": "Brume de spores",
-    "discord": "Discorde"
+    "discord": "Discorde",
+    "cendre_smolder": "Couver",
+    "ressac_surge": "Houle montante",
+    "seve_rootbond": "Racines liées"
   },
   "pages": {
     "pyra_page_execution": {
@@ -115,6 +142,42 @@
     "ronce_page_venom": {
       "name": "Venin",
       "thesis": "Affaiblir avant de frapper."
+    },
+    "cendre_page_haze": {
+      "name": "Fumées",
+      "thesis": "Affaiblir ce qui frappe le plus fort."
+    },
+    "cendre_page_embers": {
+      "name": "Braise lente",
+      "thesis": "Brûler longtemps, pour retarder longtemps."
+    },
+    "cendre_page_offbeat": {
+      "name": "Contretemps",
+      "thesis": "Décaler toute la file à son avantage."
+    },
+    "ressac_page_breaker": {
+      "name": "Brisants",
+      "thesis": "Un coup énorme, au bon moment."
+    },
+    "ressac_page_ebb": {
+      "name": "Reflux",
+      "thesis": "Frapper sans vider la réserve de l'équipe."
+    },
+    "ressac_page_current": {
+      "name": "Courant",
+      "thesis": "Rejouer avant que l'ennemi ne réponde."
+    },
+    "seve_page_bark": {
+      "name": "Écorce",
+      "thesis": "Protéger plutôt que soigner."
+    },
+    "seve_page_bloom": {
+      "name": "Éclosion",
+      "thesis": "Soigner large et renforcer l'attaque."
+    },
+    "seve_page_roots": {
+      "name": "Racines",
+      "thesis": "Nourrir le tempo et la réserve de l'équipe."
     }
   },
   "nodes": {
@@ -162,7 +225,52 @@
     "ronce_venom_sap": "Saignée",
     "ronce_venom_rot": "Pourriture",
     "ronce_venom_numb": "Engourdir",
-    "ronce_venom_wither": "Flétrir"
+    "ronce_venom_wither": "Flétrir",
+    "cendre_haze_core": "Fumée épaisse",
+    "cendre_haze_blind": "Nuage",
+    "cendre_haze_choke": "Suffocation",
+    "cendre_haze_veil": "Voile",
+    "cendre_haze_shroud": "Linceul",
+    "cendre_slow_core": "Braise tenace",
+    "cendre_slow_deep": "Fournaise lente",
+    "cendre_slow_cheap": "Étincelle sûre",
+    "cendre_slow_ash": "Cendres chaudes",
+    "cendre_slow_pyre": "Bûcher",
+    "cendre_beat_core": "Contrepied",
+    "cendre_beat_push": "Repousser",
+    "cendre_beat_quick": "Éclipse brève",
+    "cendre_beat_step": "Pas de côté",
+    "cendre_beat_stall": "Gagner du temps",
+    "ressac_break_core": "Lame de fond",
+    "ressac_break_crush": "Fracasser",
+    "ressac_break_wide": "Vague large",
+    "ressac_break_tide": "Grande marée",
+    "ressac_break_flood": "Submerger",
+    "ressac_ebb_core": "Crête légère",
+    "ressac_ebb_drain": "Reflux",
+    "ressac_ebb_sap": "Aspiration",
+    "ressac_ebb_swell": "Gonfler",
+    "ressac_ebb_spring": "Grande marée basse",
+    "ressac_cur_core": "Contre-vague",
+    "ressac_cur_rip": "Courant d'arrachement",
+    "ressac_cur_pull": "Remous",
+    "ressac_cur_wake": "Sillage",
+    "ressac_cur_maelstrom": "Maelström",
+    "seve_bark_core": "Écorce dure",
+    "seve_bark_thick": "Aubier",
+    "seve_bark_thorns": "Écorce épineuse",
+    "seve_bark_grove": "Futaie",
+    "seve_bark_heart": "Cœur de chêne",
+    "seve_bloom_core": "Pollen",
+    "seve_bloom_cheap": "Bourgeon",
+    "seve_bloom_rich": "Nectar",
+    "seve_bloom_dew": "Rosée",
+    "seve_bloom_spring": "Printemps",
+    "seve_roots_core": "Radicelles",
+    "seve_roots_share": "Partage",
+    "seve_roots_rally": "Ralliement",
+    "seve_roots_grow": "Pousse",
+    "seve_roots_canopy": "Canopée"
   },
   "enemies": {
     "cinder_hound": "Molosse de braise",

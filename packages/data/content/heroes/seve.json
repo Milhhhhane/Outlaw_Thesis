@@ -1,0 +1,340 @@
+{
+  "id": "seve",
+  "element": "nature",
+  "role": "support",
+  "stats": {
+    "hp": 460,
+    "atk": 46,
+    "def": 28,
+    "vit": 98
+  },
+  "spells": [
+    {
+      "id": "seve_sap",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 105
+        },
+        {
+          "kind": "heal",
+          "target": "lowest_hp_ally",
+          "power": 20
+        }
+      ]
+    },
+    {
+      "id": "seve_bark",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 100,
+          "duration": 2
+        },
+        {
+          "kind": "statMod",
+          "stat": "def",
+          "percent": 20,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "seve_bloom",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 75
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 25,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "seve_grove",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 100
+        },
+        {
+          "kind": "shield",
+          "power": 60,
+          "duration": 2
+        },
+        {
+          "kind": "teamPoints",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "seve_rootbond",
+    "triggers": [
+      {
+        "on": "turn_start",
+        "subject": "ally",
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "subject",
+            "power": 12
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "seve_page_bark",
+      "nodes": [
+        {
+          "id": "seve_bark_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 45
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_thick",
+          "requires": "seve_bark_core",
+          "group": "seve_bark_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_thorns",
+          "requires": "seve_bark_core",
+          "group": "seve_bark_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "trigger",
+                "duration": 2,
+                "trigger": {
+                  "on": "damage_taken",
+                  "subject": "self",
+                  "limit": {
+                    "per": "turn",
+                    "count": 1
+                  },
+                  "effects": [
+                    {
+                      "kind": "damage",
+                      "target": "other",
+                      "power": 30
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_grove",
+          "requires": "seve_bark_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_heart",
+          "requires": "seve_bark_grove",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "shield",
+                "power": 30,
+                "duration": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seve_page_bloom",
+      "nodes": [
+        {
+          "id": "seve_bloom_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 38
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_cheap",
+          "requires": "seve_bloom_core",
+          "group": "seve_bloom_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_rich",
+          "requires": "seve_bloom_core",
+          "group": "seve_bloom_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 150
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_dew",
+          "requires": "seve_bloom_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 112
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_spring",
+          "requires": "seve_bloom_dew",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "seve_page_roots",
+      "nodes": [
+        {
+          "id": "seve_roots_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_share",
+          "requires": "seve_roots_core",
+          "group": "seve_roots_choice",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_rally",
+          "requires": "seve_roots_core",
+          "group": "seve_roots_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "amount": -25
+              }
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_grow",
+          "requires": "seve_roots_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_canopy",
+          "requires": "seve_roots_grow",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "teamPoints",
+              "field": "amount",
+              "add": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
