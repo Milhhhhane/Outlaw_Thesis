@@ -23,6 +23,7 @@ def frames():
     out.update(fx.all_fx())
     out.update(icons.all_icons())
     out.update(ui.all_ui())
+    out.update(__import__('worldmap').landmark_sprites())
     return out
 
 
@@ -110,9 +111,7 @@ def main():
         f'export const SPRITES: SpriteMap = {body};\n'
         f'export const ATLAS_SIZE = {{ w: {atlas.width}, h: {atlas.height} }};\n'
         f'export const GLYPHS = {json.dumps(fx.GLYPHS)};\n'
-        f'export const GROUND_Y = {backgrounds.GROUND};\n'
-        f'export const MAP_NODES: Readonly<Record<string, readonly [number, number]>> = '
-        f'{(pathlib.Path(__file__).with_name("map_nodes.json")).read_text().strip()};\n',
+        f'export const GROUND_Y = {backgrounds.GROUND};\n',
         encoding='utf-8')
     app_icons()
     print('atlas', atlas.size, 'sprites', len(sprites))

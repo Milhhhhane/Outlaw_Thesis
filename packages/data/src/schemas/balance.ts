@@ -94,6 +94,19 @@ export const balanceSchema = z
       rareGuaranteeAfter: posInt,
       /** Part de l'XP, de l'or et des matériaux d'un donjon rejoué (farm) par rapport au premier passage. */
       replayRewardRate: z.number().min(0).max(1),
+      loot: z.strictObject({
+        /** Poids de tirage de chaque rareté (un objet de la table, pondéré par sa rareté). */
+        weights: z.strictObject({ common: posInt, rare: posInt }),
+        /** Le premier passage d'un donjon donne toujours un objet rare. */
+        firstClearRare: z.boolean(),
+        /** Au-delà de ce nombre d'exemplaires d'un même objet, le suivant est démonté en matériaux. */
+        duplicateLimit: posInt,
+        /** Matériaux rendus par un doublon démonté, par rareté. */
+        salvage: z.strictObject({
+          common: z.strictObject({ tier: posInt, amount: posInt }),
+          rare: z.strictObject({ tier: posInt, amount: posInt }),
+        }),
+      }),
     }),
 
     /**

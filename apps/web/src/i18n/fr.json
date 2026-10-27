@@ -219,6 +219,7 @@
   "reward.levelUp": "{hero} passe au niveau {level} !",
   "reward.gold": "+{gold} or",
   "reward.materials": "+{amount} matériaux de palier {tier}",
+  "reward.salvaged": "Doublon de trop : démonté en {amount} matériaux de palier {tier}.",
   "reward.item": "Objet obtenu : {item}",
   "reward.guaranteed": "Objet rare garanti après 5 donjons sans rare.",
   "reward.unlocked": "Nouveau héros : {hero} !",
@@ -346,6 +347,7 @@
   "map.teamLevel": "Niveau de l'équipe : {level}",
   "map.modifier": "Modificateur",
   "map.loot": "Butin possible",
+  "map.firstRare": "rare garanti au premier passage",
   "map.step": "Étape {n}",
   "combat.pause": "Pause",
   "combat.resume": "Reprendre",
@@ -392,5 +394,7 @@
   "sheet.gain": "Gain",
   "sheet.delay": "Délai",
   "combat.speed.hint": "Vitesse des animations : ×1 ou ×2 (touche X)",
-  "combat.speed.instant": "Instant."
+  "combat.speed.instant": "Instant.",
+  "map.chapters": "Chapitres",
+  "map.chapter": "Chapitre {n}"
 }

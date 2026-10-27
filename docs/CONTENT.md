@@ -69,9 +69,39 @@ Mêmes stats que les héros, 1 à 4 sorts, un script de 1 à 6 actions joué en 
 ## Objets et donjons
 
 Un objet modifie le passif (`scale`, `addEffect`, `threshold`, `limit`) et peut porter une petite
-stat plafonnée. Un donjon : élément, modificateur, 3 combats (2 salles + boss), récompenses, table
-de butin avec au moins un objet rare, et un **coffre** (`chest` : palier de `balance.json`) donné à
-la première victoire.
+stat plafonnée. Un donjon : élément, modificateur, 3 combats (2 salles + boss), récompenses,
+butin, place sur la carte et **coffre** (`chest` : palier de `balance.json` → `chests.tiers`, donné
+à la première victoire).
+
+### Butin
+
+`loot` est une **liste d'identifiants d'objets** (au moins deux, sans doublon, au moins un rare).
+Les poids ne sont pas dans le donjon : `balance.json` → `economy.loot.weights` donne un poids par
+rareté (commun 75, rare 25). Un objet commun parmi quatre communs et deux rares tombe donc à
+75 / 350 = 21 %. Règles autour (toutes dans `economy.loot`) :
+
+- `firstClearRare` : le premier passage d'un donjon donne toujours un rare de sa liste.
+- `rareGuaranteeAfter` : un rare garanti après N donjons sans rare (compteur `profile.sinceRare`).
+- `duplicateLimit` + `salvage` : au-delà de N exemplaires d'un même objet, le doublon est démonté
+  en matériaux (`salvage.<rareté>` : palier et quantité) au lieu d'encombrer l'inventaire.
+
+Le tirage reste déterministe (graine du profil) : même profil, même butin.
+
+### Carte
+
+`map` place le donjon sur la carte du monde : `x`, `y` en pixels de la carte native (320 × 180,
+`MAP_SIZE` dans `@outlaw/data`), `landmark` (sprite `landmark_<nom>` de l'atlas : `camp`,
+`ruins`, `gate`, `tower`, `spire`, `crown`, `bridge`, `salt`, `pass`, `throne`) et `chapter`
+(1 par défaut). L'image de la carte ne contient **aucun** repère ni chemin : l'écran les dessine
+depuis les données, dans l'ordre du fichier (le chemin relie chaque donjon au précédent). Deux
+donjons d'un même chapitre doivent être à plus de 24 px l'un de l'autre (vérifié au chargement).
+
+Un chapitre = une image de carte : `bg/world_map.png` pour le chapitre 1, `bg/world_map_<n>.png`
+pour les suivants (à ajouter dans `tools/art/backgrounds.py`). Les onglets de chapitre
+n'apparaissent que s'il y en a plusieurs.
+
+`scene` (facultatif) : identifiant du décor de combat (`bg/<scene>.png`) si le donjon réutilise
+celui d'un autre ; sinon le décor porte l'identifiant du donjon.
 
 ## Textes
 
@@ -82,6 +112,14 @@ descriptions (sorts, passifs, talents, objets) sont générées depuis les briqu
 ## Ajouter un donjon
 
 1. Ennemis et boss dans `content/enemies.json` (un boss : `"boss": true`, seulement au 3e combat).
-2. Le donjon dans `content/dungeons.json` : élément, niveau conseillé, modificateur, 3 combats,
-   récompenses, butin (au moins un objet rare).
-3. Les noms dans `content.fr.json`, puis `pnpm sim` pour voir son taux de réussite.
+2. Le donjon dans `content/dungeons.json`, **à sa place dans l'ordre de progression** (l'ordre du
+   fichier est l'ordre du chemin) : élément, niveau conseillé, modificateur, 3 combats (avec
+   `hpPct` / `atkPct` si besoin), récompenses, `loot` (liste d'objets, un rare au moins), `map`
+   (`x`, `y`, `landmark`, `chapter`), `scene` si le décor est emprunté.
+3. Les noms dans `content.fr.json` (donjon : nom et phrase d'ambiance ; modificateur : nom).
+4. Le décor de combat : une entrée dans `tools/art/backgrounds.py` (nouveau tableau ou `tinted`
+   d'un existant) puis `python3 tools/art/export.py` ; ou `scene` vers un décor existant.
+5. Un nouveau repère si aucun ne convient : `LANDMARKS` dans `tools/art/worldmap.py` **et**
+   `LANDMARKS` dans `packages/data/src/schemas/dungeons.ts`, puis export.
+6. `pnpm test` (textes, décor, repère, distances, butin vérifiés), puis `pnpm sim` et
+   `pnpm --filter @outlaw/sim curve` pour placer le donjon sur la courbe ; `pnpm sim --update` si la baseline change.

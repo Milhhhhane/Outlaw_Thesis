@@ -289,13 +289,28 @@ export function nextRandom(seed: number): { value: number; seed: number } {
   return { value: ((t ^ (t >>> 14)) >>> 0) / 4294967296, seed: next };
 }
 
-/** Taux d'obtention affichés au joueur, en %. */
-export function lootRates(dungeon: Dungeon): { item: string; pct: number }[] {
-  const total = dungeon.loot.reduce((sum, entry) => sum + entry.weight, 0);
-  return dungeon.loot.map((entry) => ({ item: entry.item, pct: (entry.weight * 100) / total }));
+interface Weighted {
+  readonly item: string;
+  readonly weight: number;
 }
 
-function pick(entries: Dungeon['loot'], roll: number): string {
+/** Table pondérée d'un donjon : chaque objet pèse le poids de sa rareté (balance.economy.loot). */
+export function lootTable(content: Content, dungeon: Dungeon): Weighted[] {
+  const { weights } = content.balance.economy.loot;
+  return dungeon.loot.map((item) => ({
+    item,
+    weight: weights[content.itemById.get(item)?.rarity ?? 'common'],
+  }));
+}
+
+/** Taux d'obtention affichés au joueur, en %. */
+export function lootRates(content: Content, dungeon: Dungeon): { item: string; pct: number }[] {
+  const table = lootTable(content, dungeon);
+  const total = table.reduce((sum, entry) => sum + entry.weight, 0);
+  return table.map((entry) => ({ item: entry.item, pct: (entry.weight * 100) / total }));
+}
+
+function pick(entries: readonly Weighted[], roll: number): string {
   const total = entries.reduce((sum, e) => sum + e.weight, 0);
   let cursor = roll * total;
   for (const entry of entries) {
@@ -311,7 +326,14 @@ export interface DungeonReport {
   readonly xp: Readonly<Record<string, { gained: number; levels: number }>>;
   readonly gold: number;
   readonly materials: { readonly tier: number; readonly amount: number };
-  readonly item: { readonly uid: number; readonly item: string; readonly guaranteed: boolean };
+  readonly item: {
+    readonly uid: number;
+    readonly item: string;
+    /** Rare garanti (premier passage, ou trop de donjons sans rare). */
+    readonly guaranteed: boolean;
+    /** Doublon de trop : l'objet n'est pas gardé, il est démonté en matériaux. */
+    readonly salvaged: { readonly tier: number; readonly amount: number } | null;
+  };
   readonly unlockedHero: string | null;
   /** Palier du coffre gagné, ou null (donjon rejoué sans chance). */
   readonly chest: string | null;
@@ -348,20 +370,29 @@ export function completeDungeon(
     xp[id] = { gained, levels: result.levels };
   }
 
-  // Butin : la garantie remplace un tirage commun par un tirage parmi les rares.
+  // Butin : un objet de la table, pondéré par sa rareté. Le rare est garanti au premier passage
+  // et au bout de N donjons sans rare ; un doublon de trop est démonté en matériaux.
+  const { loot: lootRules } = balance.economy;
+  const table = lootTable(content, dungeon);
   const roll = nextRandom(profile.seed);
-  let item = pick(dungeon.loot, roll.value);
+  let item = pick(table, roll.value);
   let seed = roll.seed;
   const isRare = (id: string): boolean => content.itemById.get(id)?.rarity === 'rare';
   let guaranteed = false;
-  if (!isRare(item) && profile.sinceRare + 1 >= balance.economy.rareGuaranteeAfter) {
-    const rares = dungeon.loot.filter((e) => isRare(e.item));
+  const mustBeRare =
+    (firstClear && lootRules.firstClearRare) ||
+    profile.sinceRare + 1 >= balance.economy.rareGuaranteeAfter;
+  if (!isRare(item) && mustBeRare) {
+    const rares = table.filter((e) => isRare(e.item));
     const reroll = nextRandom(seed);
     seed = reroll.seed;
     item = pick(rares, reroll.value);
     guaranteed = true;
   }
   const uid = profile.nextUid;
+  const copies = profile.items.filter((o) => o.item === item).length;
+  const salvaged =
+    copies >= lootRules.duplicateLimit ? lootRules.salvage[isRare(item) ? 'rare' : 'common'] : null;
 
   // Coffre : toujours au premier passage, sinon une chance (tirée après le butin, qui ne bouge pas).
   let chest: string | null = dungeon.chest;
@@ -375,6 +406,9 @@ export function completeDungeon(
   const tier = dungeon.rewards.materials.tier - 1;
   const amount = gain(dungeon.rewards.materials.amount);
   materials[tier] = (materials[tier] ?? 0) + amount;
+  if (salvaged !== null) {
+    materials[salvaged.tier - 1] = (materials[salvaged.tier - 1] ?? 0) + salvaged.amount;
+  }
 
   let unlocked = profile.unlocked;
   let unlockedHero: string | null = null;
@@ -396,8 +430,8 @@ export function completeDungeon(
     materials,
     heroes,
     unlocked,
-    items: [...profile.items, { uid, item, upgrade: 0 }],
-    nextUid: uid + 1,
+    items: salvaged === null ? [...profile.items, { uid, item, upgrade: 0 }] : profile.items,
+    nextUid: salvaged === null ? uid + 1 : profile.nextUid,
     dungeons: {
       ...profile.dungeons,
       [dungeonId]: { clears: (profile.dungeons[dungeonId]?.clears ?? 0) + 1 },
@@ -416,7 +450,7 @@ export function completeDungeon(
       xp,
       gold: gain(dungeon.rewards.gold),
       materials: { tier: dungeon.rewards.materials.tier, amount },
-      item: { uid, item, guaranteed },
+      item: { uid, item, guaranteed, salvaged },
       unlockedHero,
       chest,
     },

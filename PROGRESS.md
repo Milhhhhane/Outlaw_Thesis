@@ -42,6 +42,9 @@
   rééquilibrage mesuré par la simulation (docs/BALANCE.md).
 - Lot 11 — Début plus facile et courbe de difficulté vérifiée par la simulation ; trois donjons
   de fin de progression (niveaux 28 à 30).
+- Lot 12 — Carte pilotée par les données (place, repère et chapitre dans `dungeons.json`),
+  butin en liste avec poids par rareté, rare au premier passage, doublons démontés ; liste de
+  contrôle « Ajouter un donjon » dans `docs/CONTENT.md`.
 
 - Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,

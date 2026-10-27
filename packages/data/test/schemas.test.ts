@@ -373,16 +373,13 @@ describe('parseContent : références croisées', () => {
 
   it('exige un objet rare dans chaque table de butin', () => {
     expectIssue((raw) => {
-      (raw.dungeons[0] as typeof dungeonFixture).loot = [
-        { item: 'test_charm', weight: 1 },
-        { item: 'test_charm', weight: 2 },
-      ];
+      (raw.dungeons[0] as typeof dungeonFixture).loot = ['test_charm', 'test_charm'];
     }, 'au moins un objet rare');
   });
 
   it('refuse un objet de butin inconnu et un héros débloqué inconnu', () => {
     expectIssue((raw) => {
-      (raw.dungeons[0] as typeof dungeonFixture).loot[0]!.item = 'fantome';
+      (raw.dungeons[0] as typeof dungeonFixture).loot = ['fantome', 'test_relic'];
     }, 'objet de butin inconnu');
     expectIssue((raw) => {
       (raw.dungeons[0] as Record<string, unknown>).unlocksHero = 'fantome';

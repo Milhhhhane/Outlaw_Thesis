@@ -1,17 +1,14 @@
 """Carte du monde 320 × 180 : sept contrées peintes (biomes tramés, reliefs, eau, repères).
 
-Chaque donjon a un repère dessiné sur la carte près de sa position (map_nodes.json) ; le jeu
+Chaque donjon porte sa position dans dungeons.json (champ map) ; le jeu
 pose par-dessus un petit bouton rond. Rendu déterministe.
 """
-import json
 import math
-import pathlib
 import random
 
 from backgrounds import Canvas, H, W
 from pix import hexc
 
-NODES = json.loads((pathlib.Path(__file__).with_name('map_nodes.json')).read_text())
 
 # biome : centre, rayons, couleurs (sombre, moyen, clair), graine
 BIOMES = {
@@ -175,60 +172,8 @@ def world_map():
             c.blob(['.##..', '#..##'], x, y, {'#': '#6ac0e0'})
     c.blob(['...#...', '..###..', '.#####.', 'wwwwwww', '.wwwww.'], 222, 128, {'#': '#d8c090', 'w': '#5a3418'})
 
-    # --- repères des donjons -------------------------------------------------------------
-    landmarks = {
-        'ember_wastes': (['..^..', '.###.', '#####', '#.#.#'], {'#': '#a05a3a', '^': '#ff8a2a', '.': None}),
-        'drowned_halls': (['.###.', '#...#', '#.#.#', '#####', 'wwwww'], {'#': '#8a9aa8', 'w': '#3a7aa0'}),
-        'thorn_maze': (['#.#.#', '#####', '#.o.#', '#####', '#.#.#'], {'#': '#3e6a2a', 'o': '#e0643a'}),
-        'cinder_citadel': (['#.#.#', '#####', '.###.', '.#o#.', '.###.', '#####'], {'#': '#5a2420', 'o': '#ffb840'}),
-        'sunken_spire': (['..#..', '..#..', '.###.', '.#o#.', '#####', 'wwwww'], {'#': '#6a6a80', 'o': '#4a90d9', 'w': '#1e5270'}),
-        'verdant_crown': (['#.#.#', '#####', '.###.', '..#..', '.###.'], {'#': '#e2b440'}),
-        'broken_crossing': (['##.##', '#...#', '##.##', '.#.#.', '.#.#.'], {'#': '#9a6a58'}),
-        'salt_flats': (['.....', '#.#.#', '#####', '.ooo.', '.....'], {'#': '#e8e0d0', 'o': '#8aa0b0'}),
-        'obsidian_pass': (['..#..', '.###.', '##o##', '#.o.#', '#####'], {'#': '#2a2230', 'o': '#ff8a2a'}),
-        'hollow_throne': (['#...#', '##.##', '#o.o#', '#####', '.#.#.'], {'#': '#5a3478', 'o': '#e2b440'}),
-    }
-    for name, (x, y) in NODES.items():
-        rows, pal = landmarks[name]
-        pal = {k: v for k, v in pal.items() if v}
-        # repère au double, avec un trait sombre autour pour le détacher du terrain
-        big = [''.join(ch * 2 for ch in row) for row in rows for _ in (0, 1)]
-        w, h = len(big[0]), len(big)
-        ox, oy = x - w // 2, y - h + 4
-        for j, row in enumerate(big):
-            for i, ch in enumerate(row):
-                if ch != '.':
-                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                        jj, ii = j + dy, i + dx
-                        if not (0 <= jj < h and 0 <= ii < w and big[jj][ii] != '.'):
-                            c.put(ox + ii, oy + jj, '#140a10')
-        c.blob(big, ox, oy, pal)
-        c.blob(['d' * (w + 2)], ox - 1, oy + h, {'d': '#1c1218'})
-    # salines : croûte de sel blanche et craquelée dans la plaine sud
-    for y in range(150, 178):
-        for x in range(232, 296):
-            if kind[y][x] is None and math.hypot((x - 262) / 24, (y - 164) / 10) + noise2(x, y, 21) * 0.2 < 1:
-                c.put(x, y, '#d8d0c0' if c.dith(x, y, 0.7) else '#b8b0a4')
-                if (x * 3 + y * 5) % 17 == 0:
-                    c.put(x, y, '#8a8070')
-    # plaines : cailloux et ossements épars
-    for _ in range(90):
-        x, y = rnd.randint(6, W - 7), rnd.randint(6, H - 7)
-        if kind[y][x] is None:
-            c.blob(['.#.', '#d#'] if rnd.random() < 0.7 else ['#.#', '.#.'], x, y, {'#': '#6a5a52', 'd': '#2a2020'})
-
-    # --- sentier pointillé -----------------------------------------------------------------
-    pts = list(NODES.values())
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        steps = int(math.hypot(x1 - x0, y1 - y0))
-        for i in range(steps):
-            t = i / steps
-            x = x0 + (x1 - x0) * t + math.sin(t * math.pi) * 6
-            y = y0 + (y1 - y0) * t
-            if i % 4 < 2:
-                c.put(int(x), int(y), '#f0d8a0')
-                c.put(int(x), int(y) + 1, '#2a1a1a')
-
+    # Les repères des donjons et le sentier sont dessinés par le jeu d'après dungeons.json
+    # (sprites `landmark_*` de l'atlas) : la carte reste valable quand on ajoute un donjon.
     # --- cadre déchiré et rose des vents ----------------------------------------------------
     for y in range(H):
         for x in range(W):
@@ -241,3 +186,42 @@ def world_map():
     c.blob(rose, 10, 8, {'#': '#e8d8b0'})
     c.blob(['.#.', '###', '.#.'], 13, 11, {'#': '#e0643a'})
     return c.image()
+
+
+# Repères 5 × 5 à 5 × 6 (agrandis ×2 dans l'atlas), nommés dans packages/data (LANDMARKS).
+LANDMARKS = {
+    'camp': (['..^..', '.###.', '#####', '#.#.#'], {'#': '#a05a3a', '^': '#ff8a2a'}),
+    'ruins': (['.###.', '#...#', '#.#.#', '#####', 'wwwww'], {'#': '#8a9aa8', 'w': '#3a7aa0'}),
+    'gate': (['#.#.#', '#####', '#.o.#', '#####', '#.#.#'], {'#': '#3e6a2a', 'o': '#e0643a'}),
+    'tower': (['#.#.#', '#####', '.###.', '.#o#.', '.###.', '#####'], {'#': '#5a2420', 'o': '#ffb840'}),
+    'spire': (['..#..', '..#..', '.###.', '.#o#.', '#####', 'wwwww'], {'#': '#6a6a80', 'o': '#4a90d9', 'w': '#1e5270'}),
+    'crown': (['#.#.#', '#####', '.###.', '..#..', '.###.'], {'#': '#e2b440'}),
+    'bridge': (['##.##', '#...#', '##.##', '.#.#.', '.#.#.'], {'#': '#9a6a58'}),
+    'salt': (['.....', '#.#.#', '#####', '.ooo.', '.....'], {'#': '#e8e0d0', 'o': '#8aa0b0'}),
+    'pass': (['..#..', '.###.', '##o##', '#.o.#', '#####'], {'#': '#2a2230', 'o': '#ff8a2a'}),
+    'throne': (['#...#', '##.##', '#o.o#', '#####', '.#.#.'], {'#': '#5a3478', 'o': '#e2b440'}),
+}
+
+
+def landmark_sprites():
+    """Chaque repère en sprite RGBA ×2 avec un contour sombre, pour l'atlas."""
+    from PIL import Image
+    out = {}
+    for name, (rows, pal) in LANDMARKS.items():
+        big = [''.join(ch * 2 for ch in row) for row in rows for _ in (0, 1)]
+        w, h = len(big[0]) + 2, len(big) + 2
+        im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        for j, row in enumerate(big):
+            for i, ch in enumerate(row):
+                if ch == '.':
+                    continue
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        if abs(dx) + abs(dy) == 1:
+                            im.putpixel((i + 1 + dx, j + 1 + dy), (*hexc('#140a10'), 255))
+        for j, row in enumerate(big):
+            for i, ch in enumerate(row):
+                if ch != '.':
+                    im.putpixel((i + 1, j + 1), (*hexc(pal[ch]), 255))
+        out[f'landmark_{name}'] = [im]
+    return out

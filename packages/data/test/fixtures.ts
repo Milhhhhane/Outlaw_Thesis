@@ -155,8 +155,6 @@ export const dungeonFixture = {
   ],
   rewards: { xp: 100, gold: 50, materials: { tier: 1, amount: 2 } },
   chest: 'bronze',
-  loot: [
-    { item: 'test_charm', weight: 3 },
-    { item: 'test_relic', weight: 1 },
-  ],
+  loot: ['test_charm', 'test_relic'],
+  map: { x: 40, y: 140, landmark: 'camp', chapter: 1 },
 };

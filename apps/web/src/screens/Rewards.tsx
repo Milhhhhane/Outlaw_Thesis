@@ -87,6 +87,14 @@ export function Rewards({
               ))}
             </ul>
             {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
+            {report.item.salvaged !== null && (
+              <p className="hint">
+                {t('reward.salvaged', {
+                  amount: report.item.salvaged.amount,
+                  tier: report.item.salvaged.tier,
+                })}
+              </p>
+            )}
           </Card>
         )}
         {report.chest !== null && (

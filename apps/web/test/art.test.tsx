@@ -20,7 +20,14 @@ describe('pixel art', () => {
 
   it('chaque donjon a son décor', () => {
     for (const dungeon of content.dungeons) {
-      expect(backgroundUrl(dungeon.id), dungeon.id).toMatch(new RegExp(dungeon.id));
+      const scene = dungeon.scene ?? dungeon.id;
+      expect(backgroundUrl(scene), dungeon.id).toMatch(new RegExp(scene));
+    }
+  });
+
+  it('chaque donjon a son repère de carte dans l’atlas', () => {
+    for (const dungeon of content.dungeons) {
+      expect(SPRITES[`landmark_${dungeon.map.landmark}`], dungeon.id).toBeDefined();
     }
   });
 

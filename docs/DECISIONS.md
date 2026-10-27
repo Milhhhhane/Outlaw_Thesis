@@ -422,6 +422,30 @@ chaîne, ennemis existants, décors dérivés des existants par rotation de tein
 nouveau contenu moteur ni de nouveaux sprites, la progression actuelle reste intacte pour les
 sauvegardes.
 
+## Lot 12 — carte et butin
+
+**La carte est une donnée, pas une image** — Contexte : ajouter un donjon demandait de modifier
+`map_nodes.json`, de repeindre l'image de la carte et de reprendre l'écran. Choix : chaque donjon
+porte `map` (`x`, `y`, `landmark`, `chapter`) ; l'image ne contient que le terrain ; l'écran
+dessine repères, chemin et pions depuis `dungeons.json`, dans l'ordre du fichier. Raison : un
+donjon de plus = une entrée JSON ; le chargeur refuse deux repères à moins de 24 px.
+
+**Chapitres plutôt qu'une carte infinie** — Choix : `chapter` par donjon et une image par
+chapitre, onglets seulement s'il y en a plusieurs. Raison : la carte native fait 320 × 180 ;
+au-delà d'une douzaine de donjons les noms se chevauchent, un chapitre repart sur une carte vide.
+
+**Butin : une liste, des poids par rareté** — Contexte : chaque donjon portait ses poids, à
+réinventer à chaque ajout, et les tables restaient à deux ou trois objets. Choix : `loot` est une
+liste d'identifiants ; `economy.loot.weights` donne un poids par rareté pour tout le jeu. Raison :
+une seule décision d'équilibrage (commun 75 / rare 25) au lieu d'une par donjon ; une table se
+lit en un coup d'œil.
+
+**Premier passage rare, doublons démontés** — Choix : `firstClearRare` (le premier passage
+récompense toujours d'un rare du donjon) et `duplicateLimit` + `salvage` (au-delà de trois
+exemplaires, le doublon devient des matériaux). Raison : la première victoire doit marquer ; sans
+limite, l'inventaire se remplit d'objets identiques que personne n'équipe. Le tirage reste
+déterministe (graine du profil) : même profil, même butin.
+
 ## Coffres, fragments et étoiles
 
 **Un coffre ne donne que des fragments de héros** — Contexte : le joueur voulait un système de

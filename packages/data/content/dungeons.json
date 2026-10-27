@@ -49,31 +49,18 @@
       }
     },
     "loot": [
-      {
-        "item": "ember_charm",
-        "weight": 4
-      },
-      {
-        "item": "quick_spurs",
-        "weight": 4
-      },
-      {
-        "item": "thorn_ring",
-        "weight": 3
-      },
-      {
-        "item": "mender_token",
-        "weight": 3
-      },
-      {
-        "item": "phoenix_feather",
-        "weight": 1
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 1
-      }
+      "ember_charm",
+      "quick_spurs",
+      "thorn_ring",
+      "mender_token",
+      "phoenix_feather",
+      "chrono_gear"
     ],
+    "map": {
+      "x": 42,
+      "y": 142,
+      "landmark": "camp"
+    },
     "chest": "bronze"
   },
   {
@@ -124,32 +111,19 @@
       }
     },
     "loot": [
-      {
-        "item": "tide_pendant",
-        "weight": 4
-      },
-      {
-        "item": "iron_band",
-        "weight": 4
-      },
-      {
-        "item": "spare_flask",
-        "weight": 3
-      },
-      {
-        "item": "mender_token",
-        "weight": 3
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 1
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 1
-      }
+      "tide_pendant",
+      "iron_band",
+      "spare_flask",
+      "mender_token",
+      "aegis_shard",
+      "chrono_gear"
     ],
     "unlocksHero": "cendre",
+    "map": {
+      "x": 100,
+      "y": 120,
+      "landmark": "ruins"
+    },
     "chest": "bronze"
   },
   {
@@ -202,31 +176,18 @@
       }
     },
     "loot": [
-      {
-        "item": "hunter_lens",
-        "weight": 4
-      },
-      {
-        "item": "thorn_ring",
-        "weight": 4
-      },
-      {
-        "item": "iron_band",
-        "weight": 3
-      },
-      {
-        "item": "ember_charm",
-        "weight": 3
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 1
-      },
-      {
-        "item": "phoenix_feather",
-        "weight": 1
-      }
+      "hunter_lens",
+      "thorn_ring",
+      "iron_band",
+      "ember_charm",
+      "storm_sigil",
+      "phoenix_feather"
     ],
+    "map": {
+      "x": 66,
+      "y": 74,
+      "landmark": "gate"
+    },
     "chest": "silver"
   },
   {
@@ -280,32 +241,19 @@
       }
     },
     "loot": [
-      {
-        "item": "ember_charm",
-        "weight": 4
-      },
-      {
-        "item": "quick_spurs",
-        "weight": 3
-      },
-      {
-        "item": "hunter_lens",
-        "weight": 3
-      },
-      {
-        "item": "spare_flask",
-        "weight": 3
-      },
-      {
-        "item": "phoenix_feather",
-        "weight": 1
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 1
-      }
+      "ember_charm",
+      "quick_spurs",
+      "hunter_lens",
+      "spare_flask",
+      "phoenix_feather",
+      "storm_sigil"
     ],
     "unlocksHero": "ressac",
+    "map": {
+      "x": 138,
+      "y": 48,
+      "landmark": "tower"
+    },
     "chest": "silver"
   },
   {
@@ -359,31 +307,18 @@
       }
     },
     "loot": [
-      {
-        "item": "tide_pendant",
-        "weight": 4
-      },
-      {
-        "item": "mender_token",
-        "weight": 3
-      },
-      {
-        "item": "iron_band",
-        "weight": 3
-      },
-      {
-        "item": "spare_flask",
-        "weight": 3
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 1
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 1
-      }
+      "tide_pendant",
+      "mender_token",
+      "iron_band",
+      "spare_flask",
+      "aegis_shard",
+      "chrono_gear"
     ],
+    "map": {
+      "x": 196,
+      "y": 104,
+      "landmark": "spire"
+    },
     "chest": "silver"
   },
   {
@@ -436,32 +371,19 @@
       }
     },
     "loot": [
-      {
-        "item": "thorn_ring",
-        "weight": 4
-      },
-      {
-        "item": "hunter_lens",
-        "weight": 3
-      },
-      {
-        "item": "mender_token",
-        "weight": 3
-      },
-      {
-        "item": "iron_band",
-        "weight": 3
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 1
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 1
-      }
+      "thorn_ring",
+      "hunter_lens",
+      "mender_token",
+      "iron_band",
+      "storm_sigil",
+      "aegis_shard"
     ],
     "unlocksHero": "seve",
+    "map": {
+      "x": 250,
+      "y": 56,
+      "landmark": "crown"
+    },
     "chest": "gold"
   },
   {
@@ -518,31 +440,18 @@
       }
     },
     "loot": [
-      {
-        "item": "phoenix_feather",
-        "weight": 2
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 2
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 2
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 2
-      },
-      {
-        "item": "ember_charm",
-        "weight": 2
-      },
-      {
-        "item": "tide_pendant",
-        "weight": 2
-      }
+      "phoenix_feather",
+      "storm_sigil",
+      "chrono_gear",
+      "aegis_shard",
+      "ember_charm",
+      "tide_pendant"
     ],
+    "map": {
+      "x": 284,
+      "y": 130,
+      "landmark": "bridge"
+    },
     "chest": "gold"
   },
   {
@@ -596,31 +505,18 @@
       }
     },
     "loot": [
-      {
-        "item": "tide_pendant",
-        "weight": 3
-      },
-      {
-        "item": "ember_charm",
-        "weight": 3
-      },
-      {
-        "item": "spare_flask",
-        "weight": 3
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 2
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 2
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 1
-      }
+      "tide_pendant",
+      "ember_charm",
+      "spare_flask",
+      "aegis_shard",
+      "storm_sigil",
+      "chrono_gear"
     ],
+    "map": {
+      "x": 262,
+      "y": 158,
+      "landmark": "salt"
+    },
     "chest": "gold"
   },
   {
@@ -678,31 +574,18 @@
       }
     },
     "loot": [
-      {
-        "item": "ember_charm",
-        "weight": 4
-      },
-      {
-        "item": "quick_spurs",
-        "weight": 3
-      },
-      {
-        "item": "hunter_lens",
-        "weight": 3
-      },
-      {
-        "item": "phoenix_feather",
-        "weight": 2
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 2
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 1
-      }
+      "ember_charm",
+      "quick_spurs",
+      "hunter_lens",
+      "phoenix_feather",
+      "storm_sigil",
+      "chrono_gear"
     ],
+    "map": {
+      "x": 298,
+      "y": 74,
+      "landmark": "pass"
+    },
     "chest": "gold"
   },
   {
@@ -753,31 +636,18 @@
       }
     },
     "loot": [
-      {
-        "item": "phoenix_feather",
-        "weight": 3
-      },
-      {
-        "item": "storm_sigil",
-        "weight": 3
-      },
-      {
-        "item": "chrono_gear",
-        "weight": 3
-      },
-      {
-        "item": "aegis_shard",
-        "weight": 3
-      },
-      {
-        "item": "thorn_ring",
-        "weight": 2
-      },
-      {
-        "item": "mender_token",
-        "weight": 2
-      }
+      "phoenix_feather",
+      "storm_sigil",
+      "chrono_gear",
+      "aegis_shard",
+      "thorn_ring",
+      "mender_token"
     ],
+    "map": {
+      "x": 294,
+      "y": 42,
+      "landmark": "throne"
+    },
     "chest": "gold"
   }
 ]
