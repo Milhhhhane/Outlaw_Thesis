@@ -21,6 +21,9 @@
 - Sprint 5 — Équilibrage : héros 4 à 6, simulation des 20 équipes. Critère : R1 (86 %), R2 (60 %)
   et « aucun héros indispensable » (0 point) tenues, vérifiées en CI par `pnpm sim:check`.
 
+- Graphismes — pixel art original (héros, ennemis, effets, décors, interface) et combat animé ;
+  outils dans `tools/art/`.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

@@ -58,3 +58,36 @@
     animation: none;
   }
 }
+
+.diorama {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid #07050a;
+  box-shadow: 0 0 0 2px #5a4664;
+  background: #07050a;
+}
+
+.diorama__world {
+  position: absolute;
+  inset: 0 auto auto 0;
+  transform-origin: 0 0;
+  background-size: 320px 180px;
+  image-rendering: pixelated;
+}
+
+.diorama__unit {
+  position: absolute;
+}
+
+.diorama__fire {
+  position: absolute;
+  left: 196px;
+  top: 138px;
+  z-index: 158;
+}
+
+.diorama__glow {
+  position: absolute;
+  left: -12px;
+  top: 16px;
+}

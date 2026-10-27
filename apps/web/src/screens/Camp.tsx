@@ -8,6 +8,9 @@ import {
   upgradeItem,
 } from '@outlaw/engine';
 import { useState } from 'react';
+import { backgroundUrl } from '../art';
+import { Diorama } from '../art/Diorama';
+import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { describeTrigger } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
@@ -79,6 +82,15 @@ export function Camp({ version, onHero, onDungeon, onDemo, onTestMode }: Props) 
         )}
       </header>
 
+      <Diorama
+        scene={
+          [...content.dungeons].reverse().find((d) => dungeonOpen(content, profile, d.id))?.id ??
+          'ember_wastes'
+        }
+        heroes={profile.team}
+        campfire
+      />
+
       {test && <p className="notice notice--test">{t('test.banner')}</p>}
       {recovered && <p className="notice">{t('hub.saveRecovered')}</p>}
       {!test && <Intro />}
@@ -105,6 +117,9 @@ export function Camp({ version, onHero, onDungeon, onDemo, onTestMode }: Props) 
                     onHero(id);
                   }}
                 >
+                  <span className="roster__portrait">
+                    <PixelSprite name={id} idle={inTeam} />
+                  </span>
                   <span className="roster__name">{names.hero(id)}</span>
                   <span className="roster__level">{t('hub.level', { level: hero.level })}</span>
                   <span className="roster__thesis">{names.heroThesis(id)}</span>
@@ -191,6 +206,11 @@ export function Camp({ version, onHero, onDungeon, onDemo, onTestMode }: Props) 
                 key={dungeon.id}
                 className={`dungeon element-${dungeon.element === 'mixed' ? 'mixed' : dungeon.element} ${open ? '' : 'dungeon--locked'}`}
               >
+                <span
+                  className="dungeon__art"
+                  aria-hidden="true"
+                  style={{ backgroundImage: `url(${backgroundUrl(dungeon.id)})` }}
+                />
                 <div className="dungeon__head">
                   <h3 className="dungeon__name">{names.dungeon(dungeon.id)}</h3>
                   <span className="dungeon__level">

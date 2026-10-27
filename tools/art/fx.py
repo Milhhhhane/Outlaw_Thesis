@@ -198,6 +198,22 @@ def glyph(ch, tone):
     return im
 
 
+def campfire(frame):
+    """Feu de camp : bûches croisées, flammes qui dansent, braises."""
+    from pix import Sprite
+    from pal import BARK, FIRE
+    s = Sprite(24, 24)
+    s.line([(3, 21), (20, 17)], BARK, width=3)
+    s.line([(4, 17), (21, 21)], BARK, width=3)
+    lean = (-1, 1)[frame]
+    for x, h, l in [(8, 9, lean), (12, 14, -lean), (16, 8, lean)]:
+        s.poly([(x - 3, 19), (x - 2 + l, 19 - h // 2), (x + l, 19 - h), (x + 2 + l, 19 - h // 2), (x + 3, 19)], FIRE, glow=2)
+    im = s.render()
+    put(im, 6 + frame * 9, 2 + frame, '#ffb840')
+    put(im, 15 - frame * 6, 4 - frame, '#ffe58a')
+    return im
+
+
 def all_fx():
     out = {}
     for el, ramp in ELEMENT.items():
@@ -212,6 +228,7 @@ def all_fx():
     out['stun'] = [stun(f) for f in range(4)]
     out['burn'] = [burn(f) for f in range(4)]
     out['mark'] = [mark(f) for f in range(4)]
+    out['campfire'] = [campfire(f) for f in range(2)]
     for tone in TONES:
         out[f'font_{tone}'] = [glyph(ch, tone) for ch in GLYPHS]
     return out

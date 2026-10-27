@@ -2,6 +2,22 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [graphismes] — 2026-10-27
+
+### Ajouté
+
+- Pixel art original : 6 héros, 12 ennemis (boss en 96 px), effets, police pixel, 7 décors de
+  donjon et cadres d'interface, générés par `tools/art/`.
+- Champ de bataille animé : décor du donjon, sprites au repos, fente à l'attaque, projectile,
+  éclair blanc et éclats à l'impact, chiffres en police pixel, cible et unité active soulignées.
+- Camp : scène de l'équipe autour du feu, portraits des héros, décor de chaque donjon ; fiche de
+  héros avec portrait.
+
+### Modifié
+
+- Interface en cadres pixel (cartes, boutons, barre d'action) ; cartes d'unité plus compactes.
+- Rejeu : chaque événement affiché garde sa durée avant le suivant.
+
 ## [sprint-5] — 2026-10-27 — commit `0196ba5`
 
 ### Ajouté

@@ -17,6 +17,7 @@ import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Refusal } from './Refusal';
 import { range } from '../util/range';
+import { PixelSprite } from '../art/Pixel';
 
 /**
  * Fiche d'un héros : tout ce qui est affiché vient de l'unité compilée par le moteur
@@ -62,6 +63,9 @@ export function HeroScreen({
         {t('nav.back')}
       </button>
       <header className="hero-sheet__header">
+        <span className="hero-sheet__portrait">
+          <PixelSprite name={heroId} idle />
+        </span>
         <h1 className="hero-sheet__name">{names.hero(heroId)}</h1>
         <p className="hero-sheet__thesis">{names.heroThesis(heroId)}</p>
         <p className="hero-sheet__level">

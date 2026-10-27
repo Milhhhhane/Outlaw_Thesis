@@ -18,7 +18,7 @@ describe('pixel art', () => {
 
   it('chaque donjon a son décor', () => {
     for (const dungeon of content.dungeons) {
-      expect(backgroundUrl(dungeon.id), dungeon.id).toMatch(new RegExp(`${dungeon.id}`));
+      expect(backgroundUrl(dungeon.id), dungeon.id).toMatch(new RegExp(dungeon.id));
     }
   });
 

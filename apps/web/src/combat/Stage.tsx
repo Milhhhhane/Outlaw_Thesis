@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import { backgroundUrl, GROUND_Y, sprite } from '../art';
 import { PixelSprite, PixelText } from '../art/Pixel';
+import { useScale } from '../art/useScale';
 import type { BattleView, Flash, UnitView } from './view';
 
 /** Monde natif : 320 × 180 pixels, agrandi sans lissage. */
@@ -25,24 +26,6 @@ interface Props {
   readonly active: string | null;
   readonly targets: ReadonlySet<string>;
   readonly onTarget: (id: string) => void;
-}
-
-/** Facteur d'agrandissement : le monde natif remplit toute la largeur disponible. */
-function useScale(ref: React.RefObject<HTMLDivElement | null>): number {
-  const [scale, setScale] = useState(3);
-  useEffect(() => {
-    const el = ref.current;
-    if (el === null || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => {
-      const raw = el.clientWidth / STAGE_W;
-      setScale(Math.max(0.5, raw));
-    });
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-    };
-  }, [ref]);
-  return scale;
 }
 
 function Actor(props: {
@@ -164,7 +147,7 @@ function Bolts({ view }: { readonly view: BattleView }) {
 /** Le champ de bataille en pixel art : décor du donjon, sprites animés, effets. */
 export function Stage({ view, scene, active, targets, onTarget }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const scale = useScale(ref);
+  const scale = useScale(ref, STAGE_W);
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
   return (
