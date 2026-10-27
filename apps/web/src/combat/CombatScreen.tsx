@@ -1,6 +1,7 @@
 import {
   enemyIntent,
   legalActions,
+  type Action,
   type BattleSetup,
   type Intent,
   type ResolvedSpell,
@@ -15,9 +16,11 @@ import { describeSpell, describeTrigger } from '../i18n/describe';
 import { joinNames, names, t, tk, type TextKey } from '../i18n';
 import { ActionBar } from './ActionBar';
 import { InitiativeTrack } from './InitiativeTrack';
+import { PvpBanner, PvpEmotes, PvpOutcome, PvpPlates, TurnTimer } from '../pvp/overlays';
+import type { PvpInfo } from '../pvp/info';
 import { content } from './session';
 import { anchorOf, Stage } from './Stage';
-import { useBattle } from './useBattle';
+import { useBattle, type BattleHandle } from './useBattle';
 import type { UnitView } from './view';
 import './combat.css';
 
@@ -172,15 +175,31 @@ function unitDetail(
   return lines;
 }
 
-export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
+/** Combat contre l'ordinateur : le moteur tourne ici, dans le navigateur. */
+export function CombatScreen(props: Props) {
+  const { options } = useOptions();
+  const battle = useBattle(props.setup, speedFactor(options.speed));
+  return <CombatView {...props} battle={battle} />;
+}
+
+interface ViewProps extends Props {
+  readonly battle: BattleHandle;
+  /** Partie en ligne : les actions viennent du serveur, les deux camps sont des joueurs. */
+  readonly pvp?: PvpInfo;
+}
+
+/** L'écran de combat lui-même, indifférent à l'origine des actions (local ou serveur). */
+export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewProps) {
   const { options, set: setOptions } = useOptions();
   const fast = options.speed !== 'normal';
   const toggleSpeed = (): void => {
     setOptions({ speed: fast ? 'normal' : 'fast' });
   };
   const game = useContext(GameContext);
-  const { model, busy, act, skip, reset } = useBattle(setup, speedFactor(options.speed));
+  const { model, busy, act, skip, reset } = battle;
   const { state, view } = model;
+  const mySide = pvp?.you ?? 'player';
+  const [leaving, setLeaving] = useState(false);
   // La sélection est liée au héros actif : elle disparaît d'elle-même quand le tour passe.
   const [selection, setSelection] = useState<{ unit: string; spell: string } | null>(null);
   const [paused, setPaused] = useState(false);
@@ -190,17 +209,25 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   const resultRef = useRef<HTMLButtonElement>(null);
   const firstTarget = useRef<HTMLButtonElement>(null);
 
-  const active = busy ? null : state.active;
+  // Unité dont c'est le tour (surlignée pour les deux joueurs) ; les commandes ne sont à vous que si elle est à vous.
+  const turnUnit = busy ? null : state.active;
+  const turnSide = state.units.find((u) => u.def.id === turnUnit)?.def.side ?? null;
+  const mine =
+    pvp === undefined ||
+    (turnSide === mySide && !pvp.pending && pvp.result === null && !pvp.offline);
+  const active = mine ? turnUnit : null;
   const selected = selection !== null && selection.unit === active ? selection.spell : null;
   const setSelected = (spell: string | null): void => {
     setSelection(spell === null || active === null ? null : { unit: active, spell });
   };
-  const caster = state.units.find((u) => u.def.id === active) ?? null;
+  // En ligne, la barre montre aussi les sorts de l'adversaire à son tour (sans pouvoir les lancer).
+  const caster =
+    state.units.find((u) => u.def.id === (pvp === undefined ? active : turnUnit)) ?? null;
   const legal = active === null ? [] : legalActions(state);
   const targets = new Set<string>(
     legal.filter((a) => a.spell === selected && a.target !== undefined).map((a) => a.target ?? ''),
   );
-  const result = busy ? null : state.result;
+  const result = busy ? null : pvp === undefined ? state.result : pvp.result;
   const finished = result !== null;
   const defOf = (id: string): UnitDef | undefined => state.units.find((u) => u.def.id === id)?.def;
   const nameOf = (id: string): string => {
@@ -209,7 +236,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   };
   const intents = new Map(
     view.units
-      .filter((u) => u.side === 'enemy')
+      .filter((u) => u.side === 'enemy' && pvp === undefined)
       .map((u) => [u.id, busy ? null : enemyIntent(state, u.id)] as const),
   );
 
@@ -227,18 +254,23 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
     else if (!finished) setPaused(true);
   });
 
+  const doAct = (action: Action): void => {
+    if (pvp === undefined) act(action);
+    else pvp.send(action);
+  };
+
   const castSpell = (spell: ResolvedSpell): void => {
     if (caster === null) return;
     if (spell.targeting === 'enemy' || spell.targeting === 'ally') {
       setSelected(selected === spell.id ? null : spell.id);
       return;
     }
-    act({ type: 'cast', unit: caster.def.id, spell: spell.id });
+    doAct({ type: 'cast', unit: caster.def.id, spell: spell.id });
   };
 
   const onTarget = (id: string): void => {
     if (caster === null || selected === null) return;
-    act({ type: 'cast', unit: caster.def.id, spell: selected, target: id });
+    doAct({ type: 'cast', unit: caster.def.id, spell: selected, target: id });
     setSelected(null);
   };
 
@@ -260,6 +292,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         spell !== undefined &&
         caster !== null &&
         !busy &&
+        mine &&
         spell.cost <= state.points[caster.def.side]
       ) {
         castSpell(spell);
@@ -308,7 +341,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   const firstTargetId = view.units.find((u) => targets.has(u.id))?.id;
   return (
     <main className="battle">
-      <Stage view={view} scene={scene ?? 'ember_wastes'} active={active} targets={targets} />
+      <Stage view={view} scene={scene ?? 'ember_wastes'} active={turnUnit} targets={targets} />
 
       <header className="battle__top">
         <Button
@@ -322,6 +355,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         />
         <h1 className="battle__title">{title ?? t('combat.title')}</h1>
         <InitiativeTrack state={state} />
+        {pvp !== undefined && <TurnTimer deadline={busy || finished ? null : pvp.deadline} />}
         <Button
           variant={fast ? 'primary' : 'quiet'}
           size="small"
@@ -339,6 +373,10 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
           </Button>
         )}
       </header>
+
+      {pvp !== undefined && <PvpPlates pvp={pvp} />}
+      {pvp !== undefined && <PvpBanner pvp={pvp} />}
+      {pvp !== undefined && <PvpEmotes pvp={pvp} />}
 
       <section className="battle__units" aria-label={t('combat.units')}>
         {view.units.map((unit) => {
@@ -403,16 +441,26 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
 
       <ActionBar
         caster={finished ? null : caster}
-        points={view.points.player}
+        points={view.points[caster?.def.side ?? mySide]}
         cap={content.balance.combat.teamPoints.cap}
         selected={selected}
-        busy={busy || finished}
+        busy={busy || finished || !mine}
         onSpell={castSpell}
         onFocusSpell={setFocusSpell}
         detail={detail}
+        {...(pvp === undefined
+          ? {}
+          : {
+              waiting:
+                turnSide !== null && turnSide !== mySide
+                  ? t('pvp.theirTurn', { name: pvp.names.opponent })
+                  : t('pvp.resolving'),
+            })}
       />
 
-      {result !== null && (
+      {result !== null && pvp !== undefined && <PvpOutcome pvp={pvp} result={result} />}
+
+      {result !== null && pvp === undefined && (
         <section
           className={`outcome outcome--${result.winner === 'player' ? 'win' : 'loss'}`}
           role="dialog"
@@ -454,11 +502,12 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
 
       {paused && (
         <Window
-          title={t('combat.pause')}
+          title={pvp === undefined ? t('combat.pause') : t('pvp.menu')}
           className="pause"
           onClose={() => {
             setPaused(false);
             setHelp(false);
+            setLeaving(false);
           }}
         >
           {help ? (
@@ -490,9 +539,21 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
                   {t('combat.options')}
                 </Button>
               )}
-              <Button variant="danger" onClick={onExit}>
-                {t('combat.quit')}
-              </Button>
+              {pvp === undefined ? (
+                <Button variant="danger" onClick={onExit}>
+                  {t('combat.quit')}
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    if (leaving) pvp.onLeave();
+                    else setLeaving(true);
+                  }}
+                >
+                  {leaving ? t('pvp.leave.confirm') : t('pvp.leave')}
+                </Button>
+              )}
             </div>
           )}
           {help && (

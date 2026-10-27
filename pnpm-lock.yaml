@@ -287,6 +287,9 @@ importers:
       '@outlaw/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@outlaw/net':
+        specifier: workspace:*
+        version: link:../../packages/net
       react:
         specifier: 'catalog:'
         version: 19.3.1

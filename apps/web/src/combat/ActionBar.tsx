@@ -15,6 +15,8 @@ interface Props {
   readonly onFocusSpell: (spell: string | null) => void;
   /** Contenu du panneau de détail (sort ou unité survolés). */
   readonly detail: ReactNode;
+  /** Texte d'attente à la place de « Les ennemis jouent… » (PvP). */
+  readonly waiting?: string;
 }
 
 export function Pips({ count, filled, label }: { count: number; filled: number; label: string }) {
@@ -37,19 +39,24 @@ export function ActionBar({
   onSpell,
   onFocusSpell,
   detail,
+  waiting,
 }: Props) {
   const spells = caster?.def.spells ?? [];
   const who = caster ? names.unit(caster.def.kind) : null;
   return (
     <section
       className="actions"
-      aria-label={who !== null && !busy ? t('combat.turnOf', { unit: who }) : t('combat.waiting')}
+      aria-label={
+        who !== null && !busy ? t('combat.turnOf', { unit: who }) : (waiting ?? t('combat.waiting'))
+      }
     >
       <div className="actions__who">
         {caster !== null && <Portrait kind={caster.def.kind} size={44} />}
         <div className="actions__who-text">
           <span className="actions__turn">
-            {who !== null && !busy ? t('combat.turnOf', { unit: who }) : t('combat.waiting')}
+            {who !== null && !busy
+              ? t('combat.turnOf', { unit: who })
+              : (waiting ?? t('combat.waiting'))}
           </span>
           <span className="actions__reserve">
             <span className="hint">{t('combat.reserveShort')}</span>

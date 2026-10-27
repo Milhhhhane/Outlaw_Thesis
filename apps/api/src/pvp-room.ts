@@ -30,9 +30,9 @@ import type { Database } from './db';
 /** Un salon inactif (aucun message) disparaît au bout de ce délai. */
 export const IDLE_MS = 30 * 60 * 1000;
 
-/** Au plus 30 messages en 5 secondes par connexion : au-delà, la connexion est coupée. */
+/** Au plus 60 messages en 5 secondes par connexion (12 par seconde : aucun humain n'y arrive) ; au-delà, la connexion est coupée. */
 const RATE_WINDOW_MS = 5000;
-const RATE_MAX = 30;
+const RATE_MAX = 60;
 
 /** Codes de fermeture propres au jeu (4000 à 4999). */
 export const CLOSE = {

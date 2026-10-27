@@ -16,7 +16,8 @@
     "@outlaw/engine": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "@outlaw/accounts": "workspace:*"
+    "@outlaw/accounts": "workspace:*",
+    "@outlaw/net": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

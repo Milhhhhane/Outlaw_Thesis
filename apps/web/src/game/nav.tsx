@@ -11,7 +11,10 @@ export type Route =
   | { readonly name: 'workshop' }
   | { readonly name: 'credits' }
   | { readonly name: 'dungeon'; readonly id: string }
-  | { readonly name: 'demo' };
+  | { readonly name: 'demo' }
+  /** Duel en ligne : entrée du menu, puis un salon par son code. */
+  | { readonly name: 'pvp' }
+  | { readonly name: 'pvp_room'; readonly code: string };
 
 export interface GameApi {
   readonly go: (route: Route) => void;

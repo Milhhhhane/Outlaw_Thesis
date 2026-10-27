@@ -10,7 +10,7 @@ import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 
 const ENTRIES: readonly {
-  readonly route: 'map' | 'team' | 'heroes' | 'workshop';
+  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'pvp';
   readonly label: TextKey;
   readonly hint: TextKey;
   readonly icon: string;
@@ -19,6 +19,7 @@ const ENTRIES: readonly {
   { route: 'team', label: 'hub.menu.team', hint: 'hub.menu.team.hint', icon: 'shield' },
   { route: 'heroes', label: 'hub.menu.heroes', hint: 'hub.menu.heroes.hint', icon: 'stat' },
   { route: 'workshop', label: 'hub.menu.workshop', hint: 'hub.menu.workshop.hint', icon: 'item' },
+  { route: 'pvp', label: 'hub.menu.pvp', hint: 'hub.menu.pvp.hint', icon: 'damage' },
 ];
 
 /** Le camp : un seul écran, l'équipe autour du feu, toutes les entrées du jeu. */
