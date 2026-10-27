@@ -33,6 +33,7 @@ export function runDungeon(
       encounter.enemies,
       dungeon.recommendedLevel,
       dungeon.modifier,
+      encounter.hpPct,
     );
     const outcome = runBattle({ units: [...heroes, ...enemies] }, content.balance, policy);
     actions += outcome.actions;

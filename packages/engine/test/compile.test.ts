@@ -197,14 +197,22 @@ describe('ennemis et équipes', () => {
       controller: 'script',
       side: 'enemy',
     });
-    expect(low.stats).toEqual(content.enemyById.get('thorn_witch')?.stats);
+    // Statistiques de base, puis l'échelle globale des monstres (PV et ATK).
+    const base = content.enemyById.get('thorn_witch')!.stats;
+    const { enemyScale } = balance;
+    expect(low.stats).toEqual({
+      ...base,
+      hp: Math.round(base.hp * enemyScale.hp),
+      atk: Math.round(base.atk * enemyScale.atk),
+    });
     expect(low.script[0]).toEqual({ spell: 'witch_hex', target: 'highest_atk' });
     const high = compileEnemy(content, 'thorn_witch', 99, 0);
     expect(high.stats.hp).toBe(
-      Math.round(
-        content.enemyById.get('thorn_witch')!.stats.hp * (1 + balance.progression.growth.enemy.hp),
-      ),
+      Math.round(Math.round(base.hp * (1 + balance.progression.growth.enemy.hp)) * enemyScale.hp),
     );
+    // Rencontre de donjon : son champ hpPct règle les PV de ce combat seulement.
+    const [tough] = compileEncounter(content, ['thorn_witch'], 1, undefined, 150);
+    expect(tough?.stats.hp).toBe(Math.round(low.stats.hp * 1.5));
     expect(() => compileEnemy(content, 'ghost', 1, 0)).toThrow(InvalidSetupError);
   });
 

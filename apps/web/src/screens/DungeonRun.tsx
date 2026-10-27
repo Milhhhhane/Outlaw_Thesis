@@ -68,7 +68,13 @@ export function DungeonRun({
   const setup = {
     units: [
       ...heroes,
-      ...compileEncounter(content, encounter.enemies, dungeon.recommendedLevel, dungeon.modifier),
+      ...compileEncounter(
+        content,
+        encounter.enemies,
+        dungeon.recommendedLevel,
+        dungeon.modifier,
+        encounter.hpPct,
+      ),
     ],
   };
   const last = phase.room === dungeon.encounters.length - 1;

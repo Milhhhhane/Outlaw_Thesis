@@ -36,6 +36,10 @@
     },
     "shieldCapPctMaxHp": 60
   },
+  "enemyScale": {
+    "hp": 0.55,
+    "atk": 1.85
+  },
   "progression": {
     "maxLevel": 30,
     "growth": {
@@ -104,6 +108,16 @@
     "r1MinWinRate": 0.7,
     "r2MinWinRate": 0.5,
     "r2LevelGap": 3,
-    "dispensableMaxGapPoints": 10
+    "dispensableMaxGapPoints": 10,
+    "pacing": {
+      "normal": [12, 24],
+      "boss": [21, 30],
+      "floor": 12,
+      "firstFightFloor": 9,
+      "firstDungeonMax": 60,
+      "dungeonMax": 72
+    },
+    "expertWinRate": [0.75, 0.9],
+    "averageWinRate": [0.4, 0.6]
   }
 }

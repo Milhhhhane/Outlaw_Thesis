@@ -25,13 +25,16 @@
     },
     "encounters": [
       {
-        "enemies": ["cinder_hound"]
+        "enemies": ["cinder_hound", "cinder_hound"],
+        "hpPct": 121
       },
       {
-        "enemies": ["cinder_hound", "ash_acolyte"]
+        "enemies": ["cinder_hound", "ash_acolyte"],
+        "hpPct": 159
       },
       {
-        "enemies": ["ember_matron"]
+        "enemies": ["ember_matron"],
+        "hpPct": 127
       }
     ],
     "rewards": {
@@ -93,13 +96,16 @@
     },
     "encounters": [
       {
-        "enemies": ["brine_crab", "tide_caller"]
+        "enemies": ["brine_crab", "tide_caller"],
+        "hpPct": 152
       },
       {
-        "enemies": ["tide_caller", "brine_crab", "tide_caller"]
+        "enemies": ["tide_caller", "brine_crab", "tide_caller"],
+        "hpPct": 97
       },
       {
-        "enemies": ["abyss_warden", "tide_caller"]
+        "enemies": ["abyss_warden", "tide_caller"],
+        "hpPct": 99
       }
     ],
     "rewards": {
@@ -167,13 +173,16 @@
     },
     "encounters": [
       {
-        "enemies": ["moss_brute", "thorn_witch"]
+        "enemies": ["moss_brute", "thorn_witch"],
+        "hpPct": 117
       },
       {
-        "enemies": ["thorn_witch", "moss_brute", "thorn_witch"]
+        "enemies": ["thorn_witch", "moss_brute", "thorn_witch"],
+        "hpPct": 99
       },
       {
-        "enemies": ["elder_bramble", "moss_brute"]
+        "enemies": ["elder_bramble", "moss_brute"],
+        "hpPct": 93
       }
     ],
     "rewards": {
@@ -238,10 +247,12 @@
     },
     "encounters": [
       {
-        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte"]
+        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte"],
+        "hpPct": 108
       },
       {
-        "enemies": ["cinder_hound", "thorn_witch", "cinder_hound"]
+        "enemies": ["cinder_hound", "thorn_witch", "ash_acolyte"],
+        "hpPct": 108
       },
       {
         "enemies": ["pyre_tyrant", "ash_acolyte"]
@@ -313,13 +324,16 @@
     },
     "encounters": [
       {
-        "enemies": ["tide_caller", "brine_crab", "tide_caller"]
+        "enemies": ["tide_caller", "brine_crab", "cinder_hound"],
+        "hpPct": 95
       },
       {
-        "enemies": ["brine_crab", "ash_acolyte", "tide_caller"]
+        "enemies": ["cinder_hound", "ash_acolyte", "tide_caller"],
+        "hpPct": 103
       },
       {
-        "enemies": ["tidal_hydra", "brine_crab"]
+        "enemies": ["tidal_hydra", "tide_caller"],
+        "hpPct": 104
       }
     ],
     "rewards": {
@@ -383,13 +397,16 @@
     },
     "encounters": [
       {
-        "enemies": ["moss_brute", "thorn_witch", "moss_brute"]
+        "enemies": ["moss_brute", "thorn_witch", "moss_brute"],
+        "hpPct": 89
       },
       {
-        "enemies": ["thorn_witch", "tide_caller", "thorn_witch"]
+        "enemies": ["thorn_witch", "tide_caller", "thorn_witch"],
+        "hpPct": 122
       },
       {
-        "enemies": ["grove_colossus", "thorn_witch"]
+        "enemies": ["grove_colossus", "thorn_witch"],
+        "hpPct": 97
       }
     ],
     "rewards": {
@@ -458,13 +475,16 @@
     },
     "encounters": [
       {
-        "enemies": ["cinder_hound", "tide_caller", "thorn_witch"]
+        "enemies": ["cinder_hound", "tide_caller", "thorn_witch"],
+        "hpPct": 132
       },
       {
-        "enemies": ["moss_brute", "ash_acolyte", "brine_crab"]
+        "enemies": ["moss_brute", "ash_acolyte", "brine_crab"],
+        "hpPct": 97
       },
       {
-        "enemies": ["ember_matron", "abyss_warden"]
+        "enemies": ["ember_matron", "abyss_warden"],
+        "hpPct": 78
       }
     ],
     "rewards": {

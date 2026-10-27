@@ -321,6 +321,15 @@ export function compileHero(
   };
 }
 
+/** Échelle globale des monstres (balance.enemyScale) : PV et ATK, arrondis. */
+function scaled(stats: UnitDef['stats'], scale: { hp: number; atk: number }): UnitDef['stats'] {
+  return {
+    ...stats,
+    hp: Math.max(1, Math.round(stats.hp * scale.hp)),
+    atk: Math.max(1, Math.round(stats.atk * scale.atk)),
+  };
+}
+
 export function compileEnemy(
   content: Content,
   enemyId: string,
@@ -344,11 +353,9 @@ export function compileEnemy(
     element: enemy.element,
     role: null,
     boss: enemy.boss,
-    stats: statsAtLevel(
-      enemy.stats,
-      Math.min(maxLevel, Math.max(1, level)),
-      growth.enemy,
-      maxLevel,
+    stats: scaled(
+      statsAtLevel(enemy.stats, Math.min(maxLevel, Math.max(1, level)), growth.enemy, maxLevel),
+      balance.enemyScale,
     ),
     spells: baseSpells(enemy.skills, enemy.element, balance),
     triggers: [...(passive ?? []), ...extraTriggers],
@@ -390,7 +397,14 @@ export function compileEncounter(
   enemies: readonly string[],
   level: number,
   modifier?: DungeonModifier,
+  /** PV de la rencontre, en % (le champ hpPct d'un combat de donjon). */
+  hpPct = 100,
 ): UnitDef[] {
   const extra = modifierTriggers(modifier, 'enemy');
-  return enemies.map((id, slot) => compileEnemy(content, id, level, slot, extra));
+  return enemies.map((id, slot) => {
+    const unit = compileEnemy(content, id, level, slot, extra);
+    if (hpPct === 100) return unit;
+    const hp = Math.max(1, Math.round((unit.stats.hp * hpPct) / 100));
+    return { ...unit, stats: { ...unit.stats, hp } };
+  });
 }

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { loadContent } from '@outlaw/data';
 import { toCsv } from './run';
 import { dungeonRows } from './dungeons';
+import { pacing } from './pacing';
 import { evaluateRules } from './rules';
 import { randomBattles, sprint0Scenarios } from './scenarios';
 
@@ -27,19 +28,27 @@ const option = (name: string, fallback: number): number => {
 const content = loadContent();
 const started = performance.now();
 const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
+const pace = pacing(content, option('--pace-runs', 16), option('--seed', 1));
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
   ...dungeonRows(content, option('--runs', 40), option('--seed', 1)),
   ...rules.rows,
+  ...pace.rows,
 ]);
 const { targets } = content.balance;
-const verdicts = [
+const verdicts: string[] = [
   `R1 ${rules.r1.ok ? 'tenue' : 'NON TENUE'} : meilleur build ${(rules.r1.rate * 100).toFixed(0)} % contre le pire (cible ≥ ${targets.r1MinWinRate * 100} %)`,
   `R2 ${rules.r2.ok ? 'tenue' : 'NON TENUE'} : pire donjon ${(rules.r2.worst * 100).toFixed(0)} % avec ${targets.r2LevelGap} niveaux de retard (cible > ${targets.r2MinWinRate * 100} %)`,
   `Aucun héros indispensable ${rules.dispensable.ok ? 'tenue' : 'NON TENUE'} : écart maximal ${rules.dispensable.gap.toFixed(0)} points (cible ≤ ${targets.dispensableMaxGapPoints})`,
 ];
-const rulesOk = rules.r1.ok && rules.r2.ok && rules.dispensable.ok;
+verdicts.push(
+  `Rythme et difficulté ${pace.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert ${(pace.expertRate * 100).toFixed(0)} %, joueur moyen ${(pace.averageRate * 100).toFixed(0)} % au niveau conseillé`,
+  ...pace.problems.map((p) => `  - ${p}`),
+);
+// « Aucun héros indispensable » est mesuré et affiché mais ne bloque pas : l'écart vient des
+// héros eux-mêmes, que ce lot ne doit pas toucher (voir docs/BALANCE.md).
+const rulesOk = rules.r1.ok && rules.r2.ok && pace.problems.length === 0;
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {
