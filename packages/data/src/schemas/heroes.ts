@@ -122,6 +122,8 @@ export const talentNodeSchema = z.strictObject({
 export type TalentNode = z.infer<typeof talentNodeSchema>;
 
 export const NODES_PER_PAGE = 5;
+/** Palier maximal d'un héros (IV). */
+export const MAX_HERO_TIER = 4;
 export const PAGES_PER_HERO = 3;
 
 /** Une page de talents : 5 nœuds, une thèse (le texte de la thèse vit dans i18n). */
@@ -184,6 +186,8 @@ export const heroSchema = z
     id: idSchema,
     element: elementSchema,
     role: roleSchema,
+    /** Palier de puissance du héros, de I (1) à IV (4) : sert au budget de paliers des salons PvP. */
+    tier: z.number().int().min(1).max(MAX_HERO_TIER).default(1),
     stats: baseStatsSchema,
     spells: z.array(spellSchema).length(SPELL_SLOTS.length),
     passive: passiveSchema,
