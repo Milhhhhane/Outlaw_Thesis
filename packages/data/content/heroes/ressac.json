@@ -164,6 +164,60 @@
               }
             }
           ]
+        },
+        {
+          "id": "ressac_break_hammer",
+          "requires": "ressac_break_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_surge",
+          "requires": "ressac_break_hammer",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "ressac_break_tsunami",
+          "requires": "ressac_break_flood",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -232,6 +286,61 @@
               "type": "cost",
               "slot": "ult",
               "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_lap",
+          "requires": "ressac_ebb_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -8
+              }
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -10
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_backwash",
+          "requires": "ressac_ebb_lap",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "ressac_ebb_lowtide",
+          "requires": "ressac_ebb_spring",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_enemies",
+                "amount": 12
+              }
             }
           ]
         }
@@ -304,6 +413,62 @@
               "kind": "tempo",
               "field": "amount",
               "mulPct": 150
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_drift",
+          "requires": "ressac_cur_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -15
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -10
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_whirl",
+          "requires": "ressac_cur_drift",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 20
+            }
+          ]
+        },
+        {
+          "id": "ressac_cur_abyss",
+          "requires": "ressac_cur_maelstrom",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 40
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
             }
           ]
         }

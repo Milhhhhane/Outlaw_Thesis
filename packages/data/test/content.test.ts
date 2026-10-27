@@ -14,7 +14,8 @@ describe('contenu embarqué', () => {
       expect(hero.spells.map((s) => s.slot)).toEqual([...SPELL_SLOTS]);
       expect(hero.pages).toHaveLength(PAGES_PER_HERO);
       for (const page of hero.pages) {
-        expect(page.nodes).toHaveLength(NODES_PER_PAGE);
+        expect(page.nodes.length).toBeGreaterThanOrEqual(NODES_PER_PAGE.min);
+        expect(page.nodes.length).toBeLessThanOrEqual(NODES_PER_PAGE.max);
         expect(page.nodes.some((n) => n.group !== undefined)).toBe(true);
       }
     }

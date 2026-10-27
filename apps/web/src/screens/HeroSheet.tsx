@@ -168,24 +168,30 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
       <div className="talents__pages">
         {def.pages.map((page, index) => {
           const locked = index >= pages;
-          // Rangées : racine, ses enfants, puis les petits-enfants sous leur parent.
-          const root = page.nodes.find((n) => n.requires === undefined);
-          const children = page.nodes.filter((n) => n.requires === root?.id);
-          const grand = page.nodes.filter(
-            (n) => n.requires !== undefined && n.requires !== root?.id,
-          );
-          const column = (id: string): number => {
-            const i = children.findIndex((c) => c.id === id);
-            return i < 0 ? 1 : i;
+          // Rangées par profondeur de prérequis ; chaque rangée est centrée.
+          const byId = new Map(page.nodes.map((n) => [n.id, n] as const));
+          const depthOf = (n: TalentNode): number => {
+            let d = 0;
+            let cursor = n.requires === undefined ? undefined : byId.get(n.requires);
+            while (cursor !== undefined && d < 8) {
+              d += 1;
+              cursor = cursor.requires === undefined ? undefined : byId.get(cursor.requires);
+            }
+            return d;
           };
-          const pos = new Map<string, { col: number; row: number }>();
-          if (root) pos.set(root.id, { col: 1, row: 0 });
-          children.forEach((c, i) => pos.set(c.id, { col: i, row: 1 }));
-          grand.forEach((g) => pos.set(g.id, { col: column(g.requires ?? ''), row: 2 }));
-          const at = (id: string): { x: number; y: number } => {
-            const p = pos.get(id) ?? { col: 1, row: 0 };
-            return { x: 22 + p.col * 50, y: 26 + p.row * 76 };
-          };
+          const rows = new Map<number, TalentNode[]>();
+          for (const n of page.nodes) {
+            const d = depthOf(n);
+            rows.set(d, [...(rows.get(d) ?? []), n]);
+          }
+          const pos = new Map<string, { x: number; y: number }>();
+          for (const [d, list] of rows) {
+            list.forEach((n, i) => {
+              pos.set(n.id, { x: 72 + (i - (list.length - 1) / 2) * 36, y: 22 + d * 54 });
+            });
+          }
+          const at = (id: string): { x: number; y: number } => pos.get(id) ?? { x: 72, y: 22 };
+          const children = rows.get(1) ?? [];
           return (
             <section
               key={page.id}
@@ -202,7 +208,7 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                 </p>
               )}
               <div className="tree__board">
-                <svg className="tree__links" width="144" height="200" aria-hidden="true">
+                <svg className="tree__links" width="144" height="210" aria-hidden="true">
                   {page.nodes
                     .filter((n) => n.requires !== undefined)
                     .map((n) => {
@@ -252,7 +258,7 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                         setPicked(n.id);
                       }}
                     >
-                      <Icon name={nodeIcon(n)} size={24} />
+                      <Icon name={nodeIcon(n)} size={18} />
                     </button>
                   );
                 })}

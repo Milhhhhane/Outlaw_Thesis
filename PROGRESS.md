@@ -38,6 +38,8 @@
 - Lot 9 — Grosse amélioration graphique : menus habillés (cadres bois, fond, socles), combat
   avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
   avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
+- Lot 10 — Talents : 8 nœuds par page, 14 points, trois spécialisations ouvertes dès le départ ;
+  rééquilibrage mesuré par la simulation (docs/BALANCE.md).
 
 - Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,

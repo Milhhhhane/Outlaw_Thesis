@@ -386,6 +386,24 @@ coûteux et incertain. Limite assumée : les personnages sont au double des pixe
 (mélange de densités courant dans le genre) et le thème glisse du western vers le donjon
 fantastique ; le titre et les textes de jeu restent inchangés.
 
+## Lot 10 — talents
+
+**Trois spécialisations ouvertes dès le départ** — Contexte : les pages 2 et 3 s'ouvraient aux
+niveaux 10 et 20, le joueur n'avait pas de choix avant longtemps. Choix : `pageUnlockLevels`
+à [1, 1, 1] ; le mécanisme reste (le schéma accepte des niveaux non décroissants) pour pouvoir
+le réactiver. Raison : demande du propriétaire ; le choix de spécialisation devient le premier
+acte du jeu.
+
+**8 nœuds par page, 14 points** — Contexte : 5 nœuds et 10 points laissaient peu de choix. Choix :
+pages de 5 à 9 nœuds (schéma), trois nœuds ajoutés par page par `tools/content/enrich_talents.py`
+(core → quatre branches → deux approfondissements → un sommet), 14 points. Raison : un build
+prend 14 nœuds sur 24, deux sommets au plus ; les nouveaux nœuds sont des compromis pour limiter
+l'inflation de puissance. La règle « moins de points que de nœuds » est vérifiée par héros.
+
+**Disposition des arbres par profondeur** — Choix : rangées calculées depuis les prérequis
+(profondeur 0 à 3), nœuds centrés, 32 px. Raison : la mise en page précédente supposait
+exactement cinq nœuds.
+
 ## Coffres, fragments et étoiles
 
 **Un coffre ne donne que des fragments de héros** — Contexte : le joueur voulait un système de

@@ -184,6 +184,60 @@
               }
             }
           ]
+        },
+        {
+          "id": "seve_bark_sap",
+          "requires": "seve_bark_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_ring",
+          "requires": "seve_bark_sap",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -35
+            }
+          ]
+        },
+        {
+          "id": "seve_bark_oak",
+          "requires": "seve_bark_heart",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -251,6 +305,62 @@
               "kind": "heal",
               "field": "power",
               "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_petal",
+          "requires": "seve_bloom_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 50
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_nectar",
+          "requires": "seve_bloom_petal",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "seve_bloom_harvest",
+          "requires": "seve_bloom_spring",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
             }
           ]
         }
@@ -331,6 +441,59 @@
               "kind": "teamPoints",
               "field": "amount",
               "add": 1
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_sprout",
+          "requires": "seve_roots_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -25
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_vigor",
+          "requires": "seve_roots_sprout",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "seve_roots_seed",
+          "requires": "seve_roots_canopy",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "teamPoints",
+              "field": "amount",
+              "add": 1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 25
             }
           ]
         }

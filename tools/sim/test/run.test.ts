@@ -52,7 +52,12 @@ describe('builds aléatoires', () => {
       expect(validateBuild(content, build)).toEqual([]);
     }
     const pyra = content.heroById.get('pyra')!;
-    expect(availableNodes(pyra, 1, new Set(), content)).toEqual(['pyra_exe_core']);
+    // Les trois pages sont ouvertes dès le niveau 1 : une racine par page.
+    expect(availableNodes(pyra, 1, new Set(), content)).toEqual([
+      'pyra_exe_core',
+      'pyra_tempo_core',
+      'pyra_embers_core',
+    ]);
   });
 
   it('mélange sans perte', () => {

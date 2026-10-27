@@ -163,6 +163,62 @@
               }
             }
           ]
+        },
+        {
+          "id": "ronce_snare_barb",
+          "requires": "ronce_snare_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "ronce_snare_net",
+          "requires": "ronce_snare_barb",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -35
+            }
+          ]
+        },
+        {
+          "id": "ronce_snare_pin",
+          "requires": "ronce_snare_drag",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "stun",
+                "duration": 1
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -233,6 +289,60 @@
               "kind": "status",
               "field": "power",
               "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "ronce_brand_scent",
+          "requires": "ronce_brand_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -15
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -10
+            }
+          ]
+        },
+        {
+          "id": "ronce_brand_quarry",
+          "requires": "ronce_brand_scent",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "ronce_brand_cull",
+          "requires": "ronce_brand_hunt",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
             }
           ]
         }
@@ -319,6 +429,55 @@
                 "percent": -20,
                 "duration": 2
               }
+            }
+          ]
+        },
+        {
+          "id": "ronce_venom_thorns",
+          "requires": "ronce_venom_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "damage",
+                "power": 20
+              }
+            },
+            {
+              "type": "gain",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "ronce_venom_blight",
+          "requires": "ronce_venom_thorns",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 35
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "ronce_venom_plague",
+          "requires": "ronce_venom_wither",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
             }
           ]
         }

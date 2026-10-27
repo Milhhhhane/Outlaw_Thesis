@@ -9,7 +9,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "tune": "tsx src/tune.ts",
-    "autotune": "tsx src/autotune.ts"
+    "autotune": "tsx src/autotune.ts",
+    "curve": "tsx src/curve.ts",
+    "tunecurve": "tsx src/tunecurve.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

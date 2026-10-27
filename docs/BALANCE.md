@@ -145,6 +145,22 @@ hasard, politique d'anticipation. Constat : au niveau conseillé, 68 à 100 % ; 
 (croissance des stats, puis ennemis). Une politique gloutonne perd même 9 niveaux au-dessus :
 elle achète des sorts utilitaires sans infliger de dégâts et atteint la limite d'actions.
 
+## Lot 10 — arbres de talents plus riches
+
+Chaque page passe de 5 à 8 nœuds (24 par héros) et les trois spécialisations sont ouvertes dès le
+niveau 1 ; les points montent de 10 à 14 (un tous les deux niveaux, du niveau 2 au 28). Un build
+laisse donc 10 nœuds de côté : le choix est réel. Les trois nouveaux nœuds d'une page sont des
+compromis (puissance contre coût ou délai, zone contre puissance, cadence contre dégâts) et un
+sommet au bout de la branche profonde.
+
+Effet mesuré : avec plus de nœuds, les meilleurs builds tuaient plus vite (plancher d'actions
+enfreint sur quatre combats, expert à 92 %). Réglage : PV des monstres × 0,58 (au lieu de 0,55),
+`hpPct` retouchés par `autotune` puis à la main, et le premier combat du Carrefour brisé troque la
+sorcière des ronces (trop fragile face aux builds explosifs : son combat oscillait entre 10 et
+25 actions selon un seuil) contre la brute de mousse. Résultat : expert 87 %, joueur moyen 42 %,
+R1 90 %, R2 85 %, tous les combats dans leurs bornes. « Aucun héros indispensable » reste
+non tenue (17 points, non bloquant, cause côté héros comme avant).
+
 ## Coffres et fragments
 
 Valeurs de `balance.json`, partie `chests`. Espérances calculées à la main (6 héros), pas mesurées

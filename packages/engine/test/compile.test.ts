@@ -42,11 +42,22 @@ const spellOf = (unit: ReturnType<typeof compileHero>, id: string) =>
   unit.spells.find((s) => s.id === id)!;
 
 describe('points et pages', () => {
-  it('1 point tous les 3 niveaux, pages aux niveaux 1, 10 et 20', () => {
-    expect([1, 3, 5, 6, 30].map((l) => talentPoints(l, balance))).toEqual([0, 1, 1, 2, 10]);
+  it('1 point tous les 2 niveaux (14 au total), les trois pages ouvertes dès le niveau 1', () => {
+    expect([1, 3, 5, 6, 30].map((l) => talentPoints(l, balance))).toEqual([0, 1, 2, 3, 14]);
     expect([1, 9, 10, 19, 20, 30].map((l) => unlockedPages(l, balance))).toEqual([
-      1, 1, 2, 2, 3, 3,
+      3, 3, 3, 3, 3, 3,
     ]);
+  });
+
+  it('une page peut encore être verrouillée par balance.json', () => {
+    const later = {
+      ...balance,
+      progression: {
+        ...balance.progression,
+        pageUnlockLevels: [1, 10, 20] as [number, number, number],
+      },
+    };
+    expect([1, 9, 10, 19, 20].map((l) => unlockedPages(l, later))).toEqual([1, 1, 2, 2, 3]);
   });
 });
 
@@ -62,7 +73,6 @@ describe('validation d’un build', () => {
     ['niveau', { level: 0 }, /niveau 0/],
     ['talent inconnu', { level: 3, talents: ['nope'] }, /talent inconnu/],
     ['doublon', { level: 6, talents: ['pyra_exe_core', 'pyra_exe_core'] }, /deux fois/],
-    ['page verrouillée', { level: 9, talents: ['pyra_tempo_core'] }, /verrouillée/],
     ['prérequis', { level: 3, talents: ['pyra_exe_focus'] }, /exige pyra_exe_core/],
     [
       'choix exclusif',
@@ -71,7 +81,7 @@ describe('validation d’un build', () => {
     ],
     [
       'trop de points',
-      { level: 3, talents: ['pyra_exe_core', 'pyra_exe_focus'] },
+      { level: 2, talents: ['pyra_exe_core', 'pyra_exe_focus'] },
       /2 talents pour 1/,
     ],
     [
