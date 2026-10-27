@@ -160,6 +160,8 @@ def world_map():
     for x, y, size in [(96, 28, 5), (108, 22, 6), (120, 18, 5), (176, 24, 6), (188, 30, 5), (200, 22, 5),
                        (212, 18, 4), (24, 36, 5), (36, 30, 6), (150, 12, 4), (164, 16, 5)]:
         peak(x, y, size, '#6a5a60', '#e8e0e0', '#2a2230')
+    for x, y, size in [(284, 60, 4), (306, 58, 5), (290, 84, 4), (308, 86, 4)]:
+        peak(x, y, size, '#2a2230', '#6a5a60', '#140e18')
     # le grand volcan (cratère incandescent)
     c.blob(['.....#####.....', '....#######....', '...##ooooo##...', '..##ooOOOoo##..', '.####ooooo####.',
             '###############', 'ddddddddddddddd'], 132, 24, {'#': '#2a1014', 'o': '#c0301a', 'O': '#ffb840', 'd': '#140608'})
@@ -182,6 +184,9 @@ def world_map():
         'sunken_spire': (['..#..', '..#..', '.###.', '.#o#.', '#####', 'wwwww'], {'#': '#6a6a80', 'o': '#4a90d9', 'w': '#1e5270'}),
         'verdant_crown': (['#.#.#', '#####', '.###.', '..#..', '.###.'], {'#': '#e2b440'}),
         'broken_crossing': (['##.##', '#...#', '##.##', '.#.#.', '.#.#.'], {'#': '#9a6a58'}),
+        'salt_flats': (['.....', '#.#.#', '#####', '.ooo.', '.....'], {'#': '#e8e0d0', 'o': '#8aa0b0'}),
+        'obsidian_pass': (['..#..', '.###.', '##o##', '#.o.#', '#####'], {'#': '#2a2230', 'o': '#ff8a2a'}),
+        'hollow_throne': (['#...#', '##.##', '#o.o#', '#####', '.#.#.'], {'#': '#5a3478', 'o': '#e2b440'}),
     }
     for name, (x, y) in NODES.items():
         rows, pal = landmarks[name]
@@ -199,6 +204,13 @@ def world_map():
                             c.put(ox + ii, oy + jj, '#140a10')
         c.blob(big, ox, oy, pal)
         c.blob(['d' * (w + 2)], ox - 1, oy + h, {'d': '#1c1218'})
+    # salines : croûte de sel blanche et craquelée dans la plaine sud
+    for y in range(150, 178):
+        for x in range(232, 296):
+            if kind[y][x] is None and math.hypot((x - 262) / 24, (y - 164) / 10) + noise2(x, y, 21) * 0.2 < 1:
+                c.put(x, y, '#d8d0c0' if c.dith(x, y, 0.7) else '#b8b0a4')
+                if (x * 3 + y * 5) % 17 == 0:
+                    c.put(x, y, '#8a8070')
     # plaines : cailloux et ossements épars
     for _ in range(90):
         x, y = rnd.randint(6, W - 7), rnd.randint(6, H - 7)
@@ -226,6 +238,6 @@ def world_map():
             elif edge < 5:
                 c.put(x, y, '#2a1a1a' if (x + y) % 2 else '#120a10')
     rose = ['....#....', '...###...', '..#.#.#..', '.#..#..#.', '#########', '.#..#..#.', '..#.#.#..', '...###...', '....#....']
-    c.blob(rose, 292, 8, {'#': '#e8d8b0'})
-    c.blob(['.#.', '###', '.#.'], 295, 11, {'#': '#e0643a'})
+    c.blob(rose, 10, 8, {'#': '#e8d8b0'})
+    c.blob(['.#.', '###', '.#.'], 13, 11, {'#': '#e0643a'})
     return c.image()

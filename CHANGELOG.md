@@ -2,6 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-11] — 2026-10-27 — début plus facile, courbe de difficulté, trois donjons
+
+### Ajouté
+
+- Trois donjons de fin de progression : Salines blêmes (28), Col d'obsidienne (29), Trône creux
+  (30), avec modificateurs, décors, repères sur la carte et butin.
+- Levier `atkPct` par combat de donjon ; règle de courbe de difficulté vérifiée par
+  `pnpm sim:check` ; outils `curve` et `tunecurve`.
+
+### Modifié
+
+- Début plus facile : joueur moyen 90 % au premier donjon (25 % avant), puis 75, 65, 54, 40 %…
+  Détails et table dans `docs/BALANCE.md`.
+
 ## [lot-10] — 2026-10-27 — arbres de talents plus riches
 
 ### Modifié

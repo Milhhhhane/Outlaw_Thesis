@@ -420,9 +420,32 @@ def broken_crossing():
 
 
 
+def tinted(fn, hue, sat, val):
+    """Décor dérivé d'un autre par rotation de teinte (scènes de fin de progression)."""
+    import colorsys
+
+    def make():
+        im = fn().convert('RGB')
+        px = im.load()
+        for y in range(im.height):
+            for x in range(im.width):
+                r, g, b = px[x, y]
+                h, s_, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+                h = (h + hue / 360) % 1.0
+                rr, gg, bb = colorsys.hsv_to_rgb(h, min(1, s_ * sat), min(1, v * val))
+                px[x, y] = (round(rr * 255), round(gg * 255), round(bb * 255))
+        return im
+
+    return make
+
+
 ALL = {'ember_wastes': ember_wastes, 'drowned_halls': drowned_halls, 'thorn_maze': thorn_maze,
        'cinder_citadel': cinder_citadel, 'sunken_spire': sunken_spire, 'verdant_crown': verdant_crown,
-       'broken_crossing': broken_crossing, 'world_map': lambda: __import__('worldmap').world_map()}
+       'broken_crossing': broken_crossing, 'world_map': lambda: __import__('worldmap').world_map(),
+       # fin de progression : décors dérivés
+       'salt_flats': tinted(ember_wastes, 25, 0.35, 1.12),      # salines blêmes : braise délavée
+       'obsidian_pass': tinted(cinder_citadel, -10, 0.9, 0.75),  # col d'obsidienne : citadelle plus sombre
+       'hollow_throne': tinted(drowned_halls, 60, 0.8, 0.85)}    # trône creux : salles violettes
 
 if __name__ == '__main__':
     import sys
