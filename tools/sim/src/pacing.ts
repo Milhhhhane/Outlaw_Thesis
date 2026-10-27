@@ -54,6 +54,7 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
               dungeon.recommendedLevel,
               dungeon.modifier,
               encounter.hpPct,
+              encounter.atkPct,
             );
             const outcome = runBattle({ units: [...party, ...foes] }, content.balance, policy);
             fights[kind][e]?.push(outcome);
@@ -109,5 +110,19 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
   };
   band('expert au niveau conseillé', expertRate, targets.expertWinRate);
   band('joueur moyen au niveau conseillé', averageRate, targets.averageWinRate);
+  // Courbe : facile au début, puis la difficulté monte sans redescendre brutalement.
+  const curve = targets.averageCurve;
+  clearRates.average.forEach((rate, i) => {
+    const id = content.dungeons[i]?.id ?? String(i);
+    if (i === 0 && rate < curve.first)
+      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.first * 100} %`);
+    if (rate < curve.last)
+      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.last * 100} %`);
+    const prev = clearRates.average[i - 1];
+    if (prev !== undefined && rate > prev + curve.tolerance)
+      problems.push(
+        `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % plus facile que le précédent (${(prev * 100).toFixed(0)} %)`,
+      );
+  });
   return { rows, problems, expertRate, averageRate };
 }

@@ -399,12 +399,15 @@ export function compileEncounter(
   modifier?: DungeonModifier,
   /** PV de la rencontre, en % (le champ hpPct d'un combat de donjon). */
   hpPct = 100,
+  /** ATK de la rencontre, en % (le champ atkPct d'un combat de donjon). */
+  atkPct = 100,
 ): UnitDef[] {
   const extra = modifierTriggers(modifier, 'enemy');
   return enemies.map((id, slot) => {
     const unit = compileEnemy(content, id, level, slot, extra);
-    if (hpPct === 100) return unit;
+    if (hpPct === 100 && atkPct === 100) return unit;
     const hp = Math.max(1, Math.round((unit.stats.hp * hpPct) / 100));
-    return { ...unit, stats: { ...unit.stats, hp } };
+    const atk = Math.max(1, Math.round((unit.stats.atk * atkPct) / 100));
+    return { ...unit, stats: { ...unit.stats, hp, atk } };
   });
 }

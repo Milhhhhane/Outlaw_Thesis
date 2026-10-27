@@ -24,6 +24,8 @@ export const encounterSchema = z.strictObject({
   enemies: z.array(idSchema).min(1).max(3),
   /** PV des ennemis de ce combat, en % (100 par défaut) : règle la durée combat par combat. */
   hpPct: z.number().int().min(10).max(400).optional(),
+  /** ATK des ennemis du combat, en % (levier de difficulté : les dégâts, sans toucher à la durée). */
+  atkPct: z.number().int().min(10).max(400).optional(),
 });
 export type Encounter = z.infer<typeof encounterSchema>;
 

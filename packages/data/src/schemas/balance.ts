@@ -122,6 +122,16 @@ export const balanceSchema = z
       /** Part de donjons terminés au niveau conseillé, par politique (bornes incluses). */
       expertWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
       averageWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
+      /**
+       * Courbe de difficulté (joueur moyen, niveau conseillé) : le premier donjon réussit au moins
+       * `first`, chaque donjon réussit au plus `tolerance` de mieux que le précédent (la difficulté
+       * monte), et aucun ne descend sous `last`.
+       */
+      averageCurve: z.strictObject({
+        first: z.number().min(0).max(1),
+        last: z.number().min(0).max(1),
+        tolerance: z.number().min(0).max(1),
+      }),
     }),
   })
   .superRefine((b, ctx) => {

@@ -34,6 +34,7 @@ export function runDungeon(
       dungeon.recommendedLevel,
       dungeon.modifier,
       encounter.hpPct,
+      encounter.atkPct,
     );
     const outcome = runBattle({ units: [...heroes, ...enemies] }, content.balance, policy);
     actions += outcome.actions;

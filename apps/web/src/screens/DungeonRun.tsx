@@ -74,6 +74,7 @@ export function DungeonRun({
         dungeon.recommendedLevel,
         dungeon.modifier,
         encounter.hpPct,
+        encounter.atkPct,
       ),
     ],
   };
