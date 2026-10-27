@@ -6,8 +6,17 @@
   font-display: block;
 }
 
+/* Chiffres : le 5 de Pixelify Sans se confond avec le S, on prend ceux de Silkscreen. */
+@font-face {
+  font-family: 'Pixel Digits';
+  src: url('../assets/fonts/SilkscreenDigits.woff2') format('woff2');
+  unicode-range: U+0030-0039;
+  size-adjust: 88%;
+  font-display: block;
+}
+
 :root {
-  --pixel: 'Pixelify Sans', var(--sans);
+  --pixel: 'Pixel Digits', 'Pixelify Sans', var(--sans);
   --frame: url('../art/panel.png');
   --frame-gold: url('../art/button.png');
 }

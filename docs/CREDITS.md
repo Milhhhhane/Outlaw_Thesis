@@ -20,4 +20,9 @@ source).
   `apps/web/src/assets/fonts/PixelifySans-OFL.txt`. Source : dépôt google/fonts
   (`ofl/pixelifysans`), réduite aux caractères latins et convertie en WOFF2 (fichier
   `PixelifySans.woff2`, nom de la police inchangé).
+- Silkscreen, de Jason Kottke et The Silkscreen Project Authors
+  (https://github.com/googlefonts/silkscreen), chiffres seulement (le 5 de Pixelify Sans se
+  confond avec le S). Licence SIL Open Font License 1.1, texte joint dans
+  `apps/web/src/assets/fonts/Silkscreen-OFL.txt`. Source : dépôt google/fonts
+  (`ofl/silkscreen`), réduite aux chiffres et convertie en WOFF2 (`SilkscreenDigits.woff2`).
 - Repli : polices système.
