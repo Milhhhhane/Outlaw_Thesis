@@ -1327,11 +1327,16 @@ button:disabled {
 
 .end--rewards .end__title {
   font-size: 32px;
+  line-height: 1.1;
+}
+
+.end--rewards .end__text {
+  line-height: 1.2;
 }
 
 .reward-cards {
   display: grid;
-  grid-template-columns: 230px repeat(4, 150px);
+  grid-template-columns: 230px repeat(4, 160px);
   grid-template-rows: auto auto;
   align-content: start;
   justify-content: center;
@@ -1347,8 +1352,9 @@ button:disabled {
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 4px;
-  padding: 6px;
+  gap: 3px;
+  padding: 4px 6px;
+  line-height: 1.25;
   border: 8px solid transparent;
   border-image: var(--frame) 4 fill / 8px / 0 stretch;
   image-rendering: pixelated;
