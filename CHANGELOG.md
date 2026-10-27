@@ -9,6 +9,12 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Héros et monstres remplacés par les personnages du « DungeonTileset II » de 0x72 (CC0),
   recolorés par élément et agrandis ×2 : quatre images de repos, image de dégâts, visages lisibles.
 
+### Corrigé
+
+- Les unités à terre rejouaient leur chute à chaque coup (le conteneur secoué était recréé) ;
+  test de simulation `apps/web/test/stage-sim.test.tsx` qui rejoue un combat complet dans le
+  champ de bataille et vérifie qu'aucun acteur n'est recréé.
+
 ### Ajouté
 
 - Menus habillés (`tools/art/ui.py`) : fond de nuit derrière les écrans, cadres bois cloutés

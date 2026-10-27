@@ -214,13 +214,22 @@ export function Stage({
   const ult = view.cast?.ult === true ? view.cast.key : null;
   return (
     <div className="stage" aria-hidden="true">
+      {/* Secousse et zoom : jamais de clé React ici, sinon tous les acteurs seraient recréés à
+          chaque coup et l'animation de chute des unités à terre rejouerait. Le nom de
+          l'animation alterne (a/b) pour relancer la secousse sans remonter le conteneur. */}
       <div
-        key={`shake${shake?.key ?? 0}`}
-        className={shake === null ? 'stage__shake' : `stage__shake stage__shake--${shake.power}`}
+        className={
+          shake === null
+            ? 'stage__shake'
+            : `stage__shake stage__shake--${shake.power}${shake.key % 2 === 0 ? 'a' : 'b'}`
+        }
       >
         <div
-          key={`zoom${ult ?? 0}`}
-          className={ult === null ? 'stage__zoom' : 'stage__zoom stage__zoom--ult'}
+          className={
+            ult === null
+              ? 'stage__zoom'
+              : `stage__zoom stage__zoom--ult${ult % 2 === 0 ? 'a' : 'b'}`
+          }
         >
           <div
             className="stage__world"
