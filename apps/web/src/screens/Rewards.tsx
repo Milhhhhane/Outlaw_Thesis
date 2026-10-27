@@ -75,7 +75,7 @@ export function Rewards({
             className={`reward-card--item reward-card--${item.rarity}`}
             title={t('reward.itemCard')}
           >
-            <Icon name="item" size={36} />
+            <Icon name={`item_${item.id}`} size={36} />
             <h2 className="reward-card__name">{t('reward.item', { item: names.item(item.id) })}</h2>
             <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
             <ul className="reward-card__lines">

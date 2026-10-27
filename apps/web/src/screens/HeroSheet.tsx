@@ -15,6 +15,7 @@ import {
   type UnitDef,
 } from '@outlaw/engine';
 import { useState } from 'react';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
@@ -369,7 +370,7 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
                 setChoosing(slot);
               }}
             >
-              <Icon name="item" size={36} />
+              <Icon name={owned !== undefined ? `item_${owned.item}` : 'item'} size={36} />
               <span className="slot__name">
                 {owned !== undefined ? names.item(owned.item) : t('hero.slot.empty')}
               </span>
@@ -427,7 +428,7 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
                         }
                       }}
                     >
-                      <Icon name="item" size={24} />
+                      <Icon name={`item_${o.item}`} size={24} />
                       <span className="item-card__name">{names.item(o.item)}</span>
                       <UpgradePips
                         level={o.upgrade}
@@ -489,7 +490,7 @@ export function HeroSheet({
         <aside className="sheet__id">
           <PixelSprite name="pedestal" className="pedestal" />
           <span className="sheet__sprite">
-            <PixelSprite name={heroId} idle />
+            <HeroSprite name={heroId} idle />
           </span>
           <p className="sheet__level">
             {t('hero.level', { level: hero.level })}

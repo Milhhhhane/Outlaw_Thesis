@@ -17,6 +17,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 
 ### Ajouté
 
+- Chaque héros tient son arme (bâtons, épées, lance du même pack CC0), qui balaie à l'attaque ;
+  douze icônes d'objets distinctes (charme, pendentif, anneau, lentille, fiole, éperons, bague,
+  jeton, plume, sceau, engrenage, éclat) à la place de l'anneau unique.
 - Menus habillés (`tools/art/ui.py`) : fond de nuit derrière les écrans, cadres bois cloutés
   (9 tranches), planche d'en-tête, corde, cuir, socles sous les héros, icônes de statistiques.
 - Combat : arcs de frappe, étincelles, gros impacts sur les coups lourds (≥ 30 % des PV ou

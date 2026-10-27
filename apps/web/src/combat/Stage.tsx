@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { backgroundUrl, GROUND_Y, sprite } from '../art';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite, PixelText } from '../art/Pixel';
 import type { BattleView, Flash, UnitView } from './view';
 
@@ -111,7 +112,11 @@ function Actor(props: {
           key={hit}
           className={hit > 0 ? (heavy ? 'actor__hit actor__hit--heavy' : 'actor__hit') : ''}
         >
-          <PixelSprite name={unit.kind} idle={unit.alive} />
+          {unit.side === 'player' ? (
+            <HeroSprite name={unit.kind} idle={unit.alive} />
+          ) : (
+            <PixelSprite name={unit.kind} idle={unit.alive} />
+          )}
         </span>
       </span>
       {flash?.fx != null && (

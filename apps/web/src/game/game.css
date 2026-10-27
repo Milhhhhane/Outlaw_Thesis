@@ -803,7 +803,8 @@ button:disabled {
   border-image-width: 8px;
 }
 
-.team__sprite .pixel {
+.team__sprite > .pixel,
+.team__sprite > .hero-sprite {
   transform: scale(2.5);
   transform-origin: 50% 100%;
 }
@@ -880,7 +881,8 @@ button:disabled {
   height: 64px;
 }
 
-.roster__portrait .pixel {
+.roster__portrait > .pixel,
+.roster__portrait > .hero-sprite {
   transform: scale(1.5);
   transform-origin: 50% 100%;
 }
@@ -1049,7 +1051,8 @@ button:disabled {
   justify-content: center;
 }
 
-.hero-card__sprite .pixel {
+.hero-card__sprite > .pixel,
+.hero-card__sprite > .hero-sprite {
   transform: scale(2);
   transform-origin: 50% 100%;
 }
@@ -1450,7 +1453,8 @@ button:disabled {
   justify-content: center;
 }
 
-.sheet__sprite .pixel {
+.sheet__sprite > .pixel,
+.sheet__sprite > .hero-sprite {
   transform: scale(3);
   transform-origin: 50% 100%;
 }
