@@ -352,3 +352,85 @@ vente (`docs/ACCOUNTS.md`).
 
 **Textes des comptes à part** — `apps/web/src/i18n/account.fr.json`, fusionné au dictionnaire :
 un autre chantier (nouveaux héros) modifie `fr.json` en parallèle.
+
+## PVP : salon personnalisé (lot 11, sprint A1)
+
+Détails du protocole, de la machine à états et des mesures : `docs/PVP.md`.
+
+**Deux camps pilotés** — Contexte : le moteur ne connaît que des héros pilotés et des ennemis
+scriptés. Choix : les deux camps en `controller: 'policy'`, le joueur 1 (l'hôte) est `player`, le
+joueur 2 `enemy`, unités `p1_<héros>` / `p2_<héros>`. Raison : aucune nouvelle notion dans le
+moteur ; ordre et identifiants déterministes.
+
+**Règles de combat optionnelles** — Contexte : le PvE donne la priorité aux héros et fait perdre
+les héros à la limite d'actions. Choix : `BattleSetup.rules` et `BattleState.rules` facultatifs
+(`firstSide`, `limit`), `DEFAULT_RULES` quand ils manquent ; le PvE n'est pas touché
+(`pnpm sim:check` identique à la baseline). Raison : un seul moteur pour les deux modes.
+
+**Priorité = départage et ordre des unités** — Contexte : le brief demande un départage à égalité
+d'instant. Choix : `firstSide` règle aussi le tri des unités de l'état. Raison : les déclencheurs se
+résolvent dans l'ordre des unités ; sans ce tri, un combat miroir n'est pas symétrique (vérifié : le
+retirer fait échouer 3 tests miroirs). Extension assumée du brief.
+
+**Limite d'actions au ratio de PV** — Contexte : en PvP, « le camp ennemi gagne » n'a pas de sens.
+Choix : `limit: 'hp_ratio'`, le plus grand ratio de PV restants sur PV maximaux du camp gagne,
+comparé par produits en croix ; égalité exacte = nul. Raison : entiers seulement, aucun arrondi,
+aucune égalité arbitraire.
+
+**Action par défaut** — Choix : `defaultAction(state)` joue l'attaque de base de l'unité active sur
+le vivant aux PV les plus bas (premier emplacement à égalité). Raison : toujours légale (l'attaque de
+base d'une unité pilotée est gratuite), sert au chrono dépassé.
+
+**Empreinte d'état** — Contexte : détecter qu'un client a divergé du serveur. Choix : cyrb53 (53 bits,
+14 caractères hexadécimaux) de la forme canonique des champs dynamiques, en JSON de tableaux
+imbriqués. Raison : sans dépendance, identique partout (entiers), assez fine pour un détecteur de
+désynchronisation ; elle ne protège pas contre la triche. Un séparateur textuel avait été essayé
+puis abandonné (une source d'altération contenant `;` rendait la forme ambiguë).
+
+**Serveur arbitre par rejeu** — Choix : le salon ne stocke que la configuration et la liste des
+actions ; l'état se reconstruit par `replay`. Le serveur ne lit jamais l'unité ni l'identité dans un
+message client. Raison : une seule source de vérité, un salon sérialisable et petit (environ 26 Ko),
+environ 1,3 ms par action (mesuré).
+
+**Version, contenu, taille** — Choix : `hello` porte la version du protocole et l'empreinte du
+contenu (équilibrage, héros, objets) ; messages limités à 4096 octets, schémas stricts. Raison :
+refuser un client dont le jeu diffère avant le combat plutôt que de diverger en plein combat.
+
+**Chrono, forfait, grâce** — Choix : chronos 20 / 30 / 45 / 60 s (30 par défaut) ; au dépassement,
+action par défaut annoncée `auto: 'timeout'` ; deux dépassements consécutifs = forfait ; déconnexion
+en plein combat = 60 s de grâce, le chrono continue, la plus ancienne échéance s'applique. Raison :
+un joueur absent ne bloque pas l'autre, une coupure courte ne coûte pas la partie.
+`claim_timeout` n'a aucun pouvoir propre (le serveur règle le temps à chaque événement).
+
+**Revanche** — Choix : une partie = un combat ; la revanche est un nouveau combat, mêmes équipes,
+priorité échangée, acceptée par les deux joueurs. Raison : équité de la priorité sur deux combats,
+aucun état à reconstruire entre deux équipes.
+
+**Émotes** — Choix : six émotes prédéfinies (0 à 5), une toutes les 1,5 s, aucun texte libre.
+Raison : pas de modération à écrire pour un mode entre amis.
+
+**Paliers de héros** — Choix : `tier` entier de 1 à 4 dans `heroSchema` (défaut 1, JSON de contenu
+non modifié, donc les six héros sont de palier I) ; budget de salon : aucun, ou un entier de 3 à 12.
+Raison : prépare l'équilibrage par palier sans toucher au contenu en cours de modification.
+
+**Talents libres dans le salon** — Contexte : le niveau d'un héros est ramené au plafond du salon.
+Choix : les talents du profil ne comptent pas, le client envoie l'allocation voulue, validée contre
+les points et les pages du niveau plafonné. Raison : le talent d'un joueur de niveau 30 n'a pas de
+sens à un niveau 10. **Point ouvert** : `talents_over_budget` quand le plafond du salon est inférieur
+au niveau du joueur (le serveur ne tronque rien, l'interface devra proposer de redistribuer).
+
+**Propriété des héros non prouvée** — Contexte : les sauvegardes sont écrites par le client. Choix :
+`validateTeam` vérifie l'équipe contre le profil fourni par le serveur, sans prouver que ce profil a
+été gagné. Raison : acceptable entre amis ; à refaire (rejeu serveur, profil de salon fourni par le
+serveur) avant tout classement.
+
+**`@outlaw/net` pur** — Choix : un paquet sans Cloudflare ni DOM (un test balaie les sources), le
+réducteur reçoit l'heure, le tirage au sort et les profils dans son contexte. Raison : testable sans
+réseau, le Durable Object n'aura qu'à expédier les messages, stocker et programmer l'alarme.
+
+**Mesure d'équilibrage PvP** — Choix : `pnpm sim:pvp`, miroirs et combats croisés à graines fixes,
+politique « joueur moyen », sans objet, niveau 30 ; rapport seulement, propositions non appliquées,
+`baseline.csv` inchangé. Raison : le brief interdit de toucher au contenu ; mesurer sans corriger.
+Constat à la livraison : priorité dans la cible (51,5 à 52,3 %), durée hors cible si elle se compte
+en actions du moteur (77 ; 39 par joueur), `cendre` au-dessus et `pyra` / `maree` en dessous de la
+bande indicative.
