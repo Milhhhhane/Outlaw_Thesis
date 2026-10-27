@@ -1,4 +1,4 @@
-import { dungeonOpen } from '@outlaw/engine';
+import { chestCount, dungeonOpen } from '@outlaw/engine';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -10,7 +10,7 @@ import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 
 const ENTRIES: readonly {
-  readonly route: 'map' | 'team' | 'heroes' | 'workshop';
+  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests';
   readonly label: TextKey;
   readonly hint: TextKey;
   readonly icon: string;
@@ -19,6 +19,7 @@ const ENTRIES: readonly {
   { route: 'team', label: 'hub.menu.team', hint: 'hub.menu.team.hint', icon: 'shield' },
   { route: 'heroes', label: 'hub.menu.heroes', hint: 'hub.menu.heroes.hint', icon: 'stat' },
   { route: 'workshop', label: 'hub.menu.workshop', hint: 'hub.menu.workshop.hint', icon: 'item' },
+  { route: 'chests', label: 'hub.menu.chests', hint: 'hub.menu.chests.hint', icon: 'chest' },
 ];
 
 /** Le camp : un seul écran, l'équipe autour du feu, toutes les entrées du jeu. */
@@ -46,7 +47,7 @@ export function Hub() {
       {test && <p className="hub__notice">{t('test.banner')}</p>}
       {recovered && <p className="hub__notice">{t('hub.saveRecovered')}</p>}
       <nav className="hub__menu" aria-label={t('hub.title')}>
-        {ENTRIES.map((entry) => (
+        {ENTRIES.filter((entry) => !test || entry.route !== 'chests').map((entry) => (
           <button
             key={entry.route}
             type="button"
@@ -56,7 +57,12 @@ export function Hub() {
             }}
           >
             <Icon name={entry.icon} size={24} />
-            <span className="hub__entry-label">{t(entry.label)}</span>
+            <span className="hub__entry-label">
+              {t(entry.label)}
+              {entry.route === 'chests' && chestCount(profile) > 0 && (
+                <span className="hub__badge">{chestCount(profile)}</span>
+              )}
+            </span>
             <span className="hub__entry-hint">{t(entry.hint)}</span>
           </button>
         ))}

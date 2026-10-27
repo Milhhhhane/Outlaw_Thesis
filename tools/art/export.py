@@ -19,6 +19,7 @@ OUT = ROOT / 'apps' / 'web' / 'src' / 'art'
 
 def frames():
     out = dict(charpack.all_characters())
+    out.update(charpack.all_chests())
     out.update(fx.all_fx())
     out.update(icons.all_icons())
     out.update(ui.all_ui())

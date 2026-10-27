@@ -39,6 +39,11 @@
   avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
   avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
 
+- Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
+  invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,
+  écran « Coffres » avec ouverture animée. Anciennes sauvegardes compatibles sans migration.
+  Équilibre à valider au test humain (voir `docs/BALANCE.md`).
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

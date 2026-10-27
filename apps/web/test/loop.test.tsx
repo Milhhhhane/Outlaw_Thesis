@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 const LONG_UI_TEST = 60_000;
 import { App } from '../src/App';
 import { content } from '../src/combat/session';
-import { names, t } from '../src/i18n';
+import { names, t, tk } from '../src/i18n';
 
 beforeEach(() => {
   window.localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
@@ -64,7 +64,14 @@ describe('boucle donjon → récompense → investissement', () => {
         names.dungeon('ember_wastes'),
       );
       const looted = screen.getByRole('heading', { level: 2, name: /Objet obtenu/ }).textContent;
+      // Première victoire : le coffre du donjon est toujours là.
+      expect(
+        screen.getByText(t('reward.chest', { tier: tk('chest.tier.bronze') })),
+      ).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: t('reward.continue') }));
+      expect(
+        screen.getByRole('button', { name: new RegExp(t('hub.menu.chests')) }),
+      ).toHaveTextContent('1');
 
       // De retour au camp : or gagné, deuxième donjon ouvert, objet à l'atelier.
       expect(screen.getByText(t('hub.gold', { gold: 80 }))).toBeInTheDocument();

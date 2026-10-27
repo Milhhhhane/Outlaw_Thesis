@@ -15,3 +15,4 @@ export {
 } from './stats';
 export type * from './types';
 export * from './progression';
+export * from './chests';

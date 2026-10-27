@@ -1,0 +1,347 @@
+/* Écran des coffres : à gauche les coffres à ouvrir, à droite les fragments de chaque héros. */
+
+/* Le canevas du jeu fait 960 x 540 : les tailles ci-dessous sont dans ce repère. */
+.chest-art {
+  display: inline-block;
+  width: 64px;
+  height: 52px;
+  overflow: hidden;
+}
+
+.chest-art .pixel {
+  transform: scale(2);
+  transform-origin: 0 0;
+  margin-top: -1px;
+}
+
+.chest-reveal .chest-art {
+  width: 96px;
+  height: 78px;
+}
+
+.chest-reveal .chest-art .pixel {
+  transform: scale(3);
+  margin-top: -2px;
+}
+
+.chest-art--shake {
+  animation: chest-shake 650ms steps(8, end);
+}
+
+@keyframes chest-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(4px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-3px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(3px) rotate(2deg);
+  }
+}
+
+.chests__layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 12px;
+  height: 100%;
+}
+
+.chests__boxes,
+.chests__heroes {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chests__heading {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.chest-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chest-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  row-gap: 1px;
+  column-gap: 10px;
+  padding: 3px 8px;
+  background: rgb(0 0 0 / 22%);
+  border: 2px solid var(--line);
+}
+
+.chest-card .chest-art {
+  grid-row: span 3;
+}
+
+.chest-card--none .chest-art {
+  filter: grayscale(0.7) brightness(0.7);
+}
+
+.chest-card__name {
+  color: var(--gold);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chest-card .gbtn {
+  justify-self: start;
+}
+
+.chests__empty,
+.chests__rules {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.chests__rules {
+  flex: none;
+}
+
+.chests__target-hint {
+  margin: 0;
+  font-size: 13px;
+}
+
+.frag-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  align-content: start;
+  gap: 3px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.frag-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 116px 192px;
+  align-items: center;
+  column-gap: 10px;
+  height: 50px;
+  padding: 2px 8px;
+  background: rgb(0 0 0 / 22%);
+  border: 2px solid var(--line);
+  border-left: 5px solid var(--element);
+}
+
+.frag-row--locked {
+  opacity: 0.85;
+}
+
+.frag-row--target {
+  border-color: var(--gold);
+  border-left-color: var(--gold);
+  background: rgb(227 179 65 / 10%);
+}
+
+.frag-row__id,
+.frag-row__bar {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.frag-row__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.frag-row__tag {
+  margin-left: 8px;
+  padding: 0 6px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.frag-row .hint {
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frag-row__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frag-row__meter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.frag-row__meter .bar {
+  flex: 1;
+}
+
+.frag-row__count {
+  min-width: 40px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.frag-row__actions .gbtn {
+  white-space: nowrap;
+}
+
+.frag-row__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.frag-row .bar {
+  display: block;
+  height: 8px;
+  background: rgb(0 0 0 / 55%);
+  border: 1px solid var(--line);
+}
+
+.frag-row .bar > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.frag-row .bar--full > span {
+  background: var(--heal);
+}
+
+/* La fenêtre vit dans le corps de l'écran (484 px de haut) : elle doit y tenir en entier. */
+.chest-reveal {
+  min-width: 600px;
+  max-height: 472px;
+}
+
+.chest-reveal__stage {
+  display: grid;
+  place-items: center;
+  height: 84px;
+}
+
+.chest-reveal__wait {
+  text-align: center;
+}
+
+.chest-reveal__total {
+  margin: 2px 0 6px;
+  color: var(--gold);
+  font-size: 18px;
+  text-align: center;
+}
+
+.chest-reveal__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chest-reveal__row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 42px;
+  padding: 2px 8px;
+  background: rgb(0 0 0 / 28%);
+  border: 2px solid var(--line);
+  animation: card-in 320ms steps(5, end) both;
+  animation-delay: calc(var(--i) * 160ms);
+}
+
+.chest-reveal__row--ready {
+  border-color: var(--gold);
+}
+
+.chest-reveal__who {
+  display: grid;
+  min-width: 0;
+}
+
+.chest-reveal__who .hint,
+.chest-reveal__ready {
+  font-size: 11px;
+}
+
+.chest-reveal__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chest-reveal__gain {
+  color: var(--gold);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.chest-reveal__ready {
+  color: var(--heal);
+}
+
+.hub__badge {
+  margin-left: 8px;
+  padding: 0 7px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reward-card--chest {
+  border-image-source: var(--frame-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-art--shake,
+  .chest-reveal__row {
+    animation: none;
+  }
+}
+
+.sheet__gate {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 6px 8px;
+  border: 2px solid var(--gold);
+  background: rgb(227 179 65 / 10%);
+  text-align: center;
+}
+
+.sheet__gate p {
+  margin: 0;
+  font-size: 13px;
+}

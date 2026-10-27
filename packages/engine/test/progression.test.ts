@@ -48,7 +48,24 @@ describe('profil', () => {
       talents: [],
       items: [null, null],
       freeRespecUsed: false,
+      stars: 0,
     });
+    expect(profile.fragments).toEqual({});
+    expect(profile.chests).toEqual({});
+    expect(profile.focus).toBeNull();
+  });
+
+  it('une sauvegarde d’avant les coffres reste lisible, sans perdre ses niveaux', () => {
+    const profile = newProfile(content, 7, 1000);
+    const old = JSON.parse(JSON.stringify(profile)) as Record<string, unknown>;
+    delete old.fragments;
+    delete old.chests;
+    delete old.focus;
+    for (const hero of Object.values(old.heroes as Record<string, Record<string, unknown>>)) {
+      delete hero.stars;
+    }
+    const read = profileSchema.parse(old);
+    expect(read).toEqual(profile);
   });
 });
 
@@ -61,7 +78,12 @@ describe('XP et niveaux', () => {
     const twice = addXp(hero, 40 + 113 + 5, content); // 40 (1→2) + 113 (2→3)
     expect(twice.levels).toBe(2);
     expect(twice.hero).toMatchObject({ level: 3, xp: 5 });
-    const capped = addXp(hero, 10 ** 9, content);
+    // Plafond d'étoile : le niveau 10 est la limite à zéro étoile, l'XP garde un niveau d'avance.
+    const gated = addXp(hero, 10 ** 9, content);
+    expect(gated.hero).toMatchObject({ level: 10, xp: xpToNext(10, content) });
+    expect(gated.levels).toBe(9);
+    // Niveau maximum du jeu (3 étoiles de niveaux, étoile 2 payée) : plus d'XP du tout.
+    const capped = addXp({ ...hero, stars: 2 }, 10 ** 9, content);
     expect(capped.hero).toMatchObject({ level: 30, xp: 0 });
   });
 });

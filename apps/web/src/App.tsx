@@ -11,6 +11,7 @@ import { OptionsProvider } from './game/options';
 import { GameShell } from './game/Shell';
 import { t } from './i18n';
 import { buildsFromLocation, SHARE_PREFIX } from './save/share';
+import { Chests } from './screens/Chests';
 import { Credits } from './screens/Credits';
 import { DungeonRun } from './screens/DungeonRun';
 import { Heroes } from './screens/Heroes';
@@ -51,6 +52,8 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       );
     case 'workshop':
       return <Workshop />;
+    case 'chests':
+      return <Chests />;
     case 'credits':
       return <Credits />;
     case 'dungeon':

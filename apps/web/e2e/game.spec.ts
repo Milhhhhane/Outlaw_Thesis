@@ -1,3 +1,5 @@
+import { loadContent } from '@outlaw/data';
+import { newProfile } from '@outlaw/engine';
 import { expect, test, type Page } from '@playwright/test';
 
 /** Combats instantanés et premiers pas déjà lus, pour aller droit au but. */
@@ -50,7 +52,7 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
   await noScroll(page);
   await page.getByRole('button', { name: 'Jouer en invité' }).click();
   await noScroll(page);
-  for (const entry of ['Donjons', 'Équipe', 'Héros', 'Atelier']) {
+  for (const entry of ['Donjons', 'Équipe', 'Héros', 'Atelier', 'Coffres']) {
     await page.getByRole('button', { name: new RegExp(`^${entry}`) }).click();
     await noScroll(page);
     if (entry === 'Héros') {
@@ -142,3 +144,45 @@ for (const keyboard of [false, true]) {
     await expect(page.getByRole('heading', { name: 'Le camp' })).toBeVisible();
   });
 }
+
+test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  const cost = content.balance.chests.summonCost;
+  const profile = {
+    ...base,
+    chests: { bronze: 1, gold: 1 },
+    fragments: { cendre: cost },
+    focus: 'pyra',
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Coffres/ }).click();
+  await noScroll(page);
+
+  // Cendre a assez de fragments : une invocation, et le bouton disparaît.
+  const cendre = page.locator('.frag-row', { hasText: 'Cendre' });
+  await cendre.getByRole('button', { name: 'Invoquer' }).click();
+  await expect(cendre.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
+
+  // Le coffre d'or : la fenêtre d'ouverture tient en entier, même avec beaucoup de héros tirés.
+  await page.locator('.chest-card', { hasText: "Coffre d'or" }).getByRole('button').click();
+  await expect(page.getByText('8 fragments obtenus')).toBeVisible();
+  await inView(page, '.window');
+  await noScroll(page);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(
+    page.locator('.chest-card', { hasText: "Coffre d'or" }).getByRole('button'),
+  ).toBeDisabled();
+  await noScroll(page);
+});

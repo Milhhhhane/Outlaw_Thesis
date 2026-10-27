@@ -154,6 +154,7 @@ export const dungeonFixture = {
     { enemies: ['test_boss'] },
   ],
   rewards: { xp: 100, gold: 50, materials: { tier: 1, amount: 2 } },
+  chest: 'bronze',
   loot: [
     { item: 'test_charm', weight: 3 },
     { item: 'test_relic', weight: 1 },

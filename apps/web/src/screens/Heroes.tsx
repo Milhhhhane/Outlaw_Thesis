@@ -1,4 +1,4 @@
-import { talentPoints } from '@outlaw/engine';
+import { heroStars, talentPoints } from '@outlaw/engine';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -46,7 +46,8 @@ export function Heroes() {
                 {unlocked ? (
                   <>
                     <span className="hero-card__meta">
-                      {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)}
+                      {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)} ·{' '}
+                      {t('hero.starsShort', { n: heroStars(hero, content) })}
                     </span>
                     <span className="hero-card__thesis">{names.heroThesis(def.id)}</span>
                     {free > 0 && (
@@ -54,7 +55,9 @@ export function Heroes() {
                     )}
                   </>
                 ) : (
-                  <span className="hero-card__thesis">{t('heroes.locked')}</span>
+                  <span className="hero-card__thesis">
+                    {t('heroes.locked', { n: content.balance.chests.summonCost })}
+                  </span>
                 )}
               </button>
             </li>

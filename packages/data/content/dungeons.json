@@ -70,7 +70,8 @@
         "item": "chrono_gear",
         "weight": 1
       }
-    ]
+    ],
+    "chest": "bronze"
   },
   {
     "id": "drowned_halls",
@@ -142,7 +143,8 @@
         "weight": 1
       }
     ],
-    "unlocksHero": "cendre"
+    "unlocksHero": "cendre",
+    "chest": "bronze"
   },
   {
     "id": "thorn_maze",
@@ -218,7 +220,8 @@
         "item": "phoenix_feather",
         "weight": 1
       }
-    ]
+    ],
+    "chest": "silver"
   },
   {
     "id": "cinder_citadel",
@@ -292,7 +295,8 @@
         "weight": 1
       }
     ],
-    "unlocksHero": "ressac"
+    "unlocksHero": "ressac",
+    "chest": "silver"
   },
   {
     "id": "sunken_spire",
@@ -369,7 +373,8 @@
         "item": "chrono_gear",
         "weight": 1
       }
-    ]
+    ],
+    "chest": "silver"
   },
   {
     "id": "verdant_crown",
@@ -443,7 +448,8 @@
         "weight": 1
       }
     ],
-    "unlocksHero": "seve"
+    "unlocksHero": "seve",
+    "chest": "gold"
   },
   {
     "id": "broken_crossing",
@@ -520,6 +526,7 @@
         "item": "tide_pendant",
         "weight": 2
       }
-    ]
+    ],
+    "chest": "gold"
   }
 ]

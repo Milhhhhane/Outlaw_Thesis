@@ -9,5 +9,7 @@ Idées notées, non codées.
 - Éléments supplémentaires au-delà de feu, eau, nature.
 - Héros au-delà des 6 du MVP.
 - Application installable (PWA), mode hors ligne explicite.
+- Coffres : raretés de héros (poids de tirage), garantie après n coffres sans fragment utile,
+  coffres hors donjons (quêtes, événements), niveau maximum 100 avec d'autres étoiles.
 - Langues autres que le français (l'i18n est prête).
 - Tests de bout en bout Playwright (optionnels pour le MVP).

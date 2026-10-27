@@ -46,6 +46,8 @@ export const dungeonSchema = z.strictObject({
   }),
   /** Table de butin : un objet est tiré, les taux sont affichés au joueur. */
   loot: z.array(z.strictObject({ item: idSchema, weight: z.number().int().min(1) })).min(2),
+  /** Palier du coffre donné (voir `chests.tiers` de balance.json). */
+  chest: idSchema,
   /** Héros débloqué en terminant ce donjon pour la première fois. */
   unlocksHero: idSchema.optional(),
 });

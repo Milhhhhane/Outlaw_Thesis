@@ -144,3 +144,22 @@ hasard, politique d'anticipation. Constat : au niveau conseillé, 68 à 100 % ; 
 0 % dès le deuxième donjon (mur au 2e combat). R2 n'est donc pas tenue : à régler au sprint 5
 (croissance des stats, puis ennemis). Une politique gloutonne perd même 9 niveaux au-dessus :
 elle achète des sorts utilitaires sans infliger de dégâts et atteint la limite d'actions.
+
+## Coffres et fragments
+
+Valeurs de `balance.json`, partie `chests`. Espérances calculées à la main (6 héros), pas mesurées
+sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (elle fixe les niveaux).
+
+| Palier | Fragments | Donjons | Avec héros ciblé (50 %)               | Sans ciblage    |
+| ------ | --------- | ------- | ------------------------------------- | --------------- |
+| Bronze | 3         | 1, 2    | 1,75 par coffre : 5,7 coffres pour 10 | 0,50 par coffre |
+| Argent | 5         | 3, 4, 5 | 2,92 par coffre : 3,4 coffres pour 10 | 0,83 par coffre |
+| Or     | 8         | 6, 7    | 4,67 par coffre : 2,1 coffres pour 10 | 1,33 par coffre |
+
+- Premières victoires : 37 fragments au total sur les sept donjons (2 × 3 + 3 × 5 + 2 × 8).
+- Rejeu : un coffre une fois sur deux, soit 11 rejeux de bronze, 7 d'argent ou 4 d'or en moyenne
+  pour 10 fragments sur le héros ciblé.
+- Niveaux conseillés : 1, 4, 8, 12, 17, 22, 27. Le donjon 4 (niveau 12) demande la première étoile
+  (plafond 10 → 20) et le donjon 6 (niveau 22) la seconde (20 → 30), soit 30 fragments par héros
+  de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
+  `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.

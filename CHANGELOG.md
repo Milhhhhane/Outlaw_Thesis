@@ -2,6 +2,21 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — coffres et fragments
+
+### Ajouté
+
+- Coffres de bronze, d'argent et d'or (pixel art recoloré depuis le pack 0x72) : donnés à la
+  première victoire d'un donjon, puis une fois sur deux au rejeu.
+- Fragments de héros : 10 invoquent un héros ; un héros ciblé reçoit la moitié des fragments.
+- Étoiles : le niveau d'un héros est plafonné tous les 10 niveaux jusqu'à ce qu'on paie l'étoile
+  suivante en fragments (10, puis 20). Écran « Coffres », entrée dans le camp avec compteur,
+  carte de récompense, plafond et bouton d'étoile sur la fiche du héros.
+
+### Modifié
+
+- Les sauvegardes existantes restent valides : les étoiles sont déduites du niveau.
+
 ## [lot-9] — 2026-10-27 — grosse amélioration graphique
 
 ### Modifié

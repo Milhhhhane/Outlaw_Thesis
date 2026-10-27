@@ -103,3 +103,8 @@ modification passe par une fonction pure du moteur (`takeTalent`, `respec`, `equ
 `upgradeItem`, `setTeam`, `completeDungeon`…) qui renvoie le nouveau profil ou un refus motivé
 (`not_enough_gold`, `talent_invalid`…), affiché tel quel par l'interface. Le profil est sauvegardé
 après chaque changement.
+
+Les coffres sont dans `packages/engine/src/chests.ts` (`openChest`, `summonHero`, `starUp`,
+`setFocus`) : mêmes fonctions pures, tirage avec la graine du profil. Le plafond de niveau par étoile
+est dans `progression.ts` (`levelCap`, `heroStars`, `atStarGate`) ; l'écran est
+`apps/web/src/screens/Chests.tsx`.

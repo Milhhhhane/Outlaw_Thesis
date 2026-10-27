@@ -28,7 +28,12 @@ export type Refusal =
   | 'unknown_dungeon'
   | 'no_energy'
   | 'test_only'
-  | 'test_mode';
+  | 'test_mode'
+  | 'no_chest'
+  | 'not_enough_fragments'
+  | 'already_unlocked'
+  | 'not_at_cap'
+  | 'max_star';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -43,32 +48,59 @@ export function starterHeroes(content: Content): string[] {
   return content.heroes.map((h) => h.id).filter((id) => !unlockable.has(id));
 }
 
-function freshHero(level: number, slots: number): HeroProgress {
+/** Palier (étoile) que implique un niveau : le niveau 10 est encore à l'étoile 0, le 11 à l'étoile 1. */
+export function starsForLevel(level: number, content: Content): number {
+  return Math.max(0, Math.ceil(level / content.balance.progression.levelsPerStar) - 1);
+}
+
+/**
+ * Étoiles d'un héros : le plus grand de celles payées et de celles que son niveau implique. Une
+ * ancienne sauvegarde (niveau 25, aucune étoile enregistrée) garde donc ses niveaux.
+ */
+export function heroStars(hero: HeroProgress, content: Content): number {
+  return Math.max(hero.stars, starsForLevel(hero.level, content));
+}
+
+/** Niveau que le héros ne peut pas dépasser tant qu'il n'a pas payé l'étoile suivante. */
+export function levelCap(hero: HeroProgress, content: Content): number {
+  const { maxLevel, levelsPerStar } = content.balance.progression;
+  return Math.min(maxLevel, (heroStars(hero, content) + 1) * levelsPerStar);
+}
+
+/** Vrai si le héros attend une étoile pour continuer (niveau plafonné, mais pas au maximum du jeu). */
+export function atStarGate(hero: HeroProgress, content: Content): boolean {
+  return hero.level >= levelCap(hero, content) && hero.level < content.balance.progression.maxLevel;
+}
+
+export function freshHero(level: number, content: Content): HeroProgress {
   return {
     level,
     xp: 0,
     talents: [],
-    items: Array.from({ length: slots }, () => null),
+    items: Array.from({ length: content.balance.progression.items.slots }, () => null),
     freeRespecUsed: false,
+    stars: starsForLevel(level, content),
   };
 }
 
 export function newProfile(content: Content, seed = 1, now = 0): Profile {
   const starters = starterHeroes(content);
-  const slots = content.balance.progression.items.slots;
   return {
     version: PROFILE_VERSION,
     seed,
     gold: 0,
     materials: [0, 0, 0],
     energy: { value: content.balance.energy.cap, updatedAt: now },
-    heroes: Object.fromEntries(starters.map((id) => [id, freshHero(1, slots)])),
+    heroes: Object.fromEntries(starters.map((id) => [id, freshHero(1, content)])),
     unlocked: starters,
     team: starters.slice(0, 3),
     items: [],
     nextUid: 1,
     dungeons: {},
     sinceRare: 0,
+    fragments: {},
+    chests: {},
+    focus: null,
     testMode: false,
   };
 }
@@ -79,22 +111,27 @@ export function xpToNext(level: number, content: Content): number {
   return Math.round(base * level ** exponent);
 }
 
-/** Ajoute de l'XP ; renvoie le héros et le nombre de niveaux gagnés. */
+/**
+ * Ajoute de l'XP ; renvoie le héros et le nombre de niveaux gagnés. Au plafond d'une étoile,
+ * l'XP s'arrête au coût d'un niveau : elle sert dès que l'étoile est payée, sans s'accumuler au-delà.
+ */
 export function addXp(
   hero: HeroProgress,
   amount: number,
   content: Content,
 ): { hero: HeroProgress; levels: number } {
   const max = content.balance.progression.maxLevel;
+  const cap = levelCap(hero, content);
   let { level, xp } = hero;
   xp += amount;
   let levels = 0;
-  while (level < max && xp >= xpToNext(level, content)) {
+  while (level < cap && xp >= xpToNext(level, content)) {
     xp -= xpToNext(level, content);
     level += 1;
     levels += 1;
   }
   if (level >= max) xp = 0;
+  else if (level >= cap) xp = Math.min(xp, xpToNext(level, content));
   return { hero: { ...hero, level, xp }, levels };
 }
 
@@ -276,6 +313,8 @@ export interface DungeonReport {
   readonly materials: { readonly tier: number; readonly amount: number };
   readonly item: { readonly uid: number; readonly item: string; readonly guaranteed: boolean };
   readonly unlockedHero: string | null;
+  /** Palier du coffre gagné, ou null (donjon rejoué sans chance). */
+  readonly chest: string | null;
 }
 
 /**
@@ -324,6 +363,14 @@ export function completeDungeon(
   }
   const uid = profile.nextUid;
 
+  // Coffre : toujours au premier passage, sinon une chance (tirée après le butin, qui ne bouge pas).
+  let chest: string | null = dungeon.chest;
+  if (!firstClear) {
+    const chestRoll = nextRandom(seed);
+    seed = chestRoll.seed;
+    if (chestRoll.value >= balance.chests.replayChestRate) chest = null;
+  }
+
   const materials: Profile['materials'] = [...profile.materials];
   const tier = dungeon.rewards.materials.tier - 1;
   const amount = gain(dungeon.rewards.materials.amount);
@@ -338,7 +385,7 @@ export function completeDungeon(
     // Le nouveau héros arrive au niveau recommandé du donjon qui le débloque.
     heroes[reward] = freshHero(
       Math.min(balance.progression.maxLevel, dungeon.recommendedLevel),
-      balance.progression.items.slots,
+      content,
     );
   }
 
@@ -356,6 +403,10 @@ export function completeDungeon(
       [dungeonId]: { clears: (profile.dungeons[dungeonId]?.clears ?? 0) + 1 },
     },
     sinceRare: isRare(item) ? 0 : profile.sinceRare + 1,
+    chests:
+      chest === null
+        ? profile.chests
+        : { ...profile.chests, [chest]: (profile.chests[chest] ?? 0) + 1 },
   };
   return ok({
     profile: next,
@@ -367,6 +418,7 @@ export function completeDungeon(
       materials: { tier: dungeon.rewards.materials.tier, amount },
       item: { uid, item, guaranteed },
       unlockedHero,
+      chest,
     },
   });
 }
@@ -398,7 +450,7 @@ export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = 
     })),
   );
   const heroes = Object.fromEntries(
-    content.heroes.map((h) => [h.id, freshHero(maxLevel, rules.slots)]),
+    content.heroes.map((h) => [h.id, freshHero(maxLevel, content)]),
   );
   builds.forEach((build, member) => {
     const slots = Array.from({ length: rules.slots }, (_, slot): number | null => {
@@ -417,6 +469,7 @@ export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = 
       talents: [...build.talents],
       items: slots,
       freeRespecUsed: false,
+      stars: starsForLevel(build.level, content),
     };
   });
   const all = content.heroes.map((h) => h.id);
@@ -446,7 +499,15 @@ export function setLevel(
   const next = (): HeroBuild => ({ ...heroBuild(profile, heroId), level: clamped, talents });
   while (talents.length > 0 && validateBuild(content, next()).length > 0)
     talents = talents.slice(0, -1);
-  return ok(withHero(profile, heroId, { ...hero, level: clamped, xp: 0, talents }));
+  return ok(
+    withHero(profile, heroId, {
+      ...hero,
+      level: clamped,
+      xp: 0,
+      talents,
+      stars: starsForLevel(clamped, content),
+    }),
+  );
 }
 
 /** Mode test : règle le niveau d'amélioration d'un objet. */

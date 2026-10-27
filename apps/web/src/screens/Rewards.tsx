@@ -5,10 +5,12 @@ import { PixelSprite } from '../art/Pixel';
 import { Portrait } from '../combat/InitiativeTrack';
 import { content } from '../combat/session';
 import { useEscape } from '../game/keys';
+import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
+import { ChestArt } from './Chests';
 
 function Card({
   index,
@@ -52,6 +54,7 @@ export function Rewards({
   readonly onContinue: () => void;
 }) {
   const { profile } = useProfile();
+  const { go } = useGame();
   const heading = useRef<HTMLHeadingElement>(null);
   const item = content.itemById.get(report.item.item);
   useEscape(onContinue);
@@ -84,6 +87,24 @@ export function Rewards({
               ))}
             </ul>
             {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
+          </Card>
+        )}
+        {report.chest !== null && (
+          <Card index={index++} className="reward-card--chest" title={t('reward.chestCard')}>
+            <ChestArt tier={report.chest} />
+            <h2 className="reward-card__name">
+              {t('reward.chest', { tier: tk(`chest.tier.${report.chest}`) })}
+            </h2>
+            <p className="hint">{t('reward.chest.hint')}</p>
+            <Button
+              size="small"
+              variant="quiet"
+              onClick={() => {
+                go({ name: 'chests' });
+              }}
+            >
+              {t('reward.chest.open')}
+            </Button>
           </Card>
         )}
         {report.unlockedHero !== null && (
