@@ -2,6 +2,7 @@ import { dungeonOpen } from '@outlaw/engine';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
+import { SyncBadge } from '../account/windows';
 import { Button, Icon, RefusalToast, Resources } from '../game/ui';
 import { useEscape } from '../game/keys';
 import { t, type TextKey } from '../i18n';
@@ -39,6 +40,7 @@ export function Hub() {
       </div>
       <header className="hub__bar">
         <h1 className="hub__title">{t('hub.title')}</h1>
+        <SyncBadge />
         <Resources />
       </header>
       {test && <p className="hub__notice">{t('test.banner')}</p>}

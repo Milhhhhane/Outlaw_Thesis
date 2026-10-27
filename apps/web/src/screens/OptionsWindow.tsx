@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
+import { AccountSection } from '../account/windows';
 import { content } from '../combat/session';
 import { fullscreenAvailable, isFullscreen, toggleFullscreen } from '../game/fullscreen';
 import { useOptions, type Options } from '../game/options';
@@ -132,6 +133,9 @@ export function OptionsWindow({ onClose }: { readonly onClose: () => void }) {
       </Row>
       <Row label={t('options.audio')}>
         <p className="hint">{t('options.audio.none')}</p>
+      </Row>
+      <Row label={t('account.section')}>
+        <AccountSection />
       </Row>
       <Row label={t('options.save')}>
         {test ? (

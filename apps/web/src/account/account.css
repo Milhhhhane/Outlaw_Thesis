@@ -1,0 +1,168 @@
+/* ===== Comptes ===== */
+.account-window {
+  width: 600px;
+}
+
+.account-window .window__body {
+  padding-right: 6px;
+}
+
+.account-form {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.field {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+}
+
+.field__label {
+  color: var(--gold);
+}
+
+.field__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border: 2px solid #4a3b5c;
+  background: #120d18;
+  color: var(--bone);
+  font: inherit;
+  font-family: var(--sans);
+  font-size: 16px;
+}
+
+.field__input:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.field__hint {
+  color: var(--bone-muted);
+  font-size: 13px;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  font-size: 14px;
+}
+
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--gold);
+}
+
+.account-form__error {
+  margin: 0;
+  color: #ffb4a8;
+}
+
+.account-window__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.account-section {
+  display: grid;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.account-section p {
+  margin: 0;
+}
+
+.privacy {
+  width: 720px;
+}
+
+.privacy h3 {
+  margin: 12px 0 4px;
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.privacy p {
+  margin: 0 0 6px;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.privacy__draft {
+  padding: 6px 8px;
+  border: 2px dashed #8a6a2a;
+  color: var(--gold);
+}
+
+.conflict {
+  width: 760px;
+}
+
+.versions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.version {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 8px;
+  border: 2px solid #4a3b5c;
+}
+
+.version h3 {
+  margin: 0;
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.version p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.sync-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 2px solid currentcolor;
+  font-size: 13px;
+}
+
+.sync-badge--synced {
+  color: #8fd18b;
+}
+
+.sync-badge--pending {
+  color: var(--gold);
+}
+
+.sync-badge--offline {
+  color: #ffb4a8;
+}
+
+.title__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.title__small {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}

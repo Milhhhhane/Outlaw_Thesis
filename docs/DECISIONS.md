@@ -271,3 +271,84 @@ miroirs à niveau égal entre le build le mieux et le moins bien classé par la 
 meilleur build avec 3 niveaux de retard sur le niveau recommandé du donjon (« donjon de niveau
 recommandé +3 »), victoire = les 3 combats gagnés. Raison : si R2 échoue, le rapport baisse la
 croissance des stats, ce qui n'aide que des héros en retard de niveau ; mesurable et déterministe.
+
+## Lot 8B — comptes et sauvegarde en ligne
+
+Points techniques vérifiés le 27/10/2026 dans la documentation Cloudflare et, quand elle se tait,
+dans le runtime local (`workerd` 1.20261019, livré avec Wrangler 4.152).
+
+**Serveur et base de données** — Contexte : le brief du MVP interdisait Worker applicatif et D1 ;
+le lot 8B lève explicitement cette interdiction. Choix : un Worker TypeScript dans le même
+déploiement que le site, base D1. Raison : demandé par le lot ; KV, R2 et Durable Objects restent
+inutilisés.
+
+**Routage** — Contexte : garder le repli SPA. Choix : `assets.run_worker_first: ["/api/*"]` avec
+`not_found_handling: "single-page-application"`. Raison : forme documentée (Wrangler ≥ 4.20) ; le
+Worker ne voit que l'API, les pages et fichiers restent servis sans lui (et sans coût).
+
+**Provisionnement et migrations** — Contexte : éviter une interruption du propriétaire. Choix :
+liaison D1 sans `database_id` (provisionnement automatique au `wrangler deploy`, bêta ouverte
+depuis Wrangler 4.45) ; migrations versionnées appliquées par le Worker lui-même (table
+`_schema`, instructions idempotentes). Raison : aucune commande manuelle au déploiement ; repli
+documenté dans `DEPLOY.md` (une seule commande `wrangler d1 create`) si la bêta échoue.
+
+**Hachage des mots de passe** — Contexte : « l'algorithme le plus fort disponible ». Faits :
+`argon2` n'est pas pris en charge par `node:crypto` dans Workers (documentation) ; `scrypt` l'est
+(`node:crypto` est actif par défaut depuis la date de compatibilité 2026-08-04) ; PBKDF2 existe
+en WebCrypto mais le binaire `workerd` contient un plafond d'itérations (« iteration counts above
+… are not supported ») que la documentation ne chiffre pas ; le plan gratuit accorde 10 ms de
+processeur par requête (30 s par défaut en payant). Mesures locales : PBKDF2-SHA256 100 000
+itérations 18 ms, scrypt N=2^14 r=8 p=1 50 ms, N=2^15 95 ms. Choix : scrypt N=2^14, r=8, p=1,
+sel aléatoire de 16 octets, comparaison `timingSafeEqual`, paramètres stockés avec le hash
+(`scrypt$N$r$p$sel$hash`), re-hachage automatique à la connexion si les paramètres stockés sont
+plus faibles. Raison : scrypt résiste aux cartes graphiques grâce à sa mémoire (16 Mio), ce que
+PBKDF2 ne fait pas ; WASM argon2id ajouterait une dépendance pour un coût processeur au moins
+égal. Limite assumée : c'est **5 fois sous le minimum de l'OWASP** (N=2^17, ou N=2^14 avec p=5),
+faute de budget processeur sur le plan gratuit. Sur le plan payant, passer `CURRENT.p` à 5 dans
+`packages/accounts/src/hash.ts` : les comptes se re-hachent seuls à leur connexion suivante.
+
+**Sessions** — Choix : jeton aléatoire de 256 bits, seule son empreinte SHA-256 est en base ;
+cookie `__Host-session` HttpOnly, Secure, SameSite=Lax, Path=/ ; expiration glissante de 30 jours
+(repoussée au plus une fois par jour) ; déconnexion = suppression de la ligne ; changement de mot
+de passe = révocation des autres sessions. Contrôle de l'en-tête `Origin` sur toute requête autre
+que GET. Raison : le cookie HttpOnly n'est pas lisible par un script injecté, rien n'est mis dans
+le stockage local.
+
+**Limitation de débit dans D1** — Contexte : la liaison « Rate Limiting » de Workers est
+approximative, locale à chaque point de présence, avec des fenêtres de 10 ou 60 s seulement
+(documentation). Choix : compteurs dans D1, délai qui double après 5 échecs par pseudo (10 par
+adresse IP), plafond de créations par adresse. Raison : un délai croissant sur des minutes et un
+compte par pseudo valable partout ; le trafic attendu reste faible pour D1.
+
+**Adresses IP** — Choix : jamais en clair ; empreinte SHA-256 avec un sel aléatoire tiré chaque
+jour (stocké dans `meta`, remplacé le lendemain), compteurs effacés après 24 h ; pas de journaux
+persistants (`observability.enabled: false`). Raison : le lot demande des journaux minimaux sans
+IP en clair ; le sel du jour empêche de retrouver une adresse par force brute une fois oublié.
+
+**Turnstile : pas maintenant** — Faits : gratuit (20 widgets par compte, documentation « Plans »),
+mais il faut un script et une connexion vers `challenges.cloudflare.com` à chaque inscription,
+une clé secrète côté Worker et une validation serveur obligatoire. Choix : non activé ; limites
+par adresse IP et par pseudo à la place. Raison : le jeu n'appelle aucun tiers (CSP « self »
+seulement) et la page de confidentialité le dit ; ajouter Turnstile demanderait un secret et une
+action du propriétaire pour un risque encore théorique. À activer si des inscriptions de robots
+apparaissent (CSP : `script-src` et `frame-src` vers `challenges.cloudflare.com`).
+
+**Mots de passe courants** — Contexte : « refus des 1000 plus courants ». Choix : les 1000 plus
+fréquents parmi ceux de 10 caractères et plus (SecLists, licence MIT), vérifiés côté serveur
+seulement. Raison : la liste brute des 1000 plus courants n'en contient que 12 de 10 caractères
+ou plus, les autres sont déjà refusés par la longueur ; la liste n'alourdit pas le jeu.
+
+**Synchronisation** — Choix : sauvegarde locale d'abord ; chaque changement de profil part après
+2 s de calme (chaque changement correspond déjà à un événement important : donjon, étoile,
+talent, objet, équipe) ; écriture conditionnelle sur la révision (`baseRev`, 409 sinon) ; écran de
+choix en cas de conflit ; à la connexion, une partie invitée n'est proposée à la migration que si
+elle a avancé (sinon chaque appareil demanderait de « migrer » un profil neuf). Déconnexion :
+la partie locale est effacée de l'appareil (elle est sur le cloud), pour qu'un appareil partagé ne
+mélange pas deux joueurs.
+
+**Pas de validation des résultats** — Le serveur valide la forme de la sauvegarde, pas les gains :
+falsifiable, acceptable sans achat ; à remplacer par un rejeu serveur des combats avant toute
+vente (`docs/ACCOUNTS.md`).
+
+**Textes des comptes à part** — `apps/web/src/i18n/account.fr.json`, fusionné au dictionnaire :
+un autre chantier (nouveaux héros) modifie `fr.json` en parallèle.

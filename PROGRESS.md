@@ -31,12 +31,19 @@
 - Lot 7 — Combats plus courts et plus durs : durées et taux de victoire mesurés et tenus en CI
   (expert 84 %, joueur moyen 44 %), vitesse ×2 en combat. Ouvert : « aucun héros indispensable »
   (17 points, cause côté héros) et plafonds de durée des donjons relevés (voir BALANCE.md).
+- Lot 8B — Comptes et sauvegarde en ligne : Worker `/api/*` + D1, scrypt, sessions par cookie
+  HttpOnly, limites de débit, synchronisation locale d'abord avec écran de conflit, migration
+  d'une partie invitée, page de confidentialité (brouillon), réinitialisation par le
+  propriétaire (`pnpm admin:reset-password`). Tests : Worker, outil, e2e contre `wrangler dev`.
 
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).
 - Mise en ligne Cloudflare par le propriétaire (`docs/DEPLOY.md`), puis tags de sprint à publier.
 - Licence du dépôt : décision du propriétaire.
+- Comptes : vérifier que le premier déploiement a bien créé la base D1 (sinon `DEPLOY.md`),
+  renseigner `contact` dans `apps/web/public/config.json`, faire valider la page de
+  confidentialité, surveiller les erreurs 1102 à la connexion sur le plan gratuit.
 
 ## Prochaine action
 

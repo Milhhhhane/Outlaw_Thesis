@@ -3,6 +3,7 @@
  * plus), en minuscules, dans l'ordre de fréquence. Source : SecLists (licence MIT),
  * Passwords/Common-Credentials/xato-net-10-million-passwords-100000.txt, filtrée par longueur.
  * Les mots de passe plus courts sont déjà refusés par la règle de longueur.
+ * Copyright (c) 2018 Daniel Miessler, licence MIT : texte complet dans `SecLists-LICENSE.txt`.
  */
 const LIST = `qwertyuiop
 1234567890

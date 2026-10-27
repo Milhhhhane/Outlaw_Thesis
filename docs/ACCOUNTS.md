@@ -1,0 +1,83 @@
+# Comptes et sauvegarde en ligne
+
+Lot 8B. La monnaie du jeu est gratuite : aucun paiement, aucune donnée de paiement.
+
+## Ce que le serveur stocke (base D1 `outlaw-thesis`)
+
+| Table      | Contenu                                                                                                                      |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `users`    | pseudo, clé d'unicité (pseudo en minuscules), hash scrypt, drapeau `must_change`, dates de création et de dernière connexion |
+| `sessions` | empreinte SHA-256 du jeton de session (le jeton lui-même n'est jamais stocké), compte, dates                                 |
+| `saves`    | sauvegarde du jeu (JSON validé, 200 Ko au plus), révision `rev`, date                                                        |
+| `throttle` | compteurs de tentatives : par pseudo, ou par empreinte d'adresse IP salée du jour ; effacés après 24 h                       |
+| `meta`     | sel du jour pour les empreintes d'adresse IP (remplacé chaque jour, l'ancien est perdu)                                      |
+
+Pas d'e-mail, pas de nom réel, pas de journal persistant (`observability` désactivé dans
+`wrangler.jsonc`, le Worker n'écrit que le type d'une erreur interne). La page « Confidentialité
+et conditions » du jeu décrit la même chose ; elle est un **brouillon à faire valider**.
+
+## Limites de débit
+
+| Action                    | Règle                                                                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Création de compte        | 5 par adresse IP et par heure                                                                                                                  |
+| Connexion                 | 30 tentatives par adresse IP sur 10 min                                                                                                        |
+| Échecs de connexion       | par pseudo : 5 gratuits par heure, puis attente doublée à chaque échec (2 s, 4 s… 15 min max) ; par adresse IP : 10 gratuits, même progression |
+| Mot de passe, suppression | 5 échecs gratuits par compte, puis même progression                                                                                            |
+
+Un pseudo inconnu et un mauvais mot de passe reçoivent la même réponse, dans le même temps (une
+vérification factice est faite pour un pseudo inconnu).
+
+## Mot de passe perdu : réinitialisation par le propriétaire
+
+Il n'y a **pas** de récupération automatique (pas d'e-mail). Le joueur contacte le créateur
+(champ `contact` de `apps/web/public/config.json`, vide au départ : à renseigner).
+
+**Cette procédure est faible** : sans e-mail ni autre preuve, rien ne garantit que la personne
+qui écrit est bien le propriétaire du compte. Elle convient tant que rien ne s'achète ; elle doit
+être remplacée (e-mail vérifié, ou mieux) **avant toute vente**.
+
+1. Ne jamais réinitialiser sur simple demande, même pressante.
+2. Lancer, sur sa machine, connecté à Cloudflare (`npx wrangler login` une fois) :
+
+   ```sh
+   pnpm admin:reset-password <pseudo>
+   ```
+
+   Le script affiche un résumé : date de création, dernière connexion, date de la sauvegarde,
+   héros et niveaux, or, matériaux, donjons terminés.
+
+3. **Avant de confirmer**, poser au joueur des questions dont seul le vrai propriétaire connaît
+   la réponse, d'après ce résumé : à peu près quand il a créé le compte, ses héros et leurs
+   niveaux, son or, combien de donjons il a finis. Ne pas lui montrer le résumé, ne pas lui
+   souffler les réponses. Plusieurs réponses floues ou fausses : refuser.
+4. Confirmer en retapant le pseudo. Le script écrit un mot de passe temporaire aléatoire
+   (haché avec le même module que le Worker, `@outlaw/accounts/hash`), lève `mustChangePassword`
+   et révoque toutes les sessions. Le mot de passe temporaire s'affiche **une seule fois**.
+5. Le transmettre au joueur par le canal qui a servi à la demande. À sa connexion suivante, le
+   jeu exige un nouveau mot de passe ; tant qu'il ne l'a pas changé, seule cette route répond.
+
+Essai sur une base locale (`wrangler dev --persist-to <dossier>`) :
+`pnpm admin:reset-password <pseudo> --persist-to <dossier absolu>`.
+
+## Limite connue : la sauvegarde n'est pas vérifiée
+
+Le serveur valide la **forme** du profil (Zod) et sa taille, pas son **contenu** : les combats
+sont calculés par le navigateur, et un joueur peut fabriquer une sauvegarde (or, niveaux) à la
+main. C'est acceptable tant que rien ne s'achète et qu'il n'y a pas de classement. Avant toute
+vente, il faudra rejouer côté serveur les journaux de combat avec le moteur déterministe
+(`@outlaw/engine`) et n'accepter que les gains qui en découlent (lot ultérieur, pas fait ici).
+
+## Synchronisation (côté jeu)
+
+- La partie reste locale d'abord : le jeu se joue hors ligne.
+- Connecté, chaque changement de profil (fin de donjon, étoile, talent, objet, équipe) part au
+  serveur après 2 s de calme ; échec réseau : nouvel essai toutes les 30 s et au retour en ligne.
+- Indicateur au camp et sur l'écran-titre : Synchronisé, En attente, Hors ligne.
+- Écriture refusée (le cloud a changé entre-temps, 409) : écran « Version du cloud / Version de
+  cet appareil » (date, héros et niveaux, ressources, donjons) ; rien n'est écrasé sans choix.
+- Première connexion avec une partie invitée qui a avancé : proposer de l'envoyer vers le compte
+  (cloud vide) ou de choisir la version à garder (cloud non vide). Une partie jamais jouée
+  (profil neuf) est ignorée.
+- Déconnexion : envoi de ce qui attend, puis la partie locale est effacée de l'appareil (elle est
+  sur le cloud). Suppression du compte : données serveur et partie locale effacées.

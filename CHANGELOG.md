@@ -2,6 +2,27 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-8b] — 2026-10-27 — comptes et sauvegarde en ligne
+
+### Ajouté
+
+- Comptes sans e-mail : création (pseudo, mot de passe de 10 caractères, liste des mots de passe
+  courants refusés, case « pas de récupération automatique »), connexion, déconnexion,
+  changement de mot de passe, export des données, suppression effective du compte.
+- Worker Cloudflare (`apps/api`) sur `/api/*`, base D1 provisionnée au déploiement, migrations
+  appliquées par le Worker ; hachage scrypt partagé avec l'outil d'administration
+  (`packages/accounts`) ; sessions par cookie HttpOnly, contrôle de l'Origin, limites de débit à
+  délai croissant, adresses IP jamais en clair.
+- Sauvegarde en ligne : locale d'abord, envoi temporisé, indicateur d'état, écran « Version du
+  cloud / Version de cet appareil » en cas de conflit, migration d'une partie invitée.
+- Page « Confidentialité et conditions » (brouillon), `public/config.json` (contact du créateur).
+- `pnpm admin:reset-password <pseudo>` et procédure `docs/ACCOUNTS.md`.
+- Tests : Worker (17), outil d'administration, e2e des comptes contre `wrangler dev`.
+
+### Modifié
+
+- Écran-titre : Jouer en invité, Se connecter, Créer un compte ; boutons secondaires compactés.
+
 ## [lot-7] — 2026-10-27 — combats plus courts et plus durs
 
 ### Ajouté

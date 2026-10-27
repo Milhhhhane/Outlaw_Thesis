@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useAccount } from '../account/AccountProvider';
+import { AuthWindow, PrivacyWindow, SyncBadge } from '../account/windows';
 import { Diorama } from '../art/Diorama';
 import { fullscreenAvailable, isInstalled, toggleFullscreen } from '../game/fullscreen';
 import { useGame } from '../game/nav';
@@ -13,6 +15,11 @@ export function Title() {
   const { profile, reset } = useProfile();
   const [saved] = useState(hasSave);
   const [confirm, setConfirm] = useState(false);
+  const account = useAccount();
+  const status = account?.status ?? 'unavailable';
+  const signed = status === 'signed' && account?.pseudo != null;
+  const [auth, setAuth] = useState<'login' | 'register' | null>(null);
+  const [privacy, setPrivacy] = useState(false);
   const first = useRef<HTMLButtonElement>(null);
   const canFullscreen = fullscreenAvailable();
 
@@ -32,7 +39,7 @@ export function Title() {
         </h1>
         <p className="title__tagline">{t('app.tagline')}</p>
         <nav className="title__menu" aria-label={t('hub.menu.title')}>
-          {saved && (
+          {signed ? (
             <Button
               ref={first}
               size="large"
@@ -40,38 +47,81 @@ export function Title() {
                 go({ name: 'hub' });
               }}
             >
-              {t('title.continue')}
+              {t('account.continue', { pseudo: account.pseudo })}
+            </Button>
+          ) : (
+            <Button
+              ref={first}
+              size="large"
+              onClick={() => {
+                go({ name: 'hub' });
+              }}
+            >
+              {saved ? t('title.continue') : t('account.guest')}
             </Button>
           )}
-          <Button
-            ref={saved ? undefined : first}
-            size="large"
-            variant={saved ? 'quiet' : 'primary'}
-            onClick={() => {
-              if (saved) setConfirm(true);
-              else go({ name: 'hub' });
-            }}
-          >
-            {t('title.new')}
-          </Button>
-          <Button variant="quiet" onClick={toggleTestMode}>
-            {t('title.test')}
-          </Button>
-          <Button variant="quiet" icon="gear" onClick={openOptions}>
-            {t('title.options')}
-          </Button>
-          <Button
-            variant="quiet"
-            onClick={() => {
-              go({ name: 'credits' });
-            }}
-          >
-            {t('title.credits')}
-          </Button>
+          {status === 'guest' && (
+            <div className="title__row">
+              <Button
+                variant="quiet"
+                onClick={() => {
+                  setAuth('login');
+                }}
+              >
+                {t('account.login')}
+              </Button>
+              <Button
+                variant="quiet"
+                onClick={() => {
+                  setAuth('register');
+                }}
+              >
+                {t('account.register')}
+              </Button>
+            </div>
+          )}
+          {saved && !signed && (
+            <Button
+              variant="quiet"
+              onClick={() => {
+                setConfirm(true);
+              }}
+            >
+              {t('title.new')}
+            </Button>
+          )}
+          <div className="title__small">
+            <Button variant="quiet" size="small" onClick={toggleTestMode}>
+              {t('title.test')}
+            </Button>
+            <Button variant="quiet" size="small" icon="gear" onClick={openOptions}>
+              {t('title.options')}
+            </Button>
+            <Button
+              variant="quiet"
+              size="small"
+              onClick={() => {
+                go({ name: 'credits' });
+              }}
+            >
+              {t('title.credits')}
+            </Button>
+            <Button
+              variant="quiet"
+              size="small"
+              onClick={() => {
+                setPrivacy(true);
+              }}
+            >
+              {t('account.privacy.short')}
+            </Button>
+          </div>
         </nav>
+        {status === 'unavailable' && <p className="hint">{t('account.unavailable')}</p>}
       </div>
       <footer className="title__foot">
         <span>{t('home.version', { version })}</span>
+        <SyncBadge />
         {canFullscreen ? (
           <Button
             variant="quiet"
@@ -87,6 +137,24 @@ export function Title() {
           !isInstalled() && <span className="title__install">{t('title.install')}</span>
         )}
       </footer>
+      {auth !== null && (
+        <AuthWindow
+          initial={auth}
+          onClose={() => {
+            setAuth(null);
+          }}
+          onPrivacy={() => {
+            setPrivacy(true);
+          }}
+        />
+      )}
+      {privacy && (
+        <PrivacyWindow
+          onClose={() => {
+            setPrivacy(false);
+          }}
+        />
+      )}
       {confirm && (
         <Window
           title={t('title.new')}

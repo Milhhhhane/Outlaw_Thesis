@@ -18,9 +18,9 @@ describe('écran-titre et camp', () => {
     render(<App version="0.0.0" />);
     expect(screen.getByRole('heading', { level: 1, name: 'Outlaw Thesis' })).toBeInTheDocument();
     expect(screen.getByText('Version 0.0.0')).toBeInTheDocument();
-    // Aucune sauvegarde : pas de « Continuer ».
+    // Aucune sauvegarde : pas de « Continuer », on joue en invité.
     expect(screen.queryByRole('button', { name: t('title.continue') })).toBeNull();
-    await user.click(screen.getByRole('button', { name: t('title.new') }));
+    await user.click(screen.getByRole('button', { name: t('account.guest') }));
     expect(screen.getByRole('heading', { level: 1, name: t('hub.title') })).toBeInTheDocument();
     expect(screen.getByText(t('hub.gold', { gold: 0 }))).toBeInTheDocument();
     for (const entry of ['hub.menu.dungeons', 'hub.menu.team', 'hub.menu.heroes'] as const) {

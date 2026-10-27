@@ -1,10 +1,12 @@
+import account from './account.fr.json';
 import fr from './fr.json';
 import names from './content.fr.json';
 
 /** Clés de texte : le français est la langue par défaut et la référence des clés. */
-export type TextKey = keyof typeof fr;
+export type TextKey = keyof typeof fr | keyof typeof account;
 
-const dictionary: Readonly<Record<TextKey, string>> = fr;
+/** Les textes des comptes vivent à part (account.fr.json) pour limiter les conflits d'édition. */
+const dictionary: Readonly<Record<TextKey, string>> = { ...fr, ...account };
 
 type Params = Readonly<Record<string, string | number>>;
 

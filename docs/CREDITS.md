@@ -26,3 +26,11 @@ source).
   `apps/web/src/assets/fonts/Silkscreen-OFL.txt`. Source : dépôt google/fonts
   (`ofl/silkscreen`), réduite aux chiffres et convertie en WOFF2 (`SilkscreenDigits.woff2`).
 - Repli : polices système.
+
+## Données
+
+- Liste des mots de passe courants refusés à l'inscription : extraite de SecLists, de Daniel
+  Miessler et contributeurs (https://github.com/danielmiessler/SecLists), fichier
+  `Passwords/Common-Credentials/xato-net-10-million-passwords-100000.txt`, réduite aux 1000 plus
+  fréquents de 10 caractères et plus. Licence MIT, texte joint dans
+  `packages/accounts/src/SecLists-LICENSE.txt`.

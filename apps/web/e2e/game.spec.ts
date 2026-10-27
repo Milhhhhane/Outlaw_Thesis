@@ -48,7 +48,7 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
   test.skip(portrait(page), 'portrait');
   await start(page);
   await noScroll(page);
-  await page.getByRole('button', { name: 'Nouvelle partie' }).click();
+  await page.getByRole('button', { name: 'Jouer en invité' }).click();
   await noScroll(page);
   for (const entry of ['Donjons', 'Équipe', 'Héros', 'Atelier']) {
     await page.getByRole('button', { name: new RegExp(`^${entry}`) }).click();

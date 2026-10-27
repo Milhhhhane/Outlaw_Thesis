@@ -6,9 +6,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
+import { useAccount } from '../account/AccountProvider';
 import { content } from '../combat/session';
 import { clearSave, loadProfile, saveProfile } from '../save/storage';
 
@@ -43,9 +45,18 @@ export function ProfileProvider({
   const [profile, setProfile] = useState<Profile>(loaded.profile);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
 
+  const account = useAccount();
+  const changed = account?.changed;
+  const synced = useRef(profile);
   useEffect(() => {
-    if (persist) saveProfile(profile);
-  }, [profile, persist]);
+    if (!persist) return;
+    saveProfile(profile);
+    // Le profil chargé au montage n'est pas un changement : seuls les suivants se synchronisent.
+    if (profile !== synced.current) {
+      synced.current = profile;
+      changed?.();
+    }
+  }, [profile, persist, changed]);
 
   const apply = useCallback((outcome: Outcome): boolean => {
     if (!outcome.ok) {

@@ -1,6 +1,8 @@
 import type { Profile } from '@outlaw/data';
 import { sandboxProfile } from '@outlaw/engine';
 import { useEffect, useMemo, useState } from 'react';
+import { AccountProvider, useAccount } from './account/AccountProvider';
+import { AccountOverlays } from './account/windows';
 import { CombatScreen } from './combat/CombatScreen';
 import { content, demoSetup } from './combat/session';
 import { EscapeProvider } from './game/keys';
@@ -116,16 +118,16 @@ function clearHash(): void {
   window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
 }
 
-export function App({
-  version,
-  initial,
-  start,
-}: {
+interface AppProps {
   readonly version: string;
   readonly initial?: Profile;
   /** Écran de départ (l'écran-titre par défaut). */
   readonly start?: Route;
-}) {
+}
+
+function Main({ version, initial, start }: AppProps) {
+  // Une sauvegarde remplacée par le compte (connexion, conflit) recharge le profil.
+  const generation = useAccount()?.generation ?? 0;
   const [sandbox, setSandbox] = useState<Sandbox | null>(sandboxFromLocation);
   // En quittant le mode test, on revient au camp de la partie normale.
   const [resume, setResume] = useState<Route | null>(null);
@@ -142,36 +144,42 @@ export function App({
     };
   }, []);
 
-  const body =
-    sandbox !== null ? (
-      <ProfileProvider key="test" initial={sandbox.profile} persist={false}>
-        {sandbox.invalidLink && <p className="toast">{t('test.shared.invalid')}</p>}
-        <Game
-          version={version}
-          start={{ name: 'team' }}
-          onTestMode={() => {
-            clearHash();
-            setResume({ name: 'hub' });
-            setSandbox(null);
-          }}
-        />
-      </ProfileProvider>
-    ) : (
-      <ProfileProvider key="game" initial={initial}>
-        <Game
-          version={version}
-          start={resume ?? start ?? { name: 'title' }}
-          onTestMode={() => {
-            setSandbox({ profile: sandboxProfile(content), invalidLink: false });
-          }}
-        />
-      </ProfileProvider>
-    );
+  return sandbox !== null ? (
+    <ProfileProvider key="test" initial={sandbox.profile} persist={false}>
+      {sandbox.invalidLink && <p className="toast">{t('test.shared.invalid')}</p>}
+      <Game
+        version={version}
+        start={{ name: 'team' }}
+        onTestMode={() => {
+          clearHash();
+          setResume({ name: 'hub' });
+          setSandbox(null);
+        }}
+      />
+    </ProfileProvider>
+  ) : (
+    <ProfileProvider key={`game-${String(generation)}`} initial={initial}>
+      <Game
+        version={version}
+        start={resume ?? start ?? { name: 'title' }}
+        onTestMode={() => {
+          setSandbox({ profile: sandboxProfile(content), invalidLink: false });
+        }}
+      />
+    </ProfileProvider>
+  );
+}
 
+export function App(props: AppProps) {
   return (
     <OptionsProvider>
       <EscapeProvider>
-        <GameShell>{body}</GameShell>
+        <GameShell>
+          <AccountProvider>
+            <Main {...props} />
+            <AccountOverlays />
+          </AccountProvider>
+        </GameShell>
       </EscapeProvider>
     </OptionsProvider>
   );
