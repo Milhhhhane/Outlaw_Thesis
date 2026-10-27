@@ -156,7 +156,7 @@ function report(patch: Partial<DungeonReport> = {}): DungeonReport {
   return {
     dungeon: 'ember_wastes',
     firstClear: false,
-    xp: { pyra: { gained: 40, levels: 0 } },
+    xp: { pyra: { gained: 40, ready: false } },
     gold: 60,
     materials: { tier: 1, amount: 6 },
     item: {

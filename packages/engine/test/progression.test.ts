@@ -2,12 +2,17 @@ import { loadContent, profileSchema, type Profile } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import {
   addXp,
+  canLevelUp,
   completeDungeon,
   dungeonOpen,
   energyAt,
   enterDungeon,
   equip,
   heroBuild,
+  levelDustTier,
+  levelUp,
+  levelUpCost,
+  levelUpMax,
   newProfile,
   respec,
   respecCost,
@@ -27,6 +32,7 @@ const value = <T>(outcome: Outcome<T>): T => {
   if (!outcome.ok) throw new Error(outcome.reason);
   return outcome.value;
 };
+const reason = (outcome: Outcome<unknown>): string => (outcome.ok ? 'ok' : outcome.reason);
 const withLevel = (profile: Profile, hero: string, level: number): Profile => ({
   ...profile,
   heroes: { ...profile.heroes, [hero]: { ...profile.heroes[hero]!, level } },
@@ -66,21 +72,59 @@ describe('profil', () => {
 });
 
 describe('XP et niveaux', () => {
-  it('courbe base × N^exposant, plusieurs niveaux d’un coup, plafond', () => {
+  const dust = (profile: Profile, materials: Profile['materials']): Profile => ({
+    ...profile,
+    materials,
+  });
+
+  it('l’XP se met en banque, le niveau se paie en XP et en poussière du palier', () => {
     expect(xpToNext(1, content)).toBe(40);
     expect(xpToNext(4, content)).toBe(320);
-    const hero = newProfile(content).heroes.pyra!;
-    expect(addXp(hero, 39, content)).toEqual({ hero: { ...hero, xp: 39 }, levels: 0 });
-    const twice = addXp(hero, 40 + 113 + 5, content); // 40 (1→2) + 113 (2→3)
-    expect(twice.levels).toBe(2);
-    expect(twice.hero).toMatchObject({ level: 3, xp: 5 });
-    // Plafond d'étoile : le niveau 10 est la limite à zéro étoile, l'XP garde un niveau d'avance.
-    const gated = addXp(hero, 10 ** 9, content);
-    expect(gated.hero).toMatchObject({ level: 10, xp: xpToNext(10, content) });
-    expect(gated.levels).toBe(9);
-    // Niveau maximum du jeu (3 étoiles de niveaux, étoile 2 payée) : plus d'XP du tout.
-    const capped = addXp({ ...hero, stars: 2 }, 10 ** 9, content);
-    expect(capped.hero).toMatchObject({ level: 30, xp: 0 });
+    const base = newProfile(content);
+    const hero = base.heroes.pyra!;
+    // Rien ne monte tout seul, quelle que soit l'XP.
+    expect(addXp(hero, 10 ** 6, content)).toEqual({ ...hero, xp: 10 ** 6 });
+    expect(levelUpCost(content, hero)).toEqual({ xp: 40, dust: { tier: 1, amount: 2 } });
+    expect(levelDustTier(content, 7)).toBe(1);
+    expect(levelDustTier(content, 8)).toBe(2);
+    expect(levelDustTier(content, 22)).toBe(3);
+
+    const banked = { ...base, heroes: { ...base.heroes, pyra: { ...hero, xp: 40 + 113 + 5 } } };
+    expect(reason(levelUp(content, banked, 'pyra'))).toBe('not_enough_materials');
+    expect(reason(levelUp(content, dust(base, [9, 0, 0]), 'pyra'))).toBe('not_enough_xp');
+    expect(canLevelUp(content, dust(banked, [9, 0, 0]), banked.heroes.pyra)).toBe(true);
+    const once = value(levelUp(content, dust(banked, [9, 0, 0]), 'pyra'));
+    expect(once.heroes.pyra).toMatchObject({ level: 2, xp: 113 + 5 });
+    expect(once.materials).toEqual([7, 0, 0]);
+    // « Au maximum » : deux niveaux possibles, le troisième manque d'XP.
+    const twice = value(levelUpMax(content, dust(banked, [9, 0, 0]), 'pyra'));
+    expect(twice.heroes.pyra).toMatchObject({ level: 3, xp: 5 });
+    expect(twice.materials).toEqual([5, 0, 0]);
+    expect(reason(levelUpMax(content, twice, 'pyra'))).toBe('not_enough_xp');
+    expect(reason(levelUp(content, base, 'nope'))).toBe('locked_hero');
+  });
+
+  it('plafond d’étoile et niveau maximum', () => {
+    const base = newProfile(content);
+    const gated = {
+      ...dust(base, [99, 99, 99]),
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 10, xp: 10 ** 6 } },
+    };
+    expect(reason(levelUp(content, gated, 'pyra'))).toBe('star_gate');
+    expect(canLevelUp(content, gated, gated.heroes.pyra)).toBe(false);
+    const maxed = {
+      ...gated,
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 30, xp: 50, stars: 2 } },
+    };
+    expect(levelUpCost(content, maxed.heroes.pyra)).toBeNull();
+    expect(reason(levelUp(content, maxed, 'pyra'))).toBe('max_level');
+    expect(addXp(maxed.heroes.pyra, 500, content)).toMatchObject({ level: 30, xp: 0 });
+    // Le dernier niveau vide la banque.
+    const almost = {
+      ...gated,
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 29, xp: 10 ** 6, stars: 2 } },
+    };
+    expect(value(levelUp(content, almost, 'pyra')).heroes.pyra).toMatchObject({ level: 30, xp: 0 });
   });
 });
 
@@ -194,8 +238,9 @@ describe('donjons et butin', () => {
       gold: 80,
       materials: { tier: 1, amount: 4 },
     });
-    expect(first.report.xp.pyra).toEqual({ gained: 100, levels: 1 });
-    expect(first.report.xp.ronce).toEqual({ gained: 50, levels: 1 });
+    expect(first.report.xp.pyra).toEqual({ gained: 100, ready: true });
+    expect(first.report.xp.ronce).toEqual({ gained: 50, ready: true });
+    expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 100 });
     expect(profile.items).toHaveLength(1);
     expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);

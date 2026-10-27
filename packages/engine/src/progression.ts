@@ -30,7 +30,10 @@ export type Refusal =
   | 'not_enough_fragments'
   | 'already_unlocked'
   | 'not_at_cap'
-  | 'max_star';
+  | 'max_star'
+  | 'max_level'
+  | 'star_gate'
+  | 'not_enough_xp';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -109,27 +112,70 @@ export function xpToNext(level: number, content: Content): number {
 }
 
 /**
- * Ajoute de l'XP ; renvoie le héros et le nombre de niveaux gagnés. Au plafond d'une étoile,
- * l'XP s'arrête au coût d'un niveau : elle sert dès que l'étoile est payée, sans s'accumuler au-delà.
+ * Ajoute de l'XP à la banque du héros. Elle ne monte pas le niveau : c'est le joueur qui paie
+ * chaque niveau (`levelUp`), en XP et en poussière. Au niveau maximum, rien n'est gardé.
  */
-export function addXp(
-  hero: HeroProgress,
-  amount: number,
-  content: Content,
-): { hero: HeroProgress; levels: number } {
-  const max = content.balance.progression.maxLevel;
-  const cap = levelCap(hero, content);
-  let { level, xp } = hero;
-  xp += amount;
-  let levels = 0;
-  while (level < cap && xp >= xpToNext(level, content)) {
-    xp -= xpToNext(level, content);
-    level += 1;
-    levels += 1;
+export function addXp(hero: HeroProgress, amount: number, content: Content): HeroProgress {
+  if (hero.level >= content.balance.progression.maxLevel) return { ...hero, xp: 0 };
+  return { ...hero, xp: hero.xp + amount };
+}
+
+/** Palier de poussière (1 à 3) demandé pour quitter ce niveau. */
+export function levelDustTier(content: Content, level: number): number {
+  const { tierFrom } = content.balance.progression.levelUp;
+  return tierFrom.filter((from) => level >= from).length || 1;
+}
+
+export interface LevelUpCost {
+  readonly xp: number;
+  readonly dust: { readonly tier: number; readonly amount: number };
+}
+
+/** Coût du niveau suivant, ou null au niveau maximum. */
+export function levelUpCost(content: Content, hero: HeroProgress): LevelUpCost | null {
+  if (hero.level >= content.balance.progression.maxLevel) return null;
+  const tier = levelDustTier(content, hero.level);
+  const amount = content.balance.progression.levelUp.dust[tier - 1] ?? 0;
+  return { xp: xpToNext(hero.level, content), dust: { tier, amount } };
+}
+
+/** Le héros a ce qu'il faut (XP, poussière, pas d'étoile en attente) pour monter d'un niveau. */
+export function canLevelUp(content: Content, profile: Profile, hero: HeroProgress): boolean {
+  const cost = levelUpCost(content, hero);
+  if (cost === null || atStarGate(hero, content)) return false;
+  return hero.xp >= cost.xp && (profile.materials[cost.dust.tier - 1] ?? 0) >= cost.dust.amount;
+}
+
+/** Monte un héros d'un niveau contre son XP et de la poussière. */
+export function levelUp(content: Content, profile: Profile, heroId: string): Outcome {
+  const hero = profile.heroes[heroId];
+  if (hero === undefined || !profile.unlocked.includes(heroId)) return refuse('locked_hero');
+  const cost = levelUpCost(content, hero);
+  if (cost === null) return refuse('max_level');
+  if (atStarGate(hero, content)) return refuse('star_gate');
+  if (hero.xp < cost.xp) return refuse('not_enough_xp');
+  const tier = cost.dust.tier - 1;
+  if ((profile.materials[tier] ?? 0) < cost.dust.amount) return refuse('not_enough_materials');
+  const materials: Profile['materials'] = [...profile.materials];
+  materials[tier] = (materials[tier] ?? 0) - cost.dust.amount;
+  const level = hero.level + 1;
+  const xp = level >= content.balance.progression.maxLevel ? 0 : hero.xp - cost.xp;
+  return ok({
+    ...profile,
+    materials,
+    heroes: { ...profile.heroes, [heroId]: { ...hero, level, xp } },
+  });
+}
+
+/** Monte un héros autant de niveaux que l'XP et la poussière le permettent (au moins un). */
+export function levelUpMax(content: Content, profile: Profile, heroId: string): Outcome {
+  let current = levelUp(content, profile, heroId);
+  if (!current.ok) return current;
+  for (;;) {
+    const next = levelUp(content, current.value, heroId);
+    if (!next.ok) return current;
+    current = next;
   }
-  if (level >= max) xp = 0;
-  else if (level >= cap) xp = Math.min(xp, xpToNext(level, content));
-  return { hero: { ...hero, level, xp }, levels };
 }
 
 /** Build de combat d'un héros du profil. */
@@ -280,7 +326,8 @@ function pick(
 export interface DungeonReport {
   readonly dungeon: string;
   readonly firstClear: boolean;
-  readonly xp: Readonly<Record<string, { gained: number; levels: number }>>;
+  /** XP gagnée par héros ; `ready` : il a l'XP du niveau suivant (reste la poussière à payer). */
+  readonly xp: Readonly<Record<string, { gained: number; ready: boolean }>>;
   readonly gold: number;
   readonly materials: { readonly tier: number; readonly amount: number };
   readonly item: {
@@ -330,16 +377,16 @@ export function completeDungeon(
   const gain = (n: number): number => Math.round(n * rate);
 
   const heroes = { ...profile.heroes };
-  const xp: Record<string, { gained: number; levels: number }> = {};
+  const xp: Record<string, { gained: number; ready: boolean }> = {};
   for (const id of profile.unlocked) {
     const hero = heroes[id];
     if (hero === undefined) continue;
     const gained = Math.round(
       gain(dungeon.rewards.xp) * (profile.team.includes(id) ? 1 : balance.progression.restXpRate),
     );
-    const result = addXp(hero, gained, content);
-    heroes[id] = result.hero;
-    xp[id] = { gained, levels: result.levels };
+    heroes[id] = addXp(hero, gained, content);
+    const cost = levelUpCost(content, heroes[id]);
+    xp[id] = { gained, ready: cost !== null && heroes[id].xp >= cost.xp };
   }
 
   // Butin : un objet de la table du donjon, pondéré par sa rareté (et la maîtrise). Le rare est

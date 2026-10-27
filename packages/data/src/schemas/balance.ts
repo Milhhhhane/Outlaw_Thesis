@@ -71,6 +71,14 @@ export const balanceSchema = z
       restXpRate: z.number().min(0).max(1),
       /** XP pour passer du niveau N au suivant : round(base × N ^ exponent). */
       xp: z.strictObject({ base: pos, exponent: pos }),
+      /**
+       * Monter de niveau se paie : l'XP du niveau et de la poussière. `tierFrom[k]` est le premier
+       * niveau (celui qu'on quitte) payé en poussière du palier k + 1, `dust[k]` la quantité.
+       */
+      levelUp: z.strictObject({
+        tierFrom: z.array(posInt).length(3),
+        dust: z.array(posInt).length(3),
+      }),
       respec: z.strictObject({
         firstFreePerHero: z.boolean(),
         /** Coût en or du respec : coefficient × niveau du héros. */

@@ -63,6 +63,10 @@
       "base": 40,
       "exponent": 1.5
     },
+    "levelUp": {
+      "tierFrom": [1, 8, 22],
+      "dust": [2, 3, 5]
+    },
     "respec": {
       "firstFreePerHero": true,
       "goldPerHeroLevel": 20

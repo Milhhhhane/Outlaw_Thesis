@@ -9,7 +9,6 @@ import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { dustName, names, t, tk } from '../i18n';
-import { useProfile } from '../state/profile';
 import { ChestArt } from './Chests';
 
 function Card({
@@ -56,7 +55,6 @@ export function Rewards({
   /** Relance le même donjon (farm). */
   readonly onReplay: () => void;
 }) {
-  const { profile } = useProfile();
   const { go } = useGame();
   const heading = useRef<HTMLHeadingElement>(null);
   const item = content.itemById.get(report.item.item);
@@ -146,11 +144,7 @@ export function Rewards({
             <Portrait kind={hero} size={48} />
             <p className="reward-card__name">{names.hero(hero)}</p>
             <p className="reward-card__big">{t('reward.xpShort', { xp: gain.gained })}</p>
-            {gain.levels > 0 && (
-              <p className="reward-card__level">
-                {t('reward.levelShort', { level: profile.heroes[hero]?.level ?? '?' })}
-              </p>
-            )}
+            {gain.ready && <p className="reward-card__level">{t('reward.levelReady')}</p>}
             <span className="visually-hidden">
               {t('reward.xp', { hero: names.hero(hero), xp: gain.gained })}
             </span>

@@ -25,5 +25,14 @@
   "map.mastery.next": "prochain rang à {next} victoires",
   "map.mastery.bonus": "Chaque rang : +{rare} de poids de rare, +{dust} % de poussière.",
   "map.itemRate": "{item} {pct} %",
-  "map.pity": "Rare garanti au plus tard au {count}ᵉ passage sans rare."
+  "map.pity": "Rare garanti au plus tard au {count}ᵉ passage sans rare.",
+  "hero.levelUp": "Niveau suivant",
+  "hero.levelUp.max": "Monter au maximum",
+  "hero.levelUp.cost": "Niveau {level} : {xp} XP et {dust}",
+  "hero.levelUp.ready": "Niveau prêt",
+  "hero.levelUp.hint": "L'XP se garde ; chaque niveau se paie en poussière du palier.",
+  "reward.levelReady": "Niveau prêt !",
+  "refusal.max_level": "Niveau maximum atteint.",
+  "refusal.star_gate": "Ce héros attend son étoile suivante.",
+  "refusal.not_enough_xp": "Pas assez d'XP."
 }
