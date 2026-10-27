@@ -696,4 +696,7 @@ export const MAP_NODES: Readonly<Record<string, readonly [number, number]>> = {
   sunken_spire: [196, 104],
   verdant_crown: [250, 56],
   broken_crossing: [284, 130],
+  salt_flats: [262, 164],
+  obsidian_pass: [298, 74],
+  hollow_throne: [294, 42],
 };

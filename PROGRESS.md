@@ -40,6 +40,8 @@
   avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
 - Lot 10 — Talents : 8 nœuds par page, 14 points, trois spécialisations ouvertes dès le départ ;
   rééquilibrage mesuré par la simulation (docs/BALANCE.md).
+- Lot 11 — Début plus facile et courbe de difficulté vérifiée par la simulation ; trois donjons
+  de fin de progression (niveaux 28 à 30).
 
 - Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,

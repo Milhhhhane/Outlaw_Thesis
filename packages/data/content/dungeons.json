@@ -544,5 +544,240 @@
       }
     ],
     "chest": "gold"
+  },
+  {
+    "id": "salt_flats",
+    "element": "mixed",
+    "recommendedLevel": 28,
+    "modifier": {
+      "id": "mirage",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "turn_start",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "def",
+                "percent": -10,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["brine_crab", "ash_acolyte", "brine_crab"],
+        "hpPct": 104,
+        "atkPct": 160
+      },
+      {
+        "enemies": ["tide_caller", "moss_brute", "ash_acolyte"],
+        "hpPct": 115,
+        "atkPct": 160
+      },
+      {
+        "enemies": ["tidal_hydra", "ember_matron"],
+        "hpPct": 75,
+        "atkPct": 160
+      }
+    ],
+    "rewards": {
+      "xp": 9500,
+      "gold": 1100,
+      "materials": {
+        "tier": 3,
+        "amount": 9
+      }
+    },
+    "loot": [
+      {
+        "item": "tide_pendant",
+        "weight": 3
+      },
+      {
+        "item": "ember_charm",
+        "weight": 3
+      },
+      {
+        "item": "spare_flask",
+        "weight": 3
+      },
+      {
+        "item": "aegis_shard",
+        "weight": 2
+      },
+      {
+        "item": "storm_sigil",
+        "weight": 2
+      },
+      {
+        "item": "chrono_gear",
+        "weight": 1
+      }
+    ],
+    "chest": "gold"
+  },
+  {
+    "id": "obsidian_pass",
+    "element": "fire",
+    "recommendedLevel": 29,
+    "modifier": {
+      "id": "glass_shards",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_dealt",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "status",
+                "target": "other",
+                "status": "burn",
+                "duration": 2,
+                "power": 8
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte"],
+        "hpPct": 115,
+        "atkPct": 115
+      },
+      {
+        "enemies": ["thorn_witch", "ash_acolyte", "cinder_hound"],
+        "hpPct": 125,
+        "atkPct": 115
+      },
+      {
+        "enemies": ["pyre_tyrant", "ember_matron"],
+        "hpPct": 72,
+        "atkPct": 115
+      }
+    ],
+    "rewards": {
+      "xp": 11000,
+      "gold": 1250,
+      "materials": {
+        "tier": 3,
+        "amount": 10
+      }
+    },
+    "loot": [
+      {
+        "item": "ember_charm",
+        "weight": 4
+      },
+      {
+        "item": "quick_spurs",
+        "weight": 3
+      },
+      {
+        "item": "hunter_lens",
+        "weight": 3
+      },
+      {
+        "item": "phoenix_feather",
+        "weight": 2
+      },
+      {
+        "item": "storm_sigil",
+        "weight": 2
+      },
+      {
+        "item": "chrono_gear",
+        "weight": 1
+      }
+    ],
+    "chest": "gold"
+  },
+  {
+    "id": "hollow_throne",
+    "element": "mixed",
+    "recommendedLevel": 30,
+    "modifier": {
+      "id": "hollow_crown",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "teamPoints",
+                "amount": -1,
+                "side": "own"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["moss_brute", "tide_caller", "ash_acolyte"],
+        "hpPct": 105,
+        "atkPct": 140
+      },
+      {
+        "enemies": ["thorn_witch", "brine_crab", "cinder_hound"],
+        "hpPct": 105,
+        "atkPct": 140
+      },
+      {
+        "enemies": ["grove_colossus", "abyss_warden", "ash_acolyte"],
+        "hpPct": 55,
+        "atkPct": 140
+      }
+    ],
+    "rewards": {
+      "xp": 13000,
+      "gold": 1500,
+      "materials": {
+        "tier": 3,
+        "amount": 12
+      }
+    },
+    "loot": [
+      {
+        "item": "phoenix_feather",
+        "weight": 3
+      },
+      {
+        "item": "storm_sigil",
+        "weight": 3
+      },
+      {
+        "item": "chrono_gear",
+        "weight": 3
+      },
+      {
+        "item": "aegis_shard",
+        "weight": 3
+      },
+      {
+        "item": "thorn_ring",
+        "weight": 2
+      },
+      {
+        "item": "mender_token",
+        "weight": 2
+      }
+    ],
+    "chest": "gold"
   }
 ]

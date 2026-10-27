@@ -104,7 +104,10 @@
     "discord": "Discorde",
     "cendre_smolder": "Couver",
     "ressac_surge": "Houle montante",
-    "seve_rootbond": "Racines liées"
+    "seve_rootbond": "Racines liées",
+    "mirage": "Mirage",
+    "glass_shards": "Éclats de verre",
+    "hollow_crown": "Couronne creuse"
   },
   "pages": {
     "pyra_page_execution": {
@@ -382,6 +385,18 @@
     "broken_crossing": {
       "name": "Carrefour brisé",
       "text": "Tous les éléments à la fois, et deux anciens gardiens au bout du chemin."
+    },
+    "salt_flats": {
+      "name": "Salines blêmes",
+      "text": "La chaleur trouble la garde : votre défense flanche à chaque tour. Deux maîtres des lieux vous attendent."
+    },
+    "obsidian_pass": {
+      "name": "Col d'obsidienne",
+      "text": "Les éclats de verre brûlent à chaque coup reçu. Le tyran et la matrone tiennent le col ensemble."
+    },
+    "hollow_throne": {
+      "name": "Trône creux",
+      "text": "Le trône aspire votre réserve dès l'entrée. Trois colosses pour un dernier siège."
     }
   }
 }

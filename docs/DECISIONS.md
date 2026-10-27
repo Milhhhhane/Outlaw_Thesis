@@ -404,6 +404,24 @@ l'inflation de puissance. La règle « moins de points que de nœuds » est vér
 (profondeur 0 à 3), nœuds centrés, 32 px. Raison : la mise en page précédente supposait
 exactement cinq nœuds.
 
+## Lot 11 — difficulté
+
+**Deux leviers par combat : PV et ATK** — Contexte : `hpPct` règle la durée ; baisser les PV
+pour faciliter raccourcit les combats sous le plancher. Choix : `atkPct` (dégâts des ennemis)
+comme levier de difficulté, `hpPct` réservé au rythme. Raison : la difficulté ressentie, c'est
+ce qu'on encaisse, pas combien de tours on tape.
+
+**Courbe vérifiée, pas seulement une moyenne** — Contexte : la moyenne « joueur moyen 40–60 % »
+était tenue alors que le premier donjon était le plus dur. Choix : règle de courbe par donjon
+(premier ≥ 70 %, jamais plus de 12 points plus facile que le précédent, jamais sous 30 %) et
+48 équipes par mesure en CI. Raison : une courbe se juge donjon par donjon ; à 16 équipes le
+bruit dépassait la tolérance.
+
+**Nouveaux donjons après le dernier** — Choix : trois donjons aux niveaux 28–30 en bout de
+chaîne, ennemis existants, décors dérivés des existants par rotation de teinte. Raison : pas de
+nouveau contenu moteur ni de nouveaux sprites, la progression actuelle reste intacte pour les
+sauvegardes.
+
 ## Coffres, fragments et étoiles
 
 **Un coffre ne donne que des fragments de héros** — Contexte : le joueur voulait un système de

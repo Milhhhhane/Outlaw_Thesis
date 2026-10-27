@@ -161,6 +161,35 @@ sorcière des ronces (trop fragile face aux builds explosifs : son combat oscill
 R1 90 %, R2 85 %, tous les combats dans leurs bornes. « Aucun héros indispensable » reste
 non tenue (17 points, non bloquant, cause côté héros comme avant).
 
+## Lot 11 — courbe de difficulté et trois donjons de plus
+
+Constat : le premier donjon était le plus dur pour un joueur moyen (25 % de réussite au niveau
+conseillé, contre 50 à 62 % plus loin) : PV à 131–146 %, modificateur +10 % ATK, équipe sans
+talent. Nouveau levier `atkPct` par combat (dégâts des ennemis, sans toucher à la durée) et règle
+de courbe dans la simulation (`targets.averageCurve` : premier donjon ≥ 70 %, jamais plus de 12
+points plus facile que le précédent, jamais sous 30 %). Rythme mesuré sur 48 équipes en CI
+(16 avant : trop bruité pour une courbe), plancher de durée 10 actions.
+
+| Donjon            | Niv. | Expert | Moyen | atkPct |
+| ----------------- | ---: | -----: | ----: | -----: |
+| Landes de braise  |    1 |  100 % |  90 % |     72 |
+| Salles englouties |    4 |  100 % |  75 % |     92 |
+| Dédale de ronces  |    8 |   92 % |  65 % |    100 |
+| Citadelle         |   12 |   98 % |  54 % |     86 |
+| Flèche engloutie  |   17 |   92 % |  40 % |    100 |
+| Couronne          |   22 |   75 % |  40 % |    107 |
+| Carrefour brisé   |   27 |   81 % |  38 % |    130 |
+| Salines blêmes    |   28 |   73 % |  33 % |    160 |
+| Col d'obsidienne  |   29 |   58 % |  38 % |    115 |
+| Trône creux       |   30 |   63 % |  42 % |    140 |
+
+Trois donjons de fin de progression (niveaux 28 à 30, après le Carrefour brisé) : Salines blêmes
+(DEF −10 % à chaque tour, deux boss), Col d'obsidienne (brûlure à chaque coup reçu, tyran et
+matrone ensemble), Trône creux (−1 point de réserve à l'entrée, colosse et gardien). La fin de
+courbe est plate (33–42 %) : les derniers donjons sont durs mais pas plus que le Carrefour, parce
+qu'au-delà l'expert décroche avant le joueur moyen. Outils : `pnpm --filter @outlaw/sim curve`
+(lecture) et `tunecurve` (écrit `atkPct`).
+
 ## Coffres et fragments
 
 Valeurs de `balance.json`, partie `chests`. Espérances calculées à la main (6 héros), pas mesurées
@@ -170,12 +199,12 @@ sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (el
 | ------ | --------- | ------- | ------------------------------------- | --------------- |
 | Bronze | 3         | 1, 2    | 1,75 par coffre : 5,7 coffres pour 10 | 0,50 par coffre |
 | Argent | 5         | 3, 4, 5 | 2,92 par coffre : 3,4 coffres pour 10 | 0,83 par coffre |
-| Or     | 8         | 6, 7    | 4,67 par coffre : 2,1 coffres pour 10 | 1,33 par coffre |
+| Or     | 8         | 6 à 10  | 4,67 par coffre : 2,1 coffres pour 10 | 1,33 par coffre |
 
-- Premières victoires : 37 fragments au total sur les sept donjons (2 × 3 + 3 × 5 + 2 × 8).
+- Premières victoires : 61 fragments au total sur les dix donjons (2 × 3 + 3 × 5 + 5 × 8).
 - Rejeu : un coffre une fois sur deux, soit 11 rejeux de bronze, 7 d'argent ou 4 d'or en moyenne
   pour 10 fragments sur le héros ciblé.
-- Niveaux conseillés : 1, 4, 8, 12, 17, 22, 27. Le donjon 4 (niveau 12) demande la première étoile
+- Niveaux conseillés : 1, 4, 8, 12, 17, 22, 27, 28, 29, 30. Le donjon 4 (niveau 12) demande la première étoile
   (plafond 10 → 20) et le donjon 6 (niveau 22) la seconde (20 → 30), soit 30 fragments par héros
   de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
   `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
