@@ -7,7 +7,9 @@
     "sim": "tsx src/cli.ts",
     "check": "tsx src/cli.ts --check",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "tune": "tsx src/tune.ts",
+    "autotune": "tsx src/autotune.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

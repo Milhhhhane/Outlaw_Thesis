@@ -2,7 +2,7 @@ import type { Content, Dungeon } from '@outlaw/data';
 import { compileTeam, type HeroBuild } from '@outlaw/engine';
 import { randomBuild } from './builds';
 import { runDungeon } from './dungeons';
-import { lookahead } from './policy';
+import { average, lookahead } from './policy';
 import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
@@ -13,7 +13,9 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  *  - R2 : avec r2LevelGap niveaux de retard, le meilleur build termine le donjon pour plus de
  *    r2MinWinRate des équipes, pour chaque donjon où ce retard est possible.
  *  - Aucun héros indispensable : la meilleure équipe sans un héros donné reste à moins de
- *    dispensableMaxGapPoints points de la meilleure équipe (part des donjons terminés).
+ *    dispensableMaxGapPoints points de la meilleure équipe. Mesure : part des donjons terminés
+ *    avec r2LevelGap niveaux de retard, builds au hasard, joués par le joueur moyen (cette
+ *    mesure sépare les équipes, contrairement aux victoires au niveau conseillé, toutes à 100 %).
  * « Meilleur » et « pire » build : parmi `samples` builds tirés au hasard, classés par combats
  * gagnés dans le donjon puis par rapidité.
  */
@@ -65,6 +67,9 @@ function duel(content: Content, a: readonly HeroBuild[], b: readonly HeroBuild[]
   return runBattle(setup, content.balance, lookahead).result.winner === 'player';
 }
 
+/** Builds par équipe et par donjon pour la mesure « aucun héros indispensable ». */
+const TEAM_SAMPLES = 6;
+
 /** Taille du groupe de référence des duels de R1. */
 const REFERENCE = 4;
 
@@ -115,7 +120,7 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
   const duels: BattleOutcome[] = [];
   const r1Rows: ScenarioRow[] = [];
   const r2Rows: ScenarioRow[] = [];
-  // Score d'une équipe : donjons terminés au niveau conseillé et avec le retard de R2.
+  // Score d'une équipe : donjons terminés en retard, par le joueur moyen.
   const clears = new Map<string, number>();
   const tests = new Map<string, number>();
 
@@ -125,11 +130,7 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
     const r2: BattleOutcome[] = [];
     const local: BattleOutcome[] = [];
     all.forEach((team, t) => {
-      const best = rank(content, dungeon, team, level, samples, seed + 1000 * d + t)[0];
-      if (best === undefined) return;
       const key = team.join('+');
-      tests.set(key, (tests.get(key) ?? 0) + 1);
-      clears.set(key, (clears.get(key) ?? 0) + (best.cleared ? 1 : 0));
       // R1 : meilleur et pire build jugés au duel, contre un groupe de référence qu'ils ne
       // rencontrent qu'une fois classés ; puis ils s'affrontent dans les deux sens.
       const pair = duelExtremes(content, team, level, samples, seed + 3000 * d + t);
@@ -140,8 +141,18 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       if (behind >= 1) {
         const late = rank(content, dungeon, team, behind, samples, seed + 1000 * d + t + 500)[0];
         r2.push(outcome(late?.cleared === true));
-        tests.set(key, (tests.get(key) ?? 0) + 1);
-        clears.set(key, (clears.get(key) ?? 0) + (late?.cleared === true ? 1 : 0));
+        const rng = createRng(seed + 5000 * d + t);
+        for (let k = 0; k < TEAM_SAMPLES; k++) {
+          const builds = team.map((hero) => randomBuild(content, hero, behind, rng));
+          const run = runDungeon(
+            content,
+            dungeon.id,
+            builds,
+            average(seed + 7000 * d + 31 * t + k),
+          );
+          tests.set(key, (tests.get(key) ?? 0) + 1);
+          clears.set(key, (clears.get(key) ?? 0) + (run.cleared ? 1 : 0));
+        }
       }
     });
     if (r2.length > 0) r2Rows.push(summarize(`r2_${dungeon.id}`, r2));

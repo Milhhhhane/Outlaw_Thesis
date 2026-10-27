@@ -1,3 +1,4 @@
+import { createRng } from './rng';
 import {
   legalActions,
   step,
@@ -100,3 +101,25 @@ export const novice: Policy = (state) => {
   if (pick === undefined) throw new Error('aucune action possible');
   return pick;
 };
+
+/**
+ * Joueur moyen, déterministe par graine. Une décision sur quatre est sous-optimale (une autre
+ * action possible, au hasard). Les autres sont à anticipation limitée : la moitié suit la règle
+ * simple du glouton (le sort le plus cher payable sur l'ennemi le plus affaibli, sans regarder
+ * ce que l'adversaire prépare), l'autre moitié l'anticipation d'un coup de l'expert.
+ */
+export function average(seed: number): Policy {
+  const rng = createRng(seed);
+  return (state) => {
+    const roll = rng.next();
+    if (roll < 0.25) {
+      const best = lookahead(state);
+      const others = legalActions(state).filter(
+        (a) => a.spell !== best.spell || a.target !== best.target,
+      );
+      if (others.length > 0) return rng.pick(others);
+      return best;
+    }
+    return roll < 0.625 ? greedy(state) : lookahead(state);
+  };
+}

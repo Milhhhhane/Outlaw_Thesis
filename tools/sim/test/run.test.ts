@@ -31,7 +31,7 @@ describe('simulation', () => {
   it('le CSV est stable', () => {
     expect(toCsv(sprint0Scenarios(balance))).toBe(toCsv(rows));
     expect(toCsv([summarize('x', [])])).toBe(
-      'scenario,battles,wins,win_rate,avg_actions\nx,0,0,0.0000,0.00\n',
+      'scenario,battles,wins,win_rate,avg_actions,avg_player,min_player,max_player\nx,0,0,0.0000,0.00,0.00,0,0\n',
     );
   });
 

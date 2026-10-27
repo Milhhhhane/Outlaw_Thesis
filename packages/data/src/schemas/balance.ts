@@ -45,6 +45,12 @@ export const balanceSchema = z
       shieldCapPctMaxHp: pos,
     }),
 
+    /**
+     * Échelle globale des monstres, appliquée après la croissance par niveau : PV et ATK de tous
+     * les ennemis. Les héros ne sont pas touchés. Leviers de réglage du propriétaire.
+     */
+    enemyScale: z.strictObject({ hp: pos, atk: pos }),
+
     progression: z.strictObject({
       maxLevel: z.number().int().min(2),
       /** Croissance des stats brutes au niveau max, en fraction de la stat de niveau 1 (1 = +100 %). */
@@ -103,6 +109,19 @@ export const balanceSchema = z
       r2LevelGap: nonNegInt,
       /** Aucun héros indispensable : écart maximal, en points de taux de victoire. */
       dispensableMaxGapPoints: nonNeg,
+      /** Rythme : actions de joueur par combat (politique experte, niveau conseillé). */
+      pacing: z.strictObject({
+        normal: z.tuple([pos, pos]),
+        boss: z.tuple([pos, pos]),
+        /** Aucun combat expert ne finit en moins d'actions de joueur (sauf le tout premier). */
+        floor: pos,
+        firstFightFloor: pos,
+        firstDungeonMax: pos,
+        dungeonMax: pos,
+      }),
+      /** Part de donjons terminés au niveau conseillé, par politique (bornes incluses). */
+      expertWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
+      averageWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
     }),
   })
   .superRefine((b, ctx) => {

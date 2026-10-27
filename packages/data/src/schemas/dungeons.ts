@@ -22,6 +22,8 @@ export type DungeonModifier = z.infer<typeof dungeonModifierSchema>;
 export const encounterSchema = z.strictObject({
   /** Ennemis du combat, de gauche à droite : 1 à 3. */
   enemies: z.array(idSchema).min(1).max(3),
+  /** PV des ennemis de ce combat, en % (100 par défaut) : règle la durée combat par combat. */
+  hpPct: z.number().int().min(10).max(400).optional(),
 });
 export type Encounter = z.infer<typeof encounterSchema>;
 
