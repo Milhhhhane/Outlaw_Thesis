@@ -49,7 +49,11 @@ export function GameShell({ children }: { readonly children: ReactNode }) {
     <div className="shell">
       <div
         className="shell__screen"
-        style={{ width: VIEW_W, height: VIEW_H, transform: `scale(${scale})` }}
+        style={{
+          width: VIEW_W,
+          height: VIEW_H,
+          transform: `translate(-50%, -50%) scale(${scale})`,
+        }}
       >
         {children}
       </div>

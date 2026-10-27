@@ -435,17 +435,33 @@ def world_map():
             c.put(x, y, '#3a2a2c' if c.dith(x, y, n * 0.6) else '#2e2026')
 
     def region(cx, cy, rx, ry, cols, seed, edge):
+        """Région aux contours irréguliers mais lisses, bord net et ombre portée."""
         r2 = random.Random(seed)
-        bumps = [r2.uniform(0.75, 1.15) for _ in range(12)]
-        for y in range(max(0, cy - ry - 4), min(H, cy + ry + 5)):
-            for x in range(max(0, cx - rx - 4), min(W, cx + rx + 5)):
+        n = 24
+        bumps = [r2.uniform(0.82, 1.12) for _ in range(n)]
+
+        def radius(a):
+            f = (a + math.pi) / (2 * math.pi) * n
+            i = int(f) % n
+            t = f - int(f)
+            return bumps[i] * (1 - t) + bumps[(i + 1) % n] * t
+
+        inside = set()
+        for y in range(max(0, cy - ry - 6), min(H, cy + ry + 7)):
+            for x in range(max(0, cx - rx - 6), min(W, cx + rx + 7)):
                 a = math.atan2(y - cy, x - cx)
-                k = bumps[int((a + math.pi) / (2 * math.pi) * 12) % 12]
-                d = math.hypot((x - cx) / (rx * k), (y - cy) / (ry * k))
-                if d < 1:
-                    c.put(x, y, cols[0] if c.dith(x, y, 1 - d) else cols[1])
-                    if d > 0.93:
-                        c.put(x, y, edge)
+                k = radius(a)
+                if math.hypot((x - cx) / (rx * k), (y - cy) / (ry * k)) < 1:
+                    inside.add((x, y))
+        for x, y in inside:  # ombre
+            if (x, y + 2) not in inside:
+                c.put(x, y + 2, '#1c1218')
+        for x, y in inside:
+            d = math.hypot((x - cx) / rx, (y - cy) / ry)
+            c.put(x, y, cols[0] if c.dith(x, y, 1.15 - d) else cols[1])
+        for x, y in inside:
+            if any((x + dx, y + dy) not in inside for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                c.put(x, y, edge)
 
     region(46, 140, 52, 34, ('#7a4a34', '#5e3a2e'), 1, '#a86a44')      # désert
     region(104, 122, 26, 16, ('#2a5a80', '#1e4466'), 2, '#6ac0e0')     # lac

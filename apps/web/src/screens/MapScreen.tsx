@@ -2,6 +2,7 @@ import { dungeonOpen, lootRates } from '@outlaw/engine';
 import { useState } from 'react';
 import { backgroundUrl } from '../art';
 import { MAP_NODES } from '../art/sprites';
+import { Portrait } from '../combat/InitiativeTrack';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { Button, Icon, Panel, Screen } from '../game/ui';
@@ -43,54 +44,72 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
       className="map"
     >
       <div className="map__layout">
-        <div
-          className="map__board"
-          style={{
-            width: 320 * MAP_SCALE,
-            height: 180 * MAP_SCALE,
-            backgroundImage: `url(${backgroundUrl('world_map')})`,
-          }}
-        >
-          <ol className="map__nodes">
-            {content.dungeons.map((d, index) => {
-              const [x, y] = MAP_NODES[d.id] ?? [0, 0];
-              const state = status(d.id);
-              return (
-                <li
-                  key={d.id}
-                  className="map__node-wrap"
-                  style={{ left: x * MAP_SCALE, top: y * MAP_SCALE }}
-                >
-                  <button
-                    type="button"
-                    className={[
-                      'map__node',
-                      `map__node--${state}`,
-                      d.id === next ? 'map__node--next' : '',
-                      d.id === selected ? 'map__node--on' : '',
-                      `element-${d.element === 'mixed' ? 'mixed' : d.element}`,
-                    ].join(' ')}
-                    aria-pressed={d.id === selected}
-                    aria-label={`${t('map.step', { n: index + 1 })} : ${names.dungeon(d.id)}, ${tk(`map.${state === 'open' ? 'next' : state}`)}`}
-                    onClick={() => {
-                      setSelected(d.id);
-                    }}
+        <div className="map__left">
+          <div
+            className="map__board"
+            style={{
+              width: 320 * MAP_SCALE,
+              height: 180 * MAP_SCALE,
+              backgroundImage: `url(${backgroundUrl('world_map')})`,
+            }}
+          >
+            <ol className="map__nodes">
+              {content.dungeons.map((d, index) => {
+                const [x, y] = MAP_NODES[d.id] ?? [0, 0];
+                const state = status(d.id);
+                return (
+                  <li
+                    key={d.id}
+                    className="map__node-wrap"
+                    style={{ left: x * MAP_SCALE, top: y * MAP_SCALE }}
                   >
-                    {state === 'locked' ? (
-                      <Icon name="lock" />
-                    ) : state === 'cleared' ? (
-                      <Icon name="check" />
-                    ) : (
-                      <span>{index + 1}</span>
-                    )}
-                  </button>
-                  <span className="map__label" aria-hidden="true">
-                    {names.dungeon(d.id)}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
+                    <button
+                      type="button"
+                      className={[
+                        'map__node',
+                        `map__node--${state}`,
+                        d.id === next ? 'map__node--next' : '',
+                        d.id === selected ? 'map__node--on' : '',
+                        `element-${d.element === 'mixed' ? 'mixed' : d.element}`,
+                      ].join(' ')}
+                      aria-pressed={d.id === selected}
+                      aria-label={`${t('map.step', { n: index + 1 })} : ${names.dungeon(d.id)}, ${tk(`map.${state === 'open' ? 'next' : state}`)}`}
+                      onClick={() => {
+                        setSelected(d.id);
+                      }}
+                    >
+                      {state === 'locked' ? (
+                        <Icon name="lock" />
+                      ) : state === 'cleared' ? (
+                        <Icon name="check" />
+                      ) : (
+                        <span>{index + 1}</span>
+                      )}
+                    </button>
+                    <span className="map__label" aria-hidden="true">
+                      {names.dungeon(d.id)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <p className="map__legend" aria-hidden="true">
+            <span className="map__key map__key--open">1</span> {t('map.next')}
+            <span className="map__key map__key--cleared">
+              <Icon name="check" />
+            </span>{' '}
+            {t('map.cleared')}
+            <span className="map__key map__key--locked">
+              <Icon name="lock" />
+            </span>{' '}
+            {t('map.locked')}
+            <span className="map__team">
+              {profile.team.map((id) => (
+                <Portrait key={id} kind={id} size={32} />
+              ))}
+            </span>
+          </p>
         </div>
 
         {dungeon !== undefined && (
@@ -99,40 +118,42 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
               className="map__thumb"
               style={{ backgroundImage: `url(${backgroundUrl(dungeon.id)})` }}
             />
-            <h2 className="detail__title">{names.dungeon(dungeon.id)}</h2>
-            <p className="map__level">
-              {t('hub.dungeon.recommended', { level: dungeon.recommendedLevel })}
-              {teamLevel > 0 && (
-                <span className={teamLevel >= dungeon.recommendedLevel ? 'ok' : 'warn'}>
-                  {' '}
-                  · {t('map.teamLevel', { level: teamLevel })}
-                </span>
-              )}
-            </p>
-            <p className="map__text">{names.dungeonText(dungeon.id)}</p>
-            <p className="map__modifier">
-              <strong>{names.passive(dungeon.modifier.id)}</strong>{' '}
-              {dungeon.modifier.rules
-                .map((rule) =>
-                  t('hub.dungeon.modifier', {
-                    side: tk(`hub.dungeon.side.${rule.appliesTo}`),
-                    text: lowerFirst(describeTrigger(rule.trigger)),
-                  }),
-                )
-                .join(' ')}
-            </p>
-            <p className="map__loot">
-              <span className="hint">{t('map.loot')} : </span>
-              {lootRates(dungeon)
-                .slice(0, 4)
-                .map((rate) => `${names.item(rate.item)} ${Math.round(rate.pct)} %`)
-                .join(', ')}
-            </p>
-            <p className="hint">
-              {(profile.dungeons[dungeon.id]?.clears ?? 0) > 0
-                ? t('hub.dungeon.clears', { count: profile.dungeons[dungeon.id]?.clears ?? 0 })
-                : t('hub.dungeon.new')}
-            </p>
+            <div className="map__info">
+              <h2 className="detail__title">{names.dungeon(dungeon.id)}</h2>
+              <p className="map__level">
+                {t('hub.dungeon.recommended', { level: dungeon.recommendedLevel })}
+                {teamLevel > 0 && (
+                  <span className={teamLevel >= dungeon.recommendedLevel ? 'ok' : 'warn'}>
+                    {' '}
+                    · {t('map.teamLevel', { level: teamLevel })}
+                  </span>
+                )}
+              </p>
+              <p className="map__text">{names.dungeonText(dungeon.id)}</p>
+              <p className="map__modifier">
+                <strong>{names.passive(dungeon.modifier.id)}</strong>{' '}
+                {dungeon.modifier.rules
+                  .map((rule) =>
+                    t('hub.dungeon.modifier', {
+                      side: tk(`hub.dungeon.side.${rule.appliesTo}`),
+                      text: lowerFirst(describeTrigger(rule.trigger)),
+                    }),
+                  )
+                  .join(' ')}
+              </p>
+              <p className="map__loot">
+                <span className="hint">{t('map.loot')} : </span>
+                {lootRates(dungeon)
+                  .slice(0, 4)
+                  .map((rate) => `${names.item(rate.item)} ${Math.round(rate.pct)} %`)
+                  .join(', ')}
+              </p>
+              <p className="hint">
+                {(profile.dungeons[dungeon.id]?.clears ?? 0) > 0
+                  ? t('hub.dungeon.clears', { count: profile.dungeons[dungeon.id]?.clears ?? 0 })
+                  : t('hub.dungeon.new')}
+              </p>
+            </div>
             {status(dungeon.id) === 'locked' ? (
               <p className="map__locked">
                 <Icon name="lock" /> {t('hub.dungeon.locked')}

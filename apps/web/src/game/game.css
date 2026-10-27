@@ -68,8 +68,9 @@ button:disabled {
 }
 
 .shell__screen {
-  position: relative;
-  flex: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   overflow: hidden;
   transform-origin: center;
   background: var(--ink);
@@ -1071,14 +1072,21 @@ button:disabled {
 
 .map__panel {
   display: grid;
-  gap: 4px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 6px;
+  height: 100%;
+}
+
+.map__info {
+  display: grid;
   align-content: start;
-  max-height: 100%;
-  overflow: auto;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .map__thumb {
-  height: 96px;
+  height: 64px;
   background-size: cover;
   background-position: center 70%;
   image-rendering: pixelated;
@@ -1089,7 +1097,8 @@ button:disabled {
 .map__modifier,
 .map__loot {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.25;
 }
 
 .map__level .ok {
@@ -1639,4 +1648,46 @@ button:disabled {
   margin: 0 0 8px;
   padding: 0;
   list-style: none;
+}
+
+.map__left {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.map__legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: 13px;
+}
+
+.map__key {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  border: 3px solid #07050a;
+  background: var(--fire);
+  color: #07050a;
+  font-size: 12px;
+}
+
+.map__key--cleared {
+  background: var(--gold);
+}
+
+.map__key--locked {
+  background: #3a3040;
+  color: #8a7a90;
+}
+
+.map__team {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
