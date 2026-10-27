@@ -11,6 +11,7 @@ import { describeItem } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { ChestArt } from './Chests';
+import { Glossed } from '../game/Glossed';
 
 function Card({
   index,
@@ -83,7 +84,9 @@ export function Rewards({
             <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
             <ul className="reward-card__lines">
               {describeItem(item).map((line, i) => (
-                <li key={i}>{line}</li>
+                <li key={i}>
+                  <Glossed text={line} />
+                </li>
               ))}
             </ul>
             {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}

@@ -532,3 +532,19 @@ des multiplicateurs.
 **Le premier donjon ne se durcit jamais** — Choix : `tunecurve` laisse le premier donjon au-dessus
 de sa cible (85 %) ; quatre attaques de base doivent suffire. Raison : la prise en main ne se
 règle pas par un taux de réussite moyen.
+
+## Lot 14 — lisibilité
+
+**Deux polices, deux rôles** — Contexte : tout était en Pixelify Sans, illisible à 12–13 px une
+fois mis à l'échelle. Choix : Atkinson Hyperlegible (OFL, dessinée pour la lisibilité) pour le
+texte courant, la police pixel gardée pour les titres, boutons et chiffres. Raison : l'identité
+pixel tient aux gros éléments ; une description se lit, elle ne se regarde pas. Écarté : les
+polices système (métriques différentes selon l'appareil, donc mises en page non reproductibles
+en test).
+
+**Un lexique au survol plutôt que des descriptions plus longues** — Choix : les descriptions
+restent générées et courtes ; les mots de règle deviennent des termes (boutons en ligne) dont
+l'explication s'affiche dans une bulle unique posée dans l'écran logique. Raison : une phrase
+complète par effet ne tiendrait pas dans les cartes ; le joueur qui connaît le terme n'est pas
+ralenti, celui qui ne le connaît pas a la règle exacte (formules de `docs/BALANCE.md`), sans
+« title » natif (lent, absent au toucher).

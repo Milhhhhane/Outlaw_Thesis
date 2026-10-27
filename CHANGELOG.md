@@ -2,6 +2,23 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-14] — 2026-10-27 — texte lisible et lexique
+
+### Ajouté
+
+- Lexique survolable : dans les descriptions de sorts, talents, objets, passifs et modificateurs
+  de donjon, chaque terme de règle (Avance, Retarde, Délai, Coût, Brûlure, Marque, Étourdi,
+  Bouclier, ATK, DEF, VIT, PV, durées, éléments) explique ce qu'il fait au survol, au clavier
+  (Tab) et au toucher. Textes dans `glossary.*`, motifs dans `game/Glossed.tsx`.
+
+### Modifié
+
+- Texte courant en Atkinson Hyperlegible (OFL) : descriptions, aides, journal, cartes ; la
+  police pixel reste pour les titres, les boutons et les chiffres. +42 Ko de polices.
+- Barre d'initiative : à huit unités, portrait et délai seulement, le nom au survol et pour
+  l'unité qui joue ; bouton « Passer ».
+- Le test de bout en bout des récompenses joue en Auto (le clic naïf perdait parfois à quatre).
+
 ## [lot-13] — 2026-10-27 — équipes de quatre
 
 ### Modifié

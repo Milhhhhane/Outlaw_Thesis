@@ -27,6 +27,7 @@ import { describeItem, describeNode, describeSpell, describeTrigger } from '../i
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
+import { Glossed } from '../game/Glossed';
 
 type Tab = 'stats' | 'talents' | 'items';
 
@@ -280,7 +281,9 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
             </h3>
             <ul className="effects">
               {describeNode(node, def).map((line, i) => (
-                <li key={i}>{line}</li>
+                <li key={i}>
+                  <Glossed text={line} />
+                </li>
               ))}
             </ul>
             {node.requires !== undefined && (
@@ -389,7 +392,9 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
             {item !== undefined && (
               <ul className="effects">
                 {describeItem(item).map((line, i) => (
-                  <li key={i}>{line}</li>
+                  <li key={i}>
+                    <Glossed text={line} />
+                  </li>
                 ))}
               </ul>
             )}
@@ -576,7 +581,7 @@ export function HeroSheet({
                     <div key={stat}>
                       <dt>
                         <Icon name={STAT_ICON[stat]} size={12} />
-                        {tk(`stat.${stat}`)}
+                        <Glossed text={tk(`stat.${stat}`)} />
                       </dt>
                       <dd>{unit.stats[stat]}</dd>
                     </div>
@@ -590,15 +595,19 @@ export function HeroSheet({
                         {names.spell(spell.id)}
                       </p>
                       <p className="spell-card__meta">
-                        {spell.cost > 0
-                          ? t('combat.spell.cost', { cost: spell.cost })
-                          : t('combat.spell.gain', { gain: spell.gain })}{' '}
-                        · {t('combat.spell.delay', { delay: spell.delay })} ·{' '}
-                        {tk(`combat.target.${spell.targeting}`)}
+                        <Glossed
+                          text={`${
+                            spell.cost > 0
+                              ? t('combat.spell.cost', { cost: spell.cost })
+                              : t('combat.spell.gain', { gain: spell.gain })
+                          } · ${t('combat.spell.delay', { delay: spell.delay })} · ${tk(`combat.target.${spell.targeting}`)}`}
+                        />
                       </p>
                       <ul>
                         {describeSpell(spell).map((line, j) => (
-                          <li key={j}>{line}</li>
+                          <li key={j}>
+                            <Glossed text={line} />
+                          </li>
                         ))}
                       </ul>
                     </li>
@@ -610,7 +619,9 @@ export function HeroSheet({
                   </p>
                   <ul>
                     {unit.triggers.map((resolved, i) => (
-                      <li key={i}>{describeTrigger(resolved.trigger)}</li>
+                      <li key={i}>
+                        <Glossed text={describeTrigger(resolved.trigger)} />
+                      </li>
                     ))}
                   </ul>
                 </div>

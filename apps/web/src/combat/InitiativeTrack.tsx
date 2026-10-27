@@ -50,8 +50,9 @@ export function InitiativeTrack({ state }: { readonly state: BattleState }) {
                 `element-${def?.element ?? 'fire'}`,
                 index === 0 ? 'track__entry--now' : '',
               ].join(' ')}
+              title={def ? names.unit(def.kind) : entry.unit}
             >
-              {def !== undefined && <Portrait kind={def.kind} size={30} />}
+              {def !== undefined && <Portrait kind={def.kind} size={index === 0 ? 30 : 24} />}
               <span className="track__text">
                 <span className="track__name">{def ? names.unit(def.kind) : entry.unit}</span>
                 <span className="track__time">

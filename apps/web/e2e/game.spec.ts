@@ -244,8 +244,10 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await page.getByRole('button', { name: /^Donjons/ }).click();
   await page.getByRole('button', { name: /Préparer/ }).click();
   await page.getByRole('button', { name: /^Partir/ }).click();
+  // Auto joue correctement ; le clic « dernier sort, première cible » perd parfois à quatre.
+  await page.getByRole('button', { name: 'Auto', exact: true }).click();
   for (let room = 1; room <= 3; room++) {
-    await fight(page, false);
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
     await page.locator('.outcome button').first().click();
     if (!(await page.locator('.battle').isVisible())) break;
   }

@@ -10,6 +10,7 @@ import { Button, Icon, Panel, Screen } from '../game/ui';
 import { describeTrigger } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
+import { Glossed } from '../game/Glossed';
 
 /** Agrandissement de la carte (320 × 180 natifs par chapitre). */
 const MAP_SCALE = 2;
@@ -209,14 +210,16 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
               <p className="map__text">{names.dungeonText(dungeon.id)}</p>
               <p className="map__modifier">
                 <strong>{names.passive(dungeon.modifier.id)}</strong>{' '}
-                {dungeon.modifier.rules
-                  .map((rule) =>
-                    t('hub.dungeon.modifier', {
-                      side: tk(`hub.dungeon.side.${rule.appliesTo}`),
-                      text: lowerFirst(describeTrigger(rule.trigger)),
-                    }),
-                  )
-                  .join(' ')}
+                <Glossed
+                  text={dungeon.modifier.rules
+                    .map((rule) =>
+                      t('hub.dungeon.modifier', {
+                        side: tk(`hub.dungeon.side.${rule.appliesTo}`),
+                        text: lowerFirst(describeTrigger(rule.trigger)),
+                      }),
+                    )
+                    .join(' ')}
+                />
               </p>
               <p className="map__loot">
                 <span className="hint">{t('map.loot')} : </span>
