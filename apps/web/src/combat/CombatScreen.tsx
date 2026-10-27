@@ -375,11 +375,6 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         >
           {t('combat.auto')}
         </Button>
-        {busy && (
-          <Button variant="ghost" size="small" icon="speed" onClick={skip}>
-            {t('combat.skip')}
-          </Button>
-        )}
       </header>
 
       <section className="battle__units" aria-label={t('combat.units')}>
