@@ -10,3 +10,4 @@ Thumbs.db
 tools/sim/out/
 playwright-report/
 test-results/
+__pycache__/
