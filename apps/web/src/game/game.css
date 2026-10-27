@@ -502,9 +502,10 @@ button:disabled {
 }
 
 .title__tagline {
-  margin: 0 0 8px;
-  color: var(--bone);
+  margin: 0 0 10px;
+  color: var(--gold);
   font-size: 17px;
+  letter-spacing: 0.5px;
   text-shadow: 0 2px 0 #07050a;
 }
 
