@@ -1315,18 +1315,31 @@ button:disabled {
   color: var(--bone);
 }
 
+/* Titre, phrase, cartes, bouton : le bouton de sortie reste toujours à l'écran (les cartes
+   défilent si elles ne tenaient pas). L'objet occupe deux rangées à gauche, les autres cartes sont
+   en grille à droite. */
 .end--rewards {
-  align-content: start;
-  padding-top: 28px;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: 6px;
+  padding-block: 12px;
+}
+
+.end--rewards .end__title {
+  font-size: 32px;
 }
 
 .reward-cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 230px repeat(4, 150px);
+  grid-template-rows: auto auto;
+  align-content: start;
   justify-content: center;
   gap: 10px;
-  margin: 8px 0;
+  min-height: 0;
+  margin: 0;
   padding: 0;
+  overflow-y: auto;
   list-style: none;
 }
 
@@ -1335,8 +1348,6 @@ button:disabled {
   justify-items: center;
   align-content: start;
   gap: 4px;
-  width: 150px;
-  min-height: 190px;
   padding: 6px;
   border: 8px solid transparent;
   border-image: var(--frame) 4 fill / 8px / 0 stretch;
@@ -1346,7 +1357,7 @@ button:disabled {
 }
 
 .reward-card--item {
-  width: 230px;
+  grid-row: span 2;
 }
 
 .reward-card--rare,
@@ -1392,7 +1403,11 @@ button:disabled {
 }
 
 .reward-card__sprite {
-  height: 64px;
+  height: 56px;
+}
+
+.reward-card--unlock .reward-card__big {
+  font-size: 16px;
 }
 
 @keyframes card-in {

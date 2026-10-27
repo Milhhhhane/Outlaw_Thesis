@@ -95,7 +95,6 @@ export function Rewards({
             <h2 className="reward-card__name">
               {t('reward.chest', { tier: tk(`chest.tier.${report.chest}`) })}
             </h2>
-            <p className="hint">{t('reward.chest.hint')}</p>
             <Button
               size="small"
               variant="quiet"

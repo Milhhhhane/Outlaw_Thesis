@@ -186,3 +186,57 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   ).toBeDisabled();
   await noScroll(page);
 });
+
+test('récompenses : le bouton de sortie et toutes les cartes restent à l’écran', async ({
+  page,
+}) => {
+  test.skip(portrait(page), 'portrait');
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  // Pire cas : première victoire du donjon 2 = objet, coffre, nouveau héros, trois XP, or, matériaux.
+  const profile = {
+    ...base,
+    dungeons: { ember_wastes: { clears: 1 } },
+    heroes: Object.fromEntries(
+      Object.entries(base.heroes).map(([id, hero]) => [id, { ...hero, level: 30, xp: 0 }]),
+    ),
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await page.getByRole('button', { name: /^Partir/ }).click();
+  for (let room = 1; room <= 3; room++) {
+    await fight(page, false);
+    await page.locator('.outcome button').first().click();
+    if (!(await page.locator('.battle').isVisible())) break;
+  }
+  await expect(page.locator('.reward-card')).toHaveCount(8);
+  await page.waitForTimeout(1500); // fin de l'animation d'entrée des cartes
+  await inView(page, '.end__go');
+  await inView(page, '.reward-cards');
+  await noScroll(page);
+  const clipped = await page.evaluate(
+    () =>
+      Array.from(document.querySelectorAll('.reward-card')).filter(
+        (card) =>
+          card.scrollHeight > card.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1,
+      ).length,
+  );
+  expect(clipped).toBe(0);
+  const list = await page.evaluate(() => {
+    const el = document.querySelector('.reward-cards');
+    return el === null ? 0 : el.scrollHeight - el.clientHeight;
+  });
+  expect(list).toBeLessThanOrEqual(1);
+  await page.getByRole('button', { name: 'Retour au camp' }).click();
+  await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
+});
