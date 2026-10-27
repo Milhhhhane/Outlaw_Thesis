@@ -1630,7 +1630,7 @@ button:disabled {
 .tree__board {
   position: relative;
   width: 144px;
-  height: 200px;
+  height: 210px;
   margin-top: 6px;
 }
 
@@ -1666,11 +1666,11 @@ button:disabled {
   position: absolute;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   transform: translate(-50%, -50%);
-  border: 4px solid #3a2e46;
+  border: 3px solid #3a2e46;
   background: #1a1420;
   color: #6a5a74;
   transition: transform 80ms steps(2, end);

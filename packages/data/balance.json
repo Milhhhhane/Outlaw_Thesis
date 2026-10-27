@@ -37,7 +37,7 @@
     "shieldCapPctMaxHp": 60
   },
   "enemyScale": {
-    "hp": 0.55,
+    "hp": 0.58,
     "atk": 1.85
   },
   "progression": {
@@ -54,8 +54,8 @@
         "def": 0.42
       }
     },
-    "talentPointLevels": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30],
-    "pageUnlockLevels": [1, 10, 20],
+    "talentPointLevels": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28],
+    "pageUnlockLevels": [1, 1, 1],
     "restXpRate": 0.5,
     "xp": {
       "base": 40,

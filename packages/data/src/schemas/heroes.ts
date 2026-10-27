@@ -121,14 +121,15 @@ export const talentNodeSchema = z.strictObject({
 });
 export type TalentNode = z.infer<typeof talentNodeSchema>;
 
-export const NODES_PER_PAGE = 5;
+/** Nombre de nœuds d'une page : entre 5 (minimum historique) et 9. */
+export const NODES_PER_PAGE = { min: 5, max: 9 } as const;
 export const PAGES_PER_HERO = 3;
 
-/** Une page de talents : 5 nœuds, une thèse (le texte de la thèse vit dans i18n). */
+/** Une page de talents : 5 à 9 nœuds, une thèse (le texte de la thèse vit dans i18n). */
 export const talentPageSchema = z
   .strictObject({
     id: idSchema,
-    nodes: z.array(talentNodeSchema).length(NODES_PER_PAGE),
+    nodes: z.array(talentNodeSchema).min(NODES_PER_PAGE.min).max(NODES_PER_PAGE.max),
   })
   .superRefine((page, ctx) => {
     const ids = new Set(page.nodes.map((n) => n.id));

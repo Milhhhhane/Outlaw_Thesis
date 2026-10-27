@@ -157,6 +157,61 @@
               }
             }
           ]
+        },
+        {
+          "id": "pyra_exe_mark",
+          "requires": "pyra_exe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 15
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "pyra_exe_volley",
+          "requires": "pyra_exe_mark",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "damage",
+                "power": 45
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "pyra_exe_judgment",
+          "requires": "pyra_exe_refund",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -222,6 +277,49 @@
               "type": "delay",
               "slot": "ult",
               "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "pyra_tempo_spark",
+          "requires": "pyra_tempo_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
+            }
+          ]
+        },
+        {
+          "id": "pyra_tempo_chain",
+          "requires": "pyra_tempo_spark",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "pyra_tempo_overdrive",
+          "requires": "pyra_tempo_rush",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -40
+              }
             }
           ]
         }
@@ -298,6 +396,68 @@
                 "status": "mark",
                 "duration": 2
               }
+            }
+          ]
+        },
+        {
+          "id": "pyra_embers_tinder",
+          "requires": "pyra_embers_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "status",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "pyra_embers_ashfall",
+          "requires": "pyra_embers_tinder",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "target": "all_enemies",
+                "duration": 1,
+                "power": 20
+              }
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "pyra_embers_inferno",
+          "requires": "pyra_embers_brand",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -10
             }
           ]
         }

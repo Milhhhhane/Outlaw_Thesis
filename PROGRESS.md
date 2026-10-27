@@ -38,6 +38,8 @@
 - Lot 9 — Grosse amélioration graphique : menus habillés (cadres bois, fond, socles), combat
   avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
   avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
+- Lot 10 — Talents : 8 nœuds par page, 14 points, trois spécialisations ouvertes dès le départ ;
+  rééquilibrage mesuré par la simulation (docs/BALANCE.md).
 
 ## Reste à faire (hors code)
 

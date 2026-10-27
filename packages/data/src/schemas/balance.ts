@@ -140,7 +140,7 @@ export const balanceSchema = z
       });
     }
     const unlocks = b.progression.pageUnlockLevels;
-    const ascending = unlocks.every((level, i) => i === 0 || level > (unlocks[i - 1] ?? 0));
+    const ascending = unlocks.every((level, i) => i === 0 || level >= (unlocks[i - 1] ?? 0));
     if (!ascending || unlocks.some((level) => level > b.progression.maxLevel)) {
       ctx.addIssue({
         code: 'custom',

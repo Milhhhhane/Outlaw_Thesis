@@ -2,7 +2,7 @@ import type { ZodType } from 'zod';
 import { balanceSchema, type Balance } from './schemas/balance';
 import { dungeonSchema, type Dungeon } from './schemas/dungeons';
 import { enemySchema, type Enemy } from './schemas/enemies';
-import { NODES_PER_PAGE, PAGES_PER_HERO, heroSchema, type Hero } from './schemas/heroes';
+import { heroSchema, type Hero } from './schemas/heroes';
 import { itemSchema, type Item } from './schemas/items';
 
 export interface RawContent {
@@ -115,10 +115,15 @@ export function parseContent(raw: RawContent): Content {
     if (enemy.passive) claim(enemy.passive.id, `l’ennemi ${enemy.id}`);
   }
 
-  if (balance.progression.talentPointLevels.length >= NODES_PER_PAGE * PAGES_PER_HERO) {
-    issues.push(
-      'balance : il doit y avoir moins de points de talent que de nœuds (sinon plus de build)',
-    );
+  // Un héros doit toujours laisser des nœuds de côté : sinon il n'y a plus de build à choisir.
+  const points = balance.progression.talentPointLevels.length;
+  for (const hero of heroes) {
+    const nodes = hero.pages.reduce((n, page) => n + page.nodes.length, 0);
+    if (points >= nodes) {
+      issues.push(
+        `balance : ${hero.id} n'a que ${String(nodes)} nœuds pour ${String(points)} points de talent (il en faut moins de points que de nœuds, sinon plus de build)`,
+      );
+    }
   }
 
   for (const item of items) {

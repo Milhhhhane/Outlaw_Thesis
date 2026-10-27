@@ -185,6 +185,62 @@
               }
             }
           ]
+        },
+        {
+          "id": "cendre_haze_smolder",
+          "requires": "cendre_haze_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_fog",
+          "requires": "cendre_haze_smolder",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "cendre_haze_eclipse",
+          "requires": "cendre_haze_shroud",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 35
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -257,6 +313,57 @@
               "mulPct": 90
             }
           ]
+        },
+        {
+          "id": "cendre_slow_kindle",
+          "requires": "cendre_slow_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_scorch",
+          "requires": "cendre_slow_kindle",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "cendre_slow_firestorm",
+          "requires": "cendre_slow_pyre",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -327,6 +434,58 @@
                 "kind": "tempo",
                 "amount": 30
               }
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_skip",
+          "requires": "cendre_beat_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_lag",
+          "requires": "cendre_beat_skip",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "cendre_beat_freeze",
+          "requires": "cendre_beat_stall",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
             }
           ]
         }

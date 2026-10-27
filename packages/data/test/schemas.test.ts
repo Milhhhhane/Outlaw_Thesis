@@ -400,10 +400,10 @@ describe('parseContent : références croisées', () => {
   it('exige moins de points de talent que de nœuds', () => {
     expectIssue((raw) => {
       (raw.balance as typeof balanceJson).progression.talentPointLevels = Array.from(
-        { length: 15 },
+        { length: 20 },
         (_, i) => i + 1,
       );
-    }, 'moins de points de talent');
+    }, 'moins de points que de nœuds');
   });
 
   it('remonte les erreurs de schéma avec le chemin fautif', () => {

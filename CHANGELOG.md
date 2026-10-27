@@ -2,6 +2,17 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-10] — 2026-10-27 — arbres de talents plus riches
+
+### Modifié
+
+- Trois spécialisations ouvertes dès le niveau 1 ; 8 nœuds par page (24 par héros) au lieu de 5,
+  14 points de talent au lieu de 10 (un tous les deux niveaux). Nouveaux nœuds : compromis
+  (puissance contre coût ou délai, zone contre puissance) et un sommet par page.
+- Équilibrage : PV des monstres × 0,58, `hpPct` retouchés, premier combat du Carrefour brisé
+  recomposé ; expert 87 %, joueur moyen 42 %, R1 90 %, R2 85 % (`docs/BALANCE.md`).
+- Arbres dessinés par profondeur de prérequis (quatre rangées).
+
 ## [lot-9] — 2026-10-27 — grosse amélioration graphique
 
 ### Modifié

@@ -299,8 +299,8 @@ describe('mode test', () => {
         items: [],
       },
     ]);
-    sandbox = value(setLevel(content, sandbox, 'pyra', 4));
-    expect(sandbox.heroes.pyra).toMatchObject({ level: 4, talents: ['pyra_exe_core'] });
+    sandbox = value(setLevel(content, sandbox, 'pyra', 2));
+    expect(sandbox.heroes.pyra).toMatchObject({ level: 2, talents: ['pyra_exe_core'] });
     expect(value(setLevel(content, sandbox, 'pyra', 99)).heroes.pyra?.level).toBe(30);
     expect(setLevel(content, sandbox, 'ghost', 3)).toEqual({ ok: false, reason: 'unknown_hero' });
     expect(setLevel(content, newProfile(content), 'pyra', 3)).toEqual({
