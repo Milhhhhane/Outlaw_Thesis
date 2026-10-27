@@ -1,12 +1,16 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
+  atStarGate,
   compileHero,
   equip,
   heroBuild,
+  heroStars,
   respec,
   respecCost,
   setLevel,
   setUpgrade,
+  starCost,
+  starUp,
   takeTalent,
   talentPoints,
   unlockedPages,
@@ -489,6 +493,9 @@ export function HeroSheet({
   const free = talentPoints(hero.level, balance) - hero.talents.length;
   const maxed = hero.level >= balance.progression.maxLevel;
   const next = xpToNext(hero.level, content);
+  const gate = atStarGate(hero, content);
+  const gateCost = starCost(content, hero);
+  const fragments = profile.fragments[heroId] ?? 0;
 
   return (
     <Screen title={names.hero(heroId)} onBack={onBack} className={`sheet element-${def.element}`}>
@@ -511,6 +518,27 @@ export function HeroSheet({
             </span>
           ) : (
             <span className="hint">{t('hero.xp.max')}</span>
+          )}
+          <p className="hint">
+            {t('hero.stars', {
+              n: heroStars(hero, content),
+              max: balance.chests.starCosts.length,
+            })}
+          </p>
+          {gate && gateCost !== null && !profile.testMode && (
+            <div className="sheet__gate">
+              <p>{t('hero.gate', { level: hero.level })}</p>
+              <Button
+                size="small"
+                disabled={fragments < gateCost}
+                onClick={() => {
+                  apply(starUp(content, profile, heroId));
+                }}
+              >
+                {t('hero.gate.buy')}
+              </Button>
+              <p className="hint">{t('hero.gate.count', { have: fragments, cost: gateCost })}</p>
+            </div>
           )}
           <p className="sheet__thesis">{names.heroThesis(heroId)}</p>
           {profile.testMode && (

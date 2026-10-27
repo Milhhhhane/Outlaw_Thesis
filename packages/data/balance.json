@@ -42,6 +42,7 @@
   },
   "progression": {
     "maxLevel": 30,
+    "levelsPerStar": 10,
     "growth": {
       "hero": {
         "hp": 0.72,
@@ -107,6 +108,17 @@
         "rare": { "tier": 2, "amount": 4 }
       }
     }
+  },
+  "chests": {
+    "summonCost": 10,
+    "starCosts": [10, 20],
+    "focusRate": 0.5,
+    "replayChestRate": 0.5,
+    "tiers": [
+      { "id": "bronze", "fragments": 3 },
+      { "id": "silver", "fragments": 5 },
+      { "id": "gold", "fragments": 8 }
+    ]
   },
   "energy": {
     "costPerDungeon": 0,

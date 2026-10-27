@@ -332,7 +332,7 @@
   "team.go": "Partir : {dungeon}",
   "team.for": "Pour {dungeon}",
   "heroes.title": "Héros",
-  "heroes.locked": "Se débloque en terminant un donjon",
+  "heroes.locked": "Se débloque en terminant un donjon, ou avec {n} fragments",
   "heroes.points": "{n} point(s) de talent",
   "workshop.title": "Atelier",
   "workshop.empty": "Aucun objet pour l'instant : terminez un donjon pour en obtenir un.",

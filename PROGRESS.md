@@ -46,6 +46,11 @@
   butin en liste avec poids par rareté, rare au premier passage, doublons démontés ; liste de
   contrôle « Ajouter un donjon » dans `docs/CONTENT.md`.
 
+- Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
+  invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,
+  écran « Coffres » avec ouverture animée. Anciennes sauvegardes compatibles sans migration.
+  Équilibre à valider au test humain (voir `docs/BALANCE.md`).
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

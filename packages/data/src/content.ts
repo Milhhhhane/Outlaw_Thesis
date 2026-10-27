@@ -157,6 +157,9 @@ export function parseContent(raw: RawContent): Content {
     if (new Set(dungeon.loot).size !== dungeon.loot.length)
       issues.push(`${where} : objet de butin en double`);
     if (!hasRare) issues.push(`${where} : la table de butin doit contenir au moins un objet rare`);
+    if (!balance.chests.tiers.some((tier) => tier.id === dungeon.chest)) {
+      issues.push(`${where} : palier de coffre inconnu « ${dungeon.chest} »`);
+    }
     if (dungeon.unlocksHero !== undefined && !heroById.has(dungeon.unlocksHero)) {
       issues.push(`${where} : héros débloqué inconnu « ${dungeon.unlocksHero} »`);
     }

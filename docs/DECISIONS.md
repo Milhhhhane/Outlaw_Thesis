@@ -445,3 +445,48 @@ récompense toujours d'un rare du donjon) et `duplicateLimit` + `salvage` (au-de
 exemplaires, le doublon devient des matériaux). Raison : la première victoire doit marquer ; sans
 limite, l'inventaire se remplit d'objets identiques que personne n'équipe. Le tirage reste
 déterministe (graine du profil) : même profil, même butin.
+
+## Coffres, fragments et étoiles
+
+**Un coffre ne donne que des fragments de héros** — Contexte : le joueur voulait un système de
+coffres sans achat où tout passe par les héros. Choix : trois paliers (bronze 3, argent 5, or 8
+fragments), chaque fragment tombe sur un héros ; 10 fragments invoquent un héros, un héros déjà
+possédé qui reçoit des fragments les garde pour ses étoiles. Raison : une seule monnaie de héros,
+lisible, et aucune récompense qui contourne les donjons. Tout est dans `balance.json`
+(`chests`) : paliers, coûts, taux.
+
+**Plafond de niveau par étoile** — Contexte : « tous les 10 niveaux, il faut dépenser des
+fragments pour l'étoile suivante ». Choix : plafond = (étoiles + 1) × `levelsPerStar` (10), niveau
+maximum du jeu inchangé (30 pour l'instant, 100 prévu). Au plafond, l'XP gagnée est gardée jusqu'à
+un niveau de réserve au plus ; l'étoile n'est payable qu'au plafond (dépenser avant n'avancerait à
+rien). Coûts : 10 puis 20 fragments. Raison : un seuil net que le joueur voit venir, sans XP
+perdue ni dépense inutile.
+
+**Anciennes sauvegardes sans migration** — Contexte : le serveur valide les sauvegardes avec le
+même schéma ; changer `PROFILE_VERSION` aurait cassé les clients déjà ouverts. Choix : champs
+ajoutés avec valeur par défaut (`stars`, `fragments`, `chests`, `focus`), version 1 conservée ;
+les étoiles sont `max(étoiles enregistrées, ceil(niveau / 10) − 1)` : un héros déjà niveau 25
+garde ses niveaux, avec deux étoiles offertes. Raison : aucune partie perdue ni bloquée.
+
+**Coffre garanti à la première victoire, une fois sur deux ensuite** — Contexte : le butin est le
+seul hasard du jeu et doit rester reproductible. Choix : la première victoire d'un donjon donne
+toujours le coffre du donjon ; un rejeu le donne avec `replayChestRate` (0,5), tiré avec la graine
+du profil après le butin (le butin de première victoire ne change donc pas). Raison : farmer reste
+utile sans fixer le rythme à zéro ou à « toujours ».
+
+**Héros ciblé — ajout de l'assistant, à confirmer par le propriétaire** — Contexte : avec 6 héros
+(30 prévus), des fragments purement aléatoires rendent un héros précis très long à monter : environ
+60 fragments reçus pour 10 sur un héros donné. Choix : un héros ciblé reçoit `focusRate` (50 %) des
+fragments de chaque coffre, le reste est tiré au hasard parmi tous les héros ; aucun héros ciblé =
+pur hasard. Raison : garder la surprise du tirage sans punir le joueur qui veut finir son héros.
+Réglable ou supprimable (`focusRate: 0`) sans code.
+
+**Les donjons débloquent toujours leurs héros** — Contexte : le brief décrit l'invocation par
+fragments, le jeu avait déjà des héros offerts par donjon. Choix : conservés ; l'invocation par
+fragments est une seconde voie, pas la seule. À revoir quand les 30 héros arriveront (le champ
+`tier` des héros, absent de cette branche, pourra pondérer les tirages par rareté).
+
+**Tirage identique pour le même profil** — Choix : deux nombres tirés par fragment, toujours (visée
+du héros ciblé, puis héros au hasard), pour que cibler ou non ne change pas la suite de la graine.
+Pas de « pitié » (garantie après n coffres) pour l'instant : à ajouter si le test humain montre
+des séries trop longues.

@@ -70,7 +70,8 @@ Mêmes stats que les héros, 1 à 4 sorts, un script de 1 à 6 actions joué en 
 
 Un objet modifie le passif (`scale`, `addEffect`, `threshold`, `limit`) et peut porter une petite
 stat plafonnée. Un donjon : élément, modificateur, 3 combats (2 salles + boss), récompenses,
-butin et place sur la carte.
+butin, place sur la carte et **coffre** (`chest` : palier de `balance.json` → `chests.tiers`, donné
+à la première victoire).
 
 ### Butin
 

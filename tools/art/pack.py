@@ -94,6 +94,28 @@ def character(sheet_name, hue, sat, val, flip):
     return out
 
 
+# Coffres : le coffre plein de la planche (fermé, entrouvert, ouvert), recoloré par palier.
+# palier : (rotation de teinte en degrés, saturation ×, valeur ×)
+CHESTS = {
+    'bronze': (-10, 0.8, 0.78),   # cuivre sombre
+    'silver': (175, 0.4, 1.0),    # acier bleuté
+    'gold': (16, 0.95, 1.4),      # or vif
+}
+
+
+def chest(hue, sat, val):
+    x, y, w, h, n = TILES['chest_full_open_anim']
+    out = []
+    for i in range(n):
+        im = SHEET.crop((x + i * w, y, x + (i + 1) * w, y + h))
+        out.append(recolor(im, hue, sat, val).resize((w * SCALE, h * SCALE), Image.NEAREST))
+    return out
+
+
+def all_chests():
+    return {f'chest_{name}': chest(*params) for name, params in CHESTS.items()}
+
+
 # arme tenue par chaque héros : (tuile de la planche, rotation de teinte, saturation ×, valeur ×)
 WEAPONS = {
     'pyra': ('weapon_red_magic_staff', 0, 1.1, 1.0),

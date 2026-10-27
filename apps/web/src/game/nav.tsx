@@ -9,6 +9,7 @@ export type Route =
   | { readonly name: 'heroes' }
   | { readonly name: 'hero'; readonly id: string }
   | { readonly name: 'workshop' }
+  | { readonly name: 'chests' }
   | { readonly name: 'credits' }
   | { readonly name: 'dungeon'; readonly id: string }
   | { readonly name: 'demo' };

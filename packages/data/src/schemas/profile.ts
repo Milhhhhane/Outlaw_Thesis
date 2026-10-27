@@ -13,6 +13,11 @@ export const heroProgressSchema = z.strictObject({
   items: z.array(nonNegInt.nullable()),
   /** Vrai une fois le respec gratuit utilisé. */
   freeRespecUsed: z.boolean(),
+  /**
+   * Paliers de niveau déjà payés en fragments. Absent des anciennes sauvegardes : le moteur prend
+   * le plus grand de cette valeur et de celle que le niveau implique (`heroStars`).
+   */
+  stars: nonNegInt.default(0),
 });
 export type HeroProgress = z.infer<typeof heroProgressSchema>;
 
@@ -45,6 +50,12 @@ export const profileSchema = z.strictObject({
   dungeons: z.record(idSchema, z.strictObject({ clears: nonNegInt })),
   /** Donjons terminés depuis le dernier objet rare (garantie). */
   sinceRare: nonNegInt,
+  /** Fragments possédés par héros (invocation et étoiles). Absent des anciennes sauvegardes. */
+  fragments: z.record(idSchema, nonNegInt).default({}),
+  /** Coffres fermés par palier. Absent des anciennes sauvegardes. */
+  chests: z.record(idSchema, nonNegInt).default({}),
+  /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
+  focus: idSchema.nullable().default(null),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });

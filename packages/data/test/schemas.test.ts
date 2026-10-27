@@ -69,6 +69,23 @@ describe('balance.json', () => {
     bad.progression.talentPointLevels = [3, 99];
     expect(balanceSchema.safeParse(bad).success).toBe(false);
   });
+
+  it('exige un coût d’étoile par palier de niveau (maxLevel 30, 10 niveaux par étoile : 2)', () => {
+    const bad = clone(balanceJson);
+    bad.chests.starCosts = [10];
+    expect(balanceSchema.safeParse(bad).success).toBe(false);
+    const raised = clone(balanceJson);
+    raised.progression.maxLevel = 100;
+    expect(balanceSchema.safeParse(raised).success).toBe(false);
+    raised.chests.starCosts = Array.from({ length: 9 }, (_, i) => 10 * (i + 1));
+    expect(balanceSchema.safeParse(raised).success).toBe(true);
+  });
+
+  it('refuse deux paliers de coffre de même identifiant', () => {
+    const bad = clone(balanceJson);
+    bad.chests.tiers.push({ id: 'bronze', fragments: 1 });
+    expect(balanceSchema.safeParse(bad).success).toBe(false);
+  });
 });
 
 describe('les 8 briques d’effet', () => {
@@ -367,6 +384,12 @@ describe('parseContent : références croisées', () => {
     expectIssue((raw) => {
       (raw.dungeons[0] as Record<string, unknown>).unlocksHero = 'fantome';
     }, 'héros débloqué inconnu');
+  });
+
+  it('refuse un palier de coffre inconnu', () => {
+    expectIssue((raw) => {
+      (raw.dungeons[0] as typeof dungeonFixture).chest = 'diamant';
+    }, 'palier de coffre inconnu');
   });
 
   it('refuse un niveau recommandé au-dessus du niveau maximum', () => {

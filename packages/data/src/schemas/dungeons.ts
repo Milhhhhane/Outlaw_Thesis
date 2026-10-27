@@ -88,6 +88,8 @@ export const dungeonSchema = z.strictObject({
   /** Décor de combat (fichier `bg/<scene>.png`) ; par défaut, l'identifiant du donjon. */
   scene: idSchema.optional(),
   map: mapPlaceSchema,
+  /** Palier du coffre donné à la première victoire (voir `chests.tiers` de balance.json). */
+  chest: idSchema,
   /** Héros débloqué en terminant ce donjon pour la première fois. */
   unlocksHero: idSchema.optional(),
 });

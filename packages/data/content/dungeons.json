@@ -60,7 +60,8 @@
       "x": 42,
       "y": 142,
       "landmark": "camp"
-    }
+    },
+    "chest": "bronze"
   },
   {
     "id": "drowned_halls",
@@ -122,7 +123,8 @@
       "x": 100,
       "y": 120,
       "landmark": "ruins"
-    }
+    },
+    "chest": "bronze"
   },
   {
     "id": "thorn_maze",
@@ -185,7 +187,8 @@
       "x": 66,
       "y": 74,
       "landmark": "gate"
-    }
+    },
+    "chest": "silver"
   },
   {
     "id": "cinder_citadel",
@@ -250,7 +253,8 @@
       "x": 138,
       "y": 48,
       "landmark": "tower"
-    }
+    },
+    "chest": "silver"
   },
   {
     "id": "sunken_spire",
@@ -314,7 +318,8 @@
       "x": 196,
       "y": 104,
       "landmark": "spire"
-    }
+    },
+    "chest": "silver"
   },
   {
     "id": "verdant_crown",
@@ -378,7 +383,8 @@
       "x": 250,
       "y": 56,
       "landmark": "crown"
-    }
+    },
+    "chest": "gold"
   },
   {
     "id": "broken_crossing",
@@ -445,7 +451,8 @@
       "x": 284,
       "y": 130,
       "landmark": "bridge"
-    }
+    },
+    "chest": "gold"
   },
   {
     "id": "salt_flats",
@@ -509,7 +516,8 @@
       "x": 262,
       "y": 158,
       "landmark": "salt"
-    }
+    },
+    "chest": "gold"
   },
   {
     "id": "obsidian_pass",
@@ -577,7 +585,8 @@
       "x": 298,
       "y": 74,
       "landmark": "pass"
-    }
+    },
+    "chest": "gold"
   },
   {
     "id": "hollow_throne",
@@ -638,6 +647,7 @@
       "x": 294,
       "y": 42,
       "landmark": "throne"
-    }
+    },
+    "chest": "gold"
   }
 ]
