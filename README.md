@@ -16,17 +16,18 @@ fixée par `packageManager`).
 ```sh
 pnpm install
 pnpm dev          # jeu en local (Vite)
-pnpm verify       # tout ce que vérifie la CI : lint, format, types, tests, simulation, build, taille
+pnpm verify       # tout ce que vérifie la CI : lint, format, types, tests, simulation, build, taille, e2e
+pnpm verify:fast  # pareil sans les e2e (~1 min de moins)
 ```
 
-| Commande               | Rôle                                                                    |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `pnpm test`            | tests de tous les paquets (couverture ≥ 90 % exigée sur le moteur)      |
-| `pnpm sim`             | simulation de combats, CSV dans `tools/sim/out/results.csv`             |
-| `pnpm sim:check`       | test de régression : la simulation doit égaler `tools/sim/baseline.csv` |
-| `pnpm sim -- --update` | met à jour la référence après un changement d'équilibrage voulu         |
-| `pnpm build`           | build de production dans `apps/web/dist`                                |
-| `pnpm size`            | vérifie le budget de 300 Kio gzip                                       |
+| Commande            | Rôle                                                                    |
+| ------------------- | ----------------------------------------------------------------------- |
+| `pnpm test`         | tests de tous les paquets (couverture ≥ 90 % exigée sur le moteur)      |
+| `pnpm sim`          | simulation de combats, CSV dans `tools/sim/out/results.csv`             |
+| `pnpm sim:check`    | test de régression : la simulation doit égaler `tools/sim/baseline.csv` |
+| `pnpm sim --update` | met à jour la référence après un changement d'équilibrage voulu         |
+| `pnpm build`        | build de production dans `apps/web/dist`                                |
+| `pnpm size`         | vérifie le budget de 300 Kio gzip                                       |
 
 ## Organisation
 

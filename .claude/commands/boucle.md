@@ -20,10 +20,14 @@ Tâche demandée par l'utilisateur (peut être vide) : $ARGUMENTS
 5. **Si KO** : renvoie à `dev` uniquement la liste des problèmes BLOQUANTS de l'évaluateur, puis
    ré-évalue. **Maximum 2 allers-retours.** Au 3e KO, arrête, ne force pas : résume à l'utilisateur
    ce qui bloque et propose soit d'abandonner la tâche, soit de la redécouper.
-6. **Si OK** : commit sur la branche (message en français, impératif, une ligne + détail), puis
-   ouvre une PR vers `main` dont la description contient le rapport du dev et le verdict de
-   l'évaluateur. Ne fusionne jamais toi-même.
-7. Mets à jour `PROGRESS.md` dans la même PR si la tâche clôt un point ouvert.
+6. **Si OK** : tu tiens la doc toi-même, dans la même PR (le dev n'y touche pas) : une entrée
+   dans `CHANGELOG.md` (section « Non publié »), `PROGRESS.md` si la tâche clôt un point ouvert,
+   `docs/DECISIONS.md` si une règle de jeu ou d'architecture a été tranchée (contexte, choix,
+   raison, comme les entrées existantes). Puis commit sur la branche (message en français,
+   impératif, une ligne + détail) et PR vers `main` dont la description contient le rapport du
+   dev et le verdict de l'évaluateur. Ne fusionne jamais toi-même.
+7. Si `gh pr create` échoue (GraphQL bloqué dans certains environnements), utilise l'API REST :
+   `gh api repos/<owner>/<repo>/pulls --input pr.json` avec `{"title","head","base":"main","body"}`.
 
 ## Règles
 
