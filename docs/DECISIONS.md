@@ -416,8 +416,9 @@ Raison : prépare l'équilibrage par palier sans toucher au contenu en cours de 
 **Talents libres dans le salon** — Contexte : le niveau d'un héros est ramené au plafond du salon.
 Choix : les talents du profil ne comptent pas, le client envoie l'allocation voulue, validée contre
 les points et les pages du niveau plafonné. Raison : le talent d'un joueur de niveau 30 n'a pas de
-sens à un niveau 10. **Point ouvert** : `talents_over_budget` quand le plafond du salon est inférieur
-au niveau du joueur (le serveur ne tronque rien, l'interface devra proposer de redistribuer).
+sens à un niveau 10. Quand le plafond du salon est inférieur au niveau du joueur, le serveur ne
+tronque rien (`talents_over_budget`) : l'interface retire elle-même les derniers talents choisis
+(`trimTalents`, voir « Serveur et interface PvP » plus bas).
 
 **Propriété des héros non prouvée** — Contexte : les sauvegardes sont écrites par le client. Choix :
 `validateTeam` vérifie l'équipe contre le profil fourni par le serveur, sans prouver que ce profil a
@@ -434,3 +435,54 @@ politique « joueur moyen », sans objet, niveau 30 ; rapport seulement, proposi
 Constat à la livraison : priorité dans la cible (51,5 à 52,3 %), durée hors cible si elle se compte
 en actions du moteur (77 ; 39 par joueur), `cendre` au-dessus et `pyra` / `maree` en dessous de la
 bande indicative.
+
+## PVP : serveur et interface (lot 11, sprint A2)
+
+**Un Durable Object par salon, dans le Worker existant** — Contexte : il faut un arbitre qui garde
+l'état entre deux messages et un chrono sans client. Choix : classe `PvpRoom` (SQLite, migration
+`v1-pvp`) dans le Worker des comptes, un objet par code de salon ; `RoomService` porte la logique avec
+horloge, tirage, stockage et sockets injectés. Raison : même déploiement, aucun service de plus ;
+logique testable sans Cloudflare ; le réducteur pur de `packages/net` fait tout le travail de règles.
+
+**Identité posée par le Worker, jamais par le client** — Choix : le Worker lit la session, réécrit
+toujours les en-têtes internes (compte, pseudo) et retire le cookie avant d'appeler le salon ; il
+compare `Origin` au site (les WebSocket échappent aux règles CORS) avant de réveiller quoi que ce
+soit. Raison : un client ne peut ni usurper un compte ni détourner la session d'un autre site ;
+refuser tôt évite de réveiller un salon pour rien.
+
+**Enregistrer avant d'envoyer** — Choix : le salon écrit son état dans le stockage, puis expédie les
+messages. Raison : après une éviction du Durable Object, aucun client n'a vu un état que le stockage
+ne retrouve pas.
+
+**WebSocket Hibernation et une alarme unique** — Choix : `acceptWebSocket` avec le joueur en étiquette,
+`ping` / `pong` automatique, une seule alarme réglée sur la plus proche échéance (chrono, grâce,
+inactivité de 30 min). Raison : un salon qui attend ne coûte rien ; le chrono vit côté serveur.
+
+**Une connexion par joueur, débit borné** — Choix : une nouvelle connexion remplace l'ancienne (code 4000) ; au-delà de 60 messages en 5 s la connexion est fermée (4008) ; création limitée à 20 salons par
+heure et 30 connexions par minute et par compte. Raison : un onglet oublié ne bloque pas le joueur ;
+un client fou ne monopolise pas le salon. La limite de 30 messages envisagée d'abord a été relevée
+après qu'un test de fumée l'a dépassée en rejouant un combat entier.
+
+**Profil lu dans la sauvegarde en ligne** — Choix : à chaque `set_team`, le salon lit `saves` (D1) du
+compte ; avant de créer un salon, le client pousse son profil local si le compte n'a pas encore de
+sauvegarde. Raison : le serveur valide contre ce qu'il connaît, pas contre ce que dit le client ; sans
+cette poussée, un compte neuf aurait répondu `no_profile`. Limite inchangée : propriété non prouvée.
+
+**Client en lecture seule du combat** — Choix : le client n'applique une action que lorsque le
+serveur l'annonce (`applied`), vérifie l'empreinte avec un état local rejoué, demande `resync`
+(deux fois au plus) en cas d'écart. Raison : le serveur reste la seule source de vérité, un clic n'a
+jamais d'effet local avant confirmation, une désynchronisation se rattrape sans recharger.
+
+**Réutiliser l'écran de combat solo** — Choix : `CombatView` accepte une configuration `pvp`
+(chrono, pseudos, émotes, attente), `useBattle` gagne `apply` / `restore` ; le combat solo n'est pas
+modifié. Raison : une seule interface de combat à entretenir. Conséquence assumée : le camp n'est pas
+inversé pour le joueur 2.
+
+**Reprise par code, pas par écran** — Choix : la coupure de réseau est rattrapée par une reconnexion
+avec attente croissante (jusqu'à 75 s) ; un rechargement de page ramène au hub et la reprise se fait en
+ressaisissant le code ; le lien `#salon=CODE` est consommé une fois. Raison : pas de route persistée à
+sécuriser pour une première version entre amis ; le serveur retient la place pendant la grâce.
+
+**Pas de traduction des erreurs de connexion** — Choix : salon inconnu, plein ou serveur muet donnent le
+même message (« Impossible de rejoindre ce salon »). Raison : un WebSocket refusé n'expose pas son
+code HTTP au navigateur ; distinguer demanderait un appel de plus.

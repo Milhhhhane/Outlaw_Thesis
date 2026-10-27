@@ -1,19 +1,22 @@
 # PVP : salon personnalisé
 
-Premier mode JcJ : un salon privé, deux joueurs, trois héros chacun, arbitré plus tard par un
-serveur (un Durable Object Cloudflare). Ce document décrit ce qui est fait dans le dépôt (moteur,
-protocole, logique de salon, mesure d'équilibrage) et ce qui reste. Les choix et leurs raisons sont
-aussi dans `docs/DECISIONS.md` (section « PVP »).
+Premier mode JcJ : un salon privé, deux joueurs, trois héros chacun, arbitré par un serveur (un
+Durable Object Cloudflare) et joué depuis l'écran « Duel en ligne » du hub. Ce document décrit ce qui
+est fait dans le dépôt (moteur, protocole, logique de salon, serveur, interface, mesure
+d'équilibrage) et ce qui reste. Les choix et leurs raisons sont aussi dans `docs/DECISIONS.md`
+(section « PVP »).
 
 ## Périmètre
 
-| Fait (lot 11, sprint A1)                                           | Pas fait                             |
-| ------------------------------------------------------------------ | ------------------------------------ |
-| Règles de combat optionnelles, action par défaut, empreinte d'état | Worker et Durable Object             |
-| `packages/net` : protocole, règles, validation d'équipe, salon pur | Interface (création, salle, combat)  |
-| Sérialisation du salon pour le stockage du Durable Object          | Lecture du profil depuis les comptes |
-| `pnpm sim:pvp` : mesure de l'équilibrage, sans rien appliquer      | Tests de bout en bout (e2e)          |
-| Champ `tier` des héros (1 à 4, tous à 1 aujourd'hui)               | Classement, récompenses, chat libre  |
+| Fait                                                                   | Pas fait                            |
+| ---------------------------------------------------------------------- | ----------------------------------- |
+| Règles de combat optionnelles, action par défaut, empreinte d'état     | Classement, récompenses, chat libre |
+| `packages/net` : protocole, règles, validation d'équipe, salon pur     | Spectateurs, plus de deux joueurs   |
+| `apps/api` : Durable Object `PvpRoom`, routes de création et connexion | Preuve de propriété des héros       |
+| `apps/web` : menu, salon, composition d'équipe, combat en direct       | Salon public ou appariement         |
+| Reprise après coupure, émotes, revanche, forfait, chrono serveur       | Reprise après perte du stockage     |
+| Tests : unitaires (serveur, client), deux navigateurs réels (e2e)      |                                     |
+| `pnpm sim:pvp` : mesure de l'équilibrage, sans rien appliquer          |                                     |
 
 Le moteur et `packages/net` restent des fonctions pures : ni Cloudflare, ni DOM, ni horloge, ni
 hasard (le test `purity.test.ts` de `packages/net` balaie les sources).
@@ -80,14 +83,15 @@ Client vers serveur :
 
 Serveur vers client :
 
-| `type`         | Contenu                                                                                                         |
-| -------------- | --------------------------------------------------------------------------------------------------------------- |
-| `room`         | Vue du salon pour ce joueur (l'équipe adverse reste cachée avant le combat), envoyée à chaque changement de vue |
-| `battle_start` | Configuration, règles, `firstSide`, `you`, actions déjà jouées, `stateHash`, `deadline`, `serverNow`            |
-| `applied`      | Acteur, action, `auto: 'timeout'` si le serveur a joué, `stateHash`, `deadline`, `serverNow`                    |
-| `result`       | `winner` (`null` = nul), `reason` : `annihilation`, `action_limit`, `forfeit`, `disconnect`                     |
-| `emote`        | `id`                                                                                                            |
-| `error`        | `code` (voir `ERROR_CODES`), `detail?` (200 caractères au plus)                                                 |
+| `type`         | Contenu                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `room`         | Vue du salon pour ce joueur (l'équipe adverse reste cachée avant le combat), envoyée à chaque changement de vue   |
+| `battle_start` | Configuration, règles, `firstSide`, `you`, actions déjà jouées, `stateHash`, `deadline`, `serverNow`              |
+| `applied`      | Acteur, action, `auto: 'timeout'` si le serveur a joué, `stateHash`, `deadline`, `serverNow`                      |
+| `result`       | `winner` (`null` = nul), `reason` : `annihilation`, `action_limit`, `forfeit`, `disconnect`                       |
+| `emote`        | `id`                                                                                                              |
+| `names`        | `you`, `opponent` (`null` tant que personne n'occupe l'autre place) : pseudos des comptes, fournis par le serveur |
+| `error`        | `code` (voir `ERROR_CODES`), `detail?` (200 caractères au plus)                                                   |
 
 Codes d'erreur : `too_large`, `bad_json`, `bad_schema`, `version_mismatch`, `content_mismatch`,
 `hello_required`, `not_host`, `wrong_phase`, `no_profile`, `team_required`, `team_rejected`,
@@ -166,16 +170,17 @@ commencé ni un salon terminé (`wrong_phase`), mais un joueur déjà inscrit re
 - Retour : un nouveau `hello` annule la grâce et renvoie `battle_start` avec toutes les actions
   (reprise complète), ainsi que le `result` si le combat est fini.
 
-### Intégration prévue (Durable Object)
+### Intégration (Durable Object)
 
 Un salon = un objet. Pour chaque message reçu, `receive(room, player, texte, ctx)` ; pour une
 fermeture de connexion, `reduceRoom(..., { type: 'disconnect', player }, ctx)` ; pour une alarme,
-`{ type: 'tick' }`. Après chaque appel : expédier `update.send` (`to: 'all'` ou un joueur), écrire
-`serializeRoom(update.room)` dans le stockage, programmer l'alarme à `nextWakeUp(update.room)` (null :
-pas d'alarme), supprimer l'objet si `update.closed`. `deserializeRoom` valide tout ce qu'il lit
-(`RoomFormatError` sinon) ; `ROOM_FORMAT` versionne la forme. Le serveur fournit `now`, `coin` (tirage
-au sort fait côté serveur) et `profileOf`. Mesures : environ 1,3 ms par action (le réducteur rejoue le
-combat à chaque action) et 26 Ko de JSON pour un salon en cours.
+`{ type: 'tick' }`. Après chaque appel : écrire `serializeRoom(update.room)` dans le stockage, puis
+expédier `update.send` (`to: 'all'` ou un joueur), programmer l'alarme à `nextWakeUp(update.room)`
+(null : pas d'alarme), supprimer l'objet si `update.closed`. `deserializeRoom` valide tout ce qu'il
+lit (`RoomFormatError` sinon) ; `ROOM_FORMAT` versionne la forme. Le serveur fournit `now`, `coin`
+(tirage au sort fait côté serveur) et `profileOf`. Mesures : environ 1,3 ms par action (le réducteur
+rejoue le combat à chaque action) et 26 Ko de JSON pour un salon en cours. Le détail du câblage est
+dans la section « Serveur » ci-dessous.
 
 ## Empreinte d'état et rejeu
 
@@ -235,18 +240,103 @@ Lecture et propositions (non appliquées) :
 Précautions : politique « joueur moyen » (un humain fera mieux ou autrement), pas d'objet, niveau 30,
 builds au hasard : c'est un thermomètre pour comparer avant et après un changement, pas une vérité.
 
+## Serveur (`apps/api`)
+
+Le Worker existant (comptes) route `/api/pvp/*` ; le salon vit dans le Durable Object `PvpRoom`
+(`apps/api/src/pvp-room.ts`, binding `PVP`, classe SQLite déclarée par la migration `v1-pvp` de
+`wrangler.jsonc`). Sans le binding (tests, `wrangler dev` sans DO), les routes répondent 503
+`unavailable`.
+
+| Route                         | Rôle                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `POST /api/pvp/rooms`         | Crée un salon, renvoie `{ code }` (6 caractères, alphabet sans `0 O 1 I`)            |
+| `GET /api/pvp/rooms/:code/ws` | Passe la connexion en WebSocket vers le salon, 404 `room_not_found`, 409 `room_full` |
+
+- **Identité.** Le Worker lit le cookie de session, puis transmet au salon l'identifiant et le pseudo
+  du compte dans des en-têtes internes (`X-Outlaw-Account`, `X-Outlaw-Pseudo`) qu'il réécrit toujours :
+  une valeur envoyée par le client est écrasée. Le cookie ne quitte jamais le Worker.
+- **Contrôles du Worker (avant tout réveil du salon).** Compte obligatoire (401), en-tête `Origin`
+  identique à celui du site pour la création **et** pour le WebSocket, qui n'est pas couvert par les
+  règles CORS (403 `bad_origin`, protection contre le détournement de WebSocket), requête `Upgrade:
+websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et par compte, 30
+  connexions par minute et par compte (429 `too_many`).
+- **Salon.** `RoomService` est la logique (testée sans Cloudflare : horloge, tirage, stockage et
+  sockets sont injectés) ; `PvpRoom` n'est que la colle. Un mutex sérialise les événements ; le salon
+  est enregistré **avant** d'envoyer les messages, pour qu'aucun client ne voie un état que le stockage
+  ne retrouverait pas après une éviction. Le profil de chaque joueur est lu dans la table `saves` (D1)
+  à chaque `set_team` : le salon valide l'équipe contre cette sauvegarde, pas contre ce que dit le
+  client.
+- **WebSocket Hibernation.** `acceptWebSocket(ws, [joueur])` : le joueur est une étiquette de la
+  connexion, l'objet peut dormir entre deux messages. `ping` reçoit `pong` sans réveiller l'objet.
+  Une seule connexion par joueur : une nouvelle remplace l'ancienne (fermée avec le code 4000).
+- **Codes de fermeture.** 4000 remplacée par une autre connexion, 4004 salon fermé, 4008 débit
+  dépassé (plus de 60 messages en 5 s sur une même connexion).
+- **Alarme.** Une seule alarme, à la plus proche des échéances : chrono de tour, grâce après
+  déconnexion, inactivité. Un salon sans activité pendant 30 minutes est fermé et son stockage vidé.
+- **Données.** Rien n'est écrit dans les profils ni dans D1 ; seul le stockage du Durable Object
+  contient le salon sérialisé (`serializeRoom`).
+
+## Interface (`apps/web/src/pvp`)
+
+| Fichier                         | Rôle                                                                              |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `PvpMenu.tsx`                   | Entrée « Duel en ligne » : créer un salon ou en rejoindre un par code             |
+| `Lobby.tsx`, `PvpRoom.tsx`      | Salle d'attente : code et lien, règles (hôte), équipe, joueurs, bouton « Prêt »   |
+| `team.ts`                       | Choix des 3 héros, ramenés au plafond de niveau du salon, talents retirés au-delà |
+| `socket.ts`, `session.ts`       | WebSocket, `hello`, reprise avec attente croissante (jusqu'à 75 s), `ping`        |
+| `PvpBattle.tsx`, `overlays.tsx` | Combat en direct : chrono, émotes, résultat, revanche                             |
+| `combat/useBattle.ts`           | Le combat solo réutilisé : `apply` et `restore` rejouent les actions annoncées    |
+
+- **Le client n'invente rien.** Il joue une action seulement quand le serveur l'annonce (`applied`),
+  vérifie l'empreinte avec son état local et demande `resync` (deux fois au plus) en cas d'écart.
+  Un clic envoie `action` ; le bouton reste en attente jusqu'à la réponse.
+- **Talents.** Si le plafond du salon est inférieur au niveau du héros, `trimTalents` retire les
+  derniers talents choisis jusqu'à respecter points et pages (validé contre `validateTeam`).
+- **Lien d'invitation.** `#salon=CODE` ouvre directement le salon (une fois : le lien est consommé,
+  un rechargement ne le rouvre pas). Sans compte connecté, l'écran propose de se connecter d'abord.
+- **Synchronisation du compte.** Avant de créer un salon, le client pousse son profil local si le
+  compte n'a pas encore de sauvegarde en ligne : sans elle, le serveur répondrait `no_profile`.
+- **Style.** Même cadre fixe que le reste du jeu (canevas virtuel 1280 x 720), textes dans
+  `i18n/pvp.fr.json`.
+
+## Jouer à deux
+
+1. Les deux joueurs se connectent à leur compte (le menu **Duel en ligne** propose « Se connecter »).
+2. Le premier ouvre **Duel en ligne** depuis le hub, puis **Créer un salon**. Il envoie le code (ou le
+   lien) à son ami.
+3. L'ami ouvre **Duel en ligne**, saisit le code (ou ouvre le lien) et rejoint.
+4. Chacun choisit trois héros. L'hôte règle niveau maximum, objets, budget de paliers et temps par
+   action, puis chacun appuie sur **Prêt**.
+5. Le serveur tire au sort qui commence. Le combat se joue comme en solo, au tour par tour ; si le
+   chrono expire, le serveur joue l'action par défaut, et deux dépassements d'affilée valent forfait.
+6. Pendant le combat : six émotes prédéfinies. À la fin : **Revanche** (les deux doivent accepter,
+   la priorité est échangée) ou **Quitter**.
+7. Coupure de réseau ou rechargement de la page : revenir dans le même salon avec le même code
+   reprend le combat là où il en était, dans la limite de 60 s de grâce.
+
+## Tests
+
+- `packages/net` (135 tests) : protocole, règles, validation, salon pur, pureté des sources.
+- `apps/api/test/pvp-room.test.ts` : le service de salon avec des sockets factices (rejeu complet d'un
+  combat, reprise, chrono, forfait, débit, remplacement de connexion, redémarrage entre deux
+  messages). `pvp-routes.test.ts` : identité, origine, limites, codes.
+- `apps/web/test/pvp.test.ts` : session, reprise, équipe et talents, empreinte, action en attente.
+- `apps/web/e2e/pvp.spec.ts` : deux navigateurs réels contre un vrai Worker et un vrai Durable Object
+  (`wrangler dev`) : un salon, un combat entier, des émotes, une revanche puis un abandon ; la reprise
+  après rechargement de la page ; un code inconnu ou un salon complet. Joué avec `pnpm e2e` (projet
+  `comptes`).
+- Un test de fumée manuel contre `wrangler dev` a joué un combat de bout en bout avec deux sockets
+  (hors dépôt) et a révélé la limite de débit trop basse, relevée depuis de 30 à 60 messages.
+
 ## Limites connues
 
 - **Propriété des héros non prouvée.** Les sauvegardes sont écrites par le client (voir
   `docs/DECISIONS.md`, « Pas de validation des résultats ») : `validateTeam` vérifie l'équipe contre le
   profil que le serveur lui donne, pas que ce profil a été gagné. Acceptable entre amis ; à refaire
   (rejeu serveur des progressions, ou profil de salon fourni par le serveur) avant tout classement.
-- **`talents_over_budget` quand le plafond de niveau du salon est inférieur au niveau du joueur.**
-  Le serveur ne tronque rien : un joueur de niveau 30 dans un salon plafonné à 15 doit envoyer au plus
-  les talents du niveau 15 (points et pages), sinon `talents_over_budget`. L'interface devra proposer
-  de redistribuer les talents au moment de choisir l'équipe. Autre piste, à trancher plus tard : que le
-  serveur retire lui-même les derniers talents choisis, au prix d'une équipe que le joueur n'a pas
-  validée.
+- **`talents_over_budget` côté serveur.** Le serveur ne tronque rien : c'est l'interface qui retire les
+  derniers talents choisis (`trimTalents`) avant d'envoyer l'équipe. Un client modifié qui enverrait
+  plus se fait refuser.
 - **Empreinte de contenu stricte.** Un changement de contenu sans effet sur le combat (texte de
   héros) refuse quand même les clients anciens. À resserrer si cela gêne les déploiements.
 - **Chrono porté par le serveur.** Il faut programmer l'alarme à `nextWakeUp` ; sans alarme, le
@@ -258,13 +348,19 @@ builds au hasard : c'est un thermomètre pour comparer avant et après un change
 - **`applied.auto: 'forfeit'` réservé.** En version 1, un forfait s'annonce par `result`.
 - **Deux joueurs, pas de spectateur, pas de chat libre.**
 
-## Ce qui reste après la livraison des comptes
+- **Camp non inversé pour le joueur 2.** Chaque joueur voit son équipe à droite ou à gauche selon
+  son camp (`player` à gauche, `enemy` à droite) : le joueur 2 voit sa propre équipe à droite. Pas
+  de miroir, pour ne pas toucher au moteur de rendu solo.
+- **Salon inconnu ou plein : un seul message.** Le navigateur ne distingue pas les deux cas (le
+  WebSocket refusé n'expose pas le code HTTP) : « Impossible de rejoindre ce salon ».
+- **Pas de reprise automatique de l'écran.** Un rechargement de la page ramène au hub : il faut
+  rouvrir **Duel en ligne** et ressaisir le code. Le serveur, lui, retient la place.
+- **Durée de partie.** La cible de « 30 à 60 actions » est ambiguë : une partie compte environ 77
+  actions du moteur, soit environ 39 par joueur (voir `pnpm sim:pvp`).
 
-1. Worker et Durable Object : connexion WebSocket par joueur, tirage au sort, alarme, stockage,
-   lecture du profil du compte pour `profileOf`, limitation de débit par connexion.
-2. Interface : création et invitation (code de salon), réglages de l'hôte, composition d'équipe avec
-   redistribution des talents, écran de combat piloté par `battle_start` / `applied`, reprise après
-   déconnexion, émotes, revanche.
-3. Tests de bout en bout sur deux navigateurs.
-4. Décisions d'équilibrage ci-dessus (durée, héros), puis éventuellement classement (avec preuve de
-   propriété des héros).
+## Après cette livraison
+
+1. Décisions d'équilibrage ci-dessus (durée, héros), puis éventuellement classement (avec preuve de
+   propriété des héros, donc rejeu serveur des progressions).
+2. Persistance de l'écran de salon au rechargement, salon public ou appariement, spectateurs.
+3. Miroir du camp pour le joueur 2.

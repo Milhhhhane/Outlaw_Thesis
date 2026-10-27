@@ -7,7 +7,7 @@
   "pvp.signin": "Connectez-vous pour jouer en ligne : le salon lit votre sauvegarde en ligne pour vérifier vos héros.",
   "pvp.signin.button": "Se connecter",
   "pvp.unavailable": "Le jeu en ligne n'est pas disponible ici.",
-  "pvp.sync": "Votre sauvegarde en ligne doit être à jour : attendez que la pastille indique « synchronisé » avant de créer ou de rejoindre un salon.",
+  "pvp.sync": "Synchronisation de votre sauvegarde en ligne… Le salon la lit pour vérifier vos héros : patientez un instant.",
   "pvp.create": "Créer un salon",
   "pvp.create.hint": "Vous recevez un code de six caractères à donner à votre ami.",
   "pvp.create.go": "Créer",

@@ -35,6 +35,11 @@
   HttpOnly, limites de débit, synchronisation locale d'abord avec écran de conflit, migration
   d'une partie invitée, page de confidentialité (brouillon), réinitialisation par le
   propriétaire (`pnpm admin:reset-password`). Tests : Worker, outil, e2e contre `wrangler dev`.
+- Lot 11 — PvP, salon personnalisé : moteur (règles de combat, action par défaut, empreinte d'état),
+  protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`, routes de création et de
+  connexion), interface « Duel en ligne » (salon, équipe, combat en direct, émotes, revanche, reprise).
+  Tests : serveur et client unitaires, trois duels à deux navigateurs réels contre `wrangler dev`.
+  Ouvert : équilibrage PvP (voir `docs/PVP.md`), propriété des héros non prouvée.
 
 ## Reste à faire (hors code)
 

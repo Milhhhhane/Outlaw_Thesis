@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useAccount } from '../account/AccountProvider';
+import { useEffect, useState } from 'react';
+import { META_KEY, useAccount } from '../account/AccountProvider';
 import { useGame } from '../game/nav';
 import { Button, Panel, Screen } from '../game/ui';
 import { t } from '../i18n';
@@ -16,6 +16,23 @@ export function PvpMenu() {
   const back = (): void => {
     go({ name: 'hub' });
   };
+
+  // Un compte neuf n'a pas encore de sauvegarde en ligne (aucune progression à envoyer) : le salon
+  // en a besoin pour vérifier les héros, on la crée donc en envoyant la partie actuelle.
+  const signed = account?.status === 'signed';
+  const synced = account?.sync === 'synced';
+  const changed = account?.changed;
+  useEffect(() => {
+    if (!signed || !synced) return;
+    try {
+      const meta = JSON.parse(window.localStorage.getItem(META_KEY) ?? 'null') as {
+        baseRev?: number;
+      } | null;
+      if (meta?.baseRev === 0) changed?.();
+    } catch {
+      // Méta illisible : la synchronisation normale s'en charge.
+    }
+  }, [signed, synced, changed]);
 
   if (account === null || account.status === 'unavailable') {
     return (
@@ -46,19 +63,24 @@ export function PvpMenu() {
     if (created.ok) go({ name: 'pvp_room', code: created.code });
     else setError(created.limited ? t('pvp.menu.error.limit') : t('pvp.menu.error.create'));
   };
+  const ready = account.sync === 'synced';
   const normalized = normalizeCode(code);
 
   return (
     <Screen title={t('pvp.title')} onBack={back} className="pvp-menu" resources={false}>
       <p className="pvp-hint">{t('pvp.intro')}</p>
-      <p className="pvp-hint">{t('pvp.sync')}</p>
+      {!ready && (
+        <p className="pvp-hint" role="status">
+          {t('pvp.sync')}
+        </p>
+      )}
       <div className="pvp-menu__choices">
         <Panel label={t('pvp.create')}>
           <h2 className="pvp-title">{t('pvp.create')}</h2>
           <p className="pvp-hint">{t('pvp.create.hint')}</p>
           <Button
             size="large"
-            disabled={busy}
+            disabled={busy || !ready}
             onClick={() => {
               void create();
             }}
@@ -87,7 +109,7 @@ export function PvpMenu() {
                 setCode(event.target.value.toUpperCase());
               }}
             />
-            <Button type="submit" size="large" disabled={normalized === null}>
+            <Button type="submit" size="large" disabled={normalized === null || !ready}>
               {t('pvp.join.go')}
             </Button>
           </form>

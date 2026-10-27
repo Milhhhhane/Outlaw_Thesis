@@ -81,9 +81,9 @@ mettant la référence à jour dans le même commit.
 
 ## PVP (`packages/net`)
 
-Protocole et logique de salon du mode PvP, en fonctions pures (aucun Cloudflare, aucun DOM) : le
-futur Durable Object n'aura qu'à expédier les messages, stocker le salon et programmer l'alarme.
-Voir [`PVP.md`](PVP.md).
+Protocole et logique de salon du mode PvP, en fonctions pures (aucun Cloudflare, aucun DOM). Le
+Durable Object `PvpRoom` (`apps/api/src/pvp-room.ts`) n'expédie que les messages, stocke le salon et
+programme l'alarme ; l'interface est dans `apps/web/src/pvp/`. Voir [`PVP.md`](PVP.md).
 
 ## Interface (`apps/web`)
 

@@ -242,7 +242,9 @@ export function Lobby({ code, state, room, send, onDismiss, onLeave, pseudo }: P
               </li>
             </ul>
           </Panel>
+        </div>
 
+        <div className="pvp-room__rules">
           <Panel label={t('pvp.rules')}>
             <h2 className="pvp-title">{t('pvp.rules')}</h2>
             <Rules room={room} send={send} />

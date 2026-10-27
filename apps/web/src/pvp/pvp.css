@@ -92,12 +92,12 @@
 
 .pvp-emotes {
   position: absolute;
-  top: 64px;
-  right: 10px;
+  top: 100px;
+  left: 10px;
   z-index: 24;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 4px;
 }
 
@@ -174,16 +174,21 @@
 }
 
 .pvp-code {
-  margin: 0;
-  font-size: 44px;
-  letter-spacing: 0.25em;
+  margin: 4px 0 8px;
+  font-size: 36px;
+  letter-spacing: 0.2em;
   color: var(--gold);
+}
+
+.pvp-room .screen__body {
+  overflow-y: auto;
 }
 
 .pvp-room__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 12px;
+  align-items: start;
 }
 
 .pvp-seats {
@@ -276,13 +281,6 @@
   color: var(--bone-muted);
 }
 
-@media (max-width: 720px) {
-  .pvp-menu__choices,
-  .pvp-room__grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 .pvp-title {
   margin: 0;
   font-size: 18px;
@@ -325,4 +323,10 @@
   display: grid;
   place-items: center;
   height: 48px;
+}
+
+.pvp-room__rules {
+  display: grid;
+  gap: 12px;
+  align-content: start;
 }
