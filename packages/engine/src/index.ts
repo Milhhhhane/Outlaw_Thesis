@@ -3,7 +3,7 @@ export * from './compile';
 export { computeDamage } from './effects';
 export { IllegalActionError, InvalidSetupError } from './errors';
 export { defaultAction } from './fallback';
-export { canonicalState, hashState } from './hash';
+export { canonicalState, cyrb53, hashState } from './hash';
 export { compareTurnOrder, nextActor, projectQueue } from './queue';
 export { DEFAULT_RULES, rulesOf } from './rules';
 export {
