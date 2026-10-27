@@ -21,7 +21,6 @@ import { Title } from './screens/Title';
 import { Workshop } from './screens/Workshop';
 import { ProfileProvider } from './state/profile';
 import './App.css';
-import './screens/screens.css';
 
 function Current({ route, go }: { readonly route: Route; readonly go: (r: Route) => void }) {
   const demo = useMemo(() => demoSetup(), []);

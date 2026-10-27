@@ -78,23 +78,32 @@ describe('boucle donjon → récompense → investissement', () => {
       await user.keyboard('{Escape}');
 
       // Investissement : équiper l'objet sur Pyra et prendre un talent.
-      await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.heroes')) }));
-      await user.click(screen.getByRole('button', { name: /Pyra/ }));
-      const slot = screen.getByLabelText(t('hero.slot', { n: 1 }));
-      await user.selectOptions(
-        slot,
-        within(slot).getByRole('option', { name: new RegExp(itemName) }),
+      await user.click(
+        screen.getByRole('button', { name: new RegExp(`^${t('hub.menu.heroes')}`) }),
       );
-      expect(screen.getByLabelText(t('hero.slot', { n: 1 }))).toHaveDisplayValue(
-        new RegExp(itemName),
-      );
-      const node = screen.getByRole('button', { name: new RegExp(names.node('pyra_exe_core')) });
-      await user.click(node);
-      expect(node).toHaveAttribute('aria-pressed', 'true');
-      await user.click(screen.getByRole('button', { name: t('hero.respec.free') }));
+      await user.click(screen.getByRole('button', { name: /^Pyra/ }));
+      await user.click(screen.getByRole('tab', { name: t('sheet.tab.items') }));
+      await user.click(screen.getByRole('button', { name: t('sheet.slot.choose', { n: 1 }) }));
+      const picker = screen.getByRole('dialog', { name: t('sheet.slot.title', { n: 1 }) });
+      await user.click(within(picker).getByRole('button', { name: new RegExp(itemName) }));
+      expect(screen.queryByRole('dialog')).toBeNull();
       expect(
-        screen.getByRole('button', { name: new RegExp(names.node('pyra_exe_core')) }),
-      ).toHaveAttribute('aria-pressed', 'false');
+        screen.getByRole('button', { name: t('sheet.slot.choose', { n: 1 }) }),
+      ).toHaveTextContent(itemName);
+
+      await user.click(screen.getByRole('tab', { name: new RegExp(t('sheet.tab.talents')) }));
+      const label = (state: string): string =>
+        t('sheet.node.label', {
+          node: names.node('pyra_exe_core'),
+          state: t(`sheet.node.state.${state}` as 'sheet.node.state.ready'),
+        });
+      await user.click(screen.getByRole('button', { name: label('ready') }));
+      // Aperçu : la valeur du sort avant et après.
+      expect(screen.getByText(/\+ 215 % ATK de dégâts/)).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: t('sheet.take') }));
+      expect(screen.getByRole('button', { name: label('taken') })).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: t('hero.respec.free') }));
+      expect(screen.getByRole('button', { name: label('ready') })).toBeInTheDocument();
 
       // Tout est sauvegardé.
       const saved = JSON.parse(window.localStorage.getItem('outlaw-thesis/save') ?? '{}') as {

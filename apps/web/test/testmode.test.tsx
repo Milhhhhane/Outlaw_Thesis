@@ -27,9 +27,11 @@ describe('mode test', () => {
     ).toHaveTextContent('12');
 
     await user.click(screen.getAllByRole('button', { name: new RegExp(t('team.sheet')) })[2]!);
+    await user.click(screen.getByRole('tab', { name: new RegExp(t('sheet.tab.talents')) }));
     await user.click(
-      screen.getByRole('button', { name: new RegExp(names.node('ronce_snare_core')) }),
+      screen.getByRole('button', { name: new RegExp(`^${names.node('ronce_snare_core')}`) }),
     );
+    await user.click(screen.getByRole('button', { name: t('sheet.take') }));
     await user.keyboard('{Escape}');
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: new RegExp(t('hub.menu.team')) }));
