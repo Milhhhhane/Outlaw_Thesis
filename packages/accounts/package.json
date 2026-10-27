@@ -1,0 +1,25 @@
+{
+  "name": "@outlaw/accounts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Règles des comptes (pseudo, mot de passe, API) partagées entre le jeu, le Worker et l'outil d'administration.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./hash": "./src/hash.ts",
+    "./common-passwords": "./src/common-passwords.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@outlaw/data": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

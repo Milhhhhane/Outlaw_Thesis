@@ -1,14 +1,19 @@
 {
-  // Site 100 % statique : Workers avec assets statiques (option recommandée par Cloudflare pour les nouveaux projets).
-  // Pas de script Worker, pas de binding. Le nom doit être identique au nom du Worker créé dans le tableau de bord.
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "outlaw-thesis",
+  "main": "./apps/api/src/index.ts",
   "compatibility_date": "2026-10-13",
-  // Construit le site avant chaque déploiement : le déploiement ne dépend plus de la commande
-  // de build réglée dans le tableau de bord Cloudflare.
   "build": { "command": "pnpm run build" },
+  // Le site reste servi tel quel ; seules les routes /api/* passent par le Worker (comptes).
   "assets": {
     "directory": "./apps/web/dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
   },
+  // Sans identifiant : Wrangler crée la base au premier déploiement (provisionnement automatique).
+  // Le schéma est appliqué par le Worker lui-même (apps/api/src/db.ts). Voir docs/DEPLOY.md.
+  "d1_databases": [{ "binding": "DB", "database_name": "outlaw-thesis" }],
+  // Pas de journaux persistants (docs/ACCOUNTS.md).
+  "observability": { "enabled": false },
 }
