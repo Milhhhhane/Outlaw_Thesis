@@ -282,3 +282,35 @@ Valeurs de `balance.json` → `economy.loot` et `progression.items.upgradeCosts`
   amélioration ne coûte, pour que dissoudre ne soit jamais la voie rapide.
 - À vérifier au test humain : si 32 passages pour un rare paraissent trop longs, monter
   `rareWeightPerRank` ou baisser `rarePity` avant de toucher aux coûts.
+
+## Rythme du farm (niveaux)
+
+`pnpm --filter @outlaw/sim farm [--auto 58]` : passages gagnants entre un donjon et le suivant
+pour une équipe de quatre qui farme le dernier donjon ouvert, limités par l'XP (par héros) ou par
+la poussière (partagée). Calcul exact depuis `balance.json` et `dungeons.json` ; objets, copies et
+maîtrise (+10 % de poussière par rang) ne sont pas comptés, le vrai rythme est donc un peu plus
+long sur les objets et un peu plus court sur la poussière.
+
+| Donjon farmé    | Niveaux | Passages (XP / poussière) | Tentatives à 58 % |
+| --------------- | ------- | ------------------------- | ----------------- |
+| ember_wastes    | 1 → 4   | 6 (6,0 / 6,0)             | 10                |
+| drowned_halls   | 4 → 8   | 8 (8,1 / 8,0)             | 14                |
+| thorn_maze      | 8 → 12  | 10 (10,0 / 10,3)          | 18                |
+| cinder_citadel  | 12 → 17 | 12 (12,0 / 12,0)          | 21                |
+| sunken_spire    | 17 → 22 | 14 (13,8 / 14,0)          | 24                |
+| verdant_crown   | 22 → 27 | 16 (15,7 / 15,0)          | 27                |
+| broken_crossing | 27 → 28 | 7,5 (3,3 / 7,5)           | 13                |
+| salt_flats      | 28 → 29 | 7,6 (3,1 / 7,6)           | 13                |
+| obsidian_pass   | 29 → 30 | 7,6 (3,0 / 7,6)           | 13                |
+| **Total**       |         | **89**                    | **153**           |
+
+- Avant ce lot : 4 à 5 passages entre deux donjons, moins d'un en fin de jeu. Le test de la
+  simulation (`tools/sim/test/farm.test.ts`) borne chaque pas entre 5 et 18 et le total entre 70
+  et 110 : une récompense retouchée hors de ces bornes casse la CI.
+- XP et poussière sont réglées pour se croiser (même nombre de passages) jusqu'au donjon 7 ; en
+  fin de jeu c'est la poussière qui gouverne, l'XP est abondante : c'est voulu, le joueur arbitre
+  entre niveaux et objets avec la même poussière pure.
+- Or : non recalibré (≈ 50 000 or sur le parcours pour 24 000 d'améliorations d'objets au total) ;
+  à resserrer si le test humain montre qu'il ne compte pas.
+- À vérifier au test humain : si 150 tentatives pour finir paraissent trop, baisser
+  `levelUp.dustPerLevel` avant de toucher aux récompenses des donjons.

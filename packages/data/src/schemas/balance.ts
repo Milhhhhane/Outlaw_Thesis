@@ -73,11 +73,13 @@ export const balanceSchema = z
       xp: z.strictObject({ base: pos, exponent: pos }),
       /**
        * Monter de niveau se paie : l'XP du niveau et de la poussière. `tierFrom[k]` est le premier
-       * niveau (celui qu'on quitte) payé en poussière du palier k + 1, `dust[k]` la quantité.
+       * niveau (celui qu'on quitte) payé en poussière du palier k + 1 ; la quantité est
+       * `dust[k] + dustPerLevel[k] × (niveau − tierFrom[k])`.
        */
       levelUp: z.strictObject({
         tierFrom: z.array(posInt).length(3),
         dust: z.array(posInt).length(3),
+        dustPerLevel: z.array(nonNegInt).length(3),
       }),
       respec: z.strictObject({
         firstFreePerHero: z.boolean(),

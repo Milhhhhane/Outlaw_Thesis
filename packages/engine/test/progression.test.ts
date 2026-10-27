@@ -9,6 +9,7 @@ import {
   enterDungeon,
   equip,
   heroBuild,
+  levelDust,
   levelDustTier,
   levelUp,
   levelUpCost,
@@ -88,6 +89,12 @@ describe('XP et niveaux', () => {
     expect(levelDustTier(content, 7)).toBe(1);
     expect(levelDustTier(content, 8)).toBe(2);
     expect(levelDustTier(content, 22)).toBe(3);
+    // Dans un palier, la poussière demandée croît avec le niveau (fine +1, pure +2).
+    expect(levelDust(content, 7)).toEqual({ tier: 1, amount: 2 });
+    expect(levelDust(content, 8)).toEqual({ tier: 2, amount: 3 });
+    expect(levelDust(content, 11)).toEqual({ tier: 2, amount: 6 });
+    expect(levelDust(content, 22)).toEqual({ tier: 3, amount: 5 });
+    expect(levelDust(content, 29)).toEqual({ tier: 3, amount: 19 });
 
     const banked = { ...base, heroes: { ...base.heroes, pyra: { ...hero, xp: 40 + 113 + 5 } } };
     expect(reason(levelUp(content, banked, 'pyra'))).toBe('not_enough_materials');
@@ -238,9 +245,9 @@ describe('donjons et butin', () => {
       gold: 80,
       materials: { tier: 1, amount: 4 },
     });
-    expect(first.report.xp.pyra).toEqual({ gained: 100, ready: true });
-    expect(first.report.xp.ronce).toEqual({ gained: 50, ready: true });
-    expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 100 });
+    expect(first.report.xp.pyra).toEqual({ gained: 60, ready: true });
+    expect(first.report.xp.ronce).toEqual({ gained: 30, ready: false });
+    expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 60 });
     expect(profile.items).toHaveLength(1);
     expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);

@@ -2,6 +2,18 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
+
+### Modifié
+
+- L'XP se met en banque ; chaque niveau se paie en XP et en poussière du palier (brute jusqu'au
+  niveau 7, fine de 8 à 21, pure dès 22, quantité croissante). Boutons « Niveau suivant » et
+  « Monter au maximum » sur la fiche, badge « Niveau prêt » dans la galerie et sur la carte de
+  récompense. Les sauvegardes gardent leurs niveaux.
+- XP et poussière des donjons recalibrées pour le farm automatique : 6 à 16 passages gagnants
+  entre deux donjons, 7 à 8 par donjon final, 89 au total (avant : 4 à 5, puis moins d'un).
+- `pnpm --filter @outlaw/sim farm` : calculateur de rythme ; bornes vérifiées en CI.
+
 ## [Non publié] — 2026-10-27 — grind : butin unique, copies, maîtrise
 
 ### Ajouté

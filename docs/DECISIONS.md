@@ -568,3 +568,21 @@ sur la carte.
 **Rien de la poussière niveau héros dans cette PR** — La monnaie interne reste `materials`
 (tuple de trois paliers), affichée « poussière brute / fine / pure ». Le coût en poussière des
 niveaux de héros et le recalibrage de l'XP et de l'or sont la PR suivante.
+
+## Monter de niveau se paie
+
+**L'XP se met en banque, le niveau s'achète** — Contexte : avec Auto et Rejouer, l'XP tombait
+sans effort et le joueur passait les donjons sans rien décider. Choix : `addXp` n'augmente plus le
+niveau ; `levelUp` paie le niveau suivant avec l'XP du niveau **et** de la poussière du palier
+(brute jusqu'au niveau 7, fine de 8 à 21, pure dès 22 ; `progression.levelUp`), la quantité
+croissant dans le palier (+1 par niveau en fine, +2 en pure). « Monter au maximum » enchaîne.
+Raison : un seul compteur partagé (la poussière) relie niveaux et objets, donc un vrai choix de
+dépense ; les paliers forcent à farmer le bon chapitre. Les sauvegardes gardent leurs niveaux ;
+l'étoile ne monte plus le niveau toute seule, elle débloque seulement la montée.
+
+**Récompenses recalibrées sur un calculateur, pas à l'œil** — Choix : `pnpm --filter @outlaw/sim
+farm` calcule, par paire de donjons, les passages gagnants qu'exigent l'XP (par héros) et la
+poussière (pour l'équipe de quatre), et le test de la simulation borne chaque pas entre 5 et 18 et
+le total entre 70 et 110. Cibles retenues : 6, 8, 10, 12, 14, 16 passages jusqu'au donjon 7, puis
+7 à 8 par donjon final (chiffres dans `docs/BALANCE.md`). Raison : les cibles sont dans le dépôt
+et vérifiées en CI ; retoucher une récompense sans casser le rythme se voit tout de suite.

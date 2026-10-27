@@ -41,7 +41,7 @@
       }
     ],
     "rewards": {
-      "xp": 100,
+      "xp": 60,
       "gold": 80,
       "materials": {
         "tier": 1,
@@ -96,11 +96,11 @@
       }
     ],
     "rewards": {
-      "xp": 380,
+      "xp": 260,
       "gold": 160,
       "materials": {
         "tier": 1,
-        "amount": 6
+        "amount": 4
       }
     },
     "loot": ["tide_pendant", "drowned_pearl"],
@@ -156,11 +156,11 @@
       }
     ],
     "rewards": {
-      "xp": 1100,
+      "xp": 470,
       "gold": 260,
       "materials": {
         "tier": 2,
-        "amount": 4
+        "amount": 7
       }
     },
     "loot": ["thorn_ring", "storm_sigil"],
@@ -214,11 +214,11 @@
       }
     ],
     "rewards": {
-      "xp": 2100,
+      "xp": 880,
       "gold": 380,
       "materials": {
         "tier": 2,
-        "amount": 6
+        "amount": 15
       }
     },
     "loot": ["quick_spurs", "phoenix_feather"],
@@ -276,11 +276,11 @@
       }
     ],
     "rewards": {
-      "xp": 3600,
+      "xp": 1200,
       "gold": 520,
       "materials": {
         "tier": 2,
-        "amount": 8
+        "amount": 20
       }
     },
     "loot": ["hunter_lens", "aegis_shard"],
@@ -333,11 +333,11 @@
       }
     ],
     "rewards": {
-      "xp": 5400,
+      "xp": 1500,
       "gold": 700,
       "materials": {
         "tier": 3,
-        "amount": 5
+        "amount": 12
       }
     },
     "loot": ["spare_flask", "verdant_seed"],
@@ -395,7 +395,7 @@
       }
     ],
     "rewards": {
-      "xp": 7800,
+      "xp": 1700,
       "gold": 950,
       "materials": {
         "tier": 3,
@@ -453,7 +453,7 @@
       }
     ],
     "rewards": {
-      "xp": 9500,
+      "xp": 1900,
       "gold": 1100,
       "materials": {
         "tier": 3,
@@ -515,7 +515,7 @@
       }
     ],
     "rewards": {
-      "xp": 11000,
+      "xp": 2100,
       "gold": 1250,
       "materials": {
         "tier": 3,
@@ -570,7 +570,7 @@
       }
     ],
     "rewards": {
-      "xp": 13000,
+      "xp": 2400,
       "gold": 1500,
       "materials": {
         "tier": 3,

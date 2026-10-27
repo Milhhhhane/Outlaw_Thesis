@@ -126,6 +126,14 @@ export function levelDustTier(content: Content, level: number): number {
   return tierFrom.filter((from) => level >= from).length || 1;
 }
 
+/** Poussière demandée pour quitter ce niveau : palier et quantité (croissante dans le palier). */
+export function levelDust(content: Content, level: number): { tier: number; amount: number } {
+  const { tierFrom, dust, dustPerLevel } = content.balance.progression.levelUp;
+  const tier = levelDustTier(content, level);
+  const from = tierFrom[tier - 1] ?? 1;
+  return { tier, amount: (dust[tier - 1] ?? 0) + (dustPerLevel[tier - 1] ?? 0) * (level - from) };
+}
+
 export interface LevelUpCost {
   readonly xp: number;
   readonly dust: { readonly tier: number; readonly amount: number };
@@ -134,9 +142,7 @@ export interface LevelUpCost {
 /** Coût du niveau suivant, ou null au niveau maximum. */
 export function levelUpCost(content: Content, hero: HeroProgress): LevelUpCost | null {
   if (hero.level >= content.balance.progression.maxLevel) return null;
-  const tier = levelDustTier(content, hero.level);
-  const amount = content.balance.progression.levelUp.dust[tier - 1] ?? 0;
-  return { xp: xpToNext(hero.level, content), dust: { tier, amount } };
+  return { xp: xpToNext(hero.level, content), dust: levelDust(content, hero.level) };
 }
 
 /** Le héros a ce qu'il faut (XP, poussière, pas d'étoile en attente) pour monter d'un niveau. */

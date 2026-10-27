@@ -65,7 +65,8 @@
     },
     "levelUp": {
       "tierFrom": [1, 8, 22],
-      "dust": [2, 3, 5]
+      "dust": [2, 3, 5],
+      "dustPerLevel": [0, 1, 2]
     },
     "respec": {
       "firstFreePerHero": true,

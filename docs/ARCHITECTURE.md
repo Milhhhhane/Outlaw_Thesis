@@ -109,6 +109,10 @@ Les coffres sont dans `packages/engine/src/chests.ts` (`openChest`, `summonHero`
 est dans `progression.ts` (`levelCap`, `heroStars`, `atStarGate`) ; l'écran est
 `apps/web/src/screens/Chests.tsx`.
 
+La montée de niveau est manuelle (`levelUp`, `levelUpMax`, `levelUpCost`, `canLevelUp` dans
+`progression.ts`) : `addXp` ne fait que créditer la banque d'XP. Le rythme qui en découle se lit
+avec `pnpm --filter @outlaw/sim farm` (`tools/sim/src/farm.ts`).
+
 Le butin est dans `packages/engine/src/loot.ts` (tables pondérées, rangs de maîtrise, paliers de
 poussière) et `items.ts` (`upgradeCost`, `upgradeItem`, `dissolveCopies`, `mergeItems`) ; le tirage
 lui-même est dans `completeDungeon` (`progression.ts`). Un objet vient d'un seul donjon
