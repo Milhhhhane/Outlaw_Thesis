@@ -4,7 +4,7 @@
   "role": "damage",
   "stats": {
     "hp": 380,
-    "atk": 60,
+    "atk": 64,
     "def": 18,
     "vit": 108
   },
@@ -16,7 +16,7 @@
       "effects": [
         {
           "kind": "damage",
-          "power": 100
+          "power": 112
         }
       ]
     },
@@ -44,7 +44,7 @@
       "effects": [
         {
           "kind": "damage",
-          "power": 165
+          "power": 185
         },
         {
           "kind": "status",
@@ -61,7 +61,7 @@
       "effects": [
         {
           "kind": "damage",
-          "power": 150
+          "power": 168
         },
         {
           "kind": "status",

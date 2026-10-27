@@ -3,8 +3,8 @@
   "element": "water",
   "role": "damage",
   "stats": {
-    "hp": 400,
-    "atk": 58,
+    "hp": 380,
+    "atk": 55,
     "def": 20,
     "vit": 104
   },

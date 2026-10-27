@@ -4,7 +4,7 @@
   "role": "support",
   "stats": {
     "hp": 470,
-    "atk": 46,
+    "atk": 50,
     "def": 26,
     "vit": 100
   },
@@ -16,7 +16,7 @@
       "effects": [
         {
           "kind": "damage",
-          "power": 110
+          "power": 116
         }
       ]
     },
@@ -27,7 +27,7 @@
       "effects": [
         {
           "kind": "shield",
-          "power": 140,
+          "power": 168,
           "duration": 2
         }
       ]
@@ -39,7 +39,7 @@
       "effects": [
         {
           "kind": "heal",
-          "power": 90
+          "power": 108
         },
         {
           "kind": "tempo",
@@ -54,7 +54,7 @@
       "effects": [
         {
           "kind": "heal",
-          "power": 110
+          "power": 132
         },
         {
           "kind": "statMod",

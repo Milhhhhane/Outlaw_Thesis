@@ -68,7 +68,7 @@ function duel(content: Content, a: readonly HeroBuild[], b: readonly HeroBuild[]
 }
 
 /** Builds par équipe et par donjon pour la mesure « aucun héros indispensable ». */
-const TEAM_SAMPLES = 6;
+const TEAM_SAMPLES = 48;
 
 /** Taille du groupe de référence des duels de R1. */
 const REFERENCE = 4;

@@ -3,8 +3,8 @@
   "element": "fire",
   "role": "control",
   "stats": {
-    "hp": 420,
-    "atk": 52,
+    "hp": 386,
+    "atk": 47,
     "def": 22,
     "vit": 106
   },

@@ -3,8 +3,8 @@
   "element": "nature",
   "role": "control",
   "stats": {
-    "hp": 430,
-    "atk": 50,
+    "hp": 408,
+    "atk": 47,
     "def": 22,
     "vit": 104
   },
