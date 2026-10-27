@@ -177,6 +177,18 @@ describe('messages serveur', () => {
     expect(parseServerMessage('{"type":"error","code":"too_large"}').ok).toBe(true);
   });
 
+  it('lit le message « names » (pseudos des deux places) et refuse le reste', () => {
+    const names = (extra: Record<string, unknown>) =>
+      parseServerMessage(
+        JSON.stringify({ type: 'names', you: 'Alice', opponent: 'Bob', ...extra }),
+      );
+    expect(names({}).ok).toBe(true);
+    expect(names({ opponent: null }).ok).toBe(true);
+    expect(names({ you: '' }).ok).toBe(false);
+    expect(names({ you: 'x'.repeat(65) }).ok).toBe(false);
+    expect(names({ extra: 1 }).ok).toBe(false);
+  });
+
   it('chaque code d’erreur est unique', () => {
     expect(new Set(ERROR_CODES).size).toBe(ERROR_CODES.length);
   });

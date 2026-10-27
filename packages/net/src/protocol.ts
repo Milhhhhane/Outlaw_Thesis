@@ -202,6 +202,12 @@ export const serverMessageSchema = z.discriminatedUnion('type', [
       .min(0)
       .max(EMOTE_COUNT - 1),
   }),
+  /** Pseudos des deux places, envoyés par le serveur (le salon lui-même ne connaît pas les comptes). */
+  z.strictObject({
+    type: z.literal('names'),
+    you: z.string().min(1).max(64),
+    opponent: z.string().min(1).max(64).nullable(),
+  }),
   z.strictObject({
     type: z.literal('error'),
     code: errorCodeSchema,

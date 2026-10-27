@@ -144,4 +144,8 @@ export type ApiError =
   | 'unauthenticated'
   | 'must_change_password'
   | 'conflict'
-  | 'not_found';
+  | 'not_found'
+  /** PvP : le code ne correspond à aucun salon, le salon est complet, ou le service n'est pas branché. */
+  | 'room_not_found'
+  | 'room_full'
+  | 'unavailable';
