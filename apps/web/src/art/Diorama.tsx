@@ -17,9 +17,9 @@ interface Props {
 
 /** Pieds des héros autour du feu. */
 const SPOTS: readonly { readonly x: number; readonly y: number }[] = [
-  { x: 150, y: 160 },
-  { x: 100, y: 150 },
-  { x: 56, y: 166 },
+  { x: 160, y: 160 },
+  { x: 118, y: 150 },
+  { x: 76, y: 166 },
 ];
 
 /** Petite scène décorative : un décor de donjon et quelques héros au repos. */

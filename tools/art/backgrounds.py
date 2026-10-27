@@ -420,95 +420,9 @@ def broken_crossing():
 
 
 
-def world_map():
-    """Carte du monde : régions élémentaires, sentier qui relie les sept donjons."""
-    import json
-    import pathlib
-    nodes = json.loads((pathlib.Path(__file__).with_name('map_nodes.json')).read_text())
-    pts = list(nodes.values())
-    c = Canvas()
-    rnd = random.Random(77)
-    # fond : terre sombre légèrement tramée
-    for y in range(H):
-        for x in range(W):
-            n = (math.sin(x / 13) + math.sin(y / 9 + x / 31)) * 0.25 + 0.5
-            c.put(x, y, '#3a2a2c' if c.dith(x, y, n * 0.6) else '#2e2026')
-
-    def region(cx, cy, rx, ry, cols, seed, edge):
-        """Région aux contours irréguliers mais lisses, bord net et ombre portée."""
-        r2 = random.Random(seed)
-        n = 24
-        bumps = [r2.uniform(0.82, 1.12) for _ in range(n)]
-
-        def radius(a):
-            f = (a + math.pi) / (2 * math.pi) * n
-            i = int(f) % n
-            t = f - int(f)
-            return bumps[i] * (1 - t) + bumps[(i + 1) % n] * t
-
-        inside = set()
-        for y in range(max(0, cy - ry - 6), min(H, cy + ry + 7)):
-            for x in range(max(0, cx - rx - 6), min(W, cx + rx + 7)):
-                a = math.atan2(y - cy, x - cx)
-                k = radius(a)
-                if math.hypot((x - cx) / (rx * k), (y - cy) / (ry * k)) < 1:
-                    inside.add((x, y))
-        for x, y in inside:  # ombre
-            if (x, y + 2) not in inside:
-                c.put(x, y + 2, '#1c1218')
-        for x, y in inside:
-            d = math.hypot((x - cx) / rx, (y - cy) / ry)
-            c.put(x, y, cols[0] if c.dith(x, y, 1.15 - d) else cols[1])
-        for x, y in inside:
-            if any((x + dx, y + dy) not in inside for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
-                c.put(x, y, edge)
-
-    region(46, 140, 52, 34, ('#7a4a34', '#5e3a2e'), 1, '#a86a44')      # désert
-    region(104, 122, 26, 16, ('#2a5a80', '#1e4466'), 2, '#6ac0e0')     # lac
-    region(64, 70, 40, 26, ('#2e4a26', '#24381e'), 3, '#5a8a3a')       # forêt
-    region(140, 46, 34, 24, ('#5a2420', '#3e1a1a'), 4, '#e0643a')      # volcan
-    region(204, 112, 44, 30, ('#16405a', '#0e2e44'), 5, '#4a90d9')     # mer
-    region(252, 54, 40, 28, ('#3e6a2a', '#2e5020'), 6, '#a8c860')      # couronne
-    region(286, 132, 32, 30, ('#5a3a3a', '#46282e'), 7, '#c07a5a')     # canyon
-    # décors
-    for x, y in [(30, 132), (58, 150), (20, 150)]:  # mesas
-        c.blob(['.####.', '######', '######'], x, y, {'#': '#a05a3a'})
-    for _ in range(40):  # arbres
-        x, y = rnd.randint(30, 100), rnd.randint(50, 92)
-        c.blob(['.g.', 'ggg', '.b.'], x, y, {'g': '#5a8a3a', 'b': '#3a2418'})
-    for _ in range(22):
-        x, y = rnd.randint(220, 285), rnd.randint(34, 76)
-        c.blob(['.g.', 'ggg', '.b.'], x, y, {'g': '#a8c860', 'b': '#3a2418'})
-    c.blob(['....#....', '...###...', '..##o##..', '.#######.', '#########'], 133, 32,
-           {'#': '#2a1014', 'o': '#ff8a2a'})
-    for _ in range(26):  # vagues
-        x, y = rnd.randint(170, 240), rnd.randint(92, 134)
-        c.blob(['.#.#', '#.#.'], x, y, {'#': '#4a90d9'})
-    for k in range(6):  # crevasse du canyon
-        c.put(280 + k, 118 + k * 3, '#1a0e14')
-        c.put(281 + k, 118 + k * 3, '#1a0e14')
-    # sentier pointillé entre les donjons
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        steps = int(math.hypot(x1 - x0, y1 - y0))
-        for i in range(steps):
-            t = i / steps
-            x = x0 + (x1 - x0) * t + math.sin(t * math.pi) * 6
-            y = y0 + (y1 - y0) * t
-            if i % 4 < 2:
-                c.put(int(x), int(y), '#f0d8a0')
-                c.put(int(x), int(y) + 1, '#2a1a1a')
-    # bord de carte
-    for x in range(W):
-        for y in (0, 1, H - 2, H - 1):
-            c.put(x, y, '#120a10')
-    for y in range(H):
-        for x in (0, 1, W - 2, W - 1):
-            c.put(x, y, '#120a10')
-    return c.image()
-
 ALL = {'ember_wastes': ember_wastes, 'drowned_halls': drowned_halls, 'thorn_maze': thorn_maze,
        'cinder_citadel': cinder_citadel, 'sunken_spire': sunken_spire, 'verdant_crown': verdant_crown,
-       'broken_crossing': broken_crossing, 'world_map': world_map}
+       'broken_crossing': broken_crossing, 'world_map': lambda: __import__('worldmap').world_map()}
 
 if __name__ == '__main__':
     import sys

@@ -35,6 +35,9 @@
   HttpOnly, limites de débit, synchronisation locale d'abord avec écran de conflit, migration
   d'une partie invitée, page de confidentialité (brouillon), réinitialisation par le
   propriétaire (`pnpm admin:reset-password`). Tests : Worker, outil, e2e contre `wrangler dev`.
+- Lot 9 — Grosse amélioration graphique : menus habillés (cadres bois, fond, socles), combat
+  avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
+  avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
 - Lot 11 — PvP, salon personnalisé : moteur (règles de combat, action par défaut, empreinte d'état),
   protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`, routes de création et de
   connexion), interface « Duel en ligne » (salon, équipe, combat en direct, émotes, revanche, reprise).

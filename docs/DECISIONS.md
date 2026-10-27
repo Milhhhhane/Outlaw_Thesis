@@ -486,3 +486,36 @@ sécuriser pour une première version entre amis ; le serveur retient la place p
 **Pas de traduction des erreurs de connexion** — Choix : salon inconnu, plein ou serveur muet donnent le
 même message (« Impossible de rejoindre ce salon »). Raison : un WebSocket refusé n'expose pas son
 code HTTP au navigateur ; distinguer demanderait un appel de plus.
+
+## Lot 9 — amélioration graphique
+
+**Habillage par CSS et tuiles plutôt que par écrans peints** — Contexte : les menus étaient des
+panneaux plats. Choix : un fond de nuit discret partagé, des cadres bois en 9 tranches, une
+planche d'en-tête et un cuir tramé, tous générés par `tools/art/ui.py` et appliqués en CSS
+(`border-image`, `background`). Raison : un seul jeu de tuiles habille tous les écrans et les
+fenêtres, pour quelques kilo-octets ; des écrans peints un par un auraient coûté bien plus en
+poids et en temps.
+
+**Jus de combat sans nouvelles poses** — Contexte : dessiner des poses d'attaque et de dégâts pour
+six héros et douze ennemis aurait doublé l'atlas. Choix : fente avec anticipation et
+étirement, recul avec rotation, étincelles, arcs de frappe, secousses et flashs, le tout en CSS à
+partir des sprites existants ; seuls trois petits effets sont ajoutés (arc, gros impact,
+poussière). Raison : le ressenti vient surtout du timing, du recul et des effets d'écran ; la vue
+marque les coups lourds (≥ 30 % des PV ou mortels) et les ultimes, l'interface ne calcule rien.
+
+**Carte du monde par biomes bruités** — Contexte : les anciennes régions étaient des taches aux
+bords nets. Choix : chaque pixel reçoit la contrée la plus proche selon une distance elliptique
+bruitée, puis une texture par contrée et des repères dessinés aux positions des donjons
+(`map_nodes.json` inchangé). Raison : contours organiques et lisibles, positions des boutons
+conservées, tests de bout en bout intacts.
+
+**Personnages : pack d'artiste plutôt que génération** — Contexte : les héros et monstres générés
+par polygones restaient « des formes empilées », sans visage ni volume ; la méthode plafonne.
+Choix : les personnages du « 16x16 DungeonTileset II » de 0x72, licence CC0 vérifiée sur la page
+itch.io, copiés dans `tools/art/third_party/0x72/` avec leur note de licence, recolorés par
+rotation de teinte (peau préservée) pour coller aux éléments, agrandis ×2 sans lissage, monstres
+retournés ; quatre images de repos et l'image de dégâts du pack. Raison : le brief autorise les
+assets libres crédités ; un rendu professionnel sûr contre un chantier de dessin pixel par pixel
+coûteux et incertain. Limite assumée : les personnages sont au double des pixels du décor
+(mélange de densités courant dans le genre) et le thème glisse du western vers le donjon
+fantastique ; le titre et les textes de jeu restent inchangés.
