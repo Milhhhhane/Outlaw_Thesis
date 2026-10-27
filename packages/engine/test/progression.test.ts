@@ -196,18 +196,20 @@ describe('donjons et butin', () => {
     expect(profileSchema.parse(profile)).toEqual(profile);
   });
 
-  it('même profil, même butin ; rare garanti au 5e donjon sans rare', () => {
+  it('même profil, même butin ; rare au premier passage puis garanti au 5e donjon sans rare', () => {
     const profile = newProfile(content, 99);
-    expect(value(completeDungeon(content, profile, 'ember_wastes')).report.item).toEqual(
+    const first = value(completeDungeon(content, profile, 'ember_wastes'));
+    expect(first.report.item).toEqual(
       value(completeDungeon(content, profile, 'ember_wastes')).report.item,
     );
+    expect(content.itemById.get(first.report.item.item)?.rarity).toBe('rare');
     let current = profile;
     let sinceRare = 0;
     for (let i = 0; i < 40; i++) {
       const { profile: next, report } = value(completeDungeon(content, current, 'ember_wastes'));
       const rare = content.itemById.get(report.item.item)?.rarity === 'rare';
       if (sinceRare === 4) expect(rare).toBe(true);
-      if (report.item.guaranteed) expect(sinceRare).toBe(4);
+      if (report.item.guaranteed && i > 0) expect(sinceRare).toBe(4);
       sinceRare = rare ? 0 : sinceRare + 1;
       expect(next.sinceRare).toBe(sinceRare);
       current = next;
@@ -220,13 +222,38 @@ describe('donjons et butin', () => {
 
   it('taux affichés et générateur à graine', () => {
     const dungeon = content.dungeonById.get('ember_wastes')!;
-    const rates = lootRates(dungeon);
+    const rates = lootRates(content, dungeon);
     expect(rates.reduce((s, r) => s + r.pct, 0)).toBeCloseTo(100);
-    expect(rates[0]).toEqual({ item: 'ember_charm', pct: 25 });
+    // 4 communs à 75 et 2 rares à 25 : un commun pèse 75 / 350.
+    expect(rates[0]).toEqual({ item: 'ember_charm', pct: (75 * 100) / 350 });
     const a = nextRandom(5);
     expect(nextRandom(5)).toEqual(a);
     expect(a.value).toBeGreaterThanOrEqual(0);
     expect(a.value).toBeLessThan(1);
+  });
+
+  it('un doublon de trop est démonté en matériaux au lieu d’être gardé', () => {
+    const profile = newProfile(content, 7);
+    let current = profile;
+    let salvaged = 0;
+    for (let i = 0; i < 60; i++) {
+      const { profile: next, report } = value(completeDungeon(content, current, 'ember_wastes'));
+      const copiesBefore = current.items.filter((o) => o.item === report.item.item).length;
+      if (report.item.salvaged !== null) {
+        salvaged += 1;
+        expect(copiesBefore).toBeGreaterThanOrEqual(content.balance.economy.loot.duplicateLimit);
+        expect(next.items).toEqual(current.items);
+        const { tier, amount } = report.item.salvaged;
+        expect(next.materials[tier - 1]).toBeGreaterThanOrEqual(
+          (current.materials[tier - 1] ?? 0) + amount,
+        );
+      } else {
+        expect(copiesBefore).toBeLessThan(content.balance.economy.loot.duplicateLimit);
+        expect(next.items.length).toBe(current.items.length + 1);
+      }
+      current = next;
+    }
+    expect(salvaged).toBeGreaterThan(0);
   });
 
   it('déblocage d’un héros au niveau recommandé du donjon', () => {

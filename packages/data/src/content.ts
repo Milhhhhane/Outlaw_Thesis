@@ -150,13 +150,23 @@ export function parseContent(raw: RawContent): Content {
     });
     let hasRare = false;
     for (const entry of dungeon.loot) {
-      const item = itemById.get(entry.item);
-      if (!item) issues.push(`${where} : objet de butin inconnu « ${entry.item} »`);
+      const item = itemById.get(entry);
+      if (!item) issues.push(`${where} : objet de butin inconnu « ${entry} »`);
       else if (item.rarity === 'rare') hasRare = true;
     }
+    if (new Set(dungeon.loot).size !== dungeon.loot.length)
+      issues.push(`${where} : objet de butin en double`);
     if (!hasRare) issues.push(`${where} : la table de butin doit contenir au moins un objet rare`);
     if (dungeon.unlocksHero !== undefined && !heroById.has(dungeon.unlocksHero)) {
       issues.push(`${where} : héros débloqué inconnu « ${dungeon.unlocksHero} »`);
+    }
+  }
+
+  for (const a of dungeons) {
+    for (const b of dungeons) {
+      if (a.id >= b.id || a.map.chapter !== b.map.chapter) continue;
+      if (Math.hypot(a.map.x - b.map.x, a.map.y - b.map.y) < 24)
+        issues.push(`carte : « ${a.id} » et « ${b.id} » sont trop proches (moins de 24 px)`);
     }
   }
 

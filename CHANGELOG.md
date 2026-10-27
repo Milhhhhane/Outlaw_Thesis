@@ -2,6 +2,26 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-12] — 2026-10-27 — carte pilotée par les données, butin revu
+
+### Ajouté
+
+- Butin : rare garanti au premier passage d'un donjon ; au-delà de trois exemplaires d'un objet,
+  le doublon est démonté en matériaux (annoncé sur l'écran de récompenses).
+- Carte : chapitres (une image par chapitre, onglets si plusieurs), chemin complet en pointillés,
+  étape suivante animée ; noms affichés pour l'étape en cours, la sélection et au survol.
+- `docs/CONTENT.md` : liste de contrôle « Ajouter un donjon » en six points.
+
+### Modifié
+
+- Un donjon porte sa place sur la carte (`map` : `x`, `y`, `landmark`, `chapter`) et son butin
+  comme simple liste d'objets ; les poids viennent de `balance.json` (`economy.loot.weights`,
+  commun 75 / rare 25). L'image de la carte ne contient plus ni repères ni chemin.
+- Repères de carte dans l'atlas (`landmark_<nom>`), peints par l'écran et non plus par l'image ;
+  `tools/art/map_nodes.json` supprimé.
+- `scene` facultatif par donjon pour emprunter un décor de combat.
+- Le panneau du donjon affiche toute la table de butin, rares en doré.
+
 ## [lot-11] — 2026-10-27 — début plus facile, courbe de difficulté, trois donjons
 
 ### Ajouté

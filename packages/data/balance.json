@@ -97,7 +97,16 @@
   },
   "economy": {
     "rareGuaranteeAfter": 5,
-    "replayRewardRate": 1
+    "replayRewardRate": 1,
+    "loot": {
+      "weights": { "common": 75, "rare": 25 },
+      "firstClearRare": true,
+      "duplicateLimit": 3,
+      "salvage": {
+        "common": { "tier": 1, "amount": 3 },
+        "rare": { "tier": 2, "amount": 4 }
+      }
+    }
   },
   "energy": {
     "costPerDungeon": 0,

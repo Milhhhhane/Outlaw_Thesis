@@ -52,7 +52,7 @@ export function DungeonRun({
     const failed = phase.kind === 'failed';
     return (
       <RunEnd
-        scene={dungeonId}
+        scene={dungeon.scene ?? dungeonId}
         title={failed ? t('run.failed', { dungeon: name }) : t('test.done', { dungeon: name })}
         text={failed ? t('run.failed.text') : t('test.done.text')}
         onRetry={() => {
@@ -85,7 +85,7 @@ export function DungeonRun({
       key={phase.room}
       setup={setup}
       title={t('run.room', { dungeon: name, n: phase.room + 1 })}
-      scene={dungeonId}
+      scene={dungeon.scene ?? dungeonId}
       onExit={onExit}
       finish={{
         label: (won) => (!won ? t('run.back') : last ? t('run.claim') : t('run.next')),
