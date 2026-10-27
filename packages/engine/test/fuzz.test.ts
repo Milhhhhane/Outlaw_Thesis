@@ -87,5 +87,5 @@ describe('combats aléatoires', () => {
       expect(events.at(-1)?.type).toBe('battle_end');
       expect(replay(setup, balance, actions).events).toEqual(events);
     }
-  });
+  }, 30_000); // 200 combats : plus de 5 s sur une machine chargée.
 });

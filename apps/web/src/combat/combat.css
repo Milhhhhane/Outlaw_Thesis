@@ -93,7 +93,7 @@
 
 .track__time {
   color: var(--bone-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .track__entry--now .track__time {
@@ -345,7 +345,7 @@
 }
 
 .hud__numbers {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
   color: var(--bone);
 }
@@ -366,7 +366,7 @@
   gap: 1px;
   padding: 0 2px;
   background: rgb(7 5 10 / 80%);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 14px;
 }
 
@@ -403,7 +403,7 @@
   background: rgb(60 14 18 / 92%);
   border: 2px solid #07050a;
   color: #ffd0c0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.1;
   text-align: center;
   text-shadow: none;
@@ -596,7 +596,7 @@
 
 .detail__name span {
   color: var(--bone-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* Fin de combat */

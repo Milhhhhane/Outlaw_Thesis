@@ -196,6 +196,28 @@ Raison : aucune règle dans l'interface, accessible, poids faible (atlas 72 ko h
 événement sans durée faisait passer le suivant sans pause. Choix : on attend la durée du dernier
 événement affiché. Raison : chaque coup a le temps d'être vu.
 
+## Habillage plein écran (sprint 6)
+
+**Écran logique 960 × 540** — Choix : tout est dessiné à 960 × 540 puis mis à l'échelle de la
+fenêtre (bandes noires si le ratio diffère). Raison : 3 × la scène pixel de 320 × 180, textes
+encore lisibles à 0,72 sur un téléphone de 844 × 390, cibles tactiles de 44 px logiques.
+
+**Plein écran sur iPhone** — Constat vérifié à la source (MDN : API Fullscreen « Only available on
+iPad, not on iPhone ») : le bouton n'apparaît que si l'API existe ; sur iPhone, le jeu propose
+l'installation sur l'écran d'accueil (affichage sans barre d'adresse). Pas de service worker :
+le jeu ne promet pas de mode hors ligne. Détails dans DEPLOY.md.
+
+**Pas d'audio** — Choix : aucun son ni musique dans ce lot. Raison : la consigne le rend
+optionnel « seulement si la qualité reste au niveau » ; aucun fichier dont la licence est sûre
+n'a été retenu. L'option « Son » l'annonce.
+
+**Échap empilé** — Choix : chaque écran ou fenêtre déclare son retour ; seul le plus au premier
+plan réagit (fenêtre, puis ciblage, puis pause, puis écran précédent).
+
+**Tests de bout en bout** — `@playwright/test` épinglé sur la version du navigateur installé ;
+lancés sur Linux en CI et dans `pnpm verify`. Une boucle complète par variante (souris à 1280,
+clavier à 1920, les deux à 844) pour garder la CI courte.
+
 ## Planification
 
 **Héros 4 à 6 et donjons 2, 4, 6** — Contexte : le déblocage arrive au sprint 4, ces héros au

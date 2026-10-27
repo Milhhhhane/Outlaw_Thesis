@@ -2,6 +2,28 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [sprint-6] — 2026-10-27 — habillage « jeu plein écran »
+
+### Ajouté
+
+- Coque de jeu 16:9 (960 × 540 logiques) mise à l'échelle de la fenêtre, bandes noires, aucun
+  défilement ni zoom ; écran « Tournez votre appareil » en portrait ; plein écran (bouton, F11) ;
+  manifeste d'installation et icônes ; police Pixelify Sans embarquée (OFL).
+- Écran-titre (Continuer, Nouvelle partie, Mode test, Options, Crédits), camp en un écran,
+  options (plein écran, vitesse des combats, animations, export, import et effacement de la
+  sauvegarde), crédits lus dans `docs/CREDITS.md`.
+- Combat tenant sur un écran : file en haut, scène au centre, barre de sorts en bas, PV et
+  intentions dans la scène, menu pause (Échap), victoire et défaite en plein écran,
+  récompenses en cartes.
+- Fiche de héros à onglets, arbres de talents reliés avec aperçu avant/après sur les sorts,
+  icônes par type d'effet, emplacements d'objets avec fenêtre de choix ; carte des donjons et
+  écran de composition à trois emplacements ; atelier des objets.
+- Tests Playwright à 1920×1080, 1366×768, 1280×720, 844×390 et 390×844 (`pnpm e2e`, en CI).
+
+### Modifié
+
+- Plus aucun menu déroulant natif ni lien souligné ; Échap revient en arrière partout.
+
 ## [graphismes] — 2026-10-27
 
 ### Ajouté

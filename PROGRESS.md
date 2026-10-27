@@ -1,6 +1,6 @@
 # Avancement
 
-**MVP terminé** : sprints 0 à 5 livrés.
+**MVP terminé** : sprints 0 à 6 livrés.
 
 ## Fait
 
@@ -23,6 +23,10 @@
 
 - Graphismes — pixel art original (héros, ennemis, effets, décors, interface) et combat animé ;
   outils dans `tools/art/`.
+
+- Sprint 6 — Habillage « jeu plein écran » : coque 16:9, écran-titre, camp, combat en un écran,
+  fiche à onglets et arbres de talents, carte des donjons. Critère : aucun défilement et boucle
+  jouable au clic et au clavier à 5 résolutions (`pnpm e2e`).
 
 ## Reste à faire (hors code)
 

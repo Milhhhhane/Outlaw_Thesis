@@ -54,3 +54,11 @@ jobs:
 
       - name: Taille du bundle
         run: pnpm size
+
+      - name: Navigateur des tests de bout en bout
+        if: runner.os == 'Linux'
+        run: pnpm --filter @outlaw/web exec playwright install --with-deps chromium
+
+      - name: Tests de bout en bout (5 résolutions)
+        if: runner.os == 'Linux'
+        run: pnpm e2e

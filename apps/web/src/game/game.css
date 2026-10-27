@@ -1405,7 +1405,7 @@ button:disabled {
   padding: 0 4px;
   background: #2e2438;
   color: var(--bone-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .spell-card__meta {
@@ -1451,7 +1451,7 @@ button:disabled {
   gap: 4px;
   margin: 0;
   color: var(--bone-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tree__board {
@@ -1486,7 +1486,7 @@ button:disabled {
   transform: translate(-50%, -50%);
   background: #0d0a11;
   color: var(--bone-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .node {
