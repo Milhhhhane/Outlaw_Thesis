@@ -621,7 +621,8 @@
   display: grid;
   justify-items: center;
   gap: 1px;
-  width: 100px;
+  /* quatre emplacements espacés de 32 px natifs (96 px) : le repère reste sous cette largeur */
+  width: 92px;
   transform: translate(-50%, -100%);
   text-shadow:
     0 1px 0 #07050a,

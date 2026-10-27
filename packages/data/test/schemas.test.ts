@@ -8,6 +8,7 @@ import {
   enemySchema,
   heroSchema,
   itemSchema,
+  MAX_SIDE,
   loadContent,
   parseContent,
   talentPageSchema,
@@ -328,9 +329,9 @@ describe('ennemis, objets, donjons', () => {
     expect(dungeonSchema.safeParse(bad).success).toBe(false);
   });
 
-  it('limitent un combat à 3 ennemis', () => {
+  it('limitent un combat à MAX_SIDE ennemis', () => {
     const bad = clone(dungeonFixture);
-    bad.encounters[0]!.enemies = ['a', 'b', 'c', 'd'];
+    bad.encounters[0]!.enemies = Array.from({ length: MAX_SIDE + 1 }, (_, i) => `e${String(i)}`);
     expect(dungeonSchema.safeParse(bad).success).toBe(false);
   });
 });

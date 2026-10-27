@@ -45,6 +45,8 @@
 - Lot 12 — Carte pilotée par les données (place, repère et chapitre dans `dungeons.json`),
   butin en liste avec poids par rareté, rare au premier passage, doublons démontés ; liste de
   contrôle « Ajouter un donjon » dans `docs/CONTENT.md`.
+- Lot 13 — Équipes de quatre héros (`teamSize`), Cendre au départ, salles de 3–4 ennemis,
+  donjons reconvergés ; outils de réglage corrigés.
 
 - Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,

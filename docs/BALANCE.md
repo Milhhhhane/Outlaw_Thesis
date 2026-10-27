@@ -32,13 +32,13 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 ## Règles d'équilibre (cibles de la simulation)
 
-Mesurées par `pnpm sim` sur les 20 équipes possibles ; `pnpm sim:check` (CI) échoue si l'une
+Mesurées par `pnpm sim` sur toutes les équipes possibles (15 : 4 héros parmi 6, voir Lot 13) ; `pnpm sim:check` (CI) échoue si l'une
 d'elles n'est plus tenue. Définitions exactes dans `tools/sim/src/rules.ts` :
 
 - **R1** : pour chaque équipe et chaque niveau conseillé (où les talents permettent des builds
   différents), 6 builds tirés au hasard sont classés par leurs duels contre 4 builds de référence ;
   le meilleur et le pire s'affrontent ensuite, dans les deux sens.
-- **R2** : pour chaque donjon, part des 20 équipes dont le meilleur des 6 builds termine le donjon
+- **R2** : pour chaque donjon, part des équipes dont le meilleur des 6 builds termine le donjon
   avec 3 niveaux de retard.
 - **Aucun héros indispensable** : score d'une équipe = donjons terminés au niveau conseillé et
   avec 3 niveaux de retard (13 essais) ; la meilleure équipe sans chaque héros est comparée à la
@@ -209,6 +209,7 @@ sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (el
   de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
   `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
 
+<<<<<<< Updated upstream
 ## Combat automatique
 
 Mesure : `pnpm --filter @outlaw/sim auto [équipes]` (`tools/sim/src/auto.ts`, lecture seule). Même
@@ -237,3 +238,29 @@ trois combats sont gagnés ; 300 équipes par donjon, soit une marge d'environ �
   retirer la règle « sort le plus cher d'abord » dans `auto.ts` avant de toucher aux donjons.
 - Ces chiffres valent pour des équipes de 3 ; à refaire dès que les équipes passent à 4
   (`TEAM_SIZE` dans `auto.ts` de la simulation).
+=======
+## Lot 13 — équipes de quatre
+
+`balance.progression.teamSize` = 4 : quatre emplacements côté joueur, quatre ennemis au plus par
+combat (`MAX_SIDE` dans `@outlaw/data`). Cendre rejoint l'équipe de départ (Ressac et Sève se
+débloquent toujours aux donjons 4 et 6). Un quatrième héros ajoute une attaque de base par tour,
+donc un point de réserve de plus : la réserve (3 / 6 / +1) n'a pas bougé, le surplus se dépense en
+ultimes plus fréquents, ce que la courbe absorbe.
+
+Réglage : plus d'ennemis plutôt que des ennemis qui frappent deux fois plus fort. Les salles
+passent à 3–4 ennemis (2 / 2 / 1 au premier donjon, qui reste une prise en main), puis `autotune`
+(PV, durée) et `tunecurve` (ATK, difficulté) ont reconvergé. Deux corrections aux outils : ils
+lisaient `dungeons.json` sans les valeurs par défaut des schémas (le modificateur de donjon
+n'était pas appliqué pendant la mesure, d'où des mesures fausses de ±30 points sur certains
+donjons), et `tunecurve` ne durcit plus jamais le premier donjon au-dessus de sa cible.
+`pacing.floor` passe de 10 à 8 : à quatre, une salle expert peut tomber en deux tours.
+
+Courbe mesurée (48 équipes, joueur moyen au niveau conseillé) : 100 / 75 / 71 / 65 / 63 / 54 /
+58 / 42 / 38 / 31 % ; expert 87 % en moyenne. Au premier donjon, quatre attaques de base sans
+aucun sort suffisent à n'importe quel niveau (vérifié) ; au deuxième, il faut utiliser ses sorts
+en dessous du niveau 10.
+
+Limite connue : « aucun héros indispensable » n'est pas tenue (26 points ; déjà 19 avant ce lot).
+À quatre parmi six, retirer un héros ne laisse que 5 équipes : la règle mesure surtout la
+dépendance aux deux soutiens. À revoir quand il y aura plus de héros.
+>>>>>>> Stashed changes

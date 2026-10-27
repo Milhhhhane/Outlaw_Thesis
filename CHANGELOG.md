@@ -2,6 +2,7 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+<<<<<<< Updated upstream
 ## [Non publié] — 2026-10-27 — combat automatique
 
 ### Ajouté
@@ -11,6 +12,23 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
   par la pause, à la vitesse choisie ; ne passe pas seul à l'écran suivant.
 - `pnpm --filter @outlaw/sim auto` : taux de réussite d'Auto face à l'expert et au joueur moyen
   (`docs/BALANCE.md`).
+=======
+## [lot-13] — 2026-10-27 — équipes de quatre
+
+### Modifié
+
+- Quatre héros par équipe (`balance.progression.teamSize`), quatre ennemis au plus par combat ;
+  Cendre fait partie de l'équipe de départ. Scène en deux rangs en quinconce, quatre
+  emplacements sur l'écran d'équipe, lien de partage à quatre builds.
+- Donjons rééquilibrés pour quatre : salles de 3–4 ennemis, PV et ATK reconvergés par les outils ;
+  courbe 100 / 75 / 71 / 65 / 63 / 54 / 58 / 42 / 38 / 31 %. `pacing.floor` 10 → 8.
+
+### Corrigé
+
+- `autotune` et `tunecurve` mesuraient sans les valeurs par défaut des schémas (modificateurs de
+  donjon ignorés) ; `autotune` effaçait `atkPct` quand les PV retombaient à 100 % ; `tunecurve`
+  ne durcit plus le premier donjon au-dessus de sa cible.
+>>>>>>> Stashed changes
 
 ## [Non publié] — 2026-10-27 — coffres et fragments
 

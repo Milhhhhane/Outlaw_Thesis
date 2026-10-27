@@ -155,16 +155,16 @@ describe('ouverture d’un coffre', () => {
 
 describe('invocation', () => {
   it('10 fragments invoquent un héros au niveau 1, étoile 0, sans toucher à l’équipe', () => {
-    const profile = withFragments(base(), { cendre: 12 });
-    const summoned = value(summonHero(content, profile, 'cendre'));
-    expect(summoned.unlocked).toContain('cendre');
-    expect(summoned.heroes.cendre).toMatchObject({ level: 1, stars: 0, talents: [] });
-    expect(summoned.fragments.cendre).toBe(2);
+    const profile = withFragments(base(), { ressac: 12 });
+    const summoned = value(summonHero(content, profile, 'ressac'));
+    expect(summoned.unlocked).toContain('ressac');
+    expect(summoned.heroes.ressac).toMatchObject({ level: 1, stars: 0, talents: [] });
+    expect(summoned.fragments.ressac).toBe(2);
     expect(summoned.team).toEqual(profile.team);
   });
 
   it('refuse sans assez de fragments, un héros déjà possédé ou inconnu', () => {
-    expect(reason(summonHero(content, withFragments(base(), { cendre: 9 }), 'cendre'))).toBe(
+    expect(reason(summonHero(content, withFragments(base(), { ressac: 9 }), 'ressac'))).toBe(
       'not_enough_fragments',
     );
     expect(reason(summonHero(content, withFragments(base(), { pyra: 50 }), 'pyra'))).toBe(
@@ -210,7 +210,7 @@ describe('étoiles', () => {
     expect(reason(starUp(content, gate(9), 'pyra'))).toBe('not_enough_fragments');
     const early = withFragments(at(base(), 'pyra', { level: 9 }), { pyra: 99 });
     expect(reason(starUp(content, early, 'pyra'))).toBe('not_at_cap');
-    expect(reason(starUp(content, withFragments(base(), { cendre: 99 }), 'cendre'))).toBe(
+    expect(reason(starUp(content, withFragments(base(), { ressac: 99 }), 'ressac'))).toBe(
       'locked_hero',
     );
   });

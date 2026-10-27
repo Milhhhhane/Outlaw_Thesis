@@ -42,6 +42,7 @@
   },
   "progression": {
     "maxLevel": 30,
+    "teamSize": 4,
     "levelsPerStar": 10,
     "growth": {
       "hero": {
@@ -100,12 +101,21 @@
     "rareGuaranteeAfter": 5,
     "replayRewardRate": 1,
     "loot": {
-      "weights": { "common": 75, "rare": 25 },
+      "weights": {
+        "common": 75,
+        "rare": 25
+      },
       "firstClearRare": true,
       "duplicateLimit": 3,
       "salvage": {
-        "common": { "tier": 1, "amount": 3 },
-        "rare": { "tier": 2, "amount": 4 }
+        "common": {
+          "tier": 1,
+          "amount": 3
+        },
+        "rare": {
+          "tier": 2,
+          "amount": 4
+        }
       }
     }
   },
@@ -115,9 +125,18 @@
     "focusRate": 0.5,
     "replayChestRate": 0.5,
     "tiers": [
-      { "id": "bronze", "fragments": 3 },
-      { "id": "silver", "fragments": 5 },
-      { "id": "gold", "fragments": 8 }
+      {
+        "id": "bronze",
+        "fragments": 3
+      },
+      {
+        "id": "silver",
+        "fragments": 5
+      },
+      {
+        "id": "gold",
+        "fragments": 8
+      }
     ]
   },
   "energy": {
@@ -133,13 +152,17 @@
     "pacing": {
       "normal": [12, 24],
       "boss": [21, 30],
-      "floor": 10,
+      "floor": 8,
       "firstFightFloor": 9,
       "firstDungeonMax": 60,
       "dungeonMax": 72
     },
     "expertWinRate": [0.75, 0.95],
     "averageWinRate": [0.4, 0.65],
-    "averageCurve": { "first": 0.7, "last": 0.3, "tolerance": 0.12 }
+    "averageCurve": {
+      "first": 0.85,
+      "last": 0.3,
+      "tolerance": 0.12
+    }
   }
 }
