@@ -109,6 +109,16 @@ Les coffres sont dans `packages/engine/src/chests.ts` (`openChest`, `summonHero`
 est dans `progression.ts` (`levelCap`, `heroStars`, `atStarGate`) ; l'écran est
 `apps/web/src/screens/Chests.tsx`.
 
+La montée de niveau est manuelle (`levelUp`, `levelUpMax`, `levelUpCost`, `canLevelUp` dans
+`progression.ts`) : `addXp` ne fait que créditer la banque d'XP. Le rythme qui en découle se lit
+avec `pnpm --filter @outlaw/sim farm` (`tools/sim/src/farm.ts`).
+
+Le butin est dans `packages/engine/src/loot.ts` (tables pondérées, rangs de maîtrise, paliers de
+poussière) et `items.ts` (`upgradeCost`, `upgradeItem`, `dissolveCopies`, `mergeItems`) ; le tirage
+lui-même est dans `completeDungeon` (`progression.ts`). Un objet vient d'un seul donjon
+(`content.itemOrigin`) et le profil garde un exemplaire par objet avec ses `copies` ; l'atelier est
+`apps/web/src/screens/Workshop.tsx` (collection) et la carte affiche taux, maîtrise et pitié.
+
 Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
 moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
 active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.

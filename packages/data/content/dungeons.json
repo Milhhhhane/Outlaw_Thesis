@@ -41,21 +41,14 @@
       }
     ],
     "rewards": {
-      "xp": 100,
+      "xp": 60,
       "gold": 80,
       "materials": {
         "tier": 1,
         "amount": 4
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "thorn_ring",
-      "mender_token",
-      "phoenix_feather",
-      "chrono_gear"
-    ],
+    "loot": ["ember_charm", "eternal_ember"],
     "map": {
       "x": 42,
       "y": 142,
@@ -103,21 +96,14 @@
       }
     ],
     "rewards": {
-      "xp": 380,
+      "xp": 260,
       "gold": 160,
       "materials": {
         "tier": 1,
-        "amount": 6
+        "amount": 4
       }
     },
-    "loot": [
-      "tide_pendant",
-      "iron_band",
-      "spare_flask",
-      "mender_token",
-      "aegis_shard",
-      "chrono_gear"
-    ],
+    "loot": ["tide_pendant", "drowned_pearl"],
     "map": {
       "x": 100,
       "y": 120,
@@ -170,21 +156,14 @@
       }
     ],
     "rewards": {
-      "xp": 1100,
+      "xp": 470,
       "gold": 260,
       "materials": {
         "tier": 2,
-        "amount": 4
+        "amount": 7
       }
     },
-    "loot": [
-      "hunter_lens",
-      "thorn_ring",
-      "iron_band",
-      "ember_charm",
-      "storm_sigil",
-      "phoenix_feather"
-    ],
+    "loot": ["thorn_ring", "storm_sigil"],
     "map": {
       "x": 66,
       "y": 74,
@@ -235,21 +214,14 @@
       }
     ],
     "rewards": {
-      "xp": 2100,
+      "xp": 880,
       "gold": 380,
       "materials": {
         "tier": 2,
-        "amount": 6
+        "amount": 15
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "hunter_lens",
-      "spare_flask",
-      "phoenix_feather",
-      "storm_sigil"
-    ],
+    "loot": ["quick_spurs", "phoenix_feather"],
     "unlocksHero": "ressac",
     "map": {
       "x": 138,
@@ -304,21 +276,14 @@
       }
     ],
     "rewards": {
-      "xp": 3600,
+      "xp": 1200,
       "gold": 520,
       "materials": {
         "tier": 2,
-        "amount": 8
+        "amount": 20
       }
     },
-    "loot": [
-      "tide_pendant",
-      "mender_token",
-      "iron_band",
-      "spare_flask",
-      "aegis_shard",
-      "chrono_gear"
-    ],
+    "loot": ["hunter_lens", "aegis_shard"],
     "map": {
       "x": 196,
       "y": 104,
@@ -368,21 +333,14 @@
       }
     ],
     "rewards": {
-      "xp": 5400,
+      "xp": 1500,
       "gold": 700,
       "materials": {
         "tier": 3,
-        "amount": 5
+        "amount": 12
       }
     },
-    "loot": [
-      "thorn_ring",
-      "hunter_lens",
-      "mender_token",
-      "iron_band",
-      "storm_sigil",
-      "aegis_shard"
-    ],
+    "loot": ["spare_flask", "verdant_seed"],
     "unlocksHero": "seve",
     "map": {
       "x": 250,
@@ -437,21 +395,14 @@
       }
     ],
     "rewards": {
-      "xp": 7800,
+      "xp": 1700,
       "gold": 950,
       "materials": {
         "tier": 3,
         "amount": 8
       }
     },
-    "loot": [
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear",
-      "aegis_shard",
-      "ember_charm",
-      "tide_pendant"
-    ],
+    "loot": ["mender_token", "chrono_gear"],
     "map": {
       "x": 284,
       "y": 130,
@@ -502,21 +453,14 @@
       }
     ],
     "rewards": {
-      "xp": 9500,
+      "xp": 1900,
       "gold": 1100,
       "materials": {
         "tier": 3,
         "amount": 9
       }
     },
-    "loot": [
-      "tide_pendant",
-      "ember_charm",
-      "spare_flask",
-      "aegis_shard",
-      "storm_sigil",
-      "chrono_gear"
-    ],
+    "loot": ["iron_band", "salt_mirror"],
     "map": {
       "x": 262,
       "y": 158,
@@ -571,21 +515,14 @@
       }
     ],
     "rewards": {
-      "xp": 11000,
+      "xp": 2100,
       "gold": 1250,
       "materials": {
         "tier": 3,
         "amount": 10
       }
     },
-    "loot": [
-      "ember_charm",
-      "quick_spurs",
-      "hunter_lens",
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear"
-    ],
+    "loot": ["obsidian_shard", "obsidian_fang"],
     "map": {
       "x": 298,
       "y": 74,
@@ -633,21 +570,14 @@
       }
     ],
     "rewards": {
-      "xp": 13000,
+      "xp": 2400,
       "gold": 1500,
       "materials": {
         "tier": 3,
         "amount": 12
       }
     },
-    "loot": [
-      "phoenix_feather",
-      "storm_sigil",
-      "chrono_gear",
-      "aegis_shard",
-      "thorn_ring",
-      "mender_token"
-    ],
+    "loot": ["hollow_seal", "throne_relic"],
     "map": {
       "x": 294,
       "y": 42,

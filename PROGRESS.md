@@ -57,6 +57,12 @@
 - Combat automatique : bouton « Auto » (touche A), règle déterministe du moteur indépendante de la
   taille des équipes, mesurée à 58 % de donjons réussis contre 51 % pour le joueur moyen simulé et
   85 % pour l'expert. Équipes de 4 héros : chantier à faire, liste dans `docs/ARCHITECTURE.md`.
+- Grind (PR A) — butin exclusif par donjon (commun + rare), copies pour améliorer les objets,
+  maîtrise de donjon, rare garanti par donjon, bouton « Rejouer », collection à l'atelier.
+  Espérances de farm calculées dans `docs/BALANCE.md` ; à confirmer au test humain.
+- Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
+  recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
+  en CI). Or non recalibré.
 
 ## Reste à faire (hors code)
 

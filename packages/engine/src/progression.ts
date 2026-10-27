@@ -1,11 +1,7 @@
-import {
-  PROFILE_VERSION,
-  type Content,
-  type Dungeon,
-  type HeroProgress,
-  type Profile,
-} from '@outlaw/data';
+import { PROFILE_VERSION, type Content, type HeroProgress, type Profile } from '@outlaw/data';
 import { validateBuild, type HeroBuild } from './compile';
+import { lootTable, masteryMaterialsFactor, masteryNext, masteryRank, ownedItem } from './loot';
+import { salvageOf } from './items';
 
 /**
  * Progression hors combat : XP, niveaux, talents, respec, objets, récompenses et butin.
@@ -21,6 +17,7 @@ export type Refusal =
   | 'no_talent'
   | 'not_enough_gold'
   | 'not_enough_materials'
+  | 'not_enough_copies'
   | 'unknown_item'
   | 'max_upgrade'
   | 'bad_slot'
@@ -33,7 +30,10 @@ export type Refusal =
   | 'not_enough_fragments'
   | 'already_unlocked'
   | 'not_at_cap'
-  | 'max_star';
+  | 'max_star'
+  | 'max_level'
+  | 'star_gate'
+  | 'not_enough_xp';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -112,27 +112,76 @@ export function xpToNext(level: number, content: Content): number {
 }
 
 /**
- * Ajoute de l'XP ; renvoie le héros et le nombre de niveaux gagnés. Au plafond d'une étoile,
- * l'XP s'arrête au coût d'un niveau : elle sert dès que l'étoile est payée, sans s'accumuler au-delà.
+ * Ajoute de l'XP à la banque du héros. Elle ne monte pas le niveau : c'est le joueur qui paie
+ * chaque niveau (`levelUp`), en XP et en poussière. Au niveau maximum, rien n'est gardé.
  */
-export function addXp(
-  hero: HeroProgress,
-  amount: number,
-  content: Content,
-): { hero: HeroProgress; levels: number } {
-  const max = content.balance.progression.maxLevel;
-  const cap = levelCap(hero, content);
-  let { level, xp } = hero;
-  xp += amount;
-  let levels = 0;
-  while (level < cap && xp >= xpToNext(level, content)) {
-    xp -= xpToNext(level, content);
-    level += 1;
-    levels += 1;
+export function addXp(hero: HeroProgress, amount: number, content: Content): HeroProgress {
+  if (hero.level >= content.balance.progression.maxLevel) return { ...hero, xp: 0 };
+  return { ...hero, xp: hero.xp + amount };
+}
+
+/** Palier de poussière (1 à 3) demandé pour quitter ce niveau. */
+export function levelDustTier(content: Content, level: number): number {
+  const { tierFrom } = content.balance.progression.levelUp;
+  return tierFrom.filter((from) => level >= from).length || 1;
+}
+
+/** Poussière demandée pour quitter ce niveau : palier et quantité (croissante dans le palier). */
+export function levelDust(content: Content, level: number): { tier: number; amount: number } {
+  const { tierFrom, dust, dustPerLevel } = content.balance.progression.levelUp;
+  const tier = levelDustTier(content, level);
+  const from = tierFrom[tier - 1] ?? 1;
+  return { tier, amount: (dust[tier - 1] ?? 0) + (dustPerLevel[tier - 1] ?? 0) * (level - from) };
+}
+
+export interface LevelUpCost {
+  readonly xp: number;
+  readonly dust: { readonly tier: number; readonly amount: number };
+}
+
+/** Coût du niveau suivant, ou null au niveau maximum. */
+export function levelUpCost(content: Content, hero: HeroProgress): LevelUpCost | null {
+  if (hero.level >= content.balance.progression.maxLevel) return null;
+  return { xp: xpToNext(hero.level, content), dust: levelDust(content, hero.level) };
+}
+
+/** Le héros a ce qu'il faut (XP, poussière, pas d'étoile en attente) pour monter d'un niveau. */
+export function canLevelUp(content: Content, profile: Profile, hero: HeroProgress): boolean {
+  const cost = levelUpCost(content, hero);
+  if (cost === null || atStarGate(hero, content)) return false;
+  return hero.xp >= cost.xp && (profile.materials[cost.dust.tier - 1] ?? 0) >= cost.dust.amount;
+}
+
+/** Monte un héros d'un niveau contre son XP et de la poussière. */
+export function levelUp(content: Content, profile: Profile, heroId: string): Outcome {
+  const hero = profile.heroes[heroId];
+  if (hero === undefined || !profile.unlocked.includes(heroId)) return refuse('locked_hero');
+  const cost = levelUpCost(content, hero);
+  if (cost === null) return refuse('max_level');
+  if (atStarGate(hero, content)) return refuse('star_gate');
+  if (hero.xp < cost.xp) return refuse('not_enough_xp');
+  const tier = cost.dust.tier - 1;
+  if ((profile.materials[tier] ?? 0) < cost.dust.amount) return refuse('not_enough_materials');
+  const materials: Profile['materials'] = [...profile.materials];
+  materials[tier] = (materials[tier] ?? 0) - cost.dust.amount;
+  const level = hero.level + 1;
+  const xp = level >= content.balance.progression.maxLevel ? 0 : hero.xp - cost.xp;
+  return ok({
+    ...profile,
+    materials,
+    heroes: { ...profile.heroes, [heroId]: { ...hero, level, xp } },
+  });
+}
+
+/** Monte un héros autant de niveaux que l'XP et la poussière le permettent (au moins un). */
+export function levelUpMax(content: Content, profile: Profile, heroId: string): Outcome {
+  let current = levelUp(content, profile, heroId);
+  if (!current.ok) return current;
+  for (;;) {
+    const next = levelUp(content, current.value, heroId);
+    if (!next.ok) return current;
+    current = next;
   }
-  if (level >= max) xp = 0;
-  else if (level >= cap) xp = Math.min(xp, xpToNext(level, content));
-  return { hero: { ...hero, level, xp }, levels };
 }
 
 /** Build de combat d'un héros du profil. */
@@ -227,29 +276,6 @@ export function equip(
   return ok({ ...profile, heroes });
 }
 
-/** Coût de l'amélioration suivante d'un objet, ou null au niveau maximum. */
-export function upgradeCost(content: Content, upgrade: number) {
-  return content.balance.progression.items.upgradeCosts[upgrade] ?? null;
-}
-
-export function upgradeItem(content: Content, profile: Profile, uid: number): Outcome {
-  const owned = profile.items.find((i) => i.uid === uid);
-  if (owned === undefined) return refuse('unknown_item');
-  const cost = upgradeCost(content, owned.upgrade);
-  if (cost === null) return refuse('max_upgrade');
-  if (cost.gold > profile.gold) return refuse('not_enough_gold');
-  const tier = cost.materials.tier - 1;
-  if ((profile.materials[tier] ?? 0) < cost.materials.amount) return refuse('not_enough_materials');
-  const materials: Profile['materials'] = [...profile.materials];
-  materials[tier] = (materials[tier] ?? 0) - cost.materials.amount;
-  return ok({
-    ...profile,
-    gold: profile.gold - cost.gold,
-    materials,
-    items: profile.items.map((i) => (i.uid === uid ? { ...i, upgrade: i.upgrade + 1 } : i)),
-  });
-}
-
 /** Équipe de 1 à `teamSize` héros débloqués, sans doublon. */
 export function setTeam(content: Content, profile: Profile, team: readonly string[]): Outcome {
   const size = content.balance.progression.teamSize;
@@ -290,28 +316,10 @@ export function nextRandom(seed: number): { value: number; seed: number } {
   return { value: ((t ^ (t >>> 14)) >>> 0) / 4294967296, seed: next };
 }
 
-interface Weighted {
-  readonly item: string;
-  readonly weight: number;
-}
-
-/** Table pondérée d'un donjon : chaque objet pèse le poids de sa rareté (balance.economy.loot). */
-export function lootTable(content: Content, dungeon: Dungeon): Weighted[] {
-  const { weights } = content.balance.economy.loot;
-  return dungeon.loot.map((item) => ({
-    item,
-    weight: weights[content.itemById.get(item)?.rarity ?? 'common'],
-  }));
-}
-
-/** Taux d'obtention affichés au joueur, en %. */
-export function lootRates(content: Content, dungeon: Dungeon): { item: string; pct: number }[] {
-  const table = lootTable(content, dungeon);
-  const total = table.reduce((sum, entry) => sum + entry.weight, 0);
-  return table.map((entry) => ({ item: entry.item, pct: (entry.weight * 100) / total }));
-}
-
-function pick(entries: readonly Weighted[], roll: number): string {
+function pick(
+  entries: readonly { readonly item: string; readonly weight: number }[],
+  roll: number,
+): string {
   const total = entries.reduce((sum, e) => sum + e.weight, 0);
   let cursor = roll * total;
   for (const entry of entries) {
@@ -324,16 +332,29 @@ function pick(entries: readonly Weighted[], roll: number): string {
 export interface DungeonReport {
   readonly dungeon: string;
   readonly firstClear: boolean;
-  readonly xp: Readonly<Record<string, { gained: number; levels: number }>>;
+  /** XP gagnée par héros ; `ready` : il a l'XP du niveau suivant (reste la poussière à payer). */
+  readonly xp: Readonly<Record<string, { gained: number; ready: boolean }>>;
   readonly gold: number;
   readonly materials: { readonly tier: number; readonly amount: number };
   readonly item: {
     readonly uid: number;
     readonly item: string;
-    /** Rare garanti (premier passage, ou trop de donjons sans rare). */
+    /** Rare garanti (premier passage, ou trop de passages sans rare dans ce donjon). */
     readonly guaranteed: boolean;
-    /** Doublon de trop : l'objet n'est pas gardé, il est démonté en matériaux. */
+    /** Première fois que le joueur trouve cet objet. */
+    readonly isNew: boolean;
+    /** Copies en réserve après ce passage (0 pour un objet neuf ou dissous). */
+    readonly copies: number;
+    /** Objet déjà au niveau maximum : la copie est dissoute en poussière. */
     readonly salvaged: { readonly tier: number; readonly amount: number } | null;
+  };
+  /** Maîtrise du donjon après ce passage. */
+  readonly mastery: {
+    readonly rank: number;
+    readonly rankUp: boolean;
+    readonly clears: number;
+    /** Prochain palier de victoires, ou null au rang maximum. */
+    readonly next: number | null;
   };
   readonly unlockedHero: string | null;
   /** Palier du coffre gagné, ou null (donjon rejoué sans chance). */
@@ -341,8 +362,9 @@ export interface DungeonReport {
 }
 
 /**
- * Récompenses d'un donjon terminé : XP (au repos : taux réduit), or et matériaux communs, un objet
- * tiré dans la table (rare garanti au bout de N donjons sans rare), déblocage éventuel d'un héros.
+ * Récompenses d'un donjon terminé : XP (au repos : taux réduit), or et poussière (plus avec la
+ * maîtrise du donjon), un objet de ce donjon (rare garanti au premier passage et au bout de N
+ * passages sans rare ici), déblocage éventuel d'un héros. Un objet déjà possédé devient une copie.
  */
 export function completeDungeon(
   content: Content,
@@ -354,35 +376,36 @@ export function completeDungeon(
   // Mode test : rien n'est gagné.
   if (profile.testMode) return refuse('test_mode');
   const { balance } = content;
-  const firstClear = (profile.dungeons[dungeonId]?.clears ?? 0) === 0;
+  const progress = profile.dungeons[dungeonId] ?? { clears: 0, dry: 0 };
+  const firstClear = progress.clears === 0;
+  const rank = masteryRank(content, progress.clears);
   const rate = firstClear ? 1 : balance.economy.replayRewardRate;
   const gain = (n: number): number => Math.round(n * rate);
 
   const heroes = { ...profile.heroes };
-  const xp: Record<string, { gained: number; levels: number }> = {};
+  const xp: Record<string, { gained: number; ready: boolean }> = {};
   for (const id of profile.unlocked) {
     const hero = heroes[id];
     if (hero === undefined) continue;
     const gained = Math.round(
       gain(dungeon.rewards.xp) * (profile.team.includes(id) ? 1 : balance.progression.restXpRate),
     );
-    const result = addXp(hero, gained, content);
-    heroes[id] = result.hero;
-    xp[id] = { gained, levels: result.levels };
+    heroes[id] = addXp(hero, gained, content);
+    const cost = levelUpCost(content, heroes[id]);
+    xp[id] = { gained, ready: cost !== null && heroes[id].xp >= cost.xp };
   }
 
-  // Butin : un objet de la table, pondéré par sa rareté. Le rare est garanti au premier passage
-  // et au bout de N donjons sans rare ; un doublon de trop est démonté en matériaux.
+  // Butin : un objet de la table du donjon, pondéré par sa rareté (et la maîtrise). Le rare est
+  // garanti au premier passage et au bout de `rarePity` passages sans rare dans CE donjon.
   const { loot: lootRules } = balance.economy;
-  const table = lootTable(content, dungeon);
+  const table = lootTable(content, dungeon, rank);
   const roll = nextRandom(profile.seed);
   let item = pick(table, roll.value);
   let seed = roll.seed;
   const isRare = (id: string): boolean => content.itemById.get(id)?.rarity === 'rare';
   let guaranteed = false;
   const mustBeRare =
-    (firstClear && lootRules.firstClearRare) ||
-    profile.sinceRare + 1 >= balance.economy.rareGuaranteeAfter;
+    (firstClear && lootRules.firstClearRare) || progress.dry + 1 >= lootRules.rarePity;
   if (!isRare(item) && mustBeRare) {
     const rares = table.filter((e) => isRare(e.item));
     const reroll = nextRandom(seed);
@@ -390,10 +413,29 @@ export function completeDungeon(
     item = pick(rares, reroll.value);
     guaranteed = true;
   }
-  const uid = profile.nextUid;
-  const copies = profile.items.filter((o) => o.item === item).length;
-  const salvaged =
-    copies >= lootRules.duplicateLimit ? lootRules.salvage[isRare(item) ? 'rare' : 'common'] : null;
+
+  // Un objet neuf entre dans l'inventaire ; sinon la copie sert à l'améliorer, ou se dissout en
+  // poussière si l'objet est déjà au niveau maximum.
+  const owned = ownedItem(profile, item);
+  const maxUpgrade = balance.progression.items.maxUpgradeLevel;
+  let items = profile.items;
+  let nextUid = profile.nextUid;
+  let uid = profile.nextUid;
+  let copies = 0;
+  let salvaged: { tier: number; amount: number } | null = null;
+  if (owned === undefined) {
+    items = [...items, { uid, item, upgrade: 0, copies: 0 }];
+    nextUid += 1;
+  } else {
+    uid = owned.uid;
+    if (owned.upgrade >= maxUpgrade) {
+      salvaged = salvageOf(content, item);
+      copies = owned.copies;
+    } else {
+      copies = owned.copies + 1;
+      items = items.map((o) => (o.uid === uid ? { ...o, copies } : o));
+    }
+  }
 
   // Coffre : toujours au premier passage, sinon une chance (tirée après le butin, qui ne bouge pas).
   let chest: string | null = dungeon.chest;
@@ -405,7 +447,9 @@ export function completeDungeon(
 
   const materials: Profile['materials'] = [...profile.materials];
   const tier = dungeon.rewards.materials.tier - 1;
-  const amount = gain(dungeon.rewards.materials.amount);
+  const amount = Math.round(
+    gain(dungeon.rewards.materials.amount) * masteryMaterialsFactor(content, rank),
+  );
   materials[tier] = (materials[tier] ?? 0) + amount;
   if (salvaged !== null) {
     materials[salvaged.tier - 1] = (materials[salvaged.tier - 1] ?? 0) + salvaged.amount;
@@ -424,6 +468,8 @@ export function completeDungeon(
     );
   }
 
+  const clears = progress.clears + 1;
+  const rankAfter = masteryRank(content, clears);
   const next: Profile = {
     ...profile,
     seed,
@@ -431,13 +477,12 @@ export function completeDungeon(
     materials,
     heroes,
     unlocked,
-    items: salvaged === null ? [...profile.items, { uid, item, upgrade: 0 }] : profile.items,
-    nextUid: salvaged === null ? uid + 1 : profile.nextUid,
+    items,
+    nextUid,
     dungeons: {
       ...profile.dungeons,
-      [dungeonId]: { clears: (profile.dungeons[dungeonId]?.clears ?? 0) + 1 },
+      [dungeonId]: { clears, dry: isRare(item) ? 0 : progress.dry + 1 },
     },
-    sinceRare: isRare(item) ? 0 : profile.sinceRare + 1,
     chests:
       chest === null
         ? profile.chests
@@ -451,7 +496,13 @@ export function completeDungeon(
       xp,
       gold: gain(dungeon.rewards.gold),
       materials: { tier: dungeon.rewards.materials.tier, amount },
-      item: { uid, item, guaranteed, salvaged },
+      item: { uid, item, guaranteed, isNew: owned === undefined, copies, salvaged },
+      mastery: {
+        rank: rankAfter,
+        rankUp: rankAfter > rank,
+        clears,
+        next: masteryNext(content, clears),
+      },
       unlockedHero,
       chest,
     },
@@ -482,6 +533,7 @@ export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = 
       uid: i * SANDBOX_COPIES + copy + 1,
       item: item.id,
       upgrade: rules.maxUpgradeLevel,
+      copies: 0,
     })),
   );
   const heroes = Object.fromEntries(

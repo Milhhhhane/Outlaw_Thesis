@@ -2,14 +2,25 @@ import account from './account.fr.json';
 import auto from './auto.fr.json';
 import chests from './chests.fr.json';
 import fr from './fr.json';
+import loot from './loot.fr.json';
 import names from './content.fr.json';
 
 /** Clés de texte : le français est la langue par défaut et la référence des clés. */
 export type TextKey =
-  keyof typeof fr | keyof typeof account | keyof typeof auto | keyof typeof chests;
+  | keyof typeof fr
+  | keyof typeof account
+  | keyof typeof auto
+  | keyof typeof chests
+  | keyof typeof loot;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json) et coffres (chests.fr.json) vivent à part pour limiter les conflits d'édition. */
-const dictionary: Readonly<Record<TextKey, string>> = { ...fr, ...account, ...auto, ...chests };
+/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json) et butin (loot.fr.json) vivent à part pour limiter les conflits d'édition. */
+const dictionary: Readonly<Record<TextKey, string>> = {
+  ...fr,
+  ...account,
+  ...auto,
+  ...chests,
+  ...loot,
+};
 
 type Params = Readonly<Record<string, string | number>>;
 
@@ -61,3 +72,8 @@ export const names_ = {
   all: { heroes, spells, passives, pages, nodes, enemies, items, dungeons },
 };
 export { names_ as names };
+
+/** Nom de la poussière d'un palier (1 à 3) : « poussière fine ». */
+export function dustName(tier: number): string {
+  return tk(`dust.tier.${tier}`);
+}

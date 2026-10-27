@@ -548,3 +548,57 @@ l'explication s'affiche dans une bulle unique posée dans l'écran logique. Rais
 complète par effet ne tiendrait pas dans les cartes ; le joueur qui connaît le terme n'est pas
 ralenti, celui qui ne le connaît pas a la règle exacte (formules de `docs/BALANCE.md`), sans
 « title » natif (lent, absent au toucher).
+
+## Butin exclusif, copies et maîtrise
+
+**Chaque donjon a son butin, et rien que le sien** — Contexte : le joueur veut du grind et que
+chaque donjon ait son loot unique ; avec des listes partagées, farmer un objet n'avait pas de lieu.
+Choix : un objet vient d'un seul donjon, et un donjon donne exactement un commun et un rare.
+`packages/data/src/content.ts` le vérifie au chargement et construit `content.itemOrigin`
+(objet → donjon) ; un objet sans donjon est refusé. 20 objets pour 10 donjons : 8 objets ajoutés
+(`items.json`) pour que chaque donjon ait la paire. Raison : « où farmer ceci ? » a une seule
+réponse, la carte et l'atelier l'affichent.
+
+**Les doublons sont des copies, pas des exemplaires** — Choix : un objet déjà possédé donne une
+copie (`copies` + 1 sur l'exemplaire) ; améliorer coûte des copies (1, 2, 3), de l'or et de la
+poussière du palier du donjon d'origine. Un objet au niveau maximum dissout la copie en poussière
+(`salvage`). `mergeItems` ramène à un exemplaire par objet les sauvegardes qui en avaient
+plusieurs (le plus amélioré gagne, les autres deviennent des copies, un objet porté n'est jamais
+retiré) ; il est idempotent et appliqué au chargement. Conséquence assumée : en partie normale, un
+objet n'est porté que par un héros à la fois ; le mode test garde plusieurs exemplaires séparés
+(liens de build).
+
+**Rare garanti par donjon, pas par profil** — Choix : un compteur `dry` par donjon
+(`profile.dungeons[id].dry`) ; le passage `rarePity` (10) sans rare en donne un. L'ancien
+compteur global `sinceRare` n'est plus lu. Raison : avec un butin par donjon, une garantie globale
+ne protège personne du donjon qu'il farme.
+
+**Maîtrise du donjon** — Choix : un rang par palier de victoires (5, 15, 40, 100), chaque rang
+ajoute 4 de poids au rare et 10 % de poussière. Raison : récompenser la répétition sans rien
+débloquer d'indispensable ; chiffres dans `balance.json` → `economy.loot.mastery`, effets annoncés
+sur la carte.
+
+**Rejouer** — Choix : bouton sur l'écran de récompenses, qui relance le même donjon avec la même
+équipe. C'est le complément d'Auto : un passage coûte deux clics.
+
+**Rien de la poussière niveau héros dans cette PR** — La monnaie interne reste `materials`
+(tuple de trois paliers), affichée « poussière brute / fine / pure ». Le coût en poussière des
+niveaux de héros et le recalibrage de l'XP et de l'or sont la PR suivante.
+
+## Monter de niveau se paie
+
+**L'XP se met en banque, le niveau s'achète** — Contexte : avec Auto et Rejouer, l'XP tombait
+sans effort et le joueur passait les donjons sans rien décider. Choix : `addXp` n'augmente plus le
+niveau ; `levelUp` paie le niveau suivant avec l'XP du niveau **et** de la poussière du palier
+(brute jusqu'au niveau 7, fine de 8 à 21, pure dès 22 ; `progression.levelUp`), la quantité
+croissant dans le palier (+1 par niveau en fine, +2 en pure). « Monter au maximum » enchaîne.
+Raison : un seul compteur partagé (la poussière) relie niveaux et objets, donc un vrai choix de
+dépense ; les paliers forcent à farmer le bon chapitre. Les sauvegardes gardent leurs niveaux ;
+l'étoile ne monte plus le niveau toute seule, elle débloque seulement la montée.
+
+**Récompenses recalibrées sur un calculateur, pas à l'œil** — Choix : `pnpm --filter @outlaw/sim
+farm` calcule, par paire de donjons, les passages gagnants qu'exigent l'XP (par héros) et la
+poussière (pour l'équipe de quatre), et le test de la simulation borne chaque pas entre 5 et 18 et
+le total entre 70 et 110. Cibles retenues : 6, 8, 10, 12, 14, 16 passages jusqu'au donjon 7, puis
+7 à 8 par donjon final (chiffres dans `docs/BALANCE.md`). Raison : les cibles sont dans le dépôt
+et vérifiées en CI ; retoucher une récompense sans casser le rythme se voit tout de suite.

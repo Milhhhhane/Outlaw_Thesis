@@ -2,6 +2,39 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
+
+### Modifié
+
+- L'XP se met en banque ; chaque niveau se paie en XP et en poussière du palier (brute jusqu'au
+  niveau 7, fine de 8 à 21, pure dès 22, quantité croissante). Boutons « Niveau suivant » et
+  « Monter au maximum » sur la fiche, badge « Niveau prêt » dans la galerie et sur la carte de
+  récompense. Les sauvegardes gardent leurs niveaux.
+- XP et poussière des donjons recalibrées pour le farm automatique : 6 à 16 passages gagnants
+  entre deux donjons, 7 à 8 par donjon final, 89 au total (avant : 4 à 5, puis moins d'un).
+- `pnpm --filter @outlaw/sim farm` : calculateur de rythme ; bornes vérifiées en CI.
+
+## [Non publié] — 2026-10-27 — grind : butin unique, copies, maîtrise
+
+### Ajouté
+
+- Chaque donjon a son butin exclusif : un objet commun et un rare qu'on ne trouve nulle part
+  ailleurs (8 objets ajoutés, 20 au total). L'atelier devient une collection : objets trouvés ou
+  à trouver, avec le donjon où les farmer.
+- Copies : un objet déjà possédé donne une copie ; l'améliorer coûte des copies (1, 2, 3), de
+  l'or et de la poussière du palier du donjon d'origine. Les copies en trop se dissolvent en
+  poussière ; un objet au maximum dissout directement.
+- Maîtrise de donjon (rangs à 5, 15, 40 et 100 victoires) : plus de chances de rare et de
+  poussière ; rare garanti au premier passage et au plus tard au 10ᵉ passage sans rare.
+- Bouton « Rejouer » sur l'écran de récompenses.
+- Poussière affichée en trois paliers : brute, fine, pure.
+
+### Modifié
+
+- Les sauvegardes existantes restent valides : les exemplaires en double d'un même objet sont
+  fusionnés en copies au chargement (le plus amélioré est gardé, un objet porté n'est jamais retiré).
+- Coût d'amélioration d'un objet : copies + or + poussière (avant : or + matériaux).
+
 ## [lot-14] — 2026-10-27 — texte lisible et lexique
 
 ### Ajouté

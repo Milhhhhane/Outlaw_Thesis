@@ -1,10 +1,14 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
   atStarGate,
+  canLevelUp,
   compileHero,
   equip,
   heroBuild,
   heroStars,
+  levelUp,
+  levelUpCost,
+  levelUpMax,
   respec,
   respecCost,
   setLevel,
@@ -24,7 +28,7 @@ import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
-import { names, t, tk } from '../i18n';
+import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
 import { Glossed } from '../game/Glossed';
@@ -499,6 +503,7 @@ export function HeroSheet({
   const maxed = hero.level >= balance.progression.maxLevel;
   const next = xpToNext(hero.level, content);
   const gate = atStarGate(hero, content);
+  const cost = levelUpCost(content, hero);
   const gateCost = starCost(content, hero);
   const fragments = profile.fragments[heroId] ?? 0;
 
@@ -530,6 +535,40 @@ export function HeroSheet({
               max: balance.chests.starCosts.length,
             })}
           </p>
+          {!maxed && !gate && !profile.testMode && cost !== null && (
+            <div className="sheet__gate">
+              <p className="hint">
+                {t('hero.levelUp.cost', {
+                  level: hero.level + 1,
+                  xp: cost.xp,
+                  dust: t('dust.amount', {
+                    amount: cost.dust.amount,
+                    dust: dustName(cost.dust.tier),
+                  }),
+                })}
+              </p>
+              <Button
+                size="small"
+                disabled={!canLevelUp(content, profile, hero)}
+                onClick={() => {
+                  apply(levelUp(content, profile, heroId));
+                }}
+              >
+                {t('hero.levelUp')}
+              </Button>
+              {canLevelUp(content, profile, hero) && (
+                <Button
+                  size="small"
+                  variant="quiet"
+                  onClick={() => {
+                    apply(levelUpMax(content, profile, heroId));
+                  }}
+                >
+                  {t('hero.levelUp.max')}
+                </Button>
+              )}
+            </div>
+          )}
           {gate && gateCost !== null && !profile.testMode && (
             <div className="sheet__gate">
               <p>{t('hero.gate', { level: hero.level })}</p>

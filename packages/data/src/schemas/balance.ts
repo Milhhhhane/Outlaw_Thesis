@@ -71,6 +71,16 @@ export const balanceSchema = z
       restXpRate: z.number().min(0).max(1),
       /** XP pour passer du niveau N au suivant : round(base × N ^ exponent). */
       xp: z.strictObject({ base: pos, exponent: pos }),
+      /**
+       * Monter de niveau se paie : l'XP du niveau et de la poussière. `tierFrom[k]` est le premier
+       * niveau (celui qu'on quitte) payé en poussière du palier k + 1 ; la quantité est
+       * `dust[k] + dustPerLevel[k] × (niveau − tierFrom[k])`.
+       */
+      levelUp: z.strictObject({
+        tierFrom: z.array(posInt).length(3),
+        dust: z.array(posInt).length(3),
+        dustPerLevel: z.array(nonNegInt).length(3),
+      }),
       respec: z.strictObject({
         firstFreePerHero: z.boolean(),
         /** Coût en or du respec : coefficient × niveau du héros. */
@@ -84,33 +94,37 @@ export const balanceSchema = z
         upgradeScalePct: nonNeg,
         /** Plafond de la petite stat d'un objet, en %. */
         statCapPct: pos,
-        /** Coût d'amélioration vers le niveau 1, 2, 3… (longueur = maxUpgradeLevel). */
+        /**
+         * Coût d'amélioration vers le niveau 1, 2, 3… (longueur = maxUpgradeLevel) : exemplaires
+         * supplémentaires du même objet (consommés), or et poussière du palier du donjon d'origine.
+         */
         upgradeCosts: z.array(
-          z.strictObject({
-            gold: nonNegInt,
-            materials: z.strictObject({ tier: z.number().int().min(1).max(3), amount: nonNegInt }),
-          }),
+          z.strictObject({ copies: posInt, gold: nonNegInt, materials: nonNegInt }),
         ),
       }),
     }),
 
     economy: z.strictObject({
-      /** Un objet rare est garanti au plus tard au Nème donjon sans rare. */
-      rareGuaranteeAfter: posInt,
-      /** Part de l'XP, de l'or et des matériaux d'un donjon rejoué (farm) par rapport au premier passage. */
+      /** Part de l'XP, de l'or et de la poussière d'un donjon rejoué (farm) par rapport au premier passage. */
       replayRewardRate: z.number().min(0).max(1),
       loot: z.strictObject({
-        /** Poids de tirage de chaque rareté (un objet de la table, pondéré par sa rareté). */
+        /** Poids de tirage de chaque rareté (un objet de la table du donjon, pondéré par sa rareté). */
         weights: z.strictObject({ common: posInt, rare: posInt }),
         /** Le premier passage d'un donjon donne toujours un objet rare. */
         firstClearRare: z.boolean(),
-        /** Au-delà de ce nombre d'exemplaires d'un même objet, le suivant est démonté en matériaux. */
-        duplicateLimit: posInt,
-        /** Matériaux rendus par un doublon démonté, par rareté. */
-        salvage: z.strictObject({
-          common: z.strictObject({ tier: posInt, amount: posInt }),
-          rare: z.strictObject({ tier: posInt, amount: posInt }),
+        /** Un objet rare est garanti au plus tard au Nème passage sans rare DANS CE donjon. */
+        rarePity: posInt,
+        /**
+         * Maîtrise d'un donjon : un rang par palier de victoires atteint. Chaque rang ajoute du
+         * poids au tirage du rare et un pourcentage à la poussière gagnée.
+         */
+        mastery: z.strictObject({
+          clears: z.array(posInt).min(1),
+          rareWeightPerRank: nonNegInt,
+          materialsPctPerRank: nonNegInt,
         }),
+        /** Poussière rendue par une copie dissoute, par rareté (palier = celui du donjon d'origine). */
+        salvage: z.strictObject({ common: posInt, rare: posInt }),
       }),
     }),
 

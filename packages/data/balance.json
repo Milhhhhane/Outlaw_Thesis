@@ -63,6 +63,11 @@
       "base": 40,
       "exponent": 1.5
     },
+    "levelUp": {
+      "tierFrom": [1, 8, 22],
+      "dust": [2, 3, 5],
+      "dustPerLevel": [0, 1, 2]
+    },
     "respec": {
       "firstFreePerHero": true,
       "goldPerHeroLevel": 20
@@ -73,50 +78,24 @@
       "upgradeScalePct": 15,
       "statCapPct": 8,
       "upgradeCosts": [
-        {
-          "gold": 100,
-          "materials": {
-            "tier": 1,
-            "amount": 5
-          }
-        },
-        {
-          "gold": 300,
-          "materials": {
-            "tier": 2,
-            "amount": 5
-          }
-        },
-        {
-          "gold": 800,
-          "materials": {
-            "tier": 3,
-            "amount": 5
-          }
-        }
+        { "copies": 1, "gold": 100, "materials": 5 },
+        { "copies": 2, "gold": 300, "materials": 8 },
+        { "copies": 3, "gold": 800, "materials": 12 }
       ]
     }
   },
   "economy": {
-    "rareGuaranteeAfter": 5,
     "replayRewardRate": 1,
     "loot": {
-      "weights": {
-        "common": 75,
-        "rare": 25
-      },
+      "weights": { "common": 85, "rare": 15 },
       "firstClearRare": true,
-      "duplicateLimit": 3,
-      "salvage": {
-        "common": {
-          "tier": 1,
-          "amount": 3
-        },
-        "rare": {
-          "tier": 2,
-          "amount": 4
-        }
-      }
+      "rarePity": 10,
+      "mastery": {
+        "clears": [5, 15, 40, 100],
+        "rareWeightPerRank": 4,
+        "materialsPctPerRank": 10
+      },
+      "salvage": { "common": 3, "rare": 4 }
     }
   },
   "chests": {
