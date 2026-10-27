@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 
-// jsdom n'a pas matchMedia : on simule « mouvement réduit », les animations sont donc instantanées.
+// jsdom n'a pas matchMedia : on simule « mouvement réduit ».
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn((query: string) => ({
@@ -17,6 +17,11 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 Element.prototype.scrollIntoView = vi.fn();
+
+// Combats instantanés dans les tests (réglage « Instantanée » des options).
+beforeEach(() => {
+  window.localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+});
 
 afterEach(() => {
   cleanup();

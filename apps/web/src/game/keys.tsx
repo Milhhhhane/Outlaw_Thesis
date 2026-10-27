@@ -55,7 +55,14 @@ export function useEscape(handler: Handler | null): void {
     ref.current = handler;
   });
   useEffect(() => {
-    if (api === null) return;
-    return api.push(ref);
+    if (api !== null) return api.push(ref);
+    // Hors du jeu (écran affiché seul) : on écoute la touche directement.
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && ref.current) ref.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+    };
   }, [api]);
 }

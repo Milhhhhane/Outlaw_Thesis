@@ -42,13 +42,7 @@ describe('pixel art', () => {
   it('le champ de bataille montre une unité par combattant', () => {
     const view = viewFromState(createBattle(demoSetup(), content.balance).state);
     const { container } = render(
-      <Stage
-        view={view}
-        scene="thorn_maze"
-        active={null}
-        targets={new Set()}
-        onTarget={() => {}}
-      />,
+      <Stage view={view} scene="thorn_maze" active={null} targets={new Set()} />,
     );
     expect(container.querySelectorAll('.actor')).toHaveLength(view.units.length);
   });

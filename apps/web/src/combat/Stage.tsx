@@ -1,18 +1,20 @@
-import { useRef, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import { backgroundUrl, GROUND_Y, sprite } from '../art';
 import { PixelSprite, PixelText } from '../art/Pixel';
-import { useScale } from '../art/useScale';
 import type { BattleView, Flash, UnitView } from './view';
 
 /** Monde natif : 320 × 180 pixels, agrandi sans lissage. */
 export const STAGE_W = 320;
 export const STAGE_H = 180;
+/** Agrandissement du combat dans l'écran de 960 × 540 et lignes de ciel masquées en haut. */
+export const STAGE_SCALE = 3;
+export const STAGE_OFFSET = 20;
 
 /** Pieds de chaque emplacement côté héros (l'ennemi est le miroir). */
 const SLOTS: readonly { readonly x: number; readonly y: number }[] = [
-  { x: 116, y: GROUND_Y + 20 },
-  { x: 76, y: GROUND_Y + 8 },
-  { x: 42, y: GROUND_Y + 32 },
+  { x: 116, y: GROUND_Y + 14 },
+  { x: 74, y: GROUND_Y + 6 },
+  { x: 40, y: GROUND_Y + 22 },
 ];
 
 export function placeOf(unit: Pick<UnitView, 'side' | 'slot'>): { x: number; y: number } {
@@ -20,12 +22,20 @@ export function placeOf(unit: Pick<UnitView, 'side' | 'slot'>): { x: number; y: 
   return unit.side === 'player' ? base : { x: STAGE_W - base.x, y: base.y };
 }
 
-interface Props {
-  readonly view: BattleView;
-  readonly scene: string;
-  readonly active: string | null;
-  readonly targets: ReadonlySet<string>;
-  readonly onTarget: (id: string) => void;
+/** Repères d'une unité dans l'écran logique : centre, pieds et haut de la tête. */
+export function anchorOf(unit: Pick<UnitView, 'side' | 'slot' | 'kind'>): {
+  x: number;
+  feet: number;
+  head: number;
+} {
+  const { x, y } = placeOf(unit);
+  const info = sprite(unit.kind);
+  const height = info === undefined ? 56 : info.bottom - info.top;
+  return {
+    x: x * STAGE_SCALE,
+    feet: (y - STAGE_OFFSET) * STAGE_SCALE,
+    head: (y - height - STAGE_OFFSET) * STAGE_SCALE,
+  };
 }
 
 function Actor(props: {
@@ -34,15 +44,12 @@ function Actor(props: {
   readonly acting: boolean;
   readonly targetable: boolean;
   readonly flash: Flash | undefined;
-  readonly onTarget: (id: string) => void;
 }) {
   const { unit, flash } = props;
   const info = sprite(unit.kind);
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
   const hit = flash?.tone === 'damage' ? flash.key : 0;
-  const hpPct = Math.max(0, Math.round((unit.hp / unit.maxHp) * 100));
-  const shieldPct = Math.min(100, Math.round((unit.shield / unit.maxHp) * 100));
   const style = {
     left: x - info.w / 2,
     top: y - info.bottom,
@@ -68,28 +75,6 @@ function Actor(props: {
           <PixelSprite name={unit.kind} idle={unit.alive} />
         </span>
       </span>
-      {props.targetable && (
-        <button
-          type="button"
-          className="actor__target"
-          tabIndex={-1}
-          aria-hidden="true"
-          onClick={() => {
-            props.onTarget(unit.id);
-          }}
-        />
-      )}
-      {unit.alive && (
-        <span className="actor__hud" style={{ top: Math.max(0, info.top - 8) }}>
-          {props.active && <span className="actor__marker" />}
-          <span className="actor__bar">
-            <span className="actor__hp" style={{ width: `${hpPct}%` }} />
-            {unit.shield > 0 && (
-              <span className="actor__shield" style={{ width: `${shieldPct}%` }} />
-            )}
-          </span>
-        </span>
-      )}
       {flash?.fx != null && (
         <span key={`fx${flash.key}`} className="actor__fx" style={{ top: info.top + 6 }}>
           <PixelSprite name={flash.fx} className="fx-play" />
@@ -145,19 +130,27 @@ function Bolts({ view }: { readonly view: BattleView }) {
 }
 
 /** Le champ de bataille en pixel art : décor du donjon, sprites animés, effets. */
-export function Stage({ view, scene, active, targets, onTarget }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const scale = useScale(ref, STAGE_W);
+export function Stage({
+  view,
+  scene,
+  active,
+  targets,
+}: {
+  readonly view: BattleView;
+  readonly scene: string;
+  readonly active: string | null;
+  readonly targets: ReadonlySet<string>;
+}) {
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
   return (
-    <div ref={ref} className="stage" style={{ height: STAGE_H * scale }} aria-hidden="true">
+    <div className="stage" aria-hidden="true">
       <div
         className="stage__world"
         style={{
           width: STAGE_W,
           height: STAGE_H,
-          transform: `scale(${scale})`,
+          transform: `scale(${STAGE_SCALE}) translateY(${-STAGE_OFFSET}px)`,
           backgroundImage: `url(${backgroundUrl(scene)})`,
         }}
       >
@@ -169,7 +162,6 @@ export function Stage({ view, scene, active, targets, onTarget }: Props) {
             acting={view.acting === unit.id && active === null}
             targetable={targets.has(unit.id)}
             flash={latest.get(unit.id)}
-            onTarget={onTarget}
           />
         ))}
         <Bolts view={view} />

@@ -1,7 +1,8 @@
 import type { ResolvedSpell, UnitState } from '@outlaw/engine';
-import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { describeSpell } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
+import { Portrait } from './InitiativeTrack';
 
 interface Props {
   readonly caster: UnitState | null;
@@ -10,9 +11,13 @@ interface Props {
   readonly selected: string | null;
   readonly busy: boolean;
   readonly onSpell: (spell: ResolvedSpell) => void;
+  /** Sort survolé ou ciblé, pour le panneau de détail. */
+  readonly onFocusSpell: (spell: string | null) => void;
+  /** Contenu du panneau de détail (sort ou unité survolés). */
+  readonly detail: ReactNode;
 }
 
-function Pips({ count, filled, label }: { count: number; filled: number; label: string }) {
+export function Pips({ count, filled, label }: { count: number; filled: number; label: string }) {
   return (
     <span className="pips" role="img" aria-label={label}>
       {Array.from({ length: count }, (_, i) => (
@@ -22,25 +27,35 @@ function Pips({ count, filled, label }: { count: number; filled: number; label: 
   );
 }
 
-export function ActionBar({ caster, points, cap, selected, busy, onSpell }: Props) {
-  const [focused, setFocused] = useState<string | null>(null);
+/** Barre du bas : héros actif et réserve, les quatre sorts, le détail de ce qui est survolé. */
+export function ActionBar({
+  caster,
+  points,
+  cap,
+  selected,
+  busy,
+  onSpell,
+  onFocusSpell,
+  detail,
+}: Props) {
   const spells = caster?.def.spells ?? [];
-  const shown = spells.find((s) => s.id === (focused ?? selected)) ?? spells[0];
-
+  const who = caster ? names.unit(caster.def.kind) : null;
   return (
     <section
       className="actions"
-      aria-label={
-        caster ? t('combat.turnOf', { unit: names.unit(caster.def.kind) }) : t('combat.waiting')
-      }
+      aria-label={who !== null && !busy ? t('combat.turnOf', { unit: who }) : t('combat.waiting')}
     >
-      <div className="actions__reserve">
-        <Pips count={cap} filled={points} label={t('combat.reserve', { points, cap })} />
-        <span className="actions__turn">
-          {caster && !busy
-            ? t('combat.turnOf', { unit: names.unit(caster.def.kind) })
-            : t('combat.waiting')}
-        </span>
+      <div className="actions__who">
+        {caster !== null && <Portrait kind={caster.def.kind} size={44} />}
+        <div className="actions__who-text">
+          <span className="actions__turn">
+            {who !== null && !busy ? t('combat.turnOf', { unit: who }) : t('combat.waiting')}
+          </span>
+          <span className="actions__reserve">
+            <span className="hint">{t('combat.reserveShort')}</span>
+            <Pips count={cap} filled={points} label={t('combat.reserve', { points, cap })} />
+          </span>
+        </div>
       </div>
       <div className="actions__spells">
         {spells.map((spell, index) => {
@@ -63,16 +78,16 @@ export function ActionBar({ caster, points, cap, selected, busy, onSpell }: Prop
                 onSpell(spell);
               }}
               onMouseEnter={() => {
-                setFocused(spell.id);
+                onFocusSpell(spell.id);
               }}
               onMouseLeave={() => {
-                setFocused(null);
+                onFocusSpell(null);
               }}
               onFocus={() => {
-                setFocused(spell.id);
+                onFocusSpell(spell.id);
               }}
               onBlur={() => {
-                setFocused(null);
+                onFocusSpell(null);
               }}
             >
               <span className="spell__key" aria-hidden="true">
@@ -87,7 +102,9 @@ export function ActionBar({ caster, points, cap, selected, busy, onSpell }: Prop
                     label={t('combat.spell.cost', { cost: spell.cost })}
                   />
                 ) : (
-                  <span>{t('combat.spell.gain', { gain: spell.gain })}</span>
+                  <span className="spell__gain">
+                    {t('combat.spell.gain', { gain: spell.gain })}
+                  </span>
                 )}
                 <span>{t('combat.spell.delay', { delay: spell.delay })}</span>
               </span>
@@ -99,18 +116,9 @@ export function ActionBar({ caster, points, cap, selected, busy, onSpell }: Prop
           );
         })}
       </div>
-      {shown !== undefined && (
-        <div className="actions__detail" aria-hidden="true">
-          <p className="actions__detail-title">
-            {names.spell(shown.id)} <span>{tk(`combat.target.${shown.targeting}`)}</span>
-          </p>
-          <ul>
-            {describeSpell(shown).map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="actions__detail" aria-hidden="true">
+        {detail}
+      </div>
     </section>
   );
 }

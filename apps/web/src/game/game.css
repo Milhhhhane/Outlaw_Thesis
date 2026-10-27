@@ -1120,3 +1120,131 @@ button:disabled {
   height: 100%;
   overflow: auto;
 }
+
+/* ===== Fins de donjon et récompenses ===== */
+.end {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.end__scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center 30%;
+  image-rendering: pixelated;
+  filter: brightness(0.35) saturate(0.8);
+}
+
+.end__title {
+  margin: 0;
+  font-size: 44px;
+  color: #f4c25a;
+  text-shadow:
+    4px 4px 0 #7a2a18,
+    7px 7px 0 #07050a;
+}
+
+.end__title:focus {
+  outline: none;
+}
+
+.end__text {
+  margin: 0;
+  max-width: 640px;
+  color: var(--bone);
+}
+
+.end--rewards {
+  align-content: start;
+  padding-top: 28px;
+}
+
+.reward-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reward-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  width: 150px;
+  min-height: 190px;
+  padding: 6px;
+  border: 8px solid transparent;
+  border-image: var(--frame) 4 fill / 8px / 0 stretch;
+  image-rendering: pixelated;
+  animation: card-in 380ms steps(6, end) both;
+  animation-delay: calc(var(--i) * 140ms);
+}
+
+.reward-card--item {
+  width: 230px;
+}
+
+.reward-card--rare,
+.reward-card--unlock {
+  border-image-source: var(--frame-gold);
+}
+
+.reward-card--rare .icon {
+  color: var(--gold);
+}
+
+.reward-card__title {
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.reward-card__name {
+  margin: 0;
+  font-size: 16px;
+}
+
+.reward-card__big {
+  margin: 0;
+  font-size: 18px;
+}
+
+.reward-card__level {
+  margin: 0;
+  padding: 0 6px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.reward-card__lines {
+  margin: 0;
+  padding-left: 14px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.reward-card__sprite {
+  height: 64px;
+}
+
+@keyframes card-in {
+  from {
+    transform: translateY(30px) rotateY(80deg);
+    opacity: 0;
+  }
+}

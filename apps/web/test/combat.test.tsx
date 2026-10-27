@@ -52,7 +52,7 @@ describe('écran de combat', () => {
           .filter((b) => !(b as HTMLButtonElement).disabled);
         // Le sort le plus cher possible, sinon l'attaque de base.
         await user.click(spells.at(-1)!);
-        const targets = document.querySelectorAll<HTMLButtonElement>('button.unit--targetable');
+        const targets = document.querySelectorAll<HTMLButtonElement>('button.hitbox--target');
         if (targets.length > 0) await user.click(targets[0]!);
       }
       const dialog = screen.getByRole('dialog');
@@ -71,10 +71,10 @@ describe('écran de combat', () => {
     ).toBeInTheDocument();
     await user.keyboard('3');
     expect(screen.getByRole('status')).toHaveTextContent(names.spell('pyra_blaze'));
-    expect(document.querySelectorAll('button.unit--targetable')).toHaveLength(3);
+    expect(document.querySelectorAll('button.hitbox--target')).toHaveLength(3);
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('status')).toBeNull();
     // Intention ennemie annoncée.
-    expect(screen.getAllByText(/sur Pyra/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/→ Pyra/).length).toBeGreaterThan(0);
   });
 });

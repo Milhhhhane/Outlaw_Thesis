@@ -10,7 +10,7 @@ import { CombatScreen } from '../combat/CombatScreen';
 import { content } from '../combat/session';
 import { names, t } from '../i18n';
 import { useProfile } from '../state/profile';
-import { Rewards } from './Rewards';
+import { Rewards, RunEnd } from './Rewards';
 
 type Phase =
   | { readonly kind: 'fight'; readonly room: number }
@@ -51,24 +51,15 @@ export function DungeonRun({
   if (phase.kind === 'failed' || phase.kind === 'tested') {
     const failed = phase.kind === 'failed';
     return (
-      <main className="run-end">
-        <h1>{failed ? t('run.failed', { dungeon: name }) : t('test.done', { dungeon: name })}</h1>
-        <p>{failed ? t('run.failed.text') : t('test.done.text')}</p>
-        <div className="result__buttons">
-          <button
-            type="button"
-            className="button"
-            onClick={() => {
-              setPhase({ kind: 'fight', room: 0 });
-            }}
-          >
-            {t('run.retry')}
-          </button>
-          <button type="button" className="button button--quiet" onClick={onExit}>
-            {t('run.back')}
-          </button>
-        </div>
-      </main>
+      <RunEnd
+        scene={dungeonId}
+        title={failed ? t('run.failed', { dungeon: name }) : t('test.done', { dungeon: name })}
+        text={failed ? t('run.failed.text') : t('test.done.text')}
+        onRetry={() => {
+          setPhase({ kind: 'fight', room: 0 });
+        }}
+        onBack={onExit}
+      />
     );
   }
 

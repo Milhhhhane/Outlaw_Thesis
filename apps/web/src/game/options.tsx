@@ -46,7 +46,7 @@ interface OptionsApi {
   readonly set: (change: Partial<Options>) => void;
 }
 
-const OptionsContext = createContext<OptionsApi>({ options: DEFAULTS, set: () => undefined });
+const OptionsContext = createContext<OptionsApi | null>(null);
 
 export function OptionsProvider({ children }: { readonly children: ReactNode }) {
   const [options, setOptions] = useState<Options>(load);
@@ -70,6 +70,7 @@ export function OptionsProvider({ children }: { readonly children: ReactNode }) 
   return <OptionsContext.Provider value={api}>{children}</OptionsContext.Provider>;
 }
 
+/** Réglages courants ; hors du jeu (écran isolé), ceux enregistrés sur l'appareil. */
 export function useOptions(): OptionsApi {
-  return useContext(OptionsContext);
+  return useContext(OptionsContext) ?? { options: load(), set: () => undefined };
 }

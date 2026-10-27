@@ -1,12 +1,24 @@
-import { enemyIntent, legalActions, type BattleSetup, type ResolvedSpell } from '@outlaw/engine';
-import { useEffect, useRef, useState } from 'react';
-import { names, t, type TextKey } from '../i18n';
+import {
+  enemyIntent,
+  legalActions,
+  type BattleSetup,
+  type Intent,
+  type ResolvedSpell,
+  type UnitDef,
+} from '@outlaw/engine';
+import { useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEscape } from '../game/keys';
+import { GameContext } from '../game/nav';
+import { speedFactor, useOptions } from '../game/options';
+import { Button, Icon, Window } from '../game/ui';
+import { describeSpell, describeTrigger } from '../i18n/describe';
+import { joinNames, names, t, tk, type TextKey } from '../i18n';
 import { ActionBar } from './ActionBar';
 import { InitiativeTrack } from './InitiativeTrack';
-import { Stage } from './Stage';
 import { content } from './session';
-import { UnitCard } from './UnitCard';
+import { anchorOf, Stage } from './Stage';
 import { useBattle } from './useBattle';
+import type { UnitView } from './view';
 import './combat.css';
 
 const HELP: readonly TextKey[] = [
@@ -16,6 +28,14 @@ const HELP: readonly TextKey[] = [
   'help.statuses',
   'help.keys',
 ];
+
+const STATUS_ICON: Readonly<Record<string, string>> = {
+  burn: 'burn',
+  stun: 'stun',
+  mark: 'mark',
+  stun_immunity: 'lock',
+};
+const STAT_ICON: Readonly<Record<string, string>> = { atk: 'damage', def: 'shield', vit: 'speed' };
 
 interface Props {
   readonly setup: BattleSetup;
@@ -31,13 +51,140 @@ interface Props {
   };
 }
 
+function signed(n: number): string {
+  return n > 0 ? `+${n}` : `−${Math.abs(n)}`;
+}
+
+function intentText(intent: Intent, unitId: string, nameOf: (id: string) => string): string {
+  if (intent.stunned) return t('combat.intent.stunned', { spell: names.spell(intent.spell) });
+  if (intent.targets.length > 0 && intent.targets.every((id) => id !== unitId)) {
+    return t('combat.intent.targets', {
+      spell: names.spell(intent.spell),
+      targets: joinNames(intent.targets.map(nameOf)),
+    });
+  }
+  return t('combat.intent', { spell: names.spell(intent.spell) });
+}
+
+/** Ce qui flotte au-dessus d'une unité : nom, PV, bouclier, altérations, intention. */
+function UnitHud({
+  unit,
+  intent,
+  active,
+  nameOf,
+}: {
+  readonly unit: UnitView;
+  readonly intent: Intent | null;
+  readonly active: boolean;
+  readonly nameOf: (id: string) => string;
+}) {
+  const { x, head } = anchorOf(unit);
+  const hpPct = Math.max(0, Math.round((unit.hp / unit.maxHp) * 100));
+  const shieldPct = Math.min(100, Math.round((unit.shield / unit.maxHp) * 100));
+  return (
+    <div
+      className={[
+        'hud',
+        `hud--${unit.side}`,
+        `element-${unit.element}`,
+        active ? 'hud--active' : '',
+        unit.alive ? '' : 'hud--down',
+      ].join(' ')}
+      style={{ left: x, top: head - 4 }}
+    >
+      {intent !== null && unit.alive && (
+        <span className="hud__intent" title={intentText(intent, unit.id, nameOf)}>
+          <Icon name={intent.stunned ? 'stun' : 'damage'} />
+          {intent.stunned
+            ? names.spell(intent.spell)
+            : intent.targets.length > 0 && intent.targets.every((id) => id !== unit.id)
+              ? `→ ${joinNames(intent.targets.map(nameOf))}`
+              : names.spell(intent.spell)}
+        </span>
+      )}
+      <span className="hud__name">
+        {active && <span className="hud__marker" aria-hidden="true" />}
+        {names.unit(unit.kind)}
+      </span>
+      {unit.alive ? (
+        <>
+          <span className="hud__bar">
+            <span className="hud__hp" style={{ width: `${hpPct}%` }} />
+            {unit.shield > 0 && <span className="hud__shield" style={{ width: `${shieldPct}%` }} />}
+          </span>
+          <span className="hud__numbers">
+            {unit.hp}/{unit.maxHp}
+            {unit.shield > 0 && <span className="hud__shield-value"> +{unit.shield}</span>}
+          </span>
+          <span className="hud__tags">
+            {unit.statuses.map((s) => (
+              <span key={s.kind} className={`hud__tag hud__tag--${s.kind}`}>
+                <Icon name={STATUS_ICON[s.kind] ?? 'trigger'} />
+                {s.kind === 'stun' ? '' : s.turns}
+              </span>
+            ))}
+            {Object.entries(unit.mods)
+              .filter(([, v]) => v !== 0)
+              .map(([stat, v]) => (
+                <span
+                  key={stat}
+                  className={`hud__tag ${v > 0 ? 'hud__tag--up' : 'hud__tag--down'}`}
+                >
+                  <Icon name={STAT_ICON[stat] ?? 'stat'} />
+                  {v > 0 ? '▲' : '▼'}
+                </span>
+              ))}
+          </span>
+        </>
+      ) : (
+        <span className="hud__numbers">{t('combat.down')}</span>
+      )}
+    </div>
+  );
+}
+
+/** Description complète d'une unité, pour le panneau de détail et les lecteurs d'écran. */
+function unitDetail(
+  unit: UnitView,
+  def: UnitDef | undefined,
+  intent: Intent | null,
+  nameOf: (id: string) => string,
+): string[] {
+  const lines = [
+    unit.alive ? t('combat.hp', { hp: unit.hp, max: unit.maxHp }) : t('combat.down'),
+    ...(unit.shield > 0 ? [t('combat.shield', { shield: unit.shield })] : []),
+    ...unit.statuses.map((s) =>
+      s.kind === 'stun'
+        ? tk(`status.${s.kind}`)
+        : t('combat.statusTurns', { status: tk(`status.${s.kind}`), turns: s.turns }),
+    ),
+    ...Object.entries(unit.mods)
+      .filter(([, v]) => v !== 0)
+      .map(([stat, v]) => `${tk(`stat.${stat}`)} ${signed(v)} %`),
+  ];
+  const passive = def?.triggers[0];
+  if (passive !== undefined && unit.side === 'player') {
+    lines.push(
+      `${t('combat.passive', { name: names.passive(passive.source) })} : ${describeTrigger(passive.trigger)}`,
+    );
+  }
+  if (intent !== null && unit.alive) lines.push(intentText(intent, unit.id, nameOf));
+  return lines;
+}
+
 export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
-  const { model, busy, act, skip, reset } = useBattle(setup);
+  const { options } = useOptions();
+  const game = useContext(GameContext);
+  const { model, busy, act, skip, reset } = useBattle(setup, speedFactor(options.speed));
   const { state, view } = model;
   // La sélection est liée au héros actif : elle disparaît d'elle-même quand le tour passe.
   const [selection, setSelection] = useState<{ unit: string; spell: string } | null>(null);
-  const logRef = useRef<HTMLOListElement>(null);
-  const againRef = useRef<HTMLButtonElement>(null);
+  const [paused, setPaused] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [focusSpell, setFocusSpell] = useState<string | null>(null);
+  const [focusUnit, setFocusUnit] = useState<string | null>(null);
+  const resultRef = useRef<HTMLButtonElement>(null);
+  const firstTarget = useRef<HTMLButtonElement>(null);
 
   const active = busy ? null : state.active;
   const selected = selection !== null && selection.unit === active ? selection.spell : null;
@@ -46,24 +193,35 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   };
   const caster = state.units.find((u) => u.def.id === active) ?? null;
   const legal = active === null ? [] : legalActions(state);
-  const targets = new Set(
-    legal.filter((a) => a.spell === selected && a.target !== undefined).map((a) => a.target),
+  const targets = new Set<string>(
+    legal.filter((a) => a.spell === selected && a.target !== undefined).map((a) => a.target ?? ''),
   );
   const result = busy ? null : state.result;
   const finished = result !== null;
+  const defOf = (id: string): UnitDef | undefined => state.units.find((u) => u.def.id === id)?.def;
   const nameOf = (id: string): string => {
-    const def = state.units.find((u) => u.def.id === id)?.def;
+    const def = defOf(id);
     return def ? names.unit(def.kind) : id;
   };
+  const intents = new Map(
+    view.units
+      .filter((u) => u.side === 'enemy')
+      .map((u) => [u.id, busy ? null : enemyIntent(state, u.id)] as const),
+  );
 
   useEffect(() => {
-    // Fin de combat : le focus va au premier bouton du résultat.
-    if (finished) againRef.current?.focus();
+    if (finished) resultRef.current?.focus();
   }, [finished]);
 
   useEffect(() => {
-    logRef.current?.lastElementChild?.scrollIntoView({ block: 'nearest' });
-  }, [model.log]);
+    // En ciblage, le focus va à la première cible : Entrée valide, Tab passe à la suivante.
+    if (selected !== null) firstTarget.current?.focus();
+  }, [selected]);
+
+  useEscape(() => {
+    if (selected !== null) setSelected(null);
+    else if (!finished) setPaused(true);
+  });
 
   const castSpell = (spell: ResolvedSpell): void => {
     if (caster === null) return;
@@ -82,10 +240,11 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setSelected(null);
+      if (paused) return;
       if (event.key === ' ' && busy) {
         event.preventDefault();
         skip();
+        return;
       }
       const index = Number(event.key) - 1;
       const spell = caster?.def.spells[index];
@@ -104,95 +263,124 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
     };
   });
 
-  const selectedSpell = caster?.def.spells.find((s) => s.id === selected);
-  const row = (side: 'player' | 'enemy') =>
-    view.units
-      .filter((u) => u.side === side)
-      .map((unit) => {
-        const def = state.units.find((u) => u.def.id === unit.id)?.def;
-        if (def === undefined) return null;
-        return (
-          <li key={unit.id}>
-            <UnitCard
-              unit={unit}
-              def={def}
-              intent={side === 'enemy' && !busy ? enemyIntent(state, unit.id) : null}
-              active={unit.id === active}
-              acting={busy && view.acting === unit.id}
-              targetable={targets.has(unit.id)}
-              flashes={view.flashes.filter((f) => f.unit === unit.id).slice(-1)}
-              onTarget={onTarget}
-              nameOf={nameOf}
-            />
-          </li>
-        );
-      });
-
-  return (
-    <main className="combat">
-      <header className="combat__bar">
-        <h1 className="combat__title">{title ?? t('combat.title')}</h1>
-        {busy && (
-          <button type="button" className="link-button" onClick={skip}>
-            {t('combat.skip')}
-          </button>
-        )}
-        <button type="button" className="link-button" onClick={onExit}>
-          {t('combat.quit')}
-        </button>
-      </header>
-
-      <InitiativeTrack state={state} />
-
-      <Stage
-        view={view}
-        scene={scene ?? 'ember_wastes'}
-        active={active}
-        targets={targets as ReadonlySet<string>}
-        onTarget={onTarget}
-      />
-
-      <section className="side side--enemy" aria-label={t('combat.enemies')}>
-        <ul className="side__row">{row('enemy')}</ul>
-      </section>
-
-      <section className="log" aria-labelledby="log-heading">
-        <h2 id="log-heading" className="visually-hidden">
-          {t('combat.log')}
-        </h2>
-        <ol ref={logRef} className="log__lines" aria-live="polite">
-          {model.log.slice(-6).map((entry) => (
-            <li key={entry.key}>{entry.text}</li>
-          ))}
-        </ol>
-      </section>
-
-      <details className="help">
-        <summary>{t('help.title')}</summary>
+  const lastLine = model.log.at(-1)?.text ?? '';
+  const shownSpell =
+    caster?.def.spells.find((s) => s.id === (focusSpell ?? selected)) ??
+    (focusUnit === null ? caster?.def.spells[0] : undefined);
+  const hovered = view.units.find((u) => u.id === focusUnit);
+  let detail: ReactNode = null;
+  if (hovered !== undefined) {
+    detail = (
+      <>
+        <p className="detail__name">{names.unit(hovered.kind)}</p>
         <ul>
-          {HELP.map((key) => (
-            <li key={key}>{t(key)}</li>
+          {unitDetail(hovered, defOf(hovered.id), intents.get(hovered.id) ?? null, nameOf).map(
+            (line, i) => (
+              <li key={i}>{line}</li>
+            ),
+          )}
+        </ul>
+      </>
+    );
+  } else if (shownSpell !== undefined) {
+    detail = (
+      <>
+        <p className="detail__name">
+          {names.spell(shownSpell.id)} <span>{tk(`combat.target.${shownSpell.targeting}`)}</span>
+        </p>
+        <ul>
+          {describeSpell(shownSpell).map((line, i) => (
+            <li key={i}>{line}</li>
           ))}
         </ul>
-      </details>
+      </>
+    );
+  }
 
-      <section className="side side--player" aria-label={t('combat.heroes')}>
-        {selectedSpell !== undefined && (
-          <p className="side__prompt" role="status">
-            {t('combat.chooseTarget', { spell: names.spell(selectedSpell.id) })}{' '}
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => {
-                setSelected(null);
-              }}
-            >
-              {t('combat.cancel')}
-            </button>
-          </p>
+  const firstTargetId = view.units.find((u) => targets.has(u.id))?.id;
+  return (
+    <main className="battle">
+      <Stage view={view} scene={scene ?? 'ember_wastes'} active={active} targets={targets} />
+
+      <header className="battle__top">
+        <Button
+          variant="quiet"
+          size="small"
+          icon="gear"
+          aria-label={t('combat.pause')}
+          onClick={() => {
+            setPaused(true);
+          }}
+        />
+        <h1 className="battle__title">{title ?? t('combat.title')}</h1>
+        <InitiativeTrack state={state} />
+        {busy && (
+          <Button variant="ghost" size="small" icon="speed" onClick={skip}>
+            {t('combat.skip')}
+          </Button>
         )}
-        <ul className="side__row">{row('player')}</ul>
+      </header>
+
+      <section className="battle__units" aria-label={t('combat.units')}>
+        {view.units.map((unit) => {
+          const targetable = targets.has(unit.id);
+          const { x, head, feet } = anchorOf(unit);
+          const intent = intents.get(unit.id) ?? null;
+          const isFirst = unit.id === firstTargetId;
+          return (
+            <div key={unit.id}>
+              <UnitHud unit={unit} intent={intent} active={unit.id === active} nameOf={nameOf} />
+              <button
+                ref={isFirst ? firstTarget : undefined}
+                type="button"
+                className={['hitbox', targetable ? 'hitbox--target' : ''].join(' ')}
+                style={{ left: x - 36, top: head, height: feet - head + 6 }}
+                aria-label={
+                  targetable
+                    ? t('combat.target', { unit: names.unit(unit.kind) })
+                    : `${t('combat.details', { unit: names.unit(unit.kind) })}. ${unitDetail(unit, defOf(unit.id), intent, nameOf).join('. ')}`
+                }
+                aria-disabled={!targetable}
+                tabIndex={targetable ? 0 : -1}
+                onClick={() => {
+                  if (targetable) onTarget(unit.id);
+                }}
+                onMouseEnter={() => {
+                  setFocusUnit(unit.id);
+                }}
+                onMouseLeave={() => {
+                  setFocusUnit(null);
+                }}
+                onFocus={() => {
+                  setFocusUnit(unit.id);
+                }}
+                onBlur={() => {
+                  setFocusUnit(null);
+                }}
+              />
+            </div>
+          );
+        })}
       </section>
+
+      {selected !== null && caster !== null && (
+        <p className="battle__prompt" role="status">
+          {t('combat.chooseTarget', { spell: names.spell(selected) })}
+          <Button
+            variant="ghost"
+            size="small"
+            onClick={() => {
+              setSelected(null);
+            }}
+          >
+            {t('combat.cancel')}
+          </Button>
+        </p>
+      )}
+
+      <p className="battle__log" aria-live="polite">
+        {lastLine}
+      </p>
 
       <ActionBar
         caster={finished ? null : caster}
@@ -201,47 +389,105 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         selected={selected}
         busy={busy || finished}
         onSpell={castSpell}
+        onFocusSpell={setFocusSpell}
+        detail={detail}
       />
 
       {result !== null && (
         <section
-          className="result"
+          className={`outcome outcome--${result.winner === 'player' ? 'win' : 'loss'}`}
           role="dialog"
-          aria-modal="false"
+          aria-modal="true"
           aria-labelledby="result-heading"
         >
-          <h2 id="result-heading">
+          <h2 id="result-heading" className="outcome__title">
             {result.winner === 'player'
               ? t('combat.result.victory')
               : result.reason === 'action_limit'
                 ? t('combat.result.limit')
                 : t('combat.result.defeat')}
           </h2>
-          <p>{t('combat.result.actions', { count: state.actionCount })}</p>
-          <div className="result__buttons">
+          <p className="outcome__sub">{t('combat.result.actions', { count: state.actionCount })}</p>
+          <div className="outcome__buttons">
             {finish !== undefined ? (
-              <button
-                ref={againRef}
-                type="button"
-                className="button"
+              <Button
+                ref={resultRef}
+                size="large"
                 onClick={() => {
                   finish.onClick(result.winner === 'player');
                 }}
               >
                 {finish.label(result.winner === 'player')}
-              </button>
+              </Button>
             ) : (
               <>
-                <button ref={againRef} type="button" className="button" onClick={reset}>
+                <Button ref={resultRef} size="large" onClick={reset}>
                   {t('combat.again')}
-                </button>
-                <button type="button" className="button button--quiet" onClick={onExit}>
+                </Button>
+                <Button variant="quiet" size="large" onClick={onExit}>
                   {t('combat.home')}
-                </button>
+                </Button>
               </>
             )}
           </div>
         </section>
+      )}
+
+      {paused && (
+        <Window
+          title={t('combat.pause')}
+          className="pause"
+          onClose={() => {
+            setPaused(false);
+            setHelp(false);
+          }}
+        >
+          {help ? (
+            <ul className="pause__help">
+              {HELP.map((key) => (
+                <li key={key}>{t(key)}</li>
+              ))}
+            </ul>
+          ) : (
+            <div className="pause__menu">
+              <Button
+                size="large"
+                onClick={() => {
+                  setPaused(false);
+                }}
+              >
+                {t('combat.resume')}
+              </Button>
+              <Button
+                variant="quiet"
+                onClick={() => {
+                  setHelp(true);
+                }}
+              >
+                {t('combat.help')}
+              </Button>
+              {game !== null && (
+                <Button variant="quiet" icon="gear" onClick={game.openOptions}>
+                  {t('combat.options')}
+                </Button>
+              )}
+              <Button variant="danger" onClick={onExit}>
+                {t('combat.quit')}
+              </Button>
+            </div>
+          )}
+          {help && (
+            <Button
+              variant="quiet"
+              size="small"
+              onClick={() => {
+                setHelp(false);
+              }}
+            >
+              ◀ {t('nav.back')}
+            </Button>
+          )}
+        </Window>
       )}
     </main>
   );

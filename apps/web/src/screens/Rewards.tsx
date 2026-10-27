@@ -1,10 +1,49 @@
 import type { DungeonReport } from '@outlaw/engine';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { backgroundUrl } from '../art';
+import { PixelSprite } from '../art/Pixel';
+import { Portrait } from '../combat/InitiativeTrack';
 import { content } from '../combat/session';
+import { useEscape } from '../game/keys';
+import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 
+function Card({
+  index,
+  className,
+  title,
+  children,
+}: {
+  readonly index: number;
+  readonly className?: string;
+  readonly title: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <li
+      className={['reward-card', className ?? ''].join(' ')}
+      style={{ '--i': index } as CSSProperties}
+    >
+      <h3 className="reward-card__title">{title}</h3>
+      {children}
+    </li>
+  );
+}
+
+/** Fond de fin de donjon : le décor, assombri. */
+function Backdrop({ scene }: { readonly scene: string }) {
+  return (
+    <div
+      className="end__scene"
+      aria-hidden="true"
+      style={{ backgroundImage: `url(${backgroundUrl(scene)})` }}
+    />
+  );
+}
+
+/** Récompenses d'un donjon, sous forme de cartes. */
 export function Rewards({
   report,
   onContinue,
@@ -15,66 +54,116 @@ export function Rewards({
   const { profile } = useProfile();
   const heading = useRef<HTMLHeadingElement>(null);
   const item = content.itemById.get(report.item.item);
+  useEscape(onContinue);
 
   useEffect(() => {
     heading.current?.focus();
   }, []);
 
+  let index = 0;
   return (
-    <main className="rewards">
-      <h1 ref={heading} tabIndex={-1}>
+    <main className="end end--rewards">
+      <Backdrop scene={report.dungeon} />
+      <h1 ref={heading} tabIndex={-1} className="end__title">
         {t('reward.title', { dungeon: names.dungeon(report.dungeon) })}
       </h1>
-      <p className="camp__hint">
-        {report.firstClear ? t('reward.firstClear') : t('reward.replay')}
-      </p>
-
-      {report.unlockedHero !== null && (
-        <p className="rewards__unlock">
-          {t('reward.unlocked', { hero: names.hero(report.unlockedHero) })}
-        </p>
-      )}
-
-      {item !== undefined && (
-        <section
-          className={`rewards__item rewards__item--${item.rarity}`}
-          aria-labelledby="loot-heading"
-        >
-          <h2 id="loot-heading">{t('reward.item', { item: names.item(item.id) })}</h2>
-          <p className="camp__hint">{tk(`item.rarity.${item.rarity}`)}</p>
-          <ul>
-            {describeItem(item).map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ul>
-          {report.item.guaranteed && <p className="camp__hint">{t('reward.guaranteed')}</p>}
-        </section>
-      )}
-
-      <ul className="rewards__list">
+      <p className="end__text">{report.firstClear ? t('reward.firstClear') : t('reward.replay')}</p>
+      <ul className="reward-cards" aria-label={t('reward.cards')}>
+        {item !== undefined && (
+          <Card
+            index={index++}
+            className={`reward-card--item reward-card--${item.rarity}`}
+            title={t('reward.itemCard')}
+          >
+            <Icon name="item" size={36} />
+            <h2 className="reward-card__name">{t('reward.item', { item: names.item(item.id) })}</h2>
+            <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
+            <ul className="reward-card__lines">
+              {describeItem(item).map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ul>
+            {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
+          </Card>
+        )}
+        {report.unlockedHero !== null && (
+          <Card index={index++} className="reward-card--unlock" title={t('heroes.title')}>
+            <span className="reward-card__sprite">
+              <PixelSprite name={report.unlockedHero} idle />
+            </span>
+            <p className="reward-card__big">
+              {t('reward.unlocked', { hero: names.hero(report.unlockedHero) })}
+            </p>
+          </Card>
+        )}
         {Object.entries(report.xp).map(([hero, gain]) => (
-          <li key={hero}>
-            {t('reward.xp', { hero: names.hero(hero), xp: gain.gained })}
+          <Card key={hero} index={index++} title={t('reward.xpCard')}>
+            <Portrait kind={hero} size={48} />
+            <p className="reward-card__name">{names.hero(hero)}</p>
+            <p className="reward-card__big">{t('reward.xpShort', { xp: gain.gained })}</p>
             {gain.levels > 0 && (
-              <strong className="rewards__level">
-                {' '}
-                {t('reward.levelUp', {
-                  hero: names.hero(hero),
-                  level: profile.heroes[hero]?.level ?? '?',
-                })}
-              </strong>
+              <p className="reward-card__level">
+                {t('reward.levelShort', { level: profile.heroes[hero]?.level ?? '?' })}
+              </p>
             )}
-          </li>
+            <span className="visually-hidden">
+              {t('reward.xp', { hero: names.hero(hero), xp: gain.gained })}
+            </span>
+          </Card>
         ))}
-        <li>{t('reward.gold', { gold: report.gold })}</li>
-        <li>
-          {t('reward.materials', { amount: report.materials.amount, tier: report.materials.tier })}
-        </li>
+        <Card index={index++} title={t('reward.goldCard')}>
+          <Icon name="gold" size={36} />
+          <p className="reward-card__big gold-text">{t('reward.gold', { gold: report.gold })}</p>
+        </Card>
+        <Card index={index++} title={t('reward.materialsCard')}>
+          <Icon name="points" size={36} />
+          <p className="reward-card__big">
+            {t('reward.materials', {
+              amount: report.materials.amount,
+              tier: report.materials.tier,
+            })}
+          </p>
+        </Card>
       </ul>
-
-      <button type="button" className="button" onClick={onContinue}>
+      <Button size="large" onClick={onContinue} className="end__go">
         {t('reward.continue')}
-      </button>
+      </Button>
+    </main>
+  );
+}
+
+/** Fin d'un donjon sans récompense : échec, ou passage en mode test. */
+export function RunEnd({
+  scene,
+  title,
+  text,
+  onRetry,
+  onBack,
+}: {
+  readonly scene: string;
+  readonly title: string;
+  readonly text: string;
+  readonly onRetry: () => void;
+  readonly onBack: () => void;
+}) {
+  const first = useRef<HTMLButtonElement>(null);
+  useEscape(onBack);
+  useEffect(() => {
+    first.current?.focus();
+  }, []);
+  return (
+    <main className="end">
+      <Backdrop scene={scene} />
+      <h1 className="end__title">{title}</h1>
+      <p className="end__text">{text}</p>
+      <div className="outcome__buttons">
+        <Button ref={first} size="large" onClick={onRetry}>
+          {t('run.retry')}
+        </Button>
+        <Button variant="quiet" size="large" onClick={onBack}>
+          {t('run.back')}
+        </Button>
+      </div>
     </main>
   );
 }

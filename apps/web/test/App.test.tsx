@@ -27,7 +27,10 @@ describe('écran-titre et camp', () => {
       expect(screen.getByRole('button', { name: new RegExp(t(entry)) })).toBeInTheDocument();
     }
     await user.click(screen.getByRole('button', { name: t('hub.demo') }));
-    await user.click(screen.getByRole('button', { name: t('combat.quit') }));
+    // En combat, Échap ouvre la pause, d'où l'on quitte.
+    await user.keyboard('{Escape}');
+    const pause = screen.getByRole('dialog', { name: t('combat.pause') });
+    await user.click(within(pause).getByRole('button', { name: t('combat.quit') }));
     expect(screen.getByRole('heading', { level: 1, name: t('hub.title') })).toBeInTheDocument();
     // Échap : retour au menu principal, où la partie peut maintenant continuer.
     await user.keyboard('{Escape}');

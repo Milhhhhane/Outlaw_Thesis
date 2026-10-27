@@ -106,32 +106,26 @@ export function reducer(model: Model, msg: Msg): Model {
   }
 }
 
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-}
-
-/** Combat interactif : l'état du moteur, sa vue animée et les commandes. */
-export function useBattle(setup: BattleSetup) {
+/** Combat interactif : l'état du moteur, sa vue animée et les commandes. `pace` : 1 normal, 0 instantané. */
+export function useBattle(setup: BattleSetup, pace = 1) {
   const [model, dispatch] = useReducer(reducer, setup, init);
 
   useEffect(() => {
     const next = model.queue[0];
     if (next === undefined) return;
-    if (prefersReducedMotion()) {
+    if (pace <= 0) {
       dispatch({ type: 'flush' });
       return;
     }
     // On laisse au dernier événement montré le temps de s'afficher avant de jouer le suivant.
-    const delay = model.hold;
+    const delay = model.hold * pace;
     const timer = window.setTimeout(() => {
       dispatch({ type: 'advance' });
     }, delay);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [model.queue, model.counter, model.hold]);
+  }, [model.queue, model.counter, model.hold, pace]);
 
   const act = useCallback((action: Action) => {
     dispatch({ type: 'act', action });

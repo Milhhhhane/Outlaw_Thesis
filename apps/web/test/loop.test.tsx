@@ -34,7 +34,7 @@ async function playFight(user: ReturnType<typeof userEvent.setup>): Promise<void
     const spells = within(actions).getAllByRole<HTMLButtonElement>('button');
     const ult = spells[3];
     await user.click(ult !== undefined && !ult.disabled ? ult : spells[0]!);
-    const targets = document.querySelectorAll<HTMLButtonElement>('button.unit--targetable');
+    const targets = document.querySelectorAll<HTMLButtonElement>('button.hitbox--target');
     if (targets.length > 0) await user.click(targets[0]!);
   }
 }
