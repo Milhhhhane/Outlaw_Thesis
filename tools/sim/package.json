@@ -9,11 +9,13 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "tune": "tsx src/tune.ts",
-    "autotune": "tsx src/autotune.ts"
+    "autotune": "tsx src/autotune.ts",
+    "pvp": "tsx src/pvp-cli.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",
-    "@outlaw/engine": "workspace:*"
+    "@outlaw/engine": "workspace:*",
+    "@outlaw/net": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -437,6 +437,9 @@ importers:
       '@outlaw/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@outlaw/net':
+        specifier: workspace:*
+        version: link:../../packages/net
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
