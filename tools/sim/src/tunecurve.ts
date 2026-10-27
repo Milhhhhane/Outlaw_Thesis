@@ -39,7 +39,8 @@ for (let round = 0; round < rounds; round++) {
       ...dungeon,
       encounters: dungeon.encounters.map((encounter) => {
         const atkPct = Math.min(400, Math.max(10, Math.round((encounter.atkPct ?? 100) * factor)));
-        const { atkPct: _old, ...rest } = encounter;
+        const rest = { ...encounter };
+        delete rest.atkPct;
         return atkPct === 100 ? rest : { ...rest, atkPct };
       }),
     };
