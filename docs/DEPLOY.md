@@ -32,6 +32,11 @@ Cloudflare installe les dépendances lui-même (pnpm détecté par `pnpm-lock.ya
 `wrangler.jsonc` existant : Cloudflare ne lance pas sa configuration automatique et utilise ce
 fichier tel quel.
 
+`wrangler.jsonc` déclare aussi `build.command` (`pnpm run build`) : `wrangler deploy` construit
+le site lui-même avant de publier. Le déploiement marche donc même si la commande de build du
+tableau de bord est vide ; sans cela, il échoue avec « The directory specified by the
+"assets.directory" field … does not exist ».
+
 ## Vérifier en local
 
 ```sh

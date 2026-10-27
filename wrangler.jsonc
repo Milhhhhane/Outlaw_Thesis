@@ -4,6 +4,9 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "outlaw-thesis",
   "compatibility_date": "2026-10-13",
+  // Construit le site avant chaque déploiement : le déploiement ne dépend plus de la commande
+  // de build réglée dans le tableau de bord Cloudflare.
+  "build": { "command": "pnpm run build" },
   "assets": {
     "directory": "./apps/web/dist",
     "not_found_handling": "single-page-application",
