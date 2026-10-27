@@ -36,8 +36,9 @@ Après le test humain : corriger ce qu'il révèle, puis piocher dans `docs/BACK
 
 ## Déploiement
 
-En attente : le propriétaire du dépôt doit connecter le dépôt à Cloudflare (voir `docs/DEPLOY.md`).
-URL de production : pas encore communiquée.
+Déploiement automatique actif : chaque push sur `main` est construit et publié par Workers Builds
+(premier déploiement réussi : commit `8e8300e`). URL de production : `outlaw-thesis.<sous-domaine>.workers.dev`,
+sous-domaine à reporter ici.
 
 ## Tags
 
