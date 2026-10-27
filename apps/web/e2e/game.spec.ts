@@ -223,7 +223,7 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   test.skip(portrait(page), 'portrait');
   const content = loadContent();
   const base = newProfile(content, 5, 0);
-  // Pire cas : première victoire du donjon 2 = objet, coffre, nouveau héros, trois XP, or, matériaux.
+  // Pire cas : première victoire du donjon 2 = objet, coffre, quatre XP, or, poussière.
   const profile = {
     ...base,
     dungeons: { ember_wastes: { clears: 1 } },
@@ -244,8 +244,12 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await page.getByRole('button', { name: /^Donjons/ }).click();
   await page.getByRole('button', { name: /Préparer/ }).click();
   await page.getByRole('button', { name: /^Partir/ }).click();
+  // Auto joue : la règle « dernier sort, première cible » de `fight` perd la salle 2 de ce donjon
+  // (sorts de soutien enchaînés), même au niveau 30.
+  await page.getByRole('button', { name: 'Auto', exact: true }).click();
   for (let room = 1; room <= 3; room++) {
-    await fight(page, false);
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.outcome')).toContainText('Victoire');
     await page.locator('.outcome button').first().click();
     if (!(await page.locator('.battle').isVisible())) break;
   }
