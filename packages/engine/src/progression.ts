@@ -90,7 +90,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     energy: { value: content.balance.energy.cap, updatedAt: now },
     heroes: Object.fromEntries(starters.map((id) => [id, freshHero(1, content)])),
     unlocked: starters,
-    team: starters.slice(0, 3),
+    team: starters.slice(0, content.balance.progression.teamSize),
     items: [],
     nextUid: 1,
     dungeons: {},
@@ -224,9 +224,10 @@ export function equip(
   return ok({ ...profile, heroes });
 }
 
-/** Équipe de 1 à 3 héros débloqués, sans doublon. */
-export function setTeam(profile: Profile, team: readonly string[]): Outcome {
-  if (team.length < 1 || team.length > 3 || new Set(team).size !== team.length)
+/** Équipe de 1 à `teamSize` héros débloqués, sans doublon. */
+export function setTeam(content: Content, profile: Profile, team: readonly string[]): Outcome {
+  const size = content.balance.progression.teamSize;
+  if (team.length < 1 || team.length > size || new Set(team).size !== team.length)
     return refuse('bad_team');
   if (team.some((id) => !profile.unlocked.includes(id))) return refuse('locked_hero');
   return ok({ ...profile, team: [...team] });

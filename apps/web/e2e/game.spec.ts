@@ -183,7 +183,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   const profile = {
     ...base,
     chests: { bronze: 1, gold: 1 },
-    fragments: { cendre: cost },
+    fragments: { ressac: cost },
     focus: 'pyra',
   };
   await page.addInitScript(
@@ -199,10 +199,10 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   await page.getByRole('button', { name: /^Coffres/ }).click();
   await noScroll(page);
 
-  // Cendre a assez de fragments : une invocation, et le bouton disparaît.
-  const cendre = page.locator('.frag-row', { hasText: 'Cendre' });
-  await cendre.getByRole('button', { name: 'Invoquer' }).click();
-  await expect(cendre.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
+  // Ressac a assez de fragments : une invocation, et le bouton disparaît.
+  const ressac = page.locator('.frag-row', { hasText: 'Ressac' });
+  await ressac.getByRole('button', { name: 'Invoquer' }).click();
+  await expect(ressac.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
 
   // Le coffre d'or : la fenêtre d'ouverture tient en entier, même avec beaucoup de héros tirés.
   await page.locator('.chest-card', { hasText: "Coffre d'or" }).getByRole('button').click();

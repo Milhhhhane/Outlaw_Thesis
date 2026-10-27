@@ -515,6 +515,24 @@ légales et les unités vivantes ; un test l'exécute avec quatre héros contre 
 équipes de 4 héros demandées pour la suite restent à faire côté moteur et interface (liste dans
 `docs/ARCHITECTURE.md`, « Passer à quatre héros »).
 
+## Lot 13 — équipes de quatre
+
+**La taille d'équipe est une donnée d'équilibrage** — Choix : `balance.progression.teamSize`
+(4) lu par le moteur, la simulation et l'écran d'équipe ; `MAX_SIDE` (4) borne les emplacements
+de la scène et des rencontres. Raison : passer de trois à quatre a touché une constante en dur à
+sept endroits ; la prochaine fois, c'est un nombre dans `balance.json`.
+
+**Plus d'ennemis, pas des ennemis deux fois plus forts** — Contexte : à quatre, le réglage
+automatique compensait d'abord en doublant l'ATK des ennemis (178 % au deuxième donjon), et une
+équipe de niveau 30 pouvait perdre contre des ennemis de niveau 4 en jouant mal. Choix : des
+salles de 3–4 ennemis, puis reconvergence. Raison : la difficulté par le nombre reste lisible et
+la croissance plate des stats (+72 % PV, +54 % ATK sur 29 niveaux) ne doit pas être annulée par
+des multiplicateurs.
+
+**Le premier donjon ne se durcit jamais** — Choix : `tunecurve` laisse le premier donjon au-dessus
+de sa cible (85 %) ; quatre attaques de base doivent suffire. Raison : la prise en main ne se
+règle pas par un taux de réussite moyen.
+
 ## Butin exclusif, copies et maîtrise
 
 **Chaque donjon a son butin, et rien que le sien** — Contexte : le joueur veut du grind et que

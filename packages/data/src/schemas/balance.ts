@@ -1,3 +1,6 @@
+/** Unités au plus par camp en combat : les emplacements de la scène et des rencontres. */
+export const MAX_SIDE = 4;
+
 import { z } from 'zod';
 import { idSchema } from './common';
 
@@ -54,6 +57,8 @@ export const balanceSchema = z
 
     progression: z.strictObject({
       maxLevel: z.number().int().min(2),
+      /** Héros par équipe (emplacements côté joueur ; le moteur en accepte autant par camp). */
+      teamSize: z.number().int().min(1).max(MAX_SIDE),
       /** Un héros ne dépasse pas (étoiles + 1) × ce nombre : chaque palier se paie en fragments. */
       levelsPerStar: posInt,
       /** Croissance des stats brutes au niveau max, en fraction de la stat de niveau 1 (1 = +100 %). */

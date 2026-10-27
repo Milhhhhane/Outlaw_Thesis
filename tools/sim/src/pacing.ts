@@ -6,7 +6,7 @@ import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
- * Rythme et difficulté : pour chaque donjon, des équipes de 3 héros tirées au hasard (builds
+ * Rythme et difficulté : pour chaque donjon, des équipes de `teamSize` héros tirées au hasard (builds
  * aléatoires), au niveau conseillé et avec le retard de R2, jouées par la politique experte
  * (anticipation d'un coup) et par le joueur moyen (une décision sur quatre au hasard).
  * Les combats d'un donjon repartent à PV pleins : chacun est mesuré séparément.
@@ -40,7 +40,7 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
       };
       const clears: Record<Kind, BattleOutcome[]> = { expert: [], average: [] };
       for (let i = 0; i < runs; i++) {
-        const team = rng.shuffle(heroes).slice(0, 3);
+        const team = rng.shuffle(heroes).slice(0, content.balance.progression.teamSize);
         const builds = team.map((hero) => randomBuild(content, hero, level, rng));
         const party = compileTeam(content, builds, 'player', dungeon.modifier);
         for (const kind of ['expert', 'average'] as const) {

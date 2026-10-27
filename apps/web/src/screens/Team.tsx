@@ -9,9 +9,9 @@ import { names, t, tk } from '../i18n';
 import { shareUrl } from '../save/share';
 import { useProfile } from '../state/profile';
 
-const MAX_TEAM = 3;
+const MAX_TEAM = content.balance.progression.teamSize;
 
-/** Composition : trois emplacements, les héros débloqués en dessous. */
+/** Composition : `teamSize` emplacements, les héros débloqués en dessous. */
 export function Team({ dungeon }: { readonly dungeon?: string }) {
   const { go } = useGame();
   const { profile, apply } = useProfile();
@@ -24,7 +24,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
     const team = profile.team.includes(id)
       ? profile.team.filter((h) => h !== id)
       : [...profile.team, id];
-    apply(setTeam(profile, team));
+    apply(setTeam(content, profile, team));
   };
   const full = profile.team.length >= MAX_TEAM;
   const link = test

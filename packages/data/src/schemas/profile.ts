@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_SIDE } from './balance';
 import { idSchema } from './common';
 
 const nonNegInt = z.number().int().min(0);
@@ -46,7 +47,7 @@ export const profileSchema = z.strictObject({
   energy: z.strictObject({ value: nonNegInt, updatedAt: nonNegInt }),
   heroes: z.record(idSchema, heroProgressSchema),
   unlocked: z.array(idSchema),
-  team: z.array(idSchema).max(3),
+  team: z.array(idSchema).max(MAX_SIDE),
   items: z.array(ownedItemSchema),
   nextUid: nonNegInt,
   dungeons: z.record(

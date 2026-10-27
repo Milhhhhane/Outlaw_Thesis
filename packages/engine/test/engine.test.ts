@@ -1,3 +1,4 @@
+import { MAX_SIDE } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import { createBattle, legalActions, replay, step, validateSetup } from '../src/battle';
 import { IllegalActionError, InvalidSetupError } from '../src/errors';
@@ -290,7 +291,7 @@ describe('validation de la configuration', () => {
     ['unité en double', [ok, ok, foe]],
     ['emplacement occupé', [ok, { ...ok, id: 'h2' }, foe]],
     ['camp vide', [ok]],
-    ['emplacement hors bornes', [{ ...ok, slot: 3 }, foe]],
+    ['emplacement hors bornes', [{ ...ok, slot: MAX_SIDE }, foe]],
     ['PV nuls', [{ ...ok, stats: { ...ok.stats, hp: 0 } }, foe]],
     ['sorts en double', [{ ...ok, spells: [...ok.spells, ...ok.spells] }, foe]],
     ['pas d’attaque de base gratuite', [{ ...ok, spells: [spell('a', 'a', [hit()])] }, foe]],

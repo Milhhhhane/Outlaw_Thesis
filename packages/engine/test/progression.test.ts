@@ -36,8 +36,8 @@ describe('profil', () => {
   it('nouveau profil valide : héros de départ au niveau 1, équipe complète', () => {
     const profile = newProfile(content, 7, 1000);
     expect(profileSchema.parse(profile)).toEqual(profile);
-    expect(starterHeroes(content)).toEqual(['pyra', 'maree', 'ronce']);
-    expect(profile.team).toEqual(['pyra', 'maree', 'ronce']);
+    expect(starterHeroes(content)).toEqual(['pyra', 'maree', 'ronce', 'cendre']);
+    expect(profile.team).toEqual(['pyra', 'maree', 'ronce', 'cendre']);
     expect(profile.heroes.pyra).toEqual({
       level: 1,
       xp: 0,
@@ -149,12 +149,18 @@ describe('objets', () => {
 });
 
 describe('équipe et énergie', () => {
-  it('1 à 3 héros débloqués, sans doublon', () => {
+  it('1 à teamSize héros débloqués, sans doublon', () => {
     const profile = newProfile(content);
-    expect(value(setTeam(profile, ['ronce'])).team).toEqual(['ronce']);
-    expect(setTeam(profile, [])).toEqual({ ok: false, reason: 'bad_team' });
-    expect(setTeam(profile, ['pyra', 'pyra'])).toEqual({ ok: false, reason: 'bad_team' });
-    expect(setTeam(profile, ['ghost'])).toEqual({ ok: false, reason: 'locked_hero' });
+    const size = content.balance.progression.teamSize;
+    expect(size).toBe(4);
+    expect(profile.team).toHaveLength(size);
+    expect(
+      setTeam(content, profile, [...content.heroes.map((h) => h.id), 'ghost'].slice(0, size + 1)),
+    ).toEqual({ ok: false, reason: 'bad_team' });
+    expect(value(setTeam(content, profile, ['ronce'])).team).toEqual(['ronce']);
+    expect(setTeam(content, profile, [])).toEqual({ ok: false, reason: 'bad_team' });
+    expect(setTeam(content, profile, ['pyra', 'pyra'])).toEqual({ ok: false, reason: 'bad_team' });
+    expect(setTeam(content, profile, ['ghost'])).toEqual({ ok: false, reason: 'locked_hero' });
   });
 
   it('l’énergie existe mais ne coûte rien dans le MVP', () => {
@@ -178,7 +184,7 @@ describe('équipe et énergie', () => {
 
 describe('donjons et butin', () => {
   it('récompenses : XP (repos réduit), or, matériaux, objet, ouverture du suivant', () => {
-    let profile = value(setTeam(newProfile(content, 3), ['pyra', 'maree']));
+    let profile = value(setTeam(content, newProfile(content, 3), ['pyra', 'maree']));
     expect(dungeonOpen(content, profile, 'ember_wastes')).toBe(true);
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(false);
     const first = value(completeDungeon(content, profile, 'ember_wastes'));

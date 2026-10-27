@@ -7,7 +7,7 @@ import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
- * Règles d'équilibre du rapport, mesurées sur les 20 équipes possibles (3 héros parmi 6) :
+ * Règles d'équilibre du rapport, mesurées sur toutes les équipes possibles (`teamSize` héros parmi ceux du jeu) :
  *  - R1 : à niveau égal, le meilleur build bat le pire build de la même équipe (duels miroirs,
  *    chaque camp joué par la politique d'anticipation, dans les deux sens) dans ≥ r1MinWinRate.
  *  - R2 : avec r2LevelGap niveaux de retard, le meilleur build termine le donjon pour plus de
@@ -20,12 +20,19 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  * gagnés dans le donjon puis par rapidité.
  */
 
+/** Toutes les équipes possibles : combinaisons de `teamSize` héros parmi ceux du jeu. */
 export function teams(content: Content): string[][] {
   const ids = content.heroes.map((h) => h.id);
+  const size = content.balance.progression.teamSize;
   const result: string[][] = [];
-  for (let a = 0; a < ids.length; a++)
-    for (let b = a + 1; b < ids.length; b++)
-      for (let c = b + 1; c < ids.length; c++) result.push([ids[a], ids[b], ids[c]] as string[]);
+  const walk = (start: number, picked: string[]): void => {
+    if (picked.length === size) {
+      result.push(picked);
+      return;
+    }
+    for (let i = start; i < ids.length; i++) walk(i + 1, [...picked, ids[i] as string]);
+  };
+  walk(0, []);
   return result;
 }
 

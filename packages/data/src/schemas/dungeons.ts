@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_SIDE } from './balance';
 import { ELEMENTS, idSchema } from './common';
 import { triggerSchema } from './effects';
 
@@ -21,7 +22,7 @@ export type DungeonModifier = z.infer<typeof dungeonModifierSchema>;
 
 export const encounterSchema = z.strictObject({
   /** Ennemis du combat, de gauche à droite : 1 à 3. */
-  enemies: z.array(idSchema).min(1).max(3),
+  enemies: z.array(idSchema).min(1).max(MAX_SIDE),
   /** PV des ennemis de ce combat, en % (100 par défaut) : règle la durée combat par combat. */
   hpPct: z.number().int().min(10).max(400).optional(),
   /** ATK des ennemis du combat, en % (levier de difficulté : les dégâts, sans toucher à la durée). */

@@ -3,19 +3,13 @@
  * durée moyenne (actions de joueur, politique experte), puis réécrit dungeons.json.
  * `pnpm --filter @outlaw/sim autotune [itérations]`
  */
-import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { loadContent, type Dungeon } from '@outlaw/data';
 import { pacing } from './pacing';
+import { readDungeons, writeTuning } from './tunefile';
 
-const file = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../packages/data/content/dungeons.json',
-);
 const TARGET = { first: 11, normal: 20, boss: 26 };
 const content = loadContent();
-let dungeons: Dungeon[] = JSON.parse(readFileSync(file, 'utf8')) as Dungeon[];
+let dungeons: Dungeon[] = readDungeons();
 
 for (let round = 0; round < Number(process.argv[2] ?? 4); round++) {
   const tuned = {
@@ -33,11 +27,11 @@ for (let round = 0; round < Number(process.argv[2] ?? 4); round++) {
       const now = avg.get(`pace_${dungeon.id}_f${e + 1}`) ?? target;
       const pct = Math.round(((encounter.hpPct ?? 100) * (target / now)) ** 1 / 1);
       const hpPct = Math.min(400, Math.max(10, Math.round(pct)));
-      return hpPct === 100 ? { enemies: encounter.enemies } : { ...encounter, hpPct };
+      return { ...encounter, hpPct };
     }),
   }));
   console.log(
     `tour ${round + 1} : ${report.problems.length} écarts, expert ${(report.expertRate * 100).toFixed(0)} %, moyen ${(report.averageRate * 100).toFixed(0)} %`,
   );
 }
-writeFileSync(file, `${JSON.stringify(dungeons, null, 2)}\n`);
+writeTuning(dungeons);
