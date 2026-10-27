@@ -2,17 +2,6 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-<<<<<<< Updated upstream
-## [Non publié] — 2026-10-27 — combat automatique
-
-### Ajouté
-
-- Bouton « Auto » (touche A) dans le combat : le jeu joue les tours des héros avec une règle
-  simple (sort le plus cher utile, cible la plus faible). Retenu d'un combat à l'autre, suspendu
-  par la pause, à la vitesse choisie ; ne passe pas seul à l'écran suivant.
-- `pnpm --filter @outlaw/sim auto` : taux de réussite d'Auto face à l'expert et au joueur moyen
-  (`docs/BALANCE.md`).
-=======
 ## [lot-13] — 2026-10-27 — équipes de quatre
 
 ### Modifié
@@ -28,7 +17,16 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - `autotune` et `tunecurve` mesuraient sans les valeurs par défaut des schémas (modificateurs de
   donjon ignorés) ; `autotune` effaçait `atkPct` quand les PV retombaient à 100 % ; `tunecurve`
   ne durcit plus le premier donjon au-dessus de sa cible.
->>>>>>> Stashed changes
+
+## [Non publié] — 2026-10-27 — combat automatique
+
+### Ajouté
+
+- Bouton « Auto » (touche A) dans le combat : le jeu joue les tours des héros avec une règle
+  simple (sort le plus cher utile, cible la plus faible). Retenu d'un combat à l'autre, suspendu
+  par la pause, à la vitesse choisie ; ne passe pas seul à l'écran suivant.
+- `pnpm --filter @outlaw/sim auto` : taux de réussite d'Auto face à l'expert et au joueur moyen
+  (`docs/BALANCE.md`).
 
 ## [Non publié] — 2026-10-27 — coffres et fragments
 

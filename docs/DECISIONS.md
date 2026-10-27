@@ -491,7 +491,6 @@ du héros ciblé, puis héros au hasard), pour que cibler ou non ne change pas l
 Pas de « pitié » (garantie après n coffres) pour l'instant : à ajouter si le test humain montre
 des séries trop longues.
 
-<<<<<<< Updated upstream
 ## Combat automatique
 
 **Règle simple, pas une anticipation** — Contexte : le joueur veut un bouton qui fait le combat à
@@ -515,7 +514,7 @@ Auto.
 légales et les unités vivantes ; un test l'exécute avec quatre héros contre trois ennemis. Les
 équipes de 4 héros demandées pour la suite restent à faire côté moteur et interface (liste dans
 `docs/ARCHITECTURE.md`, « Passer à quatre héros »).
-=======
+
 ## Lot 13 — équipes de quatre
 
 **La taille d'équipe est une donnée d'équilibrage** — Choix : `balance.progression.teamSize`
@@ -533,4 +532,3 @@ des multiplicateurs.
 **Le premier donjon ne se durcit jamais** — Choix : `tunecurve` laisse le premier donjon au-dessus
 de sa cible (85 %) ; quatre attaques de base doivent suffire. Raison : la prise en main ne se
 règle pas par un taux de réussite moyen.
->>>>>>> Stashed changes

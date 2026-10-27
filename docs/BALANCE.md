@@ -209,7 +209,6 @@ sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (el
   de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
   `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
 
-<<<<<<< Updated upstream
 ## Combat automatique
 
 Mesure : `pnpm --filter @outlaw/sim auto [équipes]` (`tools/sim/src/auto.ts`, lecture seule). Même
@@ -238,7 +237,7 @@ trois combats sont gagnés ; 300 équipes par donjon, soit une marge d'environ �
   retirer la règle « sort le plus cher d'abord » dans `auto.ts` avant de toucher aux donjons.
 - Ces chiffres valent pour des équipes de 3 ; à refaire dès que les équipes passent à 4
   (`TEAM_SIZE` dans `auto.ts` de la simulation).
-=======
+
 ## Lot 13 — équipes de quatre
 
 `balance.progression.teamSize` = 4 : quatre emplacements côté joueur, quatre ennemis au plus par
@@ -263,4 +262,3 @@ en dessous du niveau 10.
 Limite connue : « aucun héros indispensable » n'est pas tenue (26 points ; déjà 19 avant ce lot).
 À quatre parmi six, retirer un héros ne laisse que 5 équipes : la règle mesure surtout la
 dépendance aux deux soutiens. À revoir quand il y aura plus de héros.
->>>>>>> Stashed changes
