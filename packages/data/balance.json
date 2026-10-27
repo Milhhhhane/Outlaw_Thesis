@@ -1,42 +1,93 @@
 {
   "version": 1,
   "combat": {
-    "teamPoints": { "start": 3, "cap": 6, "basicGain": 1 },
-    "costs": { "a": 1, "b": 2, "ult": 4 },
-    "delays": { "basic": 100, "a": 100, "b": 120, "ult": 150 },
+    "teamPoints": {
+      "start": 3,
+      "cap": 6,
+      "basicGain": 1
+    },
+    "costs": {
+      "a": 1,
+      "b": 2,
+      "ult": 4
+    },
+    "delays": {
+      "basic": 100,
+      "a": 100,
+      "b": 120,
+      "ult": 150
+    },
     "initialDelay": 100,
     "queueHorizon": 8,
     "actionLimit": 100,
     "speedCap": 150,
-    "element": { "advantage": 1.25, "disadvantage": 0.8 },
+    "element": {
+      "advantage": 1.25,
+      "disadvantage": 0.8
+    },
     "defenseScale": 100,
     "minDamage": 1,
     "markBonusPct": 25,
     "burnPowerPct": 40,
     "stunImmunityTurns": 1,
-    "statMod": { "minPct": -50, "maxPct": 100 },
+    "statMod": {
+      "minPct": -50,
+      "maxPct": 100
+    },
     "shieldCapPctMaxHp": 60
   },
   "progression": {
     "maxLevel": 30,
     "growth": {
-      "hero": { "hp": 1.2, "atk": 0.9, "def": 0.9 },
-      "enemy": { "hp": 0.9, "atk": 0.7, "def": 0.7 }
+      "hero": {
+        "hp": 0.72,
+        "atk": 0.54,
+        "def": 0.54
+      },
+      "enemy": {
+        "hp": 0.54,
+        "atk": 0.42,
+        "def": 0.42
+      }
     },
     "talentPointLevels": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30],
     "pageUnlockLevels": [1, 10, 20],
     "restXpRate": 0.5,
-    "xp": { "base": 40, "exponent": 1.5 },
-    "respec": { "firstFreePerHero": true, "goldPerHeroLevel": 20 },
+    "xp": {
+      "base": 40,
+      "exponent": 1.5
+    },
+    "respec": {
+      "firstFreePerHero": true,
+      "goldPerHeroLevel": 20
+    },
     "items": {
       "slots": 2,
       "maxUpgradeLevel": 3,
       "upgradeScalePct": 15,
       "statCapPct": 8,
       "upgradeCosts": [
-        { "gold": 100, "materials": { "tier": 1, "amount": 5 } },
-        { "gold": 300, "materials": { "tier": 2, "amount": 5 } },
-        { "gold": 800, "materials": { "tier": 3, "amount": 5 } }
+        {
+          "gold": 100,
+          "materials": {
+            "tier": 1,
+            "amount": 5
+          }
+        },
+        {
+          "gold": 300,
+          "materials": {
+            "tier": 2,
+            "amount": 5
+          }
+        },
+        {
+          "gold": 800,
+          "materials": {
+            "tier": 3,
+            "amount": 5
+          }
+        }
       ]
     }
   },
@@ -44,7 +95,11 @@
     "rareGuaranteeAfter": 5,
     "replayRewardRate": 1
   },
-  "energy": { "costPerDungeon": 0, "cap": 100, "regenPerMinute": 1 },
+  "energy": {
+    "costPerDungeon": 0,
+    "cap": 100,
+    "regenPerMinute": 1
+  },
   "targets": {
     "r1MinWinRate": 0.7,
     "r2MinWinRate": 0.5,

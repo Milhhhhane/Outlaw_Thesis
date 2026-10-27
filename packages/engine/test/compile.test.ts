@@ -132,7 +132,7 @@ describe('compilation d’un héros', () => {
       },
     );
     expect(spellOf(exe, 'pyra_blaze')).toMatchObject({ cost: 1 });
-    expect(spellOf(exe, 'pyra_blaze').effects[0]).toMatchObject({ kind: 'damage', power: 198 });
+    expect(spellOf(exe, 'pyra_blaze').effects[0]).toMatchObject({ kind: 'damage', power: 215 });
 
     const tempo = compileHero(
       content,
@@ -159,7 +159,7 @@ describe('compilation d’un héros', () => {
       { side: 'player', slot: 0 },
     );
     expect(spellOf(tithe, 'maree_ripple')).toMatchObject({ gain: 2 });
-    expect(spellOf(tithe, 'maree_ripple').effects[0]).toMatchObject({ power: 54 });
+    expect(spellOf(tithe, 'maree_ripple').effects[0]).toMatchObject({ power: 66 });
   });
 
   it('les objets modifient le passif, renforcés par l’amélioration', () => {

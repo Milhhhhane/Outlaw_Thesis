@@ -2,21 +2,39 @@
   "id": "ronce",
   "element": "nature",
   "role": "control",
-  "stats": { "hp": 430, "atk": 50, "def": 22, "vit": 104 },
+  "stats": {
+    "hp": 430,
+    "atk": 50,
+    "def": 22,
+    "vit": 104
+  },
   "spells": [
     {
       "id": "ronce_thorn",
       "slot": "basic",
       "targeting": "enemy",
-      "effects": [{ "kind": "damage", "power": 95 }]
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 95
+        }
+      ]
     },
     {
       "id": "ronce_brand",
       "slot": "a",
       "targeting": "enemy",
       "effects": [
-        { "kind": "status", "status": "mark", "duration": 2, "power": 25 },
-        { "kind": "damage", "power": 40 }
+        {
+          "kind": "status",
+          "status": "mark",
+          "duration": 2,
+          "power": 25
+        },
+        {
+          "kind": "damage",
+          "power": 40
+        }
       ]
     },
     {
@@ -24,8 +42,15 @@
       "slot": "b",
       "targeting": "enemy",
       "effects": [
-        { "kind": "damage", "power": 120 },
-        { "kind": "status", "status": "stun", "duration": 1 }
+        {
+          "kind": "damage",
+          "power": 120
+        },
+        {
+          "kind": "status",
+          "status": "stun",
+          "duration": 1
+        }
       ]
     },
     {
@@ -33,9 +58,20 @@
       "slot": "ult",
       "targeting": "all_enemies",
       "effects": [
-        { "kind": "damage", "power": 90 },
-        { "kind": "status", "status": "mark", "duration": 2, "power": 25 },
-        { "kind": "tempo", "amount": 30 }
+        {
+          "kind": "damage",
+          "power": 90
+        },
+        {
+          "kind": "status",
+          "status": "mark",
+          "duration": 2,
+          "power": 25
+        },
+        {
+          "kind": "tempo",
+          "amount": 30
+        }
       ]
     }
   ],
@@ -46,8 +82,17 @@
         "on": "damage_dealt",
         "subject": "ally",
         "targetHasStatus": "mark",
-        "limit": { "per": "turn", "count": 3 },
-        "effects": [{ "kind": "damage", "target": "other", "power": 15 }]
+        "limit": {
+          "per": "turn",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 15
+          }
+        ]
       }
     ]
   },
@@ -58,20 +103,39 @@
         {
           "id": "ronce_snare_core",
           "mods": [
-            { "type": "addEffect", "slot": "b", "effect": { "kind": "tempo", "amount": 25 } }
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 25
+              }
+            }
           ]
         },
         {
           "id": "ronce_snare_cheap",
           "requires": "ronce_snare_core",
           "group": "ronce_snare_choice",
-          "mods": [{ "type": "cost", "slot": "b", "delta": -1 }]
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
         },
         {
           "id": "ronce_snare_quick",
           "requires": "ronce_snare_core",
           "group": "ronce_snare_choice",
-          "mods": [{ "type": "delay", "slot": "b", "delta": -40 }]
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -40
+            }
+          ]
         },
         {
           "id": "ronce_snare_tangle",
@@ -82,7 +146,7 @@
               "slot": "ult",
               "kind": "tempo",
               "field": "amount",
-              "mulPct": 50
+              "mulPct": 75
             }
           ]
         },
@@ -90,7 +154,14 @@
           "id": "ronce_snare_drag",
           "requires": "ronce_snare_tangle",
           "mods": [
-            { "type": "addEffect", "slot": "a", "effect": { "kind": "tempo", "amount": 20 } }
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": 20
+              }
+            }
           ]
         }
       ]
@@ -101,21 +172,39 @@
         {
           "id": "ronce_brand_core",
           "mods": [
-            { "type": "scaleEffect", "slot": "a", "kind": "status", "field": "duration", "add": 1 }
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
           ]
         },
         {
           "id": "ronce_brand_spread",
           "requires": "ronce_brand_core",
           "group": "ronce_brand_choice",
-          "mods": [{ "type": "retarget", "slot": "a", "targeting": "all_enemies" }]
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            }
+          ]
         },
         {
           "id": "ronce_brand_deep",
           "requires": "ronce_brand_core",
           "group": "ronce_brand_choice",
           "mods": [
-            { "type": "scaleEffect", "slot": "a", "kind": "status", "field": "power", "mulPct": 60 }
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 90
+            }
           ]
         },
         {
@@ -125,7 +214,12 @@
             {
               "type": "addEffect",
               "slot": "basic",
-              "effect": { "kind": "status", "status": "mark", "duration": 1, "power": 15 }
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 1,
+                "power": 15
+              }
             }
           ]
         },
@@ -138,7 +232,7 @@
               "slot": "ult",
               "kind": "status",
               "field": "power",
-              "mulPct": 40
+              "mulPct": 60
             }
           ]
         }
@@ -153,7 +247,12 @@
             {
               "type": "addEffect",
               "slot": "a",
-              "effect": { "kind": "statMod", "stat": "def", "percent": -20, "duration": 2 }
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
             }
           ]
         },
@@ -165,7 +264,12 @@
             {
               "type": "addEffect",
               "slot": "b",
-              "effect": { "kind": "statMod", "stat": "atk", "percent": -25, "duration": 2 }
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -25,
+                "duration": 2
+              }
             }
           ]
         },
@@ -177,7 +281,12 @@
             {
               "type": "addEffect",
               "slot": "b",
-              "effect": { "kind": "status", "status": "burn", "duration": 2, "power": 30 }
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 30
+              }
             }
           ]
         },
@@ -188,7 +297,12 @@
             {
               "type": "addEffect",
               "slot": "basic",
-              "effect": { "kind": "statMod", "stat": "vit", "percent": -10, "duration": 2 }
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -10,
+                "duration": 2
+              }
             }
           ]
         },
@@ -199,7 +313,12 @@
             {
               "type": "addEffect",
               "slot": "ult",
-              "effect": { "kind": "statMod", "stat": "def", "percent": -20, "duration": 2 }
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
             }
           ]
         }

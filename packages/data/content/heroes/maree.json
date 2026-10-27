@@ -2,33 +2,66 @@
   "id": "maree",
   "element": "water",
   "role": "support",
-  "stats": { "hp": 470, "atk": 46, "def": 26, "vit": 100 },
+  "stats": {
+    "hp": 470,
+    "atk": 46,
+    "def": 26,
+    "vit": 100
+  },
   "spells": [
     {
       "id": "maree_ripple",
       "slot": "basic",
       "targeting": "enemy",
-      "effects": [{ "kind": "damage", "power": 90 }]
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        }
+      ]
     },
     {
       "id": "maree_bulwark",
       "slot": "a",
       "targeting": "ally",
-      "effects": [{ "kind": "shield", "power": 140, "duration": 2 }]
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 140,
+          "duration": 2
+        }
+      ]
     },
     {
       "id": "maree_tide",
       "slot": "b",
       "targeting": "all_allies",
-      "effects": [{ "kind": "heal", "power": 90 }]
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 90
+        },
+        {
+          "kind": "tempo",
+          "amount": -10
+        }
+      ]
     },
     {
       "id": "maree_deluge",
       "slot": "ult",
       "targeting": "all_allies",
       "effects": [
-        { "kind": "heal", "power": 110 },
-        { "kind": "statMod", "stat": "def", "percent": 25, "duration": 2 }
+        {
+          "kind": "heal",
+          "power": 110
+        },
+        {
+          "kind": "statMod",
+          "stat": "def",
+          "percent": 25,
+          "duration": 2
+        }
       ]
     }
   ],
@@ -39,8 +72,16 @@
         "on": "spell_cast",
         "subject": "self",
         "slots": ["a", "b", "ult"],
-        "limit": { "per": "combat", "count": 1 },
-        "effects": [{ "kind": "teamPoints", "amount": 1 }]
+        "limit": {
+          "per": "combat",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "teamPoints",
+            "amount": 1
+          }
+        ]
       }
     ]
   },
@@ -51,7 +92,13 @@
         {
           "id": "maree_bastion_core",
           "mods": [
-            { "type": "scaleEffect", "slot": "a", "kind": "shield", "field": "power", "mulPct": 30 }
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 45
+            }
           ]
         },
         {
@@ -59,7 +106,11 @@
           "requires": "maree_bastion_core",
           "group": "maree_bastion_choice",
           "mods": [
-            { "type": "retarget", "slot": "a", "targeting": "all_allies" },
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
             {
               "type": "scaleEffect",
               "slot": "a",
@@ -74,7 +125,14 @@
           "requires": "maree_bastion_core",
           "group": "maree_bastion_choice",
           "mods": [
-            { "type": "addEffect", "slot": "a", "effect": { "kind": "tempo", "amount": -20 } }
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": -20
+              }
+            }
           ]
         },
         {
@@ -84,7 +142,11 @@
             {
               "type": "addEffect",
               "slot": "ult",
-              "effect": { "kind": "shield", "power": 70, "duration": 2 }
+              "effect": {
+                "kind": "shield",
+                "power": 70,
+                "duration": 2
+              }
             }
           ]
         },
@@ -95,7 +157,11 @@
             {
               "type": "addEffect",
               "slot": "b",
-              "effect": { "kind": "shield", "power": 35, "duration": 1 }
+              "effect": {
+                "kind": "shield",
+                "power": 35,
+                "duration": 1
+              }
             }
           ]
         }
@@ -107,22 +173,44 @@
         {
           "id": "maree_source_core",
           "mods": [
-            { "type": "scaleEffect", "slot": "b", "kind": "heal", "field": "power", "mulPct": 20 }
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 30
+            }
           ]
         },
         {
           "id": "maree_source_spring",
           "requires": "maree_source_core",
           "group": "maree_source_choice",
-          "mods": [{ "type": "cost", "slot": "b", "delta": -1 }]
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
         },
         {
           "id": "maree_source_focus",
           "requires": "maree_source_core",
           "group": "maree_source_choice",
           "mods": [
-            { "type": "retarget", "slot": "b", "targeting": "ally" },
-            { "type": "scaleEffect", "slot": "b", "kind": "heal", "field": "power", "mulPct": 130 }
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "ally"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 195
+            }
           ]
         },
         {
@@ -132,7 +220,11 @@
             {
               "type": "addEffect",
               "slot": "basic",
-              "effect": { "kind": "heal", "target": "lowest_hp_ally", "power": 25 }
+              "effect": {
+                "kind": "heal",
+                "target": "lowest_hp_ally",
+                "power": 25
+              }
             }
           ]
         },
@@ -140,7 +232,13 @@
           "id": "maree_source_flood",
           "requires": "maree_source_drops",
           "mods": [
-            { "type": "scaleEffect", "slot": "ult", "kind": "heal", "field": "power", "mulPct": 35 }
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 52
+            }
           ]
         }
       ]
@@ -151,7 +249,14 @@
         {
           "id": "maree_current_core",
           "mods": [
-            { "type": "addEffect", "slot": "a", "effect": { "kind": "tempo", "amount": -25 } }
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": -25
+              }
+            }
           ]
         },
         {
@@ -159,7 +264,10 @@
           "requires": "maree_current_core",
           "group": "maree_current_choice",
           "mods": [
-            { "type": "gain", "delta": 1 },
+            {
+              "type": "gain",
+              "delta": 1
+            },
             {
               "type": "scaleEffect",
               "slot": "basic",
@@ -173,7 +281,13 @@
           "id": "maree_current_swell",
           "requires": "maree_current_core",
           "group": "maree_current_choice",
-          "mods": [{ "type": "cost", "slot": "ult", "delta": -1 }]
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            }
+          ]
         },
         {
           "id": "maree_current_undertow",
@@ -182,7 +296,11 @@
             {
               "type": "addEffect",
               "slot": "b",
-              "effect": { "kind": "tempo", "target": "all_enemies", "amount": 15 }
+              "effect": {
+                "kind": "tempo",
+                "target": "all_enemies",
+                "amount": 15
+              }
             }
           ]
         },
@@ -190,7 +308,14 @@
           "id": "maree_current_wellspring",
           "requires": "maree_current_undertow",
           "mods": [
-            { "type": "addEffect", "slot": "ult", "effect": { "kind": "teamPoints", "amount": 2 } }
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 2
+              }
+            }
           ]
         }
       ]

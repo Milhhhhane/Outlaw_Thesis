@@ -84,7 +84,7 @@
               {
                 "kind": "tempo",
                 "target": "self",
-                "amount": 20
+                "amount": 12
               }
             ]
           }
@@ -135,7 +135,8 @@
         "item": "chrono_gear",
         "weight": 1
       }
-    ]
+    ],
+    "unlocksHero": "cendre"
   },
   {
     "id": "thorn_maze",
@@ -157,7 +158,7 @@
               {
                 "kind": "damage",
                 "target": "other",
-                "power": 15
+                "power": 10
               }
             ]
           }
@@ -279,7 +280,8 @@
         "item": "storm_sigil",
         "weight": 1
       }
-    ]
+    ],
+    "unlocksHero": "ressac"
   },
   {
     "id": "sunken_spire",
@@ -423,7 +425,8 @@
         "item": "aegis_shard",
         "weight": 1
       }
-    ]
+    ],
+    "unlocksHero": "seve"
   },
   {
     "id": "broken_crossing",
