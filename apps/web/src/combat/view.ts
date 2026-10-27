@@ -33,6 +33,10 @@ export interface Flash {
   readonly tone: 'damage' | 'heal' | 'shield' | 'status' | 'tempo';
   /** Effet visuel à jouer sur l'unité (nom d'une animation de l'atlas), ou aucun. */
   readonly fx: string | null;
+  /** Coup lourd (au moins 30 % des PV max, ou mortel) : secousse et gros impact. */
+  readonly heavy: boolean;
+  /** L'effet se joue aux pieds (poussière) plutôt que sur le corps. */
+  readonly feet: boolean;
 }
 
 /** Sort en cours d'animation : le lanceur, ses cibles et son élément. */
@@ -41,6 +45,8 @@ export interface CastView {
   readonly unit: string;
   readonly targets: readonly string[];
   readonly element: string;
+  /** Ultime : flash d'écran et zoom bref. */
+  readonly ult: boolean;
 }
 
 export interface BattleView {
@@ -50,6 +56,10 @@ export interface BattleView {
   /** Unité qui vient d'agir (mise en avant pendant l'animation). */
   readonly acting: string | null;
   readonly cast: CastView | null;
+  /** Dernière secousse d'écran : clé de l'événement et force (1 légère, 2 forte). */
+  readonly shake: { readonly key: number; readonly power: number } | null;
+  /** Dernier coup reçu par un héros (voile rouge) : clé de l'événement. */
+  readonly hurt: number | null;
 }
 
 function modsOf(unit: UnitState): Record<string, number> {
@@ -78,6 +88,8 @@ export function viewFromState(state: BattleState): BattleView {
     flashes: [],
     acting: null,
     cast: null,
+    shake: null,
+    hurt: null,
   };
 }
 
@@ -92,8 +104,10 @@ function flash(
   text: string,
   tone: Flash['tone'],
   fx: string | null = null,
+  extra: Partial<Pick<Flash, 'heavy' | 'feet'>> = {},
 ): BattleView {
-  return { ...view, flashes: [...view.flashes.slice(-5), { key, unit, text, tone, fx }] };
+  const entry: Flash = { key, unit, text, tone, fx, heavy: false, feet: false, ...extra };
+  return { ...view, flashes: [...view.flashes.slice(-5), entry] };
 }
 
 function elementOf(view: BattleView, id: string): string {
@@ -116,6 +130,7 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
           unit: event.unit,
           targets: event.targets,
           element: elementOf(view, event.unit),
+          ult: event.slot === 'ult',
         },
       };
     case 'damage': {
@@ -126,13 +141,24 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         alive: event.hpAfter > 0,
       }));
       const element = event.cause === 'burn' ? 'fire' : elementOf(view, event.source);
+      const target = view.units.find((u) => u.id === event.target);
+      const dealt = event.amount - event.absorbed;
+      const heavy =
+        event.cause !== 'burn' &&
+        (event.killed || (target !== undefined && dealt >= target.maxHp * 0.3));
+      const shaken = {
+        ...next,
+        shake: event.cause === 'burn' ? next.shake : { key, power: heavy ? 2 : 1 },
+        hurt: target?.side === 'player' && event.cause !== 'burn' ? key : next.hurt,
+      };
       return flash(
-        next,
+        shaken,
         key,
         event.target,
-        `−${event.amount - event.absorbed}`,
+        `−${dealt}`,
         'damage',
-        `burst_${element}`,
+        heavy ? `impact_${element}` : `burst_${element}`,
+        { heavy },
       );
     }
     case 'heal':
@@ -192,7 +218,15 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         statuses: u.statuses.filter((s) => s.kind !== event.effect),
       }));
     case 'unit_down':
-      return update(view, event.unit, (u) => ({ ...u, alive: false, hp: 0 }));
+      return flash(
+        update(view, event.unit, (u) => ({ ...u, alive: false, hp: 0 })),
+        key,
+        event.unit,
+        '',
+        'status',
+        'dust',
+        { feet: true },
+      );
     default:
       return view;
   }

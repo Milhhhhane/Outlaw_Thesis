@@ -139,18 +139,23 @@
 }
 
 .actor--acting .actor__body {
-  animation: actor-lunge 0.42s steps(6, end);
+  animation: actor-lunge 0.42s steps(7, end);
+  transform-origin: 50% 100%;
 }
 
+/* Anticipation (recul tassé), fente (étiré vers l'avant), retour. */
 @keyframes actor-lunge {
   0% {
     transform: translateX(0);
   }
-  35% {
-    transform: translateX(calc(var(--dir) * -3px));
+  30% {
+    transform: translateX(calc(var(--dir) * -4px)) scale(1.08, 0.9);
   }
-  60% {
-    transform: translateX(calc(var(--dir) * 12px));
+  55% {
+    transform: translateX(calc(var(--dir) * 16px)) scale(0.92, 1.08) rotate(calc(var(--dir) * 4deg));
+  }
+  75% {
+    transform: translateX(calc(var(--dir) * 10px));
   }
   100% {
     transform: translateX(0);
@@ -165,17 +170,49 @@
 @keyframes actor-hit {
   0% {
     filter: brightness(4) saturate(0);
-    transform: translateX(calc(var(--dir) * -3px));
+    transform: translateX(calc(var(--dir) * -5px)) rotate(calc(var(--dir) * -6deg));
   }
   25% {
     filter: none;
-    transform: translateX(calc(var(--dir) * 2px));
+    transform: translateX(calc(var(--dir) * 2px)) scale(1.06, 0.94);
   }
   50% {
     filter: brightness(2.5) saturate(0.4);
-    transform: translateX(calc(var(--dir) * -1px));
+    transform: translateX(calc(var(--dir) * -2px));
   }
   75% {
+    filter: none;
+    transform: none;
+  }
+}
+
+.actor__hit {
+  transform-origin: 50% 100%;
+}
+
+.actor__hit--heavy {
+  animation: actor-hit-heavy 0.46s steps(1, end);
+}
+
+@keyframes actor-hit-heavy {
+  0% {
+    filter: brightness(6) saturate(0);
+    transform: translateX(calc(var(--dir) * -9px)) rotate(calc(var(--dir) * -12deg))
+      scale(1.1, 0.85);
+  }
+  20% {
+    filter: brightness(4) saturate(0);
+    transform: translateX(calc(var(--dir) * -7px)) rotate(calc(var(--dir) * -8deg));
+  }
+  40% {
+    filter: none;
+    transform: translateX(calc(var(--dir) * 3px)) scale(1.08, 0.92);
+  }
+  60% {
+    filter: brightness(2) saturate(0.5);
+    transform: translateX(calc(var(--dir) * -2px));
+  }
+  80% {
     filter: none;
     transform: none;
   }
@@ -184,7 +221,30 @@
 .actor--down .actor__body {
   filter: grayscale(1) brightness(0.45);
   opacity: 0.55;
-  transform: translateY(3px);
+  transform: translateY(3px) rotate(calc(var(--dir) * -78deg));
+  transform-origin: 50% 100%;
+  animation: actor-fall 0.5s steps(6, end);
+}
+
+/* Chute : sursaut, bascule en arrière, rebond au sol. */
+@keyframes actor-fall {
+  0% {
+    filter: brightness(3) saturate(0);
+    opacity: 1;
+    transform: translateY(-6px) rotate(calc(var(--dir) * -10deg));
+  }
+  45% {
+    filter: grayscale(0.5);
+    opacity: 1;
+    transform: translateY(2px) rotate(calc(var(--dir) * -82deg));
+  }
+  65% {
+    transform: translateY(-1px) rotate(calc(var(--dir) * -74deg));
+  }
+  100% {
+    opacity: 0.55;
+    transform: translateY(3px) rotate(calc(var(--dir) * -78deg));
+  }
 }
 
 .actor--active .actor__body {
@@ -210,6 +270,173 @@
   position: absolute;
   left: 50%;
   margin-left: -16px;
+  z-index: 2;
+}
+
+.actor__fx .fx-play--big {
+  margin-left: -8px;
+  margin-top: -8px;
+}
+
+.actor__fx--feet {
+  margin-left: -16px;
+}
+
+/* Étincelles d'impact : carrés qui fusent puis tombent. */
+.sparks {
+  position: absolute;
+  left: 50%;
+  z-index: 3;
+}
+
+.spark {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  animation: spark-fly 0.46s steps(8, end) var(--sd, 0ms) forwards;
+  opacity: 0;
+}
+
+@keyframes spark-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(var(--sx), var(--sy));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--sx) * 1.2), calc(var(--sy) + 10px));
+  }
+}
+
+/* Arc de frappe devant le lanceur. */
+.stage__slash {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Secousse d'écran : légère (1) ou forte (2). */
+.stage__shake,
+.stage__zoom {
+  position: absolute;
+  inset: 0;
+}
+
+.stage__shake--1 {
+  animation: shake-light 0.26s steps(5, end);
+}
+
+.stage__shake--2 {
+  animation: shake-heavy 0.42s steps(8, end);
+}
+
+@keyframes shake-light {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 2px);
+  }
+  40% {
+    transform: translate(3px, -1px);
+  }
+  60% {
+    transform: translate(-2px, -2px);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes shake-heavy {
+  0% {
+    transform: translate(0, 0);
+  }
+  12% {
+    transform: translate(-9px, 5px);
+  }
+  25% {
+    transform: translate(8px, -6px);
+  }
+  37% {
+    transform: translate(-6px, -4px);
+  }
+  50% {
+    transform: translate(5px, 4px);
+  }
+  62% {
+    transform: translate(-3px, 2px);
+  }
+  75% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* Ultime : zoom bref vers le centre et flash blanc. */
+.stage__zoom--ult {
+  animation: zoom-ult 0.6s steps(6, end);
+  transform-origin: 50% 60%;
+}
+
+@keyframes zoom-ult {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.stage__ult {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: #fff6d8;
+  pointer-events: none;
+  animation: ult-flash 0.36s steps(4, end) forwards;
+}
+
+@keyframes ult-flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Voile rouge sur les bords quand un héros encaisse. */
+.stage__hurt {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  box-shadow: inset 0 0 60px 20px rgb(200 40 30 / 70%);
+  animation: hurt-fade 0.5s steps(5, end) forwards;
+}
+
+@keyframes hurt-fade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .actor__number {
@@ -538,10 +765,33 @@
 .spell--selected {
   border-image-source: var(--frame-gold);
   transform: translateY(-4px);
+  animation: spell-pulse 0.9s steps(2, end) infinite;
+}
+
+@keyframes spell-pulse {
+  50% {
+    filter: brightness(1.25);
+  }
 }
 
 .spell--ult .spell__name {
   color: var(--gold);
+  text-shadow: 0 0 6px rgb(251 229 138 / 55%);
+}
+
+.spell--ult:not(:disabled) {
+  border-image-source: var(--wood-gold);
+  border-width: 16px;
+  border-image-slice: 8;
+  border-image-width: 16px;
+  padding: 0;
+  animation: ult-ready 1.4s steps(3, end) infinite;
+}
+
+@keyframes ult-ready {
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 4px rgb(251 229 138 / 60%));
+  }
 }
 
 .spell__key {
@@ -666,6 +916,10 @@
   padding-left: 18px;
 }
 
-:root[data-motion='off'] .stage__bolt {
+:root[data-motion='off'] .stage__bolt,
+:root[data-motion='off'] .stage__slash,
+:root[data-motion='off'] .sparks,
+:root[data-motion='off'] .stage__ult,
+:root[data-motion='off'] .stage__hurt {
   display: none;
 }

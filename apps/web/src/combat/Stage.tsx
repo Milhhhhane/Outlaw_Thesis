@@ -38,6 +38,41 @@ export function anchorOf(unit: Pick<UnitView, 'side' | 'slot' | 'kind'>): {
   };
 }
 
+/** Couleur des étincelles par élément (palette des effets). */
+const SPARK: Readonly<Record<string, string>> = {
+  fire: '#ffb840',
+  water: '#8cd0f0',
+  nature: '#8ad84a',
+};
+
+/** Étincelles qui s'écartent du point d'impact : six carrés, trajectoire en variables CSS. */
+function Sparks({
+  flash,
+  element,
+  top,
+}: {
+  readonly flash: Flash;
+  readonly element: string;
+  readonly top: number;
+}) {
+  const count = flash.heavy ? 10 : 6;
+  return (
+    <span className="sparks" style={{ top }} aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => {
+        const angle = (i / count) * Math.PI * 2 + (flash.key % 7) * 0.3;
+        const dist = (flash.heavy ? 22 : 14) + ((flash.key * 13 + i * 7) % 9);
+        const style = {
+          '--sx': `${Math.cos(angle) * dist}px`,
+          '--sy': `${Math.sin(angle) * dist * 0.7 - 4}px`,
+          '--sd': `${(i % 3) * 30}ms`,
+          background: i % 3 === 0 ? '#fff6d8' : (SPARK[element] ?? '#fff'),
+        } as CSSProperties;
+        return <i key={i} className="spark" style={style} />;
+      })}
+    </span>
+  );
+}
+
 function Actor(props: {
   readonly unit: UnitView;
   readonly active: boolean;
@@ -50,6 +85,7 @@ function Actor(props: {
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
   const hit = flash?.tone === 'damage' ? flash.key : 0;
+  const heavy = flash?.tone === 'damage' && flash.heavy;
   const style = {
     left: x - info.w / 2,
     top: y - info.bottom,
@@ -71,14 +107,32 @@ function Actor(props: {
     <div className={className} style={style} data-unit={unit.id}>
       <span className="actor__shadow" style={{ top: info.bottom - 2 }} />
       <span className="actor__body">
-        <span key={hit} className={hit > 0 ? 'actor__hit' : ''}>
+        <span
+          key={hit}
+          className={hit > 0 ? (heavy ? 'actor__hit actor__hit--heavy' : 'actor__hit') : ''}
+        >
           <PixelSprite name={unit.kind} idle={unit.alive} />
         </span>
       </span>
       {flash?.fx != null && (
-        <span key={`fx${flash.key}`} className="actor__fx" style={{ top: info.top + 6 }}>
-          <PixelSprite name={flash.fx} className="fx-play" />
+        <span
+          key={`fx${flash.key}`}
+          className={flash.feet ? 'actor__fx actor__fx--feet' : 'actor__fx'}
+          style={flash.feet ? { top: info.bottom - 12 } : { top: info.top + 6 }}
+        >
+          <PixelSprite
+            name={flash.fx}
+            className={flash.fx.startsWith('impact_') ? 'fx-play fx-play--big' : 'fx-play'}
+          />
         </span>
+      )}
+      {flash?.tone === 'damage' && (
+        <Sparks
+          key={`sp${flash.key}`}
+          flash={flash}
+          element={flash.fx?.split('_')[1] ?? unit.element}
+          top={info.top + 22}
+        />
       )}
       {flash !== undefined && flash.text !== '' && (
         <span key={`n${flash.key}`} className="actor__number" style={{ top: info.top - 4 }}>
@@ -97,8 +151,21 @@ function Bolts({ view }: { readonly view: BattleView }) {
   const from = placeOf(caster);
   const casterInfo = sprite(caster.kind);
   const chest = from.y - ((casterInfo?.bottom ?? 60) - (casterInfo?.top ?? 0)) / 2;
+  const dir = caster.side === 'player' ? 1 : -1;
   return (
     <>
+      <span
+        key={`slash${cast.key}`}
+        className="stage__slash"
+        style={{
+          left: from.x + dir * 18 - 24,
+          top: chest - 24,
+          zIndex: from.y + 1,
+          transform: dir < 0 ? 'scaleX(-1)' : undefined,
+        }}
+      >
+        <PixelSprite name={`slash_${cast.element}`} className="fx-play" />
+      </span>
       <span
         key={`aura${cast.key}`}
         className="stage__aura"
@@ -143,29 +210,43 @@ export function Stage({
 }) {
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
+  const shake = view.shake;
+  const ult = view.cast?.ult === true ? view.cast.key : null;
   return (
     <div className="stage" aria-hidden="true">
       <div
-        className="stage__world"
-        style={{
-          width: STAGE_W,
-          height: STAGE_H,
-          transform: `scale(${STAGE_SCALE}) translateY(${-STAGE_OFFSET}px)`,
-          backgroundImage: `url(${backgroundUrl(scene)})`,
-        }}
+        key={`shake${shake?.key ?? 0}`}
+        className={shake === null ? 'stage__shake' : `stage__shake stage__shake--${shake.power}`}
       >
-        {view.units.map((unit) => (
-          <Actor
-            key={unit.id}
-            unit={unit}
-            active={unit.id === active}
-            acting={view.acting === unit.id && active === null}
-            targetable={targets.has(unit.id)}
-            flash={latest.get(unit.id)}
-          />
-        ))}
-        <Bolts view={view} />
+        <div
+          key={`zoom${ult ?? 0}`}
+          className={ult === null ? 'stage__zoom' : 'stage__zoom stage__zoom--ult'}
+        >
+          <div
+            className="stage__world"
+            style={{
+              width: STAGE_W,
+              height: STAGE_H,
+              transform: `scale(${STAGE_SCALE}) translateY(${-STAGE_OFFSET}px)`,
+              backgroundImage: `url(${backgroundUrl(scene)})`,
+            }}
+          >
+            {view.units.map((unit) => (
+              <Actor
+                key={unit.id}
+                unit={unit}
+                active={unit.id === active}
+                acting={view.acting === unit.id && active === null}
+                targetable={targets.has(unit.id)}
+                flash={latest.get(unit.id)}
+              />
+            ))}
+            <Bolts view={view} />
+          </div>
+        </div>
       </div>
+      {view.hurt !== null && <span key={`hurt${view.hurt}`} className="stage__hurt" />}
+      {ult !== null && <span key={`flash${ult}`} className="stage__ult" />}
     </div>
   );
 }
