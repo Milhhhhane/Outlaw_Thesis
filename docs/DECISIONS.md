@@ -187,7 +187,20 @@ absent.
 Choix : anticipation d'un coup (chaque action jouée par le moteur pur, état évalué). Raison :
 générique, sans indice dans le contenu ; on pourra l'approfondir pour R1.
 
-**R1 et R2** — Contexte : « meilleur build », « pire build » non définis. Choix : R1 = duels
+**R1 jugée au duel** — Contexte : « meilleur build » non défini ; classés en donjon, les
+builds ne prédisaient pas les duels (R1 instable autour de 70 %). Choix : meilleur et pire build
+classés au duel contre un groupe de référence distinct, puis opposés. Raison : R1 parle de duels ;
+pas de biais de sélection, résultat stable (83–86 %).
+
+**R2 par composition** — Contexte : le jeu est déterministe, un build donné gagne ou perd. Choix :
+pour chaque donjon, part des 20 équipes dont le meilleur build termine avec 3 niveaux de retard.
+Raison : mesure un taux, sur toutes les compositions.
+
+**Réglage du sprint 5** — Contexte : R2 à 35 %. Choix : croissance × 0,6, talents positifs
+× 1,5, soutiens plus offensifs, modificateurs des donjons 2 et 3 adoucis ; aucune règle du moteur
+touchée. Raison : leviers prévus par le rapport (croissance) et contenu ; détails dans BALANCE.md.
+
+**R1 et R2 (définition initiale, remplacée)** — Contexte : « meilleur build », « pire build » non définis. Choix : R1 = duels
 miroirs à niveau égal entre le build le mieux et le moins bien classé par la simulation ; R2 =
 meilleur build avec 3 niveaux de retard sur le niveau recommandé du donjon (« donjon de niveau
 recommandé +3 »), victoire = les 3 combats gagnés. Raison : si R2 échoue, le rapport baisse la

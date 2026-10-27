@@ -52,6 +52,10 @@ porteur et ne déclenchent jamais d'autre déclencheur.
 
 ## Héros
 
+Six héros, deux par élément, chaque rôle deux fois : Pyra (feu/dégâts), Marée (eau/soutien),
+Ronce (nature/contrôle), Cendre (feu/contrôle), Ressac (eau/dégâts), Sève (nature/soutien). Les
+trois derniers se débloquent en terminant les donjons 2, 4 et 6.
+
 4 sorts (un par emplacement : `basic`, `a`, `b`, `ult`), un passif, 3 pages de 5 nœuds de
 talents. Un nœud porte 1 à 3 modifications de sort (`addEffect`, `scaleEffect`, `cost`, `gain`,
 `delay`, `retarget`) ; `requires` crée un prérequis, `group` un choix exclusif « A ou B ».

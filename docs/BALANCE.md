@@ -32,6 +32,41 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 ## Règles d'équilibre (cibles de la simulation)
 
+Mesurées par `pnpm sim` sur les 20 équipes possibles ; `pnpm sim:check` (CI) échoue si l'une
+d'elles n'est plus tenue. Définitions exactes dans `tools/sim/src/rules.ts` :
+
+- **R1** : pour chaque équipe et chaque niveau conseillé (où les talents permettent des builds
+  différents), 6 builds tirés au hasard sont classés par leurs duels contre 4 builds de référence ;
+  le meilleur et le pire s'affrontent ensuite, dans les deux sens.
+- **R2** : pour chaque donjon, part des 20 équipes dont le meilleur des 6 builds termine le donjon
+  avec 3 niveaux de retard.
+- **Aucun héros indispensable** : score d'une équipe = donjons terminés au niveau conseillé et
+  avec 3 niveaux de retard (13 essais) ; la meilleure équipe sans chaque héros est comparée à la
+  meilleure équipe.
+
+### Résultats (sprint 5)
+
+| Règle                     | Mesure                                  | Cible  |
+| ------------------------- | --------------------------------------- | ------ |
+| R1                        | 86 % (82 à 90 % selon le donjon)        | ≥ 70 % |
+| R2                        | 60 % sur le pire donjon (60 à 80 %)     | > 50 % |
+| Aucun héros indispensable | écart 0 point (13/13 sans chaque héros) | ≤ 10   |
+
+### Journal de réglage (sprint 5)
+
+1. R1 était à 64–72 % quand « meilleur » et « pire » build étaient jugés en donjon : ce classement
+   ne prédit pas les duels. Jugés au duel (contre un groupe de référence qu'ils ne rencontrent
+   qu'après), les builds vont de 6 % à 81 % de victoires : les talents pèsent ; R1 passe à 83–86 %.
+2. R2 était à 35 % : même au niveau conseillé, seules 12 à 16 équipes sur 20 passaient les donjons.
+   Les équipes à deux soutiens manquaient de dégâts. Croissance des stats × 0,6 (héros et ennemis,
+   comme le prévoit le rapport), talents positifs × 1,5, Marée et Sève plus offensives (attaque de
+   base 110 % et 105 %, Marée montante avance les alliés, Éclosion ATK +25 %), modificateurs des
+   donjons 2 et 3 adoucis : R2 = 60 %.
+3. Constat : les équipes avec un contrôleur (Ronce, Cendre) sont les plus robustes ; aucune n'est
+   pourtant indispensable au sens de la règle. À surveiller si de nouveaux héros arrivent.
+
+## Règles (rappel des cibles)
+
 - **R1** : à niveau égal, le meilleur build bat le pire dans au moins `r1MinWinRate` (70 %) des
   combats.
 - **R2** : avec `r2LevelGap` (3) niveaux de retard sur le niveau recommandé du donjon, le

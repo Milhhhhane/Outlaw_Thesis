@@ -1,6 +1,6 @@
 # Avancement
 
-**Sprint en cours : 5 — Équilibrage** (sprints 0 à 4 terminés).
+**MVP terminé** : sprints 0 à 5 livrés.
 
 ## Fait
 
@@ -18,15 +18,18 @@
 - Sprint 4 — Donjons et mode test : 7 donjons, 12 ennemis, mode test, lien de build, premiers pas,
   aide. Critère : un testeur naïf automatisé finit la boucle sans aide (ordinateur et mobile) ;
   test humain à faire avec `docs/PLAYTEST.md`.
+- Sprint 5 — Équilibrage : héros 4 à 6, simulation des 20 équipes. Critère : R1 (86 %), R2 (60 %)
+  et « aucun héros indispensable » (0 point) tenues, vérifiées en CI par `pnpm sim:check`.
 
-## Reste à faire
+## Reste à faire (hors code)
 
-- Sprint 5 : héros 4 à 6, simulation des 20 équipes, réglage R1, R2 et « aucun héros indispensable ».
+- Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).
+- Mise en ligne Cloudflare par le propriétaire (`docs/DEPLOY.md`), puis tags de sprint à publier.
+- Licence du dépôt : décision du propriétaire.
 
 ## Prochaine action
 
-Sprint 5 : héros 4 à 6 (feu/contrôle, eau/dégâts, nature/soutien) débloqués par les donjons
-2, 4 et 6 ; simulation des 20 équipes ; règles R1, R2 et « aucun héros indispensable ».
+Après le test humain : corriger ce qu'il révèle, puis piocher dans `docs/BACKLOG.md`.
 
 ## Déploiement
 

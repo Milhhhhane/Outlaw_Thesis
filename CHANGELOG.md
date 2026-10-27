@@ -2,7 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
-## [sprint-4] — 2026-10-26
+## [sprint-5] — 2026-10-27
+
+### Ajouté
+
+- Héros 4 à 6 : Cendre (feu/contrôle), Ressac (eau/dégâts), Sève (nature/soutien), débloqués par
+  les donjons 2, 4 et 6 ; 6 héros, 24 sorts, 6 passifs, 90 nœuds de talent.
+- Simulation des 20 équipes : R1, R2 et « aucun héros indispensable » mesurées et vérifiées en CI.
+
+### Modifié
+
+- Équilibrage : croissance des stats × 0,6, talents positifs × 1,5, Marée et Sève plus
+  offensives, modificateurs des donjons 2 et 3 adoucis. R1 86 %, R2 60 %, écart 0 point.
+
+## [sprint-4] — 2026-10-26 — commit `2deb366`
 
 ### Ajouté
 
