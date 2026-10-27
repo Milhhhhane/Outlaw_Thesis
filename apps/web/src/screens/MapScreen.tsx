@@ -26,6 +26,19 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
         : 'open';
   const next = content.dungeons.find((d) => status(d.id) === 'open')?.id;
   const [selected, setSelected] = useState(initial ?? next ?? content.dungeons[0]?.id ?? '');
+  // Tronçon animé du sentier : du dernier donjon terminé vers le prochain.
+  const nextIndex = content.dungeons.findIndex((d) => d.id === next);
+  const pathToNext = (() => {
+    if (nextIndex <= 0) return null;
+    const from = MAP_NODES[content.dungeons[nextIndex - 1]?.id ?? ''];
+    const to = MAP_NODES[next ?? ''];
+    if (from === undefined || to === undefined) return null;
+    const [x0, y0] = from;
+    const [x1, y1] = to;
+    const mx = ((x0 + x1) / 2 + 6) * MAP_SCALE;
+    const my = ((y0 + y1) / 2) * MAP_SCALE;
+    return `M ${String(x0 * MAP_SCALE)} ${String(y0 * MAP_SCALE)} Q ${String(mx)} ${String(my)} ${String(x1 * MAP_SCALE)} ${String(y1 * MAP_SCALE)}`;
+  })();
   const dungeon = content.dungeonById.get(selected);
   const teamLevel =
     profile.team.length === 0
@@ -53,6 +66,15 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
               backgroundImage: `url(${backgroundUrl('world_map')})`,
             }}
           >
+            {pathToNext !== null && (
+              <svg
+                className="map__path"
+                viewBox={`0 0 ${String(320 * MAP_SCALE)} ${String(180 * MAP_SCALE)}`}
+                aria-hidden="true"
+              >
+                <path className="map__path-next" d={pathToNext} />
+              </svg>
+            )}
             <ol className="map__nodes">
               {content.dungeons.map((d, index) => {
                 const [x, y] = MAP_NODES[d.id] ?? [0, 0];

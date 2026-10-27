@@ -35,6 +35,9 @@
   HttpOnly, limites de débit, synchronisation locale d'abord avec écran de conflit, migration
   d'une partie invitée, page de confidentialité (brouillon), réinitialisation par le
   propriétaire (`pnpm admin:reset-password`). Tests : Worker, outil, e2e contre `wrangler dev`.
+- Lot 9 — Grosse amélioration graphique : menus habillés (cadres bois, fond, socles), combat
+  avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
+  avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
 
 ## Reste à faire (hors code)
 

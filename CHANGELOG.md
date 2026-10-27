@@ -2,6 +2,20 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [lot-9] — 2026-10-27 — grosse amélioration graphique
+
+### Ajouté
+
+- Menus habillés (`tools/art/ui.py`) : fond de nuit derrière les écrans, cadres bois cloutés
+  (9 tranches), planche d'en-tête, corde, cuir, socles sous les héros, icônes de statistiques.
+- Combat : arcs de frappe, étincelles, gros impacts sur les coups lourds (≥ 30 % des PV ou
+  mortels), secousse d'écran légère ou forte, voile rouge quand un héros encaisse, flash et
+  zoom sur les ultimes, chute avec poussière, cartes de sorts qui pulsent ; fente avec
+  anticipation et étirement, recul avec rotation. Tout s'éteint avec « Animations : désactivées ».
+- Carte du monde repeinte (`tools/art/worldmap.py`) : sept contrées aux contours organiques
+  (dunes, forêts, lac, volcan, mer, canyon), montagnes, repères dessinés pour chaque donjon,
+  marqueurs ronds, sentier animé vers le prochain donjon, rose des vents.
+
 ## [lot-8b] — 2026-10-27 — comptes et sauvegarde en ligne
 
 ### Ajouté

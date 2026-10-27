@@ -352,3 +352,25 @@ vente (`docs/ACCOUNTS.md`).
 
 **Textes des comptes à part** — `apps/web/src/i18n/account.fr.json`, fusionné au dictionnaire :
 un autre chantier (nouveaux héros) modifie `fr.json` en parallèle.
+
+## Lot 9 — amélioration graphique
+
+**Habillage par CSS et tuiles plutôt que par écrans peints** — Contexte : les menus étaient des
+panneaux plats. Choix : un fond de nuit discret partagé, des cadres bois en 9 tranches, une
+planche d'en-tête et un cuir tramé, tous générés par `tools/art/ui.py` et appliqués en CSS
+(`border-image`, `background`). Raison : un seul jeu de tuiles habille tous les écrans et les
+fenêtres, pour quelques kilo-octets ; des écrans peints un par un auraient coûté bien plus en
+poids et en temps.
+
+**Jus de combat sans nouvelles poses** — Contexte : dessiner des poses d'attaque et de dégâts pour
+six héros et douze ennemis aurait doublé l'atlas. Choix : fente avec anticipation et
+étirement, recul avec rotation, étincelles, arcs de frappe, secousses et flashs, le tout en CSS à
+partir des sprites existants ; seuls trois petits effets sont ajoutés (arc, gros impact,
+poussière). Raison : le ressenti vient surtout du timing, du recul et des effets d'écran ; la vue
+marque les coups lourds (≥ 30 % des PV ou mortels) et les ultimes, l'interface ne calcule rien.
+
+**Carte du monde par biomes bruités** — Contexte : les anciennes régions étaient des taches aux
+bords nets. Choix : chaque pixel reçoit la contrée la plus proche selon une distance elliptique
+bruitée, puis une texture par contrée et des repères dessinés aux positions des donjons
+(`map_nodes.json` inchangé). Raison : contours organiques et lisibles, positions des boutons
+conservées, tests de bout en bout intacts.
