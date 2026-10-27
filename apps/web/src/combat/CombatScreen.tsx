@@ -1,4 +1,5 @@
 import {
+  autoAction,
   enemyIntent,
   legalActions,
   type BattleSetup,
@@ -20,6 +21,9 @@ import { anchorOf, Stage } from './Stage';
 import { useBattle } from './useBattle';
 import type { UnitView } from './view';
 import './combat.css';
+
+/** Pause (ms, à vitesse normale) entre deux décisions du combat automatique. */
+const AUTO_DELAY = 400;
 
 const HELP: readonly TextKey[] = [
   'help.queue',
@@ -178,6 +182,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
   const toggleSpeed = (): void => {
     setOptions({ speed: fast ? 'normal' : 'fast' });
   };
+  const auto = options.auto;
   const game = useContext(GameContext);
   const { model, busy, act, skip, reset } = useBattle(setup, speedFactor(options.speed));
   const { state, view } = model;
@@ -217,6 +222,20 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
     if (finished) resultRef.current?.focus();
   }, [finished]);
 
+  // Combat automatique : une décision à la fois, quand rien ne s'anime et que le jeu n'est pas en pause.
+  useEffect(() => {
+    if (!auto || paused || busy || finished || state.active === null) return;
+    const timer = window.setTimeout(
+      () => {
+        act(autoAction(state));
+      },
+      AUTO_DELAY * speedFactor(options.speed),
+    );
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [auto, paused, busy, finished, state, act, options.speed]);
+
   useEffect(() => {
     // En ciblage, le focus va à la première cible : Entrée valide, Tab passe à la suivante.
     if (selected !== null) firstTarget.current?.focus();
@@ -226,6 +245,11 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
     if (selected !== null) setSelected(null);
     else if (!finished) setPaused(true);
   });
+
+  const toggleAuto = (): void => {
+    setSelection(null);
+    setOptions({ auto: !auto });
+  };
 
   const castSpell = (spell: ResolvedSpell): void => {
     if (caster === null) return;
@@ -249,6 +273,10 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         toggleSpeed();
         return;
       }
+      if (event.key === 'a' || event.key === 'A') {
+        toggleAuto();
+        return;
+      }
       if (event.key === ' ' && busy) {
         event.preventDefault();
         skip();
@@ -260,6 +288,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         spell !== undefined &&
         caster !== null &&
         !busy &&
+        !auto &&
         spell.cost <= state.points[caster.def.side]
       ) {
         castSpell(spell);
@@ -332,6 +361,16 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
           onClick={toggleSpeed}
         >
           {options.speed === 'instant' ? t('combat.speed.instant') : fast ? '×2' : '×1'}
+        </Button>
+        <Button
+          variant={auto ? 'primary' : 'quiet'}
+          size="small"
+          aria-pressed={auto}
+          aria-keyshortcuts="A"
+          title={t('combat.auto.hint')}
+          onClick={toggleAuto}
+        >
+          {t('combat.auto')}
         </Button>
         {busy && (
           <Button variant="ghost" size="small" icon="speed" onClick={skip}>
@@ -407,6 +446,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
         cap={content.balance.combat.teamPoints.cap}
         selected={selected}
         busy={busy || finished}
+        locked={auto}
         onSpell={castSpell}
         onFocusSpell={setFocusSpell}
         detail={detail}

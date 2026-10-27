@@ -1,3 +1,4 @@
+export { autoAction } from './auto';
 export { createBattle, enemyIntent, legalActions, replay, step, validateSetup } from './battle';
 export * from './compile';
 export { computeDamage } from './effects';

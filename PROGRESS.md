@@ -50,6 +50,9 @@
   invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,
   écran « Coffres » avec ouverture animée. Anciennes sauvegardes compatibles sans migration.
   Équilibre à valider au test humain (voir `docs/BALANCE.md`).
+- Combat automatique : bouton « Auto » (touche A), règle déterministe du moteur indépendante de la
+  taille des équipes, mesurée à 58 % de donjons réussis contre 51 % pour le joueur moyen simulé et
+  85 % pour l'expert. Équipes de 4 héros : chantier à faire, liste dans `docs/ARCHITECTURE.md`.
 
 ## Reste à faire (hors code)
 

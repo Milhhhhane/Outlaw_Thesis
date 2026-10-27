@@ -490,3 +490,27 @@ fragments est une seconde voie, pas la seule. À revoir quand les 30 héros arri
 du héros ciblé, puis héros au hasard), pour que cibler ou non ne change pas la suite de la graine.
 Pas de « pitié » (garantie après n coffres) pour l'instant : à ajouter si le test humain montre
 des séries trop longues.
+
+## Combat automatique
+
+**Règle simple, pas une anticipation** — Contexte : le joueur veut un bouton qui fait le combat à
+sa place (rejeu, farm). Choix : `autoAction` (`packages/engine/src/auto.ts`) applique une règle
+lisible : le sort le plus cher que la réserve permet, l'attaque de base sinon ; un soin seulement
+si un allié est à 70 % de PV ou moins, un bouclier seulement si une cible n'en a pas, une
+amélioration seulement si elle n'est pas déjà active ; cible : l'ennemi aux PV les plus bas, ou
+l'allié le plus blessé. Pure et déterministe (même état, même action). Raison : une anticipation
+d'un coup (comme l'expert de la simulation) réduirait à néant l'intérêt de jouer à la main ; la
+règle reste volontairement en dessous (mesures dans `docs/BALANCE.md`).
+
+**Le mode est un réglage de l'appareil, retenu d'un combat à l'autre** — Choix : `auto` dans les
+options (`outlaw-thesis/options`, faux par défaut), bouton « Auto » dans l'en-tête du combat à côté
+de la vitesse, touche A. Il reste actif sur les trois salles d'un donjon mais ne passe pas seul à
+l'écran suivant : le joueur lit le résultat et clique. La pause (Échap) suspend Auto ; la vitesse
+(×1, ×2, instantané) s'applique aussi aux décisions d'Auto (400 ms à vitesse normale). Pendant Auto
+les sorts sont verrouillés et les touches 1 à 4 sans effet : pour reprendre la main, rappuyer sur
+Auto.
+
+**Aucune hypothèse sur la taille des équipes** — Choix : `autoAction` ne lit que les actions
+légales et les unités vivantes ; un test l'exécute avec quatre héros contre trois ennemis. Les
+équipes de 4 héros demandées pour la suite restent à faire côté moteur et interface (liste dans
+`docs/ARCHITECTURE.md`, « Passer à quatre héros »).

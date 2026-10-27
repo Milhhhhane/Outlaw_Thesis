@@ -208,3 +208,32 @@ sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (el
   (plafond 10 → 20) et le donjon 6 (niveau 22) la seconde (20 → 30), soit 30 fragments par héros
   de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
   `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
+
+## Combat automatique
+
+Mesure : `pnpm --filter @outlaw/sim auto [équipes]` (`tools/sim/src/auto.ts`, lecture seule). Même
+protocole que le rythme : équipes de 3 héros aléatoires au niveau conseillé, donjon réussi si les
+trois combats sont gagnés ; 300 équipes par donjon, soit une marge d'environ ±5 points par ligne.
+
+| Donjon          | Expert | Joueur moyen simulé | Auto |
+| --------------- | ------ | ------------------- | ---- |
+| ember_wastes    | 100 %  | 91 %                | 85 % |
+| drowned_halls   | 100 %  | 74 %                | 76 % |
+| thorn_maze      | 91 %   | 62 %                | 73 % |
+| cinder_citadel  | 93 %   | 49 %                | 65 % |
+| sunken_spire    | 88 %   | 47 %                | 71 % |
+| verdant_crown   | 79 %   | 42 %                | 59 % |
+| broken_crossing | 83 %   | 46 %                | 49 % |
+| salt_flats      | 78 %   | 35 %                | 28 % |
+| obsidian_pass   | 61 %   | 32 %                | 39 % |
+| hollow_throne   | 78 %   | 36 %                | 38 % |
+| **Moyenne**     | 85 %   | 51 %                | 58 % |
+
+- Auto fait un peu mieux que le joueur moyen simulé (une décision sur quatre au hasard) dans les
+  donjons du début et du milieu, autant dans les trois derniers, et reste 27 points sous l'expert.
+  Il n'enchaîne donc pas de façon fiable les donjons difficiles : c'est voulu.
+- Le « joueur moyen » est un modèle, pas un humain : l'écart avec un vrai joueur se jugera au test
+  humain (`docs/PLAYTEST.md`). Si Auto s'avère meilleur que les joueurs, baisser `WOUNDED` ou
+  retirer la règle « sort le plus cher d'abord » dans `auto.ts` avant de toucher aux donjons.
+- Ces chiffres valent pour des équipes de 3 ; à refaire dès que les équipes passent à 4
+  (`TEAM_SIZE` dans `auto.ts` de la simulation).
