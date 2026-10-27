@@ -2,6 +2,16 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — combat automatique
+
+### Ajouté
+
+- Bouton « Auto » (touche A) dans le combat : le jeu joue les tours des héros avec une règle
+  simple (sort le plus cher utile, cible la plus faible). Retenu d'un combat à l'autre, suspendu
+  par la pause, à la vitesse choisie ; ne passe pas seul à l'écran suivant.
+- `pnpm --filter @outlaw/sim auto` : taux de réussite d'Auto face à l'expert et au joueur moyen
+  (`docs/BALANCE.md`).
+
 ## [Non publié] — 2026-10-27 — coffres et fragments
 
 ### Ajouté

@@ -1,13 +1,15 @@
 import account from './account.fr.json';
+import auto from './auto.fr.json';
 import chests from './chests.fr.json';
 import fr from './fr.json';
 import names from './content.fr.json';
 
 /** Clés de texte : le français est la langue par défaut et la référence des clés. */
-export type TextKey = keyof typeof fr | keyof typeof account | keyof typeof chests;
+export type TextKey =
+  keyof typeof fr | keyof typeof account | keyof typeof auto | keyof typeof chests;
 
-/** Comptes (account.fr.json) et coffres (chests.fr.json) vivent à part pour limiter les conflits d'édition. */
-const dictionary: Readonly<Record<TextKey, string>> = { ...fr, ...account, ...chests };
+/** Comptes (account.fr.json), combat auto (auto.fr.json) et coffres (chests.fr.json) vivent à part pour limiter les conflits d'édition. */
+const dictionary: Readonly<Record<TextKey, string>> = { ...fr, ...account, ...auto, ...chests };
 
 type Params = Readonly<Record<string, string | number>>;
 

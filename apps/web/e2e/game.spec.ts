@@ -145,6 +145,36 @@ for (const keyboard of [false, true]) {
   });
 }
 
+test('combat automatique : le bouton joue les trois salles seul, l’en-tête tient', async ({
+  page,
+}) => {
+  test.skip(portrait(page), 'portrait');
+  await start(page);
+  await page.getByRole('button', { name: 'Mode test' }).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await page.getByRole('button', { name: /^Partir/ }).click();
+  const auto = page.getByRole('button', { name: 'Auto', exact: true });
+  await expect(auto).toHaveAttribute('aria-pressed', 'false');
+  await inView(page, '.battle__top button[aria-keyshortcuts="A"]');
+  await inView(page, '.battle__top button[aria-keyshortcuts="X"]');
+  await auto.click();
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  for (let room = 1; room <= 3; room++) {
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(`combat ${room} sur 3`);
+    // Aucun clic sur un sort : seul Auto joue.
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
+    await noScroll(page);
+    await page.locator('.outcome button').first().click();
+    if (!(await page.locator('.battle').isVisible())) break;
+    // Le mode reste actif d'une salle à l'autre.
+    await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(page.locator('.end')).toBeVisible();
+  await noScroll(page);
+});
+
 test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ page }) => {
   test.skip(portrait(page), 'portrait');
   const content = loadContent();
