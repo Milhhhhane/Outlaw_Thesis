@@ -27,6 +27,16 @@ def frames():
     return out
 
 
+def check_silhouettes(groups):
+    """Deux héros ne partagent jamais la même silhouette (masque de la première image de repos)."""
+    seen = {}
+    for name in [*charpack.HEROES, *charpack.looks.LOOKS]:
+        im = groups[name][0]
+        key = (im.size, im.getchannel('A').point(lambda a: 255 if a else 0).tobytes())
+        assert key not in seen, f'{name} a la même silhouette que {seen[key]}'
+        seen[key] = name
+
+
 def pack(groups, width=1024):
     """Rangement en étagères ; renvoie l'image et les positions de chaque image."""
     items = [(name, i, im) for name, ims in groups.items() for i, im in enumerate(ims)]
@@ -86,6 +96,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / 'bg').mkdir(exist_ok=True)
     groups = frames()
+    check_silhouettes(groups)
     atlas, pos = pack(groups)
     atlas.save(OUT / 'atlas.png', optimize=True)
     sprites = {}

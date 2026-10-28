@@ -88,6 +88,10 @@
   grind : équipes de `teamSize` (4) héros, entrée « PvP » au camp. Ouvert : équilibrage PvP (voir
   `docs/PVP.md`), propriété des héros non prouvée.
 
+- Silhouettes des héros — 18 héros récents habillés d'une coiffe ou d'un accessoire dessiné
+  (`tools/art/looks.py`), palettes franches, armes mieux réparties ; aucune paire de héros n'a la
+  même silhouette (vérifié par `export.py`). Gameplay inchangé.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).
