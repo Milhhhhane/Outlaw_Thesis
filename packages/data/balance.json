@@ -78,11 +78,24 @@
       "upgradeScalePct": 15,
       "statCapPct": 8,
       "upgradeCosts": [
-        { "copies": 1, "gold": 100, "materials": 5 },
-        { "copies": 2, "gold": 300, "materials": 8 },
-        { "copies": 3, "gold": 800, "materials": 12 }
-      ]
+        { "copies": 1, "gold": 40, "materials": 3 },
+        { "copies": 2, "gold": 120, "materials": 5 },
+        { "copies": 3, "gold": 280, "materials": 8 }
+      ],
+      "tierCostPct": {
+        "copies": [60, 100, 130],
+        "gold": [100, 400, 5000],
+        "materials": [100, 300, 1000]
+      }
     }
+  },
+  "tiers": {
+    "count": 3,
+    "levelsPerTier": 5,
+    "enemyPctPerTier": { "hp": 20, "atk": 20 },
+    "rewardPctPerTier": { "xp": 0, "gold": 25, "materials": 25 },
+    "rareWeightPerTier": 5,
+    "chestStepPerTier": 1
   },
   "economy": {
     "replayRewardRate": 1,
@@ -141,6 +154,10 @@
     "averageCurve": {
       "first": 0.85,
       "last": 0.3,
+      "tolerance": 0.12
+    },
+    "tiers": {
+      "expertMin": 0.5,
       "tolerance": 0.12
     }
   }

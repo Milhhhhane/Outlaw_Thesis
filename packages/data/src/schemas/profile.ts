@@ -3,6 +3,7 @@ import { MAX_SIDE } from './balance';
 import { idSchema } from './common';
 
 const nonNegInt = z.number().int().min(0);
+const posInt = z.number().int().min(1);
 
 /** Progression d'un héros. Les objets sont référencés par l'uid de l'exemplaire possédé. */
 export const heroProgressSchema = z.strictObject({
@@ -56,6 +57,13 @@ export const profileSchema = z.strictObject({
       clears: nonNegInt,
       /** Passages sans objet rare dans ce donjon (garantie du rare). Absent des anciennes sauvegardes. */
       dry: nonNegInt.default(0),
+      /**
+       * Palier atteint (débloqué) : I par défaut ; terminer le palier k pour la première fois
+       * passe à k + 1, y compris au-delà du dernier palier (tous terminés). Le moteur en déduit
+       * le palier ouvert (`tierReached`) et le premier passage de chaque palier. Absent des
+       * anciennes sauvegardes : un donjon déjà terminé y compte comme palier I terminé.
+       */
+      tier: posInt.default(1),
     }),
   ),
   /** Ancienne garantie globale du rare : conservée pour les sauvegardes, remplacée par `dungeons[id].dry`. */

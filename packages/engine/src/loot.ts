@@ -1,4 +1,5 @@
 import type { Content, Dungeon, OwnedItem, Profile } from '@outlaw/data';
+import { tierRareWeight } from './tiers';
 
 /**
  * Butin des donjons : table pondérée, maîtrise et paliers de poussière. Chaque objet vient d'un
@@ -39,16 +40,14 @@ export interface Weighted {
 
 /**
  * Table pondérée d'un donjon : chaque objet pèse le poids de sa rareté, et le rare gagne le bonus
- * de chaque rang de maîtrise.
+ * de chaque rang de maîtrise et de chaque palier du donjon.
  */
-export function lootTable(content: Content, dungeon: Dungeon, rank = 0): Weighted[] {
+export function lootTable(content: Content, dungeon: Dungeon, rank = 0, tier = 1): Weighted[] {
   const { weights, mastery } = content.balance.economy.loot;
+  const bonus = rank * mastery.rareWeightPerRank + tierRareWeight(content, tier);
   return dungeon.loot.map((item) => {
     const rarity = content.itemById.get(item)?.rarity ?? 'common';
-    return {
-      item,
-      weight: weights[rarity] + (rarity === 'rare' ? rank * mastery.rareWeightPerRank : 0),
-    };
+    return { item, weight: weights[rarity] + (rarity === 'rare' ? bonus : 0) };
   });
 }
 
@@ -57,8 +56,9 @@ export function lootRates(
   content: Content,
   dungeon: Dungeon,
   rank = 0,
+  tier = 1,
 ): { item: string; pct: number }[] {
-  const table = lootTable(content, dungeon, rank);
+  const table = lootTable(content, dungeon, rank, tier);
   const total = table.reduce((sum, entry) => sum + entry.weight, 0);
   return table.map((entry) => ({ item: entry.item, pct: (entry.weight * 100) / total }));
 }

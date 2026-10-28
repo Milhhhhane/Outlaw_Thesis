@@ -45,7 +45,7 @@
       "gold": 80,
       "materials": {
         "tier": 1,
-        "amount": 4
+        "amount": 8
       }
     },
     "loot": ["ember_charm", "eternal_ember"],
@@ -100,7 +100,7 @@
       "gold": 160,
       "materials": {
         "tier": 1,
-        "amount": 4
+        "amount": 8
       }
     },
     "loot": ["tide_pendant", "drowned_pearl"],

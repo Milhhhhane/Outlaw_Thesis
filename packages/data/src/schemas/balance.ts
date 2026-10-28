@@ -101,7 +101,35 @@ export const balanceSchema = z
         upgradeCosts: z.array(
           z.strictObject({ copies: posInt, gold: nonNegInt, materials: nonNegInt }),
         ),
+        /**
+         * Multiplicateur (en %) des copies, de l'or et de la poussière de `upgradeCosts` selon le
+         * palier de poussière de l'objet (celui de son donjon), arrondi (au moins une copie) : un
+         * objet du début s'améliore vite, un objet de fin de jeu demande du vrai grind. Une entrée
+         * par palier.
+         */
+        tierCostPct: z.strictObject({
+          copies: z.array(pos).length(3),
+          gold: z.array(pos).length(3),
+          materials: z.array(pos).length(3),
+        }),
       }),
+    }),
+
+    /**
+     * Paliers de donjon (I, II, III…) : terminer un palier ouvre le suivant du même donjon. Une
+     * seule formule pour tous les donjons : le palier k ajoute (k − 1) × `levelsPerTier` au niveau
+     * des ennemis et (k − 1) × `enemyPctPerTier` % à leurs PV et ATK (les niveaux seuls pèsent
+     * peu, la croissance des monstres étant plate), (k − 1) × `rewardPctPerTier` % aux
+     * récompenses, (k − 1) × `rareWeightPerTier` au poids du rare, et monte le coffre de
+     * (k − 1) × `chestStepPerTier` paliers.
+     */
+    tiers: z.strictObject({
+      count: posInt,
+      levelsPerTier: nonNegInt,
+      enemyPctPerTier: z.strictObject({ hp: nonNeg, atk: nonNeg }),
+      rewardPctPerTier: z.strictObject({ xp: nonNeg, gold: nonNeg, materials: nonNeg }),
+      rareWeightPerTier: nonNegInt,
+      chestStepPerTier: nonNegInt,
     }),
 
     economy: z.strictObject({
@@ -182,6 +210,14 @@ export const balanceSchema = z
       averageCurve: z.strictObject({
         first: z.number().min(0).max(1),
         last: z.number().min(0).max(1),
+        tolerance: z.number().min(0).max(1),
+      }),
+      /**
+       * Paliers de donjon (expert au niveau visé) : chaque palier réussit au moins `expertMin`,
+       * et aucun palier n'est plus facile que le précédent du même donjon de plus de `tolerance`.
+       */
+      tiers: z.strictObject({
+        expertMin: z.number().min(0).max(1),
         tolerance: z.number().min(0).max(1),
       }),
     }),

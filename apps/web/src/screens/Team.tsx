@@ -1,24 +1,24 @@
-import { dungeonOpen, heroBuild, setLevel, setTeam } from '@outlaw/engine';
+import { dungeonOpen, heroBuild, setLevel, setTeam, tierOpen } from '@outlaw/engine';
 import { useState } from 'react';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { Button, Panel, Screen, Stepper } from '../game/ui';
-import { names, t, tk } from '../i18n';
+import { dungeonTitle, names, t, tk } from '../i18n';
 import { shareUrl } from '../save/share';
 import { useProfile } from '../state/profile';
 
 const MAX_TEAM = content.balance.progression.teamSize;
 
 /** Composition : `teamSize` emplacements, les héros débloqués en dessous. */
-export function Team({ dungeon }: { readonly dungeon?: string }) {
+export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly tier?: number }) {
   const { go } = useGame();
   const { profile, apply } = useProfile();
   const [copied, setCopied] = useState(false);
   const test = profile.testMode;
   const back = (): void => {
-    go(dungeon === undefined ? { name: 'hub' } : { name: 'map', dungeon });
+    go(dungeon === undefined ? { name: 'hub' } : { name: 'map', dungeon, tier });
   };
   const toggle = (id: string): void => {
     const team = profile.team.includes(id)
@@ -34,12 +34,17 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
       )
     : '';
   const canGo =
-    dungeon !== undefined && profile.team.length > 0 && dungeonOpen(content, profile, dungeon);
+    dungeon !== undefined &&
+    profile.team.length > 0 &&
+    dungeonOpen(content, profile, dungeon) &&
+    tierOpen(content, profile, dungeon, tier ?? 1);
 
   return (
     <Screen
       title={
-        dungeon === undefined ? t('team.title') : t('team.for', { dungeon: names.dungeon(dungeon) })
+        dungeon === undefined
+          ? t('team.title')
+          : t('team.for', { dungeon: dungeonTitle(dungeon, tier) })
       }
       onBack={back}
       className="team"
@@ -181,10 +186,10 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
             size="large"
             disabled={!canGo}
             onClick={() => {
-              go({ name: 'dungeon', id: dungeon });
+              go({ name: 'dungeon', id: dungeon, tier });
             }}
           >
-            {t('team.go', { dungeon: names.dungeon(dungeon) })} ▶
+            {t('team.go', { dungeon: dungeonTitle(dungeon, tier) })} ▶
           </Button>
         )}
       </footer>
