@@ -175,6 +175,19 @@
       "tiers": [0, 1, 2]
     }
   },
+  "quests": {
+    "daily": {
+      "count": 5,
+      "reward": { "passagePct": 15 },
+      "bonus": { "passagePct": 0, "chest": "bronze" }
+    },
+    "weekly": { "count": 5, "reward": { "passagePct": 50 } },
+    "achievements": {
+      "small": { "passagePct": 100, "chest": "bronze" },
+      "medium": { "passagePct": 200, "chest": "silver" },
+      "large": { "passagePct": 400, "chest": "gold" }
+    }
+  },
   "energy": {
     "costPerDungeon": 0,
     "cap": 100,

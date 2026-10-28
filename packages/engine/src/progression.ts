@@ -1,5 +1,6 @@
 import {
   BASE_SPELL_LEVELS,
+  emptyQuestState,
   PROFILE_VERSION,
   type Content,
   type HeroProgress,
@@ -7,6 +8,7 @@ import {
 } from '@outlaw/data';
 import { validateBuild, type HeroBuild } from './compile';
 import { lootTable, masteryMaterialsFactor, masteryNext, masteryRank, ownedItem } from './loot';
+import { countAction } from './counters';
 import { salvageOf } from './items';
 import { rollChest, tierFrontier, tierOpen, tierRewardFactor } from './tiers';
 
@@ -44,6 +46,12 @@ export type Refusal =
   | 'tier_locked'
   | 'not_enough_grimoires'
   | 'max_spell_level'
+  | 'no_preset'
+  | 'bad_name'
+  | 'preset_unavailable'
+  | 'unknown_quest'
+  | 'quest_not_done'
+  | 'already_claimed'
   | 'unknown_floor'
   | 'floor_locked';
 
@@ -112,6 +120,9 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     chests: {},
     grimoires: 0,
     focus: null,
+    presets: [],
+    stats: {},
+    quests: emptyQuestState(),
     tower: { cleared: 0 },
     testMode: false,
   };
@@ -182,6 +193,7 @@ export function levelUp(content: Content, profile: Profile, heroId: string): Out
     ...profile,
     materials,
     heroes: { ...profile.heroes, [heroId]: { ...hero, level, xp } },
+    stats: countAction(profile.stats, { levels: 1 }),
   });
 }
 
@@ -518,6 +530,11 @@ export function completeDungeon(
       chest === null
         ? profile.chests
         : { ...profile.chests, [chest]: (profile.chests[chest] ?? 0) + 1 },
+    stats: countAction(profile.stats, {
+      wins: 1,
+      wins_tier2: Number(tier >= 2),
+      wins_tier3: Number(tier >= 3),
+    }),
   };
   return ok({
     profile: next,

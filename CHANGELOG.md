@@ -24,6 +24,22 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Sauvegardes : anciens profils valides (sorts au niveau 1, 0 grimoire) ; `baseline.csv` et
   jalons du joueur modèle identiques ; le PvP garde les sorts au niveau 1.
 
+## [Non publié] — 2026-10-28 — quêtes et succès
+
+### Ajouté
+
+- Écran « Quêtes » au camp (onglets Quotidiennes, Hebdomadaires, Succès ; bouton Réclamer ; temps
+  avant la réinitialisation) et badge sur l'entrée quand une récompense attend.
+- 5 quêtes du jour (minuit UTC) et 5 de la semaine (lundi 00:00 UTC) tirées dans
+  `content/quests.json` : donjons gagnés, palier II ou III, niveaux payés, objets améliorés,
+  coffres ouverts, étoiles, invocations. Bonus du jour : un coffre de bronze.
+- 20 succès permanents (premières victoires, maîtrise, palier III, objets, héros, étoiles,
+  niveaux), récompense unique avec coffre de bronze, d'argent ou d'or.
+- Récompenses relatives au donjon le plus avancé terminé (`balance.quests`) ; effet sur les
+  jalons mesuré par `pnpm --filter @outlaw/sim economy` (au plus 13,7 %, borné à 15 % en CI).
+- Profil : compteurs à vie (`stats`) et état des quêtes (`quests`), absents des anciennes
+  sauvegardes (valeurs par défaut, succès déjà mérités aussitôt réclamables).
+
 ## [Non publié] — 2026-10-28 — tour à étages
 
 ### Ajouté
@@ -47,6 +63,23 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 ### Modifié
 
 - Camp : entrées un peu plus compactes pour loger la septième (Tour).
+
+## [Non publié] — 2026-10-28 — confort de farm (MaJ 1/7)
+
+### Ajouté
+
+- Séries : sur l'écran d'équipe, 1, 3, 5, 10 ou ∞ passages joués d'affilée en Auto, « passage k
+  sur N » en combat, arrêt sur défaite, manque d'énergie ou action du joueur.
+- Bilan de série : passages gagnés et perdus, or, poussière par palier, coffres, objets (nouveaux,
+  copies, dissous), niveaux prêts, maîtrise et paliers.
+- Trois équipes enregistrées (nommées), chargées en un clic ; refus clair si un héros manque.
+- Tri (rareté, niveau, élément, rôle, nom) et filtres (élément, rôle, rareté, possédés) de la
+  galerie et du vivier, retenus sur l'appareil.
+- Badges « à faire » au camp : niveaux payables, talents, étoiles, objets améliorables, coffres.
+
+### Modifié
+
+- À 1 passage, Auto ne relance plus le donjon après les récompenses : choisir ∞ pour farmer sans fin.
 
 ## [Non publié] — 2026-10-28 — barre d'XP de la fiche
 

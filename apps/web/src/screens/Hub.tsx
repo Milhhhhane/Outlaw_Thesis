@@ -1,4 +1,5 @@
-import { chestCount, dungeonOpen } from '@outlaw/engine';
+import { campTodo, claimableCount, dungeonOpen, type CampTodo } from '@outlaw/engine';
+import { useState } from 'react';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -8,6 +9,7 @@ import { useEscape } from '../game/keys';
 import { t, type TextKey } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
+import './farm.css';
 
 const ENTRIES: readonly {
   readonly route: 'map' | 'tower' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
@@ -24,11 +26,35 @@ const ENTRIES: readonly {
   { route: 'pvp', label: 'hub.menu.pvp', hint: 'hub.menu.pvp.hint', icon: 'damage' },
 ];
 
+type Route = (typeof ENTRIES)[number]['route'];
+
+/** Badges « à faire » de chaque entrée : compteur du moteur, icône, phrase complète. */
+const TODO: Readonly<
+  Partial<
+    Record<
+      Route,
+      readonly { readonly key: keyof CampTodo; readonly text: TextKey; readonly icon?: string }[]
+    >
+  >
+> = {
+  heroes: [
+    { key: 'levelUp', text: 'todo.levelUp', icon: 'xp' },
+    { key: 'talents', text: 'todo.talents', icon: 'trigger' },
+    { key: 'stars', text: 'todo.stars', icon: 'star' },
+  ],
+  workshop: [{ key: 'items', text: 'todo.items' }],
+  chests: [{ key: 'chests', text: 'todo.chests' }],
+};
+
 /** Le camp : un seul écran, l'équipe autour du feu, toutes les entrées du jeu. */
 export function Hub() {
   const { go, openOptions, toggleTestMode } = useGame();
   const { profile, recovered } = useProfile();
   const test = profile.testMode;
+  const todo = campTodo(content, profile);
+  // Récompenses de quêtes et succès à réclamer (le profil passe au nouveau jour tout seul).
+  const [now] = useState(() => Date.now());
+  const claims = claimableCount(content, profile, now);
   useEscape(() => {
     go({ name: 'title' });
   });
@@ -43,6 +69,26 @@ export function Hub() {
       </div>
       <header className="hub__bar">
         <h1 className="hub__title">{t('hub.title')}</h1>
+        {/* Quêtes : dans la barre du haut, le menu de droite est plein. */}
+        {!test && (
+          <Button
+            variant="quiet"
+            size="small"
+            icon="check"
+            className="hub__quests"
+            title={t('hub.menu.quests.hint')}
+            onClick={() => {
+              go({ name: 'quests' });
+            }}
+          >
+            {t('hub.menu.quests')}
+            {claims > 0 && (
+              <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
+                {claims}
+              </span>
+            )}
+          </Button>
+        )}
         <SyncBadge />
         <Resources />
       </header>
@@ -61,9 +107,21 @@ export function Hub() {
             <Icon name={entry.icon} size={24} />
             <span className="hub__entry-label">
               {t(entry.label)}
-              {entry.route === 'chests' && chestCount(profile) > 0 && (
-                <span className="hub__badge">{chestCount(profile)}</span>
-              )}
+              {(TODO[entry.route] ?? [])
+                .filter((badge) => todo[badge.key] > 0)
+                .map((badge) => (
+                  <span
+                    key={badge.key}
+                    className={`hub__badge hub__badge--${badge.key}`}
+                    title={t(badge.text, { n: todo[badge.key] })}
+                  >
+                    <span aria-hidden="true">
+                      {badge.icon !== undefined && <Icon name={badge.icon} />}
+                      {todo[badge.key]}
+                    </span>
+                    <span className="visually-hidden">{t(badge.text, { n: todo[badge.key] })}</span>
+                  </span>
+                ))}
             </span>
             <span className="hub__entry-hint">{t(entry.hint)}</span>
           </button>

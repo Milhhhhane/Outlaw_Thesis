@@ -46,19 +46,36 @@ export function Backdrop({ scene }: { readonly scene: string }) {
   );
 }
 
-/** Récompenses d'un donjon, sous forme de cartes. */
+/** Passage d'une série (plusieurs passages d'affilée en Auto). */
+export interface SeriesStep {
+  /** « Série : passage 2 sur 5. » */
+  readonly progress: string;
+  /** Lance le passage suivant ; null si la série s'arrête ici. */
+  readonly next: (() => void) | null;
+  /** Numéro du passage suivant (décompte). */
+  readonly nextPass: number;
+  /** Pourquoi la série s'arrête ici (« Série terminée. »), ou null. */
+  readonly stop: string | null;
+  /** Mode Auto : la suite (passage ou bilan) vient seule après un décompte. */
+  readonly auto: boolean;
+}
+
+/**
+ * Récompenses d'un donjon, sous forme de cartes. Dans une série, `onContinue` mène au bilan et le
+ * décompte d'Auto lance le passage suivant (ou le bilan au dernier) ; tout clic ou touche
+ * l'interrompt.
+ */
 export function Rewards({
   report,
   onContinue,
   onReplay,
-  autoReplay = false,
+  series,
 }: {
   readonly report: DungeonReport;
   readonly onContinue: () => void;
   /** Relance le même donjon (farm). */
   readonly onReplay: () => void;
-  /** Mode Auto : relance seule après un décompte, que tout clic ou touche interrompt. */
-  readonly autoReplay?: boolean;
+  readonly series?: SeriesStep;
 }) {
   const { go } = useGame();
   const heading = useRef<HTMLHeadingElement>(null);
@@ -91,6 +108,13 @@ export function Rewards({
                 next: report.mastery.next,
                 clears: report.mastery.clears,
               })}
+        {series !== undefined && (
+          <strong className="reward__series">
+            {' '}
+            {series.progress}
+            {series.stop !== null && ` ${series.stop}`}
+          </strong>
+        )}
       </p>
       <ul className="reward-cards" aria-label={t('reward.cards')}>
         {item !== undefined && (
@@ -182,19 +206,44 @@ export function Rewards({
           </p>
         </Card>
       </ul>
-      <div className="outcome__buttons end__go">
-        <Button size="large" variant={report.firstClear ? 'quiet' : 'primary'} onClick={onReplay}>
-          {t('reward.replay.button')}
-        </Button>
-        <Button size="large" variant={report.firstClear ? 'primary' : 'quiet'} onClick={onContinue}>
-          {t('reward.continue')}
-        </Button>
-        <Countdown
-          enabled={autoReplay}
-          text={(s) => t('combat.auto.replay', { s })}
-          onDone={onReplay}
-        />
-      </div>
+      {series === undefined ? (
+        <div className="outcome__buttons end__go">
+          <Button size="large" variant={report.firstClear ? 'quiet' : 'primary'} onClick={onReplay}>
+            {t('reward.replay.button')}
+          </Button>
+          <Button
+            size="large"
+            variant={report.firstClear ? 'primary' : 'quiet'}
+            onClick={onContinue}
+          >
+            {t('reward.continue')}
+          </Button>
+        </div>
+      ) : (
+        <div className="outcome__buttons end__go">
+          {series.next !== null && (
+            <Button size="large" onClick={series.next}>
+              {t('farm.next')}
+            </Button>
+          )}
+          <Button
+            size="large"
+            variant={series.next === null ? 'primary' : 'quiet'}
+            onClick={onContinue}
+          >
+            {t('farm.recap.button')}
+          </Button>
+          <Countdown
+            enabled={series.auto}
+            text={(s) =>
+              series.next === null
+                ? t('farm.recap.countdown', { s })
+                : t('farm.next.countdown', { s, k: series.nextPass })
+            }
+            onDone={series.next ?? onContinue}
+          />
+        </div>
+      )}
     </main>
   );
 }

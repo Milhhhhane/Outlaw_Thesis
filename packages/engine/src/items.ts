@@ -1,4 +1,5 @@
 import type { Content, OwnedItem, Profile } from '@outlaw/data';
+import { countAction } from './counters';
 import { itemTier } from './loot';
 import type { Outcome, Refusal } from './progression';
 
@@ -65,6 +66,7 @@ export function upgradeItem(content: Content, profile: Profile, uid: number): Ou
     items: profile.items.map((i) =>
       i.uid === uid ? { ...i, upgrade: i.upgrade + 1, copies: i.copies - cost.copies } : i,
     ),
+    stats: countAction(profile.stats, { upgrades: 1 }),
   });
 }
 

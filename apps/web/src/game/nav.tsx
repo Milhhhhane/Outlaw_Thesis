@@ -1,3 +1,4 @@
+import type { FarmRuns } from '@outlaw/engine';
 import { createContext, useContext } from 'react';
 
 /** Les écrans du jeu. */
@@ -10,8 +11,15 @@ export type Route =
   | { readonly name: 'hero'; readonly id: string }
   | { readonly name: 'workshop' }
   | { readonly name: 'chests' }
+  | { readonly name: 'quests' }
   | { readonly name: 'credits' }
-  | { readonly name: 'dungeon'; readonly id: string; readonly tier?: number }
+  /** `runs` : passages joués d'affilée en Auto (1 par défaut). */
+  | {
+      readonly name: 'dungeon';
+      readonly id: string;
+      readonly tier?: number;
+      readonly runs?: FarmRuns;
+    }
   | { readonly name: 'demo' }
   /** Tour à étages : la colonne des étages (étage choisi), puis le combat d'un étage. */
   | { readonly name: 'tower'; readonly floor?: number }

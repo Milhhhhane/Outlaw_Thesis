@@ -1071,6 +1071,56 @@ relatif sur une base de 33 % amplifie le bruit ; au niveau conseillé l'écart r
 +14 % (63 % → 72 %), en retard +42 % (33 % → 47 %). Si le propriétaire voulait 20 % relatifs en
 retard, il faudrait ≈ +1 % par niveau : à arbitrer.
 
+## Quêtes du jour, de la semaine et succès
+
+**La progression vient de compteurs à vie tenus par le moteur** — Contexte : les quêtes doivent
+compter des actions qui existent déjà (donjons gagnés, palier II, niveaux, améliorations,
+coffres, invocations, étoiles) sans que l'interface calcule rien et sans passer l'heure à chaque
+fonction. Choix : chaque fonction de progression avance un compteur de `profile.stats`
+(`countAction`) ; une période de quêtes garde les compteurs à son début (`base`) et la
+progression est la différence. Raison : une seule ligne par action, aucune signature changée,
+le moteur reste pur ; les succès lisent les mêmes compteurs ou le profil. Écarté : un journal
+d'événements dans le profil (taille non bornée), ou `now` dans chaque fonction (toutes les
+signatures et tous les appels changent).
+
+**Le passage au nouveau jour se fait hors des actions** — `rollQuests(profil, now, avant)` tire les
+quêtes de la nouvelle période ; l'interface l'appelle au chargement, toutes les 30 s et après
+chaque action avec le profil d'avant l'action comme départ (une victoire juste après minuit compte
+pour le nouveau jour). `claimQuest` et `claimBonus` le font aussi. Les quêtes non réclamées d'une
+période passée sont perdues, comme dans les jeux de référence.
+
+**Tirage : date UTC et graine du profil, mémorisé** — `drawQuests` mélange les quêtes possibles
+avec `cyrb53(type:période:graine)` ; le résultat est stocké dans le profil (`quests.daily.ids`)
+puisque la graine du profil avance avec le butin. `minWins` écarte les quêtes impossibles au début
+(palier III, invocation) ; le chargement refuse un contenu qui ne remplit pas le tirage dès la
+première partie.
+
+**Les succès se mesurent sur le profil quand c'est possible** — donjons terminés, victoires,
+paliers III, maîtrise, objets, héros, étoiles, niveau : lus dans le profil, pas dans les
+compteurs, pour qu'une ancienne sauvegarde voie aussitôt ses succès mérités (à réclamer une fois).
+
+**Récompense relative au meilleur donjon terminé** — Contexte : une somme fixe pèse lourd au début
+(100 or = plus d'un passage des Landes) et rien à la fin (1 500 or par passage du Trône). Choix :
+`passagePct` % de l'or et de la poussière d'un passage du donjon le plus avancé terminé, plus un
+coffre. Raison : même poids relatif tout au long de la partie, donc un seul réglage vérifiable
+(effet sur les jalons ≤ 15 %, mesuré et testé en CI). Pas de fragments directs : ils viennent des
+coffres (le joueur garde son ciblage) ; pas d'XP : les niveaux restent le fruit des donjons.
+
+**Pas de quête de duel PvP** — Le duel se joue entre amis dans un salon privé et rien ne remonte
+au profil ; une quête « gagner un duel » se farmerait à deux (l'un perd exprès). À reprendre
+seulement avec un classement ou un adversaire non choisi.
+
+**Mode test : pas de quêtes** — rien n'y est gagné ; l'entrée du camp est masquée comme celle des
+coffres.
+
+**Entrée dans la barre du haut du camp** — Le menu de droite est plein à 844 × 390 (une entrée
+de plus poussait « PvP » hors de l'écran, e2e rouge ; la Tour y a pris la septième place) ; le
+bouton « Quêtes » et son badge vont donc juste après le titre du camp, toujours visibles.
+
+**Textes générés depuis la mesure** — « Gagner {n} donjons » vient de `quests.metric.<mesure>` :
+ajouter une quête ou un succès d'une mesure existante est une ligne de JSON (plus le nom du
+succès dans `quests.fr.json`, vérifié par un test).
+
 ## Tour à étages
 
 **Une formule et des règles, pas 50 combats** — Contexte : un défi vertical de 50 étages (inspiré
@@ -1123,3 +1173,15 @@ alors des récompenses de rejeu).
 le décompte du bilan entre à l'étage suivant ; sans l'option, le bilan attend le joueur (rejouer un
 étage ne rapportant rien, le relancer seul n'aurait pas de sens). Raison : même règle que
 l'enchaînement des donjons, une navigation différée ; monter est une décision.
+
+## Confort de farm (MaJ 1/7)
+
+**Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le
+même donjon sans fin dès qu'Auto était coché ; les séries rendent le nombre de passages explicite.
+Choix : un passage = pas de relance ; 3, 5, 10 ou ∞ = série jouée en Auto, close par un bilan ; une
+défaite termine la série et mène au bilan. Raison : le joueur décide de combien il farme et voit
+ce qu'il a gagné, comme les multi-combats des jeux du genre.
+
+**Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
+fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
+Raison : une seule source de vérité, testable sans écran.

@@ -141,6 +141,24 @@ n'apparaissent que s'il y en a plusieurs.
 `scene` (facultatif) : identifiant du décor de combat (`bg/<scene>.png`) si le donjon réutilise
 celui d'un autre ; sinon le décor porte l'identifiant du donjon.
 
+## Quêtes et succès
+
+`content/quests.json` : trois listes, `daily`, `weekly` et `achievements`.
+
+- Une quête : `id`, `metric` (un compteur : `wins`, `wins_tier2`, `wins_tier3`, `levels`,
+  `upgrades`, `chests`, `summons`, `stars`), `target` (combien pendant la période) et `minWins`
+  (victoires à vie avant qu'elle puisse être tirée, 0 par défaut). Chaque jour (semaine)
+  `balance.quests.daily.count` (`weekly.count`) quêtes sont tirées parmi celles permises ; il en
+  faut au moins autant avec `minWins` à 0 (vérifié au chargement).
+- Un succès : `id`, `metric` (un compteur, ou une mesure du profil : `dungeons_cleared`,
+  `clears_total`, `tier3_cleared`, `mastery_rank`, `items_owned`, `items_maxed`, `heroes`,
+  `stars_total`, `hero_level`), `target`, `reward` (`small`, `medium` ou `large` : classes de
+  `balance.quests.achievements`). Son nom va dans `apps/web/src/i18n/quests.fr.json`
+  (`quests.ach.<id>`) ; l'objectif s'écrit tout seul depuis la mesure.
+- Une nouvelle mesure demande du code (moteur et texte `quests.metric.<mesure>`) ; tout le reste
+  est du JSON. Après un ajout : `pnpm --filter @outlaw/sim economy` pour vérifier l'effet sur les
+  jalons (le test `economy.test.ts` le borne à 15 %).
+
 ## Textes
 
 Tout identifiant de contenu a son nom dans `apps/web/src/i18n/content.fr.json` (héros et pages :

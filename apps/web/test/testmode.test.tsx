@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { App } from '../src/App';
@@ -26,7 +26,12 @@ describe('mode test', () => {
       screen.getByRole('group', { name: t('test.level', { hero: names.hero('pyra') }) }),
     ).toHaveTextContent('12');
 
-    await user.click(screen.getAllByRole('button', { name: new RegExp(t('team.sheet')) })[2]!);
+    // La fiche de Ronce, dans le vivier (trié par rareté).
+    const ronce = screen
+      .getAllByRole('button', { name: new RegExp(names.hero('ronce')) })
+      .find((b) => b.classList.contains('roster__pick'))!
+      .closest('li')!;
+    await user.click(within(ronce).getByRole('button', { name: new RegExp(t('team.sheet')) }));
     await user.click(screen.getByRole('tab', { name: new RegExp(t('sheet.tab.talents')) }));
     await user.click(
       screen.getByRole('button', { name: new RegExp(`^${names.node('ronce_snare_core')}`) }),

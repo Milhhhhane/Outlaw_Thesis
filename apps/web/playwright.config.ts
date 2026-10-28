@@ -42,12 +42,14 @@ export default defineConfig({
     },
     {
       name: '1920x1080',
-      testIgnore: /(accounts|pvp)\.spec\.ts/,
+      // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
       use: { viewport: { width: 1920, height: 1080 } },
     },
     {
       name: '1366x768',
-      testIgnore: /(accounts|pvp)\.spec\.ts/,
+      // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
       use: { viewport: { width: 1366, height: 768 } },
     },
     {
@@ -66,7 +68,8 @@ export default defineConfig({
     },
     {
       name: '390x844',
-      testIgnore: /(accounts|pvp)\.spec\.ts/,
+      // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',

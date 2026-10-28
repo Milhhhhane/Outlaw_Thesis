@@ -18,6 +18,9 @@ vi.mock('@outlaw/engine', async (importOriginal) => {
       energy.ok
         ? engine.enterDungeon(...args)
         : { ok: false as const, reason: 'no_energy' as const },
+    // La série demande aussi l'entrée au moteur (`seriesNext` appelle `enterDungeon` en interne).
+    seriesNext: (...args: Parameters<typeof engine.seriesNext>) =>
+      energy.ok ? engine.seriesNext(...args) : ('no_energy' as const),
   };
 });
 
@@ -225,7 +228,7 @@ async function autoDungeon(user: ReturnType<typeof userEvent.setup>): Promise<vo
 
 describe('fin de donjon en mode Auto', () => {
   it(
-    'les récompenses relancent le même donjon (décompte, « Continuer maintenant »)',
+    'dans une série, les récompenses relancent le même donjon (décompte, « Continuer maintenant »)',
     async () => {
       autoOptions();
       const user = userEvent.setup();
@@ -233,17 +236,22 @@ describe('fin de donjon en mode Auto', () => {
         <App
           version="test"
           initial={strongProfile()}
-          start={{ name: 'dungeon', id: 'ember_wastes' }}
+          start={{ name: 'dungeon', id: 'ember_wastes', runs: 3 }}
         />,
       );
       await autoDungeon(user);
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
         t('reward.title', { dungeon: names.dungeon('ember_wastes') }),
       );
-      expect(screen.getByRole('status')).toHaveTextContent(t('combat.auto.replay', { s: 5 }));
+      expect(screen.getByRole('status')).toHaveTextContent(
+        t('farm.next.countdown', { s: 5, k: 2 }),
+      );
       await user.click(screen.getByRole('button', { name: t('combat.auto.now') }));
       // Même donjon, même équipe : le passage suivant commence.
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('combat 1 sur 3');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        t('farm.pass', { k: 2, n: 3 }),
+      );
       expect(screen.getByRole('button', { name: t('combat.auto') })).toHaveAttribute(
         'aria-pressed',
         'true',
@@ -253,10 +261,9 @@ describe('fin de donjon en mode Auto', () => {
   );
 
   it(
-    'sans énergie, pas de relance : le joueur choisit',
+    'un seul passage : pas de relance, même en Auto',
     async () => {
       autoOptions();
-      energy.ok = false;
       const user = userEvent.setup();
       render(
         <App
@@ -270,6 +277,33 @@ describe('fin de donjon en mode Auto', () => {
       expect(screen.queryByRole('status')).toBeNull();
       await new Promise((resolve) => setTimeout(resolve, 1200));
       expect(screen.getByRole('button', { name: t('reward.continue') })).toBeInTheDocument();
+    },
+    LONG_UI_TEST,
+  );
+
+  it(
+    'sans énergie, la série s’arrête : le décompte mène au bilan',
+    async () => {
+      autoOptions();
+      energy.ok = false;
+      const user = userEvent.setup();
+      render(
+        <App
+          version="test"
+          initial={strongProfile()}
+          start={{ name: 'dungeon', id: 'ember_wastes', runs: 5 }}
+        />,
+      );
+      await autoDungeon(user);
+      expect(screen.getByText(new RegExp(t('farm.stop.no_energy')))).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: t('farm.next') })).toBeNull();
+      expect(screen.getByRole('status')).toHaveTextContent(t('farm.recap.countdown', { s: 5 }));
+      await user.click(screen.getByRole('button', { name: t('combat.auto.now') }));
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        t('farm.recap.title', { dungeon: names.dungeon('ember_wastes') }),
+      );
+      expect(screen.getByText(t('farm.stop.no_energy'))).toBeInTheDocument();
+      expect(screen.getByText(t('farm.recap.wins', { n: 1 }))).toBeInTheDocument();
     },
     LONG_UI_TEST,
   );
