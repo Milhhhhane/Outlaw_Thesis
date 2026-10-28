@@ -1,6 +1,6 @@
 import { loadContent } from '@outlaw/data';
 import { newProfile } from '@outlaw/engine';
-import { handle } from '../src/index';
+import { handle, type RoomNamespace } from '../src/index';
 import { SqliteDatabase } from '../src/testing';
 
 export const ORIGIN = 'https://jeu.example';
@@ -12,7 +12,7 @@ export function envelope(gold = 0) {
 }
 
 /** Un serveur en mémoire, une horloge réglable et des appels qui gardent le cookie. */
-export function server() {
+export function server(pvp?: RoomNamespace) {
   const db = new SqliteDatabase();
   let now = Date.UTC(2026, 9, 27);
   const call = async (
@@ -35,7 +35,7 @@ export function server() {
               ? options.body
               : JSON.stringify(options.body),
       }),
-      { DB: db },
+      pvp === undefined ? { DB: db } : { DB: db, PVP: pvp },
       now,
     );
     const text = await response.text();
@@ -53,9 +53,17 @@ export function server() {
     call('POST', '/api/register', { body: { pseudo, password, accept: true }, ip });
   const login = async (pseudo: string, password = GOOD, ip?: string) =>
     call('POST', '/api/login', { body: { pseudo, password }, ip });
+  /** Une requête GET avec des en-têtes à la main (mise à niveau WebSocket), réponse brute. */
+  const fetchRaw = (path: string, headers: Record<string, string>) =>
+    handle(
+      new Request(`${ORIGIN}${path}`, { headers }),
+      pvp === undefined ? { DB: db } : { DB: db, PVP: pvp },
+      now,
+    );
   return {
     db,
     call,
+    fetchRaw,
     register,
     login,
     advance: (ms: number) => {

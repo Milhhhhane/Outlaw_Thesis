@@ -66,8 +66,24 @@ export interface UnitDef {
   readonly script: readonly ScriptStep[];
 }
 
+/** Ce qui se passe quand la limite d'actions est atteinte. */
+export type LimitRule = 'enemy_wins' | 'hp_ratio';
+
+/**
+ * Règles optionnelles d'un combat. Absentes (PvE), elles valent DEFAULT_RULES :
+ * les héros jouent d'abord et la limite d'actions est une défaite des héros.
+ */
+export interface BattleRules {
+  /** Camp qui joue en premier à égalité d'instant (et dont les unités sont triées en tête). */
+  readonly firstSide: Side;
+  /** « enemy_wins » : la limite est une défaite des héros. « hp_ratio » : le plus fort ratio de PV gagne. */
+  readonly limit: LimitRule;
+}
+
 export interface BattleSetup {
   readonly units: readonly UnitDef[];
+  /** Règles du combat ; absentes, DEFAULT_RULES s'applique. */
+  readonly rules?: BattleRules;
 }
 
 /** Altération en cours. « stun_immunity » protège d'un nouvel étourdissement juste après le premier. */
@@ -126,8 +142,9 @@ export type BattleEndReason = 'annihilation' | 'action_limit';
 
 export interface BattleResult {
   /**
-   * Camp vainqueur. La limite d'actions est une défaite des héros (vainqueur « enemy »).
-   * Null : anéantissement simultané des deux camps, compté comme une défaite par le jeu.
+   * Camp vainqueur. Par défaut, la limite d'actions est une défaite des héros (vainqueur « enemy »).
+   * Null : anéantissement simultané des deux camps (compté comme une défaite par le jeu en PvE),
+   * ou, avec la règle de limite « hp_ratio », égalité de ratio de PV à la limite d'actions.
    */
   readonly winner: Side | null;
   readonly reason: BattleEndReason;
@@ -136,7 +153,9 @@ export interface BattleResult {
 export interface BattleState {
   /** Paramètres d'équilibrage du combat (partagés, jamais modifiés). */
   readonly balance: Balance;
-  /** Triées par camp (héros d'abord) puis par emplacement. */
+  /** Règles du combat, si le setup en fixait ; lire avec rulesOf. */
+  readonly rules?: BattleRules;
+  /** Triées par camp (le camp qui joue d'abord en tête ; les héros par défaut) puis par emplacement. */
   readonly units: readonly UnitState[];
   /** Instant du dernier tour joué. */
   readonly clock: number;

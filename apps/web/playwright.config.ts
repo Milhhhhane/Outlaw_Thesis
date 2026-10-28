@@ -34,7 +34,7 @@ export default defineConfig({
   projects: [
     {
       name: 'comptes',
-      testMatch: 'accounts.spec.ts',
+      testMatch: /(accounts|pvp)\.spec\.ts/,
       use: {
         baseURL: `http://localhost:${String(apiPort)}`,
         viewport: { width: 1280, height: 720 },
@@ -42,22 +42,22 @@ export default defineConfig({
     },
     {
       name: '1920x1080',
-      testIgnore: 'accounts.spec.ts',
+      testIgnore: /(accounts|pvp)\.spec\.ts/,
       use: { viewport: { width: 1920, height: 1080 } },
     },
     {
       name: '1366x768',
-      testIgnore: 'accounts.spec.ts',
+      testIgnore: /(accounts|pvp)\.spec\.ts/,
       use: { viewport: { width: 1366, height: 768 } },
     },
     {
       name: '1280x720',
-      testIgnore: 'accounts.spec.ts',
+      testIgnore: /(accounts|pvp)\.spec\.ts/,
       use: { viewport: { width: 1280, height: 720 } },
     },
     {
       name: '844x390',
-      testIgnore: 'accounts.spec.ts',
+      testIgnore: /(accounts|pvp)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',
@@ -66,7 +66,7 @@ export default defineConfig({
     },
     {
       name: '390x844',
-      testIgnore: 'accounts.spec.ts',
+      testIgnore: /(accounts|pvp)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',

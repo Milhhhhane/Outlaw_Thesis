@@ -353,6 +353,172 @@ vente (`docs/ACCOUNTS.md`).
 **Textes des comptes à part** — `apps/web/src/i18n/account.fr.json`, fusionné au dictionnaire :
 un autre chantier (nouveaux héros) modifie `fr.json` en parallèle.
 
+## PVP : salon personnalisé (lot 11, sprint A1)
+
+Détails du protocole, de la machine à états et des mesures : `docs/PVP.md`.
+
+**Deux camps pilotés** — Contexte : le moteur ne connaît que des héros pilotés et des ennemis
+scriptés. Choix : les deux camps en `controller: 'policy'`, le joueur 1 (l'hôte) est `player`, le
+joueur 2 `enemy`, unités `p1_<héros>` / `p2_<héros>`. Raison : aucune nouvelle notion dans le
+moteur ; ordre et identifiants déterministes.
+
+**Règles de combat optionnelles** — Contexte : le PvE donne la priorité aux héros et fait perdre
+les héros à la limite d'actions. Choix : `BattleSetup.rules` et `BattleState.rules` facultatifs
+(`firstSide`, `limit`), `DEFAULT_RULES` quand ils manquent ; le PvE n'est pas touché
+(`pnpm sim:check` identique à la baseline). Raison : un seul moteur pour les deux modes.
+
+**Priorité = départage et ordre des unités** — Contexte : le brief demande un départage à égalité
+d'instant. Choix : `firstSide` règle aussi le tri des unités de l'état. Raison : les déclencheurs se
+résolvent dans l'ordre des unités ; sans ce tri, un combat miroir n'est pas symétrique (vérifié : le
+retirer fait échouer 3 tests miroirs). Extension assumée du brief.
+
+**Limite d'actions au ratio de PV** — Contexte : en PvP, « le camp ennemi gagne » n'a pas de sens.
+Choix : `limit: 'hp_ratio'`, le plus grand ratio de PV restants sur PV maximaux du camp gagne,
+comparé par produits en croix ; égalité exacte = nul. Raison : entiers seulement, aucun arrondi,
+aucune égalité arbitraire.
+
+**Action par défaut** — Choix : `defaultAction(state)` joue l'attaque de base de l'unité active sur
+le vivant aux PV les plus bas (premier emplacement à égalité). Raison : toujours légale (l'attaque de
+base d'une unité pilotée est gratuite), sert au chrono dépassé.
+
+**Empreinte d'état** — Contexte : détecter qu'un client a divergé du serveur. Choix : cyrb53 (53 bits,
+14 caractères hexadécimaux) de la forme canonique des champs dynamiques, en JSON de tableaux
+imbriqués. Raison : sans dépendance, identique partout (entiers), assez fine pour un détecteur de
+désynchronisation ; elle ne protège pas contre la triche. Un séparateur textuel avait été essayé
+puis abandonné (une source d'altération contenant `;` rendait la forme ambiguë).
+
+**Serveur arbitre par rejeu** — Choix : le salon ne stocke que la configuration et la liste des
+actions ; l'état se reconstruit par `replay`. Le serveur ne lit jamais l'unité ni l'identité dans un
+message client. Raison : une seule source de vérité, un salon sérialisable et petit (environ 26 Ko),
+environ 1,3 ms par action (mesuré).
+
+**Version, contenu, taille** — Choix : `hello` porte la version du protocole et l'empreinte du
+contenu (équilibrage, héros, objets) ; messages limités à 4096 octets, schémas stricts. Raison :
+refuser un client dont le jeu diffère avant le combat plutôt que de diverger en plein combat.
+
+**Chrono, forfait, grâce** — Choix : chronos 20 / 30 / 45 / 60 s (30 par défaut) ; au dépassement,
+action par défaut annoncée `auto: 'timeout'` ; deux dépassements consécutifs = forfait ; déconnexion
+en plein combat = 60 s de grâce, le chrono continue, la plus ancienne échéance s'applique. Raison :
+un joueur absent ne bloque pas l'autre, une coupure courte ne coûte pas la partie.
+`claim_timeout` n'a aucun pouvoir propre (le serveur règle le temps à chaque événement).
+
+**Revanche** — Choix : une partie = un combat ; la revanche est un nouveau combat, mêmes équipes,
+priorité échangée, acceptée par les deux joueurs. Raison : équité de la priorité sur deux combats,
+aucun état à reconstruire entre deux équipes.
+
+**Émotes** — Choix : six émotes prédéfinies (0 à 5), une toutes les 1,5 s, aucun texte libre.
+Raison : pas de modération à écrire pour un mode entre amis.
+
+**Paliers de héros** — Choix : `tier` entier de 1 à 4 dans `heroSchema` (défaut 1, JSON de contenu
+non modifié, donc les six héros sont de palier I) ; budget de salon : aucun, ou un entier de 3 à 12.
+Raison : prépare l'équilibrage par palier sans toucher au contenu en cours de modification.
+
+**Talents libres dans le salon** — Contexte : le niveau d'un héros est ramené au plafond du salon.
+Choix : les talents du profil ne comptent pas, le client envoie l'allocation voulue, validée contre
+les points et les pages du niveau plafonné. Raison : le talent d'un joueur de niveau 30 n'a pas de
+sens à un niveau 10. Quand le plafond du salon est inférieur au niveau du joueur, le serveur ne
+tronque rien (`talents_over_budget`) : l'interface retire elle-même les derniers talents choisis
+(`trimTalents`, voir « Serveur et interface PvP » plus bas).
+
+**Propriété des héros non prouvée** — Contexte : les sauvegardes sont écrites par le client. Choix :
+`validateTeam` vérifie l'équipe contre le profil fourni par le serveur, sans prouver que ce profil a
+été gagné. Raison : acceptable entre amis ; à refaire (rejeu serveur, profil de salon fourni par le
+serveur) avant tout classement.
+
+**`@outlaw/net` pur** — Choix : un paquet sans Cloudflare ni DOM (un test balaie les sources), le
+réducteur reçoit l'heure, le tirage au sort et les profils dans son contexte. Raison : testable sans
+réseau, le Durable Object n'aura qu'à expédier les messages, stocker et programmer l'alarme.
+
+**Mesure d'équilibrage PvP** — Choix : `pnpm sim:pvp`, miroirs et combats croisés à graines fixes,
+politique « joueur moyen », sans objet, niveau 30 ; rapport seulement, propositions non appliquées,
+`baseline.csv` inchangé. Raison : le brief interdit de toucher au contenu ; mesurer sans corriger.
+Constat à la livraison : priorité dans la cible (51,5 à 52,3 %), durée hors cible si elle se compte
+en actions du moteur (77 ; 39 par joueur), `cendre` au-dessus et `pyra` / `maree` en dessous de la
+bande indicative.
+
+## PVP : serveur et interface (lot 11, sprint A2)
+
+**Un Durable Object par salon, dans le Worker existant** — Contexte : il faut un arbitre qui garde
+l'état entre deux messages et un chrono sans client. Choix : classe `PvpRoom` (SQLite, migration
+`v1-pvp`) dans le Worker des comptes, un objet par code de salon ; `RoomService` porte la logique avec
+horloge, tirage, stockage et sockets injectés. Raison : même déploiement, aucun service de plus ;
+logique testable sans Cloudflare ; le réducteur pur de `packages/net` fait tout le travail de règles.
+
+**Identité posée par le Worker, jamais par le client** — Choix : le Worker lit la session, réécrit
+toujours les en-têtes internes (compte, pseudo) et retire le cookie avant d'appeler le salon ; il
+compare `Origin` au site (les WebSocket échappent aux règles CORS) avant de réveiller quoi que ce
+soit. Raison : un client ne peut ni usurper un compte ni détourner la session d'un autre site ;
+refuser tôt évite de réveiller un salon pour rien.
+
+**Enregistrer avant d'envoyer** — Choix : le salon écrit son état dans le stockage, puis expédie les
+messages. Raison : après une éviction du Durable Object, aucun client n'a vu un état que le stockage
+ne retrouve pas.
+
+**WebSocket Hibernation et une alarme unique** — Choix : `acceptWebSocket` avec le joueur en étiquette,
+`ping` / `pong` automatique, une seule alarme réglée sur la plus proche échéance (chrono, grâce,
+inactivité de 30 min). Raison : un salon qui attend ne coûte rien ; le chrono vit côté serveur.
+
+**Une connexion par joueur, débit borné** — Choix : une nouvelle connexion remplace l'ancienne (code 4000) ; au-delà de 60 messages en 5 s la connexion est fermée (4008) ; création limitée à 20 salons par
+heure et 30 connexions par minute et par compte. Raison : un onglet oublié ne bloque pas le joueur ;
+un client fou ne monopolise pas le salon. La limite de 30 messages envisagée d'abord a été relevée
+après qu'un test de fumée l'a dépassée en rejouant un combat entier.
+
+**Profil lu dans la sauvegarde en ligne** — Choix : à chaque `set_team`, le salon lit `saves` (D1) du
+compte ; avant de créer un salon, le client pousse son profil local si le compte n'a pas encore de
+sauvegarde. Raison : le serveur valide contre ce qu'il connaît, pas contre ce que dit le client ; sans
+cette poussée, un compte neuf aurait répondu `no_profile`. Limite inchangée : propriété non prouvée.
+
+**Client en lecture seule du combat** — Choix : le client n'applique une action que lorsque le
+serveur l'annonce (`applied`), vérifie l'empreinte avec un état local rejoué, demande `resync`
+(deux fois au plus) en cas d'écart. Raison : le serveur reste la seule source de vérité, un clic n'a
+jamais d'effet local avant confirmation, une désynchronisation se rattrape sans recharger.
+
+**Réutiliser l'écran de combat solo** — Choix : `CombatView` accepte une configuration `pvp`
+(chrono, pseudos, émotes, attente), `useBattle` gagne `apply` / `restore` ; le combat solo n'est pas
+modifié. Raison : une seule interface de combat à entretenir. Conséquence assumée : le camp n'est pas
+inversé pour le joueur 2.
+
+**Reprise par code, pas par écran** — Choix : la coupure de réseau est rattrapée par une reconnexion
+avec attente croissante (jusqu'à 75 s) ; un rechargement de page ramène au hub et la reprise se fait en
+ressaisissant le code ; le lien `#salon=CODE` est consommé une fois. Raison : pas de route persistée à
+sécuriser pour une première version entre amis ; le serveur retient la place pendant la grâce.
+
+**Pas de traduction des erreurs de connexion** — Choix : salon inconnu, plein ou serveur muet donnent le
+même message (« Impossible de rejoindre ce salon »). Raison : un WebSocket refusé n'expose pas son
+code HTTP au navigateur ; distinguer demanderait un appel de plus.
+
+## PVP : remise à jour après les équipes de quatre et le grind
+
+**La taille d'équipe du PvP est celle du jeu** — Contexte : les salons dataient d'avant le lot 13 et
+fixaient trois héros à plusieurs endroits (validation, schémas, salle d'attente, simulation, tests).
+Choix : `teamSizeOf(balance)` (`balance.progression.teamSize`, 4) pour l'équipe, `MAX_SIDE` de
+`@outlaw/data` pour les bornes des schémas ; aucun nombre de héros dans le code du PvP. Raison :
+même règle que le lot 13, changer la taille d'équipe redevient un nombre dans `balance.json`.
+
+**Budget de paliers borné par la taille d'équipe** — Choix : la forme des règles ne change pas
+(`tierBudget` : entier ou null) ; le schéma borne largement (1 à `MAX_SIDE` × 4) et le salon refuse
+(`bad_schema`) un budget hors de `teamSize` à `teamSize` × 4 (4 à 16). Le champ `tier` des héros garde
+exactement sa forme. Raison : un budget sous `teamSize` refuserait toute équipe ; les bornes suivent
+la donnée sans figer 3 ni 4 dans un schéma.
+
+**Pas de combat automatique en duel** — Contexte : le bouton Auto (solo) est un réglage de l'appareil,
+retenu d'un combat à l'autre. Choix : en duel, ni bouton ni touche A ; le réglage est ignoré. Raison :
+un duel entre amis se joue à la main ; le chrono du serveur joue déjà l'action par défaut d'un joueur
+absent, et deux dépassements valent forfait.
+
+**Entrée « PvP » au camp, compte exigé et expliqué** — Contexte : le propriétaire ne trouvait pas le
+mode. Choix : l'entrée du camp s'appelle « PvP » (l'écran garde le titre « Duel en ligne ») ; en invité,
+l'écran dit que le duel exige un compte et pourquoi (le salon lit la sauvegarde en ligne), puis ouvre
+la connexion ou l'inscription sur place (l'ancien bouton ouvrait les options, sans formulaire de
+connexion). Pas d'entrée sur l'écran-titre : `docs/PVP.md` place le mode au camp. Raison : le joueur
+voit le mode, comprend ce qui manque et le règle sans quitter l'écran.
+
+**`sim:pvp` mesure un échantillon de compositions** — Contexte : 25 héros font 12 650 équipes de
+quatre, soit des centaines de milliers de combats pour mesurer toutes les paires. Choix : `--teams`
+(24 par défaut) compositions tirées par `sampleTeams` (graine fixe, chaque héros dans à peu près
+autant d'équipes), comme les règles de la simulation PvE. Raison : un rapport en moins d'une minute,
+reproductible ; le taux par héros devient indicatif (350 à 760 combats chacun).
+
 ## Lot 9 — amélioration graphique
 
 **Habillage par CSS et tuiles plutôt que par écrans peints** — Contexte : les menus étaient des

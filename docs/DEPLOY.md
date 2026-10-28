@@ -69,6 +69,18 @@ plan Workers Paid (30 s par défaut). Voir `docs/DECISIONS.md`.
 
 Réinitialiser un mot de passe : `docs/ACCOUNTS.md`.
 
+## PvP (lot 11) : Durable Object
+
+Le salon PvP est un Durable Object SQLite (`PvpRoom`, liaison `PVP`). La migration `v1-pvp` de
+`wrangler.jsonc` le crée au premier déploiement : **rien à faire**, mais cette migration ne se défait
+pas simplement, donc elle ne doit pas être renommée. Sur le plan gratuit, seuls les Durable Objects
+SQLite existent (ce que déclare la migration), avec des plafonds quotidiens (100 000 requêtes,
+13 000 Go-s de durée, 100 000 lignes écrites, remise à zéro à 00:00 UTC) : au-delà, les opérations
+échouent. Consommation réelle non mesurée : à surveiller dès que le mode est utilisé
+([tarifs](https://developers.cloudflare.com/durable-objects/platform/pricing/)). Les salons ne touchent
+pas à D1 (lecture seule de la table `saves`). Vérifier après le déploiement : se connecter à deux
+comptes, créer un salon, le rejoindre (voir « Jouer à deux » dans [`PVP.md`](PVP.md)).
+
 ## Vérifier en local
 
 ```sh

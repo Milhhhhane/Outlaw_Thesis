@@ -19,6 +19,7 @@
     "test": "pnpm -r --workspace-concurrency=1 test",
     "sim": "pnpm --filter @outlaw/sim sim",
     "sim:check": "pnpm --filter @outlaw/sim check",
+    "sim:pvp": "pnpm --filter @outlaw/sim pvp",
     "size": "node scripts/check-bundle-size.mjs",
     "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm sim:check && pnpm build && pnpm size && pnpm e2e",
     "verify:fast": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm sim:check && pnpm build && pnpm size",

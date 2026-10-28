@@ -82,6 +82,11 @@
   (brûlure, marque, étourdissement), mort par dissolution. Tout en CSS et sprites générés, piloté
   par la vue rejouée ; durées à l'échelle de la vitesse ; tests dans
   `apps/web/test/stage-sim.test.tsx`.
+- PvP, salon personnalisé (« Duel en ligne ») : moteur (règles de combat, action par défaut,
+  empreinte d'état), protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`),
+  interface (salon, équipe, combat en direct, émotes, revanche, reprise). Remis à jour après le
+  grind : équipes de `teamSize` (4) héros, entrée « PvP » au camp. Ouvert : équilibrage PvP (voir
+  `docs/PVP.md`), propriété des héros non prouvée.
 
 - Silhouettes des héros — 18 héros récents habillés d'une coiffe ou d'un accessoire dessiné
   (`tools/art/looks.py`), palettes franches, armes mieux réparties ; aucune paire de héros n'a la
