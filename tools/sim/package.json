@@ -17,7 +17,8 @@
     "heroes": "tsx src/heroes.ts",
     "economy": "tsx src/economy.ts",
     "pvp": "tsx src/pvp-cli.ts",
-    "tower": "tsx src/tower-cli.ts"
+    "tower": "tsx src/tower-cli.ts",
+    "boss": "tsx src/boss-cli.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

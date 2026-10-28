@@ -73,6 +73,10 @@ function validateRules(rules: BattleRules): void {
   if (!limits.includes(rules.limit)) {
     throw new InvalidSetupError(`règles : limite inconnue « ${rules.limit} »`);
   }
+  const limit = rules.actionLimit;
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+    throw new InvalidSetupError(`règles : limite d'actions invalide (${String(limit)})`);
+  }
 }
 
 export function validateSetup(setup: BattleSetup): void {
@@ -333,7 +337,7 @@ function settle(draft: Draft): void {
   while (draft.result === null) {
     const actor = nextActor(draft.units, rulesOf(draft).firstSide);
     if (actor === null) throw new InvalidSetupError('aucune unité vivante');
-    if (draft.actionCount >= draft.balance.combat.actionLimit) {
+    if (draft.actionCount >= (rulesOf(draft).actionLimit ?? draft.balance.combat.actionLimit)) {
       finish(draft, limitResult(draft));
       return;
     }

@@ -130,6 +130,52 @@
       "bossChests": ["bronze", "silver", "silver", "gold", "gold"]
     }
   },
+  "boss": {
+    "bosses": ["pyre_tyrant", "tidal_hydra", "grove_colossus"],
+    "attemptsPerDay": 3,
+    "actionLimit": 50,
+    "difficulties": [
+      {
+        "level": 10,
+        "unlockLevel": 8,
+        "hpPct": 1500,
+        "atkPct": 150,
+        "gear": { "items": 0, "upgrade": 0 },
+        "thresholds": [1100, 1700, 2200, 2700]
+      },
+      {
+        "level": 18,
+        "unlockLevel": 17,
+        "hpPct": 1500,
+        "atkPct": 200,
+        "gear": { "items": 0, "upgrade": 0 },
+        "thresholds": [1600, 2100, 2800, 3500]
+      },
+      {
+        "level": 25,
+        "unlockLevel": 22,
+        "hpPct": 1500,
+        "atkPct": 300,
+        "gear": { "items": 2, "upgrade": 0 },
+        "thresholds": [1900, 2900, 4200, 4600]
+      },
+      {
+        "level": 30,
+        "unlockLevel": 30,
+        "hpPct": 1500,
+        "atkPct": 400,
+        "gear": { "items": 2, "upgrade": 2 },
+        "thresholds": [2100, 3100, 4200, 4800]
+      }
+    ],
+    "rewards": [
+      { "dust": 3, "fragments": 0, "chest": null },
+      { "dust": 4, "fragments": 1, "chest": null },
+      { "dust": 5, "fragments": 0, "chest": "bronze" },
+      { "dust": 6, "fragments": 0, "chest": "silver" }
+    ],
+    "fragmentChest": "bronze"
+  },
   "economy": {
     "replayRewardRate": 1,
     "loot": {
@@ -200,6 +246,11 @@
     "tower": {
       "expertMin": 0.5,
       "tolerance": 0.15
+    },
+    "boss": {
+      "firstReach": 0.5,
+      "lastReach": 0.25,
+      "bareReach": 0.1
     }
   }
 }
