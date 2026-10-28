@@ -33,7 +33,7 @@ export function tierGear(content: Content, tier: number): { items: number; upgra
 }
 
 /** Deux objets distincts tirés au hasard, au niveau d'amélioration demandé. */
-function randomItems(
+export function randomItems(
   content: Content,
   gear: { items: number; upgrade: number },
   rng: Rng,

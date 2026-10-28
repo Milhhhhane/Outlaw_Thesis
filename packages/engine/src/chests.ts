@@ -115,12 +115,33 @@ export function openChest(
 ): Outcome<{ profile: Profile; report: ChestReport }> {
   const size = chestSize(content, tier);
   if (size === null || (profile.chests[tier] ?? 0) < 1) return refuse('no_chest');
-  const weights = drawWeights(content, tier, focusOf(content, profile));
+  const { profile: drawnProfile, drawn } = drawFragments(content, profile, tier, size);
+  const grimoires = content.balance.spellLevels.grimoires.chests[tier] ?? 0;
+  return ok({
+    profile: {
+      ...drawnProfile,
+      grimoires: profile.grimoires + grimoires,
+      chests: { ...profile.chests, [tier]: (profile.chests[tier] ?? 0) - 1 },
+    },
+    report: { tier, fragments: drawn, grimoires },
+  });
+}
 
+/**
+ * Tire `count` fragments avec les poids du coffre `chest` (héros ciblé compris) et les ajoute au
+ * profil ; la graine avance d'un tirage par fragment. Sert aux coffres et aux étages de la tour.
+ */
+export function drawFragments(
+  content: Content,
+  profile: Profile,
+  chest: string,
+  count: number,
+): { profile: Profile; drawn: string[] } {
+  const weights = drawWeights(content, chest, focusOf(content, profile));
   let seed = profile.seed;
   const drawn: string[] = [];
   const fragments = { ...profile.fragments };
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < count; i++) {
     // Un tirage par fragment, toujours : le ciblage ne change pas la suite de la graine.
     const roll = nextRandom(seed);
     seed = roll.seed;
@@ -128,17 +149,7 @@ export function openChest(
     drawn.push(hero);
     fragments[hero] = (fragments[hero] ?? 0) + 1;
   }
-  const grimoires = content.balance.spellLevels.grimoires.chests[tier] ?? 0;
-  return ok({
-    profile: {
-      ...profile,
-      seed,
-      fragments,
-      grimoires: profile.grimoires + grimoires,
-      chests: { ...profile.chests, [tier]: (profile.chests[tier] ?? 0) - 1 },
-    },
-    report: { tier, fragments: drawn, grimoires },
-  });
+  return { profile: { ...profile, seed, fragments }, drawn };
 }
 
 /** Héros ciblé par les coffres (null : pur hasard). */

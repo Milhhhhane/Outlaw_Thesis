@@ -58,6 +58,7 @@ describe('écran-titre et camp', () => {
       speed: 'fast',
       animations: false,
       auto: false,
+      towerClimb: false,
     });
     expect(document.documentElement.dataset.motion).toBe('off');
     await user.keyboard('{Escape}');

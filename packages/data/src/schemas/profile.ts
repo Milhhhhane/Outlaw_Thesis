@@ -89,6 +89,11 @@ export const profileSchema = z.strictObject({
   grimoires: nonNegInt.default(0),
   /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
   focus: idSchema.nullable().default(null),
+  /**
+   * Tour à étages : plus haut étage battu (0 : aucun). On tente l'étage suivant ou on rejoue un
+   * étage battu. Absent des anciennes sauvegardes.
+   */
+  tower: z.strictObject({ cleared: nonNegInt }).default({ cleared: 0 }),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });

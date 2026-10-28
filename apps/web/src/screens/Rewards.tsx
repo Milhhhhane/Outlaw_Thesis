@@ -13,7 +13,7 @@ import { dungeonTitle, dustName, names, t, tk } from '../i18n';
 import { ChestArt } from './Chests';
 import { Glossed } from '../game/Glossed';
 
-function Card({
+export function Card({
   index,
   className,
   title,
@@ -36,7 +36,7 @@ function Card({
 }
 
 /** Fond de fin de donjon : le décor, assombri. */
-function Backdrop({ scene }: { readonly scene: string }) {
+export function Backdrop({ scene }: { readonly scene: string }) {
   return (
     <div
       className="end__scene"
@@ -206,12 +206,16 @@ export function RunEnd({
   text,
   onRetry,
   onBack,
+  retryLabel,
+  backLabel,
 }: {
   readonly scene: string;
   readonly title: string;
   readonly text: string;
   readonly onRetry: () => void;
   readonly onBack: () => void;
+  readonly retryLabel?: string;
+  readonly backLabel?: string;
 }) {
   const first = useRef<HTMLButtonElement>(null);
   useEscape(onBack);
@@ -225,10 +229,10 @@ export function RunEnd({
       <p className="end__text">{text}</p>
       <div className="outcome__buttons">
         <Button ref={first} size="large" onClick={onRetry}>
-          {t('run.retry')}
+          {retryLabel ?? t('run.retry')}
         </Button>
         <Button variant="quiet" size="large" onClick={onBack}>
-          {t('run.back')}
+          {backLabel ?? t('run.back')}
         </Button>
       </div>
     </main>

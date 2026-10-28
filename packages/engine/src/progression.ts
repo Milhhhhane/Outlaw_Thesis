@@ -43,7 +43,9 @@ export type Refusal =
   | 'not_enough_xp'
   | 'tier_locked'
   | 'not_enough_grimoires'
-  | 'max_spell_level';
+  | 'max_spell_level'
+  | 'unknown_floor'
+  | 'floor_locked';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -110,6 +112,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     chests: {},
     grimoires: 0,
     focus: null,
+    tower: { cleared: 0 },
     testMode: false,
   };
 }
