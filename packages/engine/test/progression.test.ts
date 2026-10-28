@@ -52,6 +52,7 @@ describe('profil', () => {
       items: [null, null],
       freeRespecUsed: false,
       stars: 0,
+      awakened: false,
     });
     expect(profile.fragments).toEqual({});
     expect(profile.chests).toEqual({});
