@@ -955,3 +955,11 @@ restent, l'image le dit d'un coup d'œil.
 après la chute, dissolution en cendres de son élément, puis plus rien ; le repère « Hors
 combat » reste. Raison : la dissolution lit la mort sans ambiguïté et libère la scène à quatre
 contre quatre ; qui est tombé reste écrit.
+
+## Classes CSS du combat
+
+**Préfixer les couches de la scène** — Contexte : la couche d'effets du combat (animations) avait
+reçu la classe `.effects`, déjà utilisée par les listes d'effets des fiches ; tout le CSS étant
+chargé ensemble, ces listes devenaient flottantes et recouvraient l'onglet Talents. Choix : les
+couches de la scène de combat portent le préfixe `stage__` (`.stage__effects`). Raison : un nom
+générique partagé entre deux écrans casse l'autre sans erreur ; le préfixe de bloc l'évite.

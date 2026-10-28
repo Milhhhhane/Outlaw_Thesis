@@ -25,9 +25,17 @@ Tâche demandée par l'utilisateur (peut être vide) : $ARGUMENTS
    `docs/DECISIONS.md` si une règle de jeu ou d'architecture a été tranchée (contexte, choix,
    raison, comme les entrées existantes). Puis commit sur la branche (message en français,
    impératif, une ligne + détail) et PR vers `main` dont la description contient le rapport du
-   dev et le verdict de l'évaluateur. Ne fusionne jamais toi-même.
+   dev et le verdict de l'évaluateur.
 7. Si `gh pr create` échoue (GraphQL bloqué dans certains environnements), utilise l'API REST :
-   `gh api repos/<owner>/<repo>/pulls --input pr.json` avec `{"title","head","base":"main","body"}`.
+   `gh api repos/<owner>/<repo>/pulls --input pr.json` avec `{"title","head","base":"main","body"}`
+   (nom de fichier unique si plusieurs agents travaillent en même temps).
+8. **Fusion, par toi** (décision du propriétaire) : attends la CI de la PR. Dès que les deux
+   checks « Vérification » (Ubuntu et Windows) sont verts, fusionne :
+   `gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge -f merge_method=merge -f sha=<sha de tête>`.
+   Le check « Workers Builds » échoue sur toute branche hors `main` : ignore-le. Si la CI est
+   rouge, renvoie l'échec à `dev` (compte dans les 2 allers-retours) ; si la PR est en conflit avec
+   `main`, fusionne `origin/main` dans la branche, revérifie, pousse, puis attends la CI à nouveau.
+   Ne fusionne jamais une PR rouge ni une PR dont l'évaluateur a rendu KO.
 
 ## Règles
 
@@ -35,4 +43,5 @@ Tâche demandée par l'utilisateur (peut être vide) : $ARGUMENTS
 - Un dev à la fois, un évaluateur à la fois : pas de parallélisme sur cette boucle.
 - Si le dev signale un doute d'équilibrage ou un `sim:check` rouge, c'est **toi** qui décides si la
   baseline doit être mise à jour, et tu l'expliques à l'utilisateur avant de le faire.
-- Fin de boucle : un résumé de 5 lignes max à l'utilisateur (tâche, verdict, lien PR, ce qui reste).
+- Fin de boucle : un résumé de 5 lignes max à l'utilisateur (tâche, verdict, lien PR, fusionnée ou
+  non, ce qui reste).

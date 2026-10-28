@@ -315,7 +315,8 @@ test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance',
   await expect(auto).toHaveAttribute('aria-pressed', 'true');
   const heading = page.getByRole('heading', { level: 1 });
   for (let room = 1; room <= 3; room++) {
-    await expect(heading).toContainText(`combat ${room} sur 3`, { timeout: 10_000 });
+    // Le décompte dure 5 s : l'attente par défaut (5 s) de Playwright est trop juste sous charge.
+    await expect(heading).toContainText(`combat ${room} sur 3`, { timeout: 15_000 });
     await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('.outcome')).toContainText('Victoire');
     // Le décompte : chiffre, phrase, bouton, le tout dans la fenêtre ; puis la suite sans clic.

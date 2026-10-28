@@ -227,7 +227,7 @@ function Effects({ unit, flash }: { readonly unit: UnitView; readonly flash: Fla
   const fx = flash.fx === null ? undefined : sprite(flash.fx);
   return (
     <div
-      className="effects"
+      className="stage__effects"
       style={{ left: x - info.w / 2, top: y - info.bottom, width: info.w, height: info.h }}
     >
       {fx !== undefined && flash.fx !== null && (
