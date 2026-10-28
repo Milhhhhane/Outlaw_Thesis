@@ -305,7 +305,9 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
 });
 
-test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance', async ({ page }) => {
+test('mode Auto : les salles s’enchaînent seules, puis le passage suivant de la série', async ({
+  page,
+}) => {
   test.skip(portrait(page), 'portrait');
   test.skip(
     (page.viewportSize()?.width ?? 0) !== 1280 && (page.viewportSize()?.width ?? 0) !== 844,
