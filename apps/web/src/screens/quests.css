@@ -29,6 +29,8 @@
 .quest-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  /* Hauteur de chaque ligne = son contenu (sinon le défilement l'écrase à min-height). */
+  grid-auto-rows: max-content;
   flex: 1;
   align-content: start;
   gap: 4px;
