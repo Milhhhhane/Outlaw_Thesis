@@ -1164,3 +1164,15 @@ que de 2 à 5 % ; la composition de l'équipe pèse ±30 %. Une règle « attein
 une amélioration de moins » est donc impossible à tenir. Choix (`targets.boss`) : le dernier palier
 de la difficulté 4 est atteint par ≥ 25 % des combats de l'expert équipé au maximum et par ≤ 10 %
 sans objets. À rouvrir si les objets gagnent un effet sur les dégâts.
+
+## Confort de farm (MaJ 1/7)
+
+**Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le
+même donjon sans fin dès qu'Auto était coché ; les séries rendent le nombre de passages explicite.
+Choix : un passage = pas de relance ; 3, 5, 10 ou ∞ = série jouée en Auto, close par un bilan ; une
+défaite termine la série et mène au bilan. Raison : le joueur décide de combien il farme et voit
+ce qu'il a gagné, comme les multi-combats des jeux du genre.
+
+**Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
+fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
+Raison : une seule source de vérité, testable sans écran.

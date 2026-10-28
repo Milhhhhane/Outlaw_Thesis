@@ -157,6 +157,46 @@ export function Tabs<K extends string>({
   );
 }
 
+/** Groupe de boutons exclusifs (un seul pressé) : remplace les menus déroulants natifs. */
+export function Choice<T>({
+  label,
+  options,
+  value,
+  onChange,
+  text,
+  describe,
+  className,
+}: {
+  readonly label: string;
+  readonly options: readonly T[];
+  readonly value: T;
+  readonly onChange: (value: T) => void;
+  readonly text: (option: T) => string;
+  /** Nom complet d'une option, quand le texte affiché est abrégé (« ∞ »). */
+  readonly describe?: (option: T) => string;
+  readonly className?: string;
+}) {
+  return (
+    <div className={['choice', className ?? ''].join(' ')} role="group" aria-label={label}>
+      {options.map((option) => (
+        <Button
+          key={String(option)}
+          size="small"
+          variant={option === value ? 'primary' : 'quiet'}
+          aria-pressed={option === value}
+          aria-label={describe?.(option)}
+          title={describe?.(option)}
+          onClick={() => {
+            onChange(option);
+          }}
+        >
+          {text(option)}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 /** Sélecteur de nombre du jeu (remplace les menus déroulants natifs). */
 export function Stepper({
   label,

@@ -1,21 +1,49 @@
-import { dungeonOpen, heroBuild, setLevel, setTeam, tierOpen } from '@outlaw/engine';
+import {
+  dungeonOpen,
+  FARM_RUNS,
+  heroBuild,
+  setLevel,
+  setTeam,
+  tierOpen,
+  type FarmRuns,
+} from '@outlaw/engine';
 import { useState } from 'react';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
+import { HeroFilters } from '../game/HeroFilters';
+import { heroList } from '../game/heroList';
 import { useGame } from '../game/nav';
+import { useOptions } from '../game/options';
 import { Rarity } from '../game/Rarity';
-import { Button, Panel, Screen, Stepper } from '../game/ui';
+import { Button, Choice, Panel, Screen, Stepper } from '../game/ui';
 import { dungeonTitle, names, t, tk } from '../i18n';
+import { Presets } from './Presets';
 import { shareUrl } from '../save/share';
 import { useProfile } from '../state/profile';
 
 const MAX_TEAM = content.balance.progression.teamSize;
 
-/** Composition : `teamSize` emplacements, les héros débloqués en dessous. */
+const runsText = (runs: FarmRuns): string =>
+  runs === 'energy' ? t('farm.runs.energy') : String(runs);
+const runsLong = (runs: FarmRuns): string =>
+  runs === 'energy' ? t('farm.runs.energy.long') : t('farm.runs.n', { n: runs });
+
+/**
+ * Composition : `teamSize` emplacements et les équipes enregistrées, les héros débloqués en
+ * dessous (triés et filtrés). Avant un donjon : le nombre de passages joués d'affilée en Auto.
+ */
 export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly tier?: number }) {
   const { go } = useGame();
   const { profile, apply } = useProfile();
+  const { options, set } = useOptions();
+  const roster = heroList(
+    content,
+    profile,
+    options.heroView,
+    names.hero,
+    content.heroes.filter((h) => profile.unlocked.includes(h.id)),
+  );
   const [copied, setCopied] = useState(false);
   const test = profile.testMode;
   const back = (): void => {
@@ -50,53 +78,59 @@ export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly ti
       onBack={back}
       className="team"
     >
-      <div className="team__slots">
-        {Array.from({ length: MAX_TEAM }, (_, slot) => {
-          const id = profile.team[slot];
-          if (id === undefined) {
+      <div className="team__top">
+        <div className="team__slots">
+          {Array.from({ length: MAX_TEAM }, (_, slot) => {
+            const id = profile.team[slot];
+            if (id === undefined) {
+              return (
+                <div key={slot} className="team__slot team__slot--empty">
+                  <span>{t('team.slot.empty')}</span>
+                  <span className="hint">{t('team.slot.hint')}</span>
+                </div>
+              );
+            }
+            const def = content.heroById.get(id);
             return (
-              <div key={slot} className="team__slot team__slot--empty">
-                <span>{t('team.slot.empty')}</span>
-                <span className="hint">{t('team.slot.hint')}</span>
-              </div>
+              <button
+                key={id}
+                type="button"
+                className={`team__slot element-${def?.element ?? 'fire'} rarity-${String(def?.tier ?? 1)}`}
+                aria-label={t('team.remove', { hero: names.hero(id) })}
+                onClick={() => {
+                  toggle(id);
+                }}
+              >
+                <PixelSprite name="pedestal" className="pedestal" />
+                <span className="team__sprite">
+                  <HeroSprite name={id} idle />
+                </span>
+                <span className="team__name">
+                  {names.hero(id)} <Rarity tier={def?.tier ?? 1} short />
+                </span>
+                <span className="team__meta">
+                  {t('hub.level', { level: profile.heroes[id]?.level ?? 1 })} ·{' '}
+                  {tk(`element.${def?.element ?? 'fire'}`)}
+                </span>
+                <span className="team__remove" aria-hidden="true">
+                  ✕
+                </span>
+              </button>
             );
-          }
-          const def = content.heroById.get(id);
-          return (
-            <button
-              key={id}
-              type="button"
-              className={`team__slot element-${def?.element ?? 'fire'} rarity-${String(def?.tier ?? 1)}`}
-              aria-label={t('team.remove', { hero: names.hero(id) })}
-              onClick={() => {
-                toggle(id);
-              }}
-            >
-              <PixelSprite name="pedestal" className="pedestal" />
-              <span className="team__sprite">
-                <HeroSprite name={id} idle />
-              </span>
-              <span className="team__name">
-                {names.hero(id)} <Rarity tier={def?.tier ?? 1} short />
-              </span>
-              <span className="team__meta">
-                {t('hub.level', { level: profile.heroes[id]?.level ?? 1 })} ·{' '}
-                {tk(`element.${def?.element ?? 'fire'}`)}
-              </span>
-              <span className="team__remove" aria-hidden="true">
-                ✕
-              </span>
-            </button>
-          );
-        })}
+          })}
+        </div>
+        <Presets />
       </div>
+
+      <HeroFilters shown={roster.length} ownedFilter={false} />
 
       <Panel className="team__roster" label={t('team.roster')}>
         <ul className="roster">
-          {profile.unlocked.map((id) => {
-            const def = content.heroById.get(id);
+          {roster.length === 0 && <li className="hint">{t('filter.none')}</li>}
+          {roster.map((def) => {
+            const { id } = def;
             const hero = profile.heroes[id];
-            if (def === undefined || hero === undefined) return null;
+            if (hero === undefined) return null;
             const inTeam = profile.team.includes(id);
             return (
               <li
@@ -187,12 +221,30 @@ export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly ti
             </Button>
           </div>
         )}
+        {dungeon !== undefined && !test && (
+          <div className="team__runs">
+            <span className="hint">{t('farm.runs')}</span>
+            <Choice
+              label={t('farm.runs.label')}
+              options={FARM_RUNS}
+              value={options.runs}
+              onChange={(runs) => {
+                set({ runs });
+              }}
+              text={runsText}
+              describe={runsLong}
+            />
+          </div>
+        )}
         {dungeon !== undefined && (
           <Button
             size="large"
             disabled={!canGo}
             onClick={() => {
-              go({ name: 'dungeon', id: dungeon, tier });
+              // Une série se joue en Auto : le mode est coché pour elle (et reste réglé ensuite).
+              const runs = test ? 1 : options.runs;
+              if (runs !== 1) set({ auto: true });
+              go({ name: 'dungeon', id: dungeon, tier, runs });
             }}
           >
             {t('team.go', { dungeon: dungeonTitle(dungeon, tier) })} ▶

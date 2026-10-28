@@ -176,6 +176,16 @@ journal complet (`Model.journal` de `useBattle`) à `finish.onClick` et `finish.
 `tools/sim/test/boss.test.ts`, lecture `pnpm --filter @outlaw/sim boss`) et le modèle `boss` de
 `economy.ts`.
 
+Le confort de farm est dans `packages/engine/src/farm.ts` : équipes enregistrées (`savePreset`,
+`loadPreset`, `presetMissing`, champ `presets` du profil, absent des anciennes sauvegardes),
+choses à faire au camp (`campTodo`, `heroTodo`, `canUpgradeItem` : badges de `screens/Hub.tsx`),
+séries de passages (`farmTarget`, `seriesNext`) et leur bilan (`summarizeSeries`, qui additionne
+les `DungeonReport`). L'écran d'équipe choisit le nombre de passages (option `runs`, passé à la
+route `dungeon`) ; `DungeonRun` garde les rapports, `Rewards` enchaîne le passage suivant et
+`screens/Recap.tsx` affiche le bilan. Le tri et les filtres de la galerie et du vivier
+(`game/heroList.ts`, `game/HeroFilters.tsx`) ne sont que de l'ordre d'affichage, retenu dans les
+options de l'appareil (`heroView`).
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille
