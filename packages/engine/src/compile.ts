@@ -34,6 +34,8 @@ export interface HeroBuild {
   readonly items: readonly EquippedItem[];
   /** Niveau de chaque sort (montée des sorts) ; absent : tous au niveau 1. */
   readonly spells?: Readonly<SpellLevels>;
+  /** Héros éveillé : `balance.awakening` (stats et passif). Absent : non éveillé. */
+  readonly awakened?: boolean;
 }
 
 type ScalableField = 'power' | 'duration' | 'amount' | 'percent';
@@ -341,10 +343,18 @@ export function compileHero(
     }
   }
   const leveled = statsAtLevel(hero.stats, build.level, growth.hero, maxLevel);
+  // L'éveil s'ajoute hors du plafond des objets : son propre pourcentage est borné par le schéma.
+  const { awakening } = balance;
+  const awake = build.awakened === true;
+  const extra = awake ? awakening.statPct : 0;
   const withBonus = (value: number, pct: number): number =>
-    Math.round(value * (1 + Math.min(itemRules.statCapPct, pct) / 100));
+    Math.round(value * (1 + (Math.min(itemRules.statCapPct, pct) + extra) / 100));
 
-  const passive = applyItems(hero.passive.triggers, equipped, balance);
+  // Les modifications de passif de l'éveil passent par le même chemin que celles des objets.
+  const awakeMods: [Item, number][] = awake
+    ? [[{ id: 'awakening', rarity: 'common', mods: awakening.mods }, 0]]
+    : [];
+  const passive = applyItems(hero.passive.triggers, [...equipped, ...awakeMods], balance);
   return {
     id: unitId(placement),
     kind: hero.id,
@@ -366,6 +376,7 @@ export function compileHero(
     ],
     controller: 'policy',
     script: [],
+    ...(awake ? { awakened: true as const } : {}),
   };
 }
 

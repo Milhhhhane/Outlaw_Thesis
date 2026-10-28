@@ -53,6 +53,7 @@ describe('profil', () => {
       freeRespecUsed: false,
       stars: 0,
       spells: { basic: 1, a: 1, b: 1, ult: 1 },
+      awakened: false,
     });
     expect(profile.fragments).toEqual({});
     expect(profile.chests).toEqual({});

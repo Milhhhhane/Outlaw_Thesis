@@ -16,6 +16,7 @@ export const BASE_SPELL_LEVELS: SpellLevels = Object.freeze({ basic: 1, a: 1, b:
 
 const nonNegInt = z.number().int().min(0);
 const posInt = z.number().int().min(1);
+const essenceStock = z.tuple([nonNegInt, nonNegInt, nonNegInt]);
 
 /** Progression d'un héros. Les objets sont référencés par l'uid de l'exemplaire possédé. */
 export const heroProgressSchema = z.strictObject({
@@ -34,6 +35,8 @@ export const heroProgressSchema = z.strictObject({
   stars: nonNegInt.default(0),
   /** Niveau de chaque sort (montée des sorts). Absent des anciennes sauvegardes : tous au niveau 1. */
   spells: spellLevelsSchema.default(BASE_SPELL_LEVELS),
+  /** Éveil payé (une fois par héros). Absent des anciennes sauvegardes. */
+  awakened: z.boolean().default(false),
 });
 export type HeroProgress = z.infer<typeof heroProgressSchema>;
 
@@ -118,6 +121,20 @@ export const profileSchema = z.strictObject({
    * étage battu. Absent des anciennes sauvegardes.
    */
   tower: z.strictObject({ cleared: nonNegInt }).default({ cleared: 0 }),
+  /**
+   * Essences par élément : [faible, moyenne, supérieure]. Elles paient l'éveil des héros du même
+   * élément. Absent des anciennes sauvegardes.
+   */
+  essences: z
+    .strictObject({ fire: essenceStock, water: essenceStock, nature: essenceStock })
+    .default({ fire: [0, 0, 0], water: [0, 0, 0], nature: [0, 0, 0] }),
+  /**
+   * Donjons d'essence : passages gagnants et palier atteint (comme `dungeons`, I par défaut).
+   * Absent des anciennes sauvegardes.
+   */
+  essenceDungeons: z
+    .record(idSchema, z.strictObject({ clears: nonNegInt, tier: posInt.default(1) }))
+    .default({}),
   /**
    * Boss de la semaine : semaine et jour UTC (`periodOf`) des valeurs gardées ; meilleurs dégâts et
    * paliers déjà payés cette semaine, par difficulté ; tentatives prises ce jour. Le moteur les

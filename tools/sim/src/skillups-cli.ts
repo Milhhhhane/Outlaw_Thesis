@@ -6,6 +6,7 @@
  */
 import { loadContent } from '@outlaw/data';
 import { evaluateRules, TEAM_SAMPLE } from './rules';
+import { withSpellLevel } from './builds';
 import { spellGap } from './skillups';
 
 const argv = process.argv.slice(2);
@@ -32,7 +33,9 @@ console.log(
 console.log(`  duels de la même équipe : les sorts au maximum gagnent ${pct(gap.duel)}`);
 
 if (argv.includes('--rules')) {
-  const rules = evaluateRules(content, 6, 1, spellLevels.max);
+  const rules = evaluateRules(content, 6, 1, {
+    dress: (builds) => builds.map((b) => withSpellLevel(b, spellLevels.max)),
+  });
   console.log(`Règles, tous les sorts au niveau ${String(spellLevels.max)} :`);
   console.log(
     `  R1 ${rules.r1.ok ? 'tenue' : 'NON TENUE'} : ${pct(rules.r1.rate)} (cible ≥ ${String(targets.r1MinWinRate * 100)} %)`,

@@ -24,6 +24,9 @@ export type Route =
   /** Tour à étages : la colonne des étages (étage choisi), puis le combat d'un étage. */
   | { readonly name: 'tower'; readonly floor?: number }
   | { readonly name: 'tower_run'; readonly floor: number }
+  /** Sanctuaires d'essence (depuis la carte), puis le passage d'un sanctuaire à un palier. */
+  | { readonly name: 'essences'; readonly dungeon?: string }
+  | { readonly name: 'essence_run'; readonly id: string; readonly tier: number }
   /** Boss de la semaine (depuis la tour) : difficulté choisie, puis son combat. */
   | { readonly name: 'boss'; readonly difficulty?: number }
   | { readonly name: 'boss_run'; readonly difficulty: number }

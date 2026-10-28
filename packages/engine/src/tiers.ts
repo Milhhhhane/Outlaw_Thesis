@@ -14,7 +14,11 @@ export function tierCount(content: Content): number {
 }
 
 /** Niveau des ennemis au palier donné : niveau conseillé + (palier − 1) × `levelsPerTier` (sans borne). */
-export function tierLevel(content: Content, dungeon: Dungeon, tier: number): number {
+export function tierLevel(
+  content: Content,
+  dungeon: Pick<Dungeon, 'recommendedLevel'>,
+  tier: number,
+): number {
   return dungeon.recommendedLevel + (tier - 1) * content.balance.tiers.levelsPerTier;
 }
 
@@ -42,7 +46,11 @@ export function tierEncounterPct(
 }
 
 /** Niveau visé par les héros à ce palier : celui des ennemis, borné au niveau maximum du jeu. */
-export function tierTargetLevel(content: Content, dungeon: Dungeon, tier: number): number {
+export function tierTargetLevel(
+  content: Content,
+  dungeon: Pick<Dungeon, 'recommendedLevel'>,
+  tier: number,
+): number {
   return Math.min(content.balance.progression.maxLevel, tierLevel(content, dungeon, tier));
 }
 

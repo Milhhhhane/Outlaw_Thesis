@@ -122,6 +122,13 @@
   avancement, fiche par compte. Reste au propriétaire : créer le secret dans Cloudflare
   (`docs/DEPLOY.md`).
 
+- Éveil et sanctuaires d'essence — trois donjons d'essence (un par élément, paliers I à III,
+  essences seulement), éveil une fois par héros (niveau 20, essences de son élément, or) : +4 %
+  de stats et passif +20 % par une formule commune ; badge et liseré en combat. Mesuré : écart
+  d'un héros éveillé ≤ 9 points, règles tenues avec tous éveillés, premier héros éveillé au 81ᵉ
+  passage et équipe au 137ᵉ (`economy`). Ouvert : pas de quête ni de succès d'éveil, essences non
+  échangeables entre éléments.
+
 - Boss de la semaine — rotation hebdomadaire de 3 boss, 4 difficultés, 3 tentatives par jour,
   paliers de dégâts payés une fois par semaine, accès depuis la tour, règles et effet économique
   en CI. Ouvert : l'équipement pèse peu sur les dégâts (voir DECISIONS) ; pas de classement.

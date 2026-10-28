@@ -168,6 +168,7 @@ function Actor(props: {
     dash === undefined ? '' : `actor--dash actor--dash-${dash.key % 2 === 0 ? 'a' : 'b'}`,
     props.targetable ? 'actor--targetable' : '',
     unit.alive ? '' : 'actor--down',
+    unit.awakened === true ? `actor--awakened awakened--${unit.element}` : '',
   ].join(' ');
   return (
     <div className={className} style={style} data-unit={unit.id}>

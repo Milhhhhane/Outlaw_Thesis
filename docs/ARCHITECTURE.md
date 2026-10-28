@@ -193,6 +193,16 @@ route `dungeon`) ; `DungeonRun` garde les rapports, `Rewards` enchaîne le passa
 (`game/heroList.ts`, `game/HeroFilters.tsx`) ne sont que de l'ordre d'affichage, retenu dans les
 options de l'appareil (`heroView`).
 
+L'éveil et les donjons d'essence sont dans `packages/engine/src/awakening.ts` (`essencesOpen`,
+`essenceTierOpen`, `essenceEncounter`, `essenceDrop`, `enterEssence`, `completeEssence`,
+`awakenCost`, `awaken`, `setAwakened`) ; l'effet est appliqué par `compileHero` quand le build porte
+`awakened` (`heroBuild` le recopie du profil), par la même fonction que les objets pour le passif.
+`UnitDef.awakened` ne sert qu'à l'affichage (liseré, classe `actor--awakened`). Contenu :
+`content/essences.json` (schéma `schemas/essences.ts`, `content.essenceDungeons`), chiffres dans
+`balance.awakening` ; écrans `screens/Essences.tsx` (depuis la carte) et `EssenceRun.tsx`, onglet
+« Éveil » de `HeroSheet.tsx`, textes `i18n/awakening.fr.json`. Simulation :
+`tools/sim/src/awakening.ts` (règles en CI) et l'option `AwakeningModel` de `economy.ts`.
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille

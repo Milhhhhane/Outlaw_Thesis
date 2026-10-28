@@ -332,3 +332,24 @@ Récompense de **première victoire** seulement (rejouer un étage ne rapporte r
   ils auraient payé 75 % des niveaux 1 à 7 de l'équipe (56 brutes) avant le moindre donjon.
 - Or et XP : rien. L'XP reste le rythme des donjons (le niveau se paie en XP et en poussière) ;
   l'or n'a déjà pas assez de puits.
+
+## Éveil et sanctuaires d'essence (2026-10-28)
+
+Nouvelle monnaie, **les essences** (par élément, trois qualités), qui n'a qu'une source et qu'un
+puits : les sanctuaires d'essence (ouverts après la Citadelle de cendre, premier passage moyen au
+42,9ᵉ passage gagnant) et l'éveil.
+
+| Sanctuaire, palier | Niveau des ennemis | Par victoire       |
+| ------------------ | -----------------: | ------------------ |
+| I                  |                 10 | 3 essences faibles |
+| II                 |                 15 | 3 moyennes         |
+| III                |                 20 | 2 supérieures      |
+
+Éveil : 15 faibles, 10 moyennes, 6 supérieures de l'élément du héros et **5 000 or**, au niveau 20,
+une fois par héros, soit 5 + 4 + 3 = 12 passages d'essence par héros au plus court (rien d'autre ne
+tombe : ni XP, ni or, ni poussière, ni objet, ni coffre). Le joueur modèle (`economy`, voir
+`docs/BALANCE.md`) éveille son premier héros au **81ᵉ passage** (dont 14,7 d'essence) et son équipe
+au **137ᵉ** (47 passages d'essence en tout ; l'équipe de départ compte deux héros de feu). L'or de
+l'éveil (20 000 pour l'équipe) est un nouveau puits, 8 % de l'or gagné jusqu'à la collection.
+Les jalons sans éveil (tableaux plus haut) sont inchangés : le calculateur ne joue l'éveil que
+sur demande (`AwakeningModel`).

@@ -14,6 +14,7 @@ import { evaluateRules } from './rules';
 import { randomBattles, sprint0Scenarios } from './scenarios';
 import { tiers } from './tiers';
 import { towerSim } from './tower';
+import { awakenAll, awakeningGap, essenceSim } from './awakening';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const baselinePath = join(root, 'baseline.csv');
@@ -34,6 +35,15 @@ const pace = pacing(content, option('--pace-runs', 48), option('--seed', 1));
 const tier = tiers(content, option('--tier-runs', 48), option('--seed', 1));
 // 32 équipes par étage : 1 600 combats, une dizaine de secondes (sim:check doit rester rapide).
 const tower = towerSim(content, option('--tower-runs', 32), option('--seed', 1));
+// Éveil : écart d'un héros éveillé (16 équipes par donjon tardif), donjons d'essence, et les règles
+// avec tous les héros éveillés (R1 sur 4 équipes : les duels coûtent cher).
+const gap = awakeningGap(content, option('--awakening-runs', 16), option('--seed', 1));
+const essence = essenceSim(content, option('--essence-runs', 32), option('--seed', 1));
+const awake = evaluateRules(content, option('--samples', 6), option('--seed', 1), {
+  dress: awakenAll,
+  r1Teams: 4,
+  prefix: 'awake_',
+});
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
@@ -42,6 +52,9 @@ const csv = toCsv([
   ...pace.rows,
   ...tier.rows,
   ...tower.rows,
+  ...gap.rows,
+  ...essence.rows,
+  ...awake.rows,
 ]);
 const { targets } = content.balance;
 const verdicts: string[] = [
@@ -64,6 +77,11 @@ verdicts.push(
   ...tier.problems.map((p) => `  - ${p}`),
   `Tour ${tower.problems.length === 0 ? 'tenue' : 'NON TENUE'} : expert par étage ${tower.rates.map((r) => (r * 100).toFixed(0)).join('/')}`,
   ...tower.problems.map((p) => `  - ${p}`),
+  `Éveil ${gap.problems.length === 0 ? 'tenu' : 'NON TENU'} : écart maximal ${gap.worst.gap.toFixed(0)} points (${gap.worst.hero}, cible ≤ ${String(targets.awakening.maxGapPoints)}), moyenne ${(gap.gaps.reduce((a, g) => a + g.gap, 0) / Math.max(1, gap.gaps.length)).toFixed(1)}`,
+  ...gap.problems.map((p) => `  - ${p}`),
+  `Donjons d'essence ${essence.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert par palier ${essence.rates.map((e) => `${e.id} ${e.rates.map((r) => (r * 100).toFixed(0)).join('/')}`).join(', ')}`,
+  ...essence.problems.map((p) => `  - ${p}`),
+  `Tous éveillés : R1 ${awake.r1.ok ? 'tenue' : 'NON TENUE'} (${(awake.r1.rate * 100).toFixed(0)} %), R2 ${awake.r2.ok ? 'tenue' : 'NON TENUE'} (${(awake.r2.worst * 100).toFixed(0)} %), aucun héros indispensable ${awake.dispensable.ok ? 'tenue' : 'NON TENUE'} (${awake.dispensable.gap.toFixed(0)} points)`,
 );
 // « Aucun héros indispensable » est mesuré et affiché mais ne bloque pas : l'écart vient des
 // héros eux-mêmes, que ce lot ne doit pas toucher (voir docs/BALANCE.md).
@@ -72,7 +90,12 @@ const rulesOk =
   rules.r2.ok &&
   pace.problems.length === 0 &&
   tier.problems.length === 0 &&
-  tower.problems.length === 0;
+  tower.problems.length === 0 &&
+  gap.problems.length === 0 &&
+  essence.problems.length === 0 &&
+  awake.r1.ok &&
+  awake.r2.ok &&
+  awake.dispensable.ok;
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {

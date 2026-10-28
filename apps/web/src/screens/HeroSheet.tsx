@@ -1,5 +1,8 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
+  awaken,
+  awakenCost,
+  setAwakened,
   atStarGate,
   canLevelUp,
   compileHero,
@@ -36,7 +39,7 @@ import { UpgradePips } from './Workshop';
 import { Glossed } from '../game/Glossed';
 import { frPct, SpellLevels } from './SpellLevels';
 
-type Tab = 'stats' | 'talents' | 'items' | 'spells';
+type Tab = 'stats' | 'talents' | 'items' | 'spells' | 'awakening';
 
 const STAT_ICON = { hp: 'hp', atk: 'damage', def: 'shield', vit: 'spd' } as const;
 
@@ -490,6 +493,79 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
  * Fiche d'un héros en un écran : portrait à gauche, onglets à droite. Tout ce qui est affiché
  * vient de l'unité compilée par le moteur (talents et objets compris).
  */
+/**
+ * Éveil d'un héros : effets (formule commune de `balance.awakening`), coût en essences de son
+ * élément et en or, condition de niveau ; en mode test, une case l'active sans rien payer.
+ */
+function AwakeningPanel({ heroId }: { readonly heroId: string }) {
+  const { profile, apply } = useProfile();
+  const hero = profile.heroes[heroId];
+  const cost = awakenCost(content, heroId);
+  if (hero === undefined || cost === null) return null;
+  const { awakening } = content.balance;
+  const effects = [
+    t('awakening.stats', { pct: awakening.statPct }),
+    ...describeItem({ id: 'awakening', rarity: 'common', mods: awakening.mods }),
+  ];
+  const [low, mid, high] = profile.essences[cost.element];
+  const element = tk(`essence.of.${cost.element}`);
+  return (
+    <div className="sheet__awakening">
+      <p>
+        <strong>{t('awakening.title')}</strong>
+        {hero.awakened && <span className="awakened-badge">{t('awakening.badge')}</span>}
+      </p>
+      <p>
+        <Glossed text={t('awakening.effects', { lines: effects.join(' ; ') })} />
+      </p>
+      {hero.awakened && <p className="hint">{t('awakening.done')}</p>}
+      {!hero.awakened && !profile.testMode && (
+        <>
+          <p>
+            {t('awakening.cost', {
+              essences: t('awakening.cost.essences', {
+                low: cost.essences[0],
+                mid: cost.essences[1],
+                high: cost.essences[2],
+                element,
+              }),
+              gold: cost.gold,
+            })}
+          </p>
+          <p className="hint">
+            {t('awakening.have', { low, mid, high, element, gold: profile.gold })}
+          </p>
+          <p className={hero.level >= cost.minLevel ? 'hint' : 'warn'}>
+            {t('awakening.level', { level: cost.minLevel })}
+          </p>
+          <p className="hint">{t('awakening.where')}</p>
+          <Button
+            size="small"
+            disabled={!awaken(content, profile, heroId).ok}
+            onClick={() => {
+              apply(awaken(content, profile, heroId));
+            }}
+          >
+            {t('awakening.buy')}
+          </Button>
+        </>
+      )}
+      {profile.testMode && (
+        <label>
+          <input
+            type="checkbox"
+            checked={hero.awakened}
+            onChange={(event) => {
+              apply(setAwakened(profile, heroId, event.target.checked));
+            }}
+          />{' '}
+          {t('awakening.test')}
+        </label>
+      )}
+    </div>
+  );
+}
+
 export function HeroSheet({
   heroId,
   onBack,
@@ -518,11 +594,12 @@ export function HeroSheet({
         <aside className={`sheet__id rarity-${String(def.tier)}`}>
           <Rarity tier={def.tier} />
           <PixelSprite name="pedestal" className="pedestal" />
-          <span className="sheet__sprite">
+          <span className={`sheet__sprite${hero.awakened ? ' sheet__sprite--awakened' : ''}`}>
             <HeroSprite name={heroId} idle />
           </span>
           <p className="sheet__level">
             {t('hero.level', { level: hero.level })}
+            {hero.awakened && <span className="awakened-badge">{t('awakening.badge')}</span>}
             <span className="hint">
               {' '}
               · {t('sheet.element', { element: tk(`element.${def.element}`) })}
@@ -627,6 +704,11 @@ export function HeroSheet({
               },
               { key: 'items', label: t('sheet.tab.items') },
               { key: 'spells', label: t('sheet.tab.spells') },
+              {
+                key: 'awakening',
+                label: t('awakening.title'),
+                badge: !hero.awakened && awaken(content, profile, heroId).ok ? '!' : undefined,
+              },
             ]}
           />
           <div className="sheet__panel" role="tabpanel">
@@ -698,6 +780,7 @@ export function HeroSheet({
             {tab === 'talents' && <TalentTree def={def} heroId={heroId} />}
             {tab === 'items' && <ItemSlots heroId={heroId} />}
             {tab === 'spells' && <SpellLevels heroId={heroId} />}
+            {tab === 'awakening' && <AwakeningPanel heroId={heroId} />}
           </div>
         </div>
       </div>

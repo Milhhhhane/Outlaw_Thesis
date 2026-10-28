@@ -26,6 +26,8 @@ import { Boss } from './screens/Boss';
 import { BossRun } from './screens/BossRun';
 import { Tower } from './screens/Tower';
 import { TowerRun } from './screens/TowerRun';
+import { EssenceRun } from './screens/EssenceRun';
+import { Essences } from './screens/Essences';
 import { Workshop } from './screens/Workshop';
 import { normalizeCode } from './pvp/api';
 import { Admin } from './screens/Admin';
@@ -80,6 +82,10 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <Tower initial={route.floor} />;
     case 'tower_run':
       return <TowerRun floor={route.floor} />;
+    case 'essences':
+      return <Essences initial={route.dungeon} />;
+    case 'essence_run':
+      return <EssenceRun id={route.id} tier={route.tier} />;
     case 'boss':
       return <Boss initial={route.difficulty} />;
     case 'boss_run':
