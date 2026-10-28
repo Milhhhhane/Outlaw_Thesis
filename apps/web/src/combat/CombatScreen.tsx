@@ -8,6 +8,7 @@ import {
   type UnitDef,
 } from '@outlaw/engine';
 import { useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Countdown } from '../game/Countdown';
 import { useEscape } from '../game/keys';
 import { GameContext } from '../game/nav';
 import { speedFactor, useOptions } from '../game/options';
@@ -49,10 +50,14 @@ interface Props {
   readonly title?: string;
   /** Décor du champ de bataille : identifiant du donjon. */
   readonly scene?: string;
-  /** Dans un donjon : un seul bouton de fin, qui mène à la suite. */
+  /**
+   * Dans un donjon : un seul bouton de fin, qui mène à la suite. En mode Auto, une victoire y
+   * mène seule après un décompte ; `last` : la suite est l'écran de récompenses.
+   */
   readonly finish?: {
     readonly label: (won: boolean) => string;
     readonly onClick: (won: boolean) => void;
+    readonly last: boolean;
   };
 }
 
@@ -363,7 +368,7 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
           title={t('combat.speed.hint')}
           onClick={toggleSpeed}
         >
-          {options.speed === 'instant' ? t('combat.speed.instant') : fast ? '×2' : '×1'}
+          {fast ? '×2' : '×1'}
         </Button>
         <Button
           variant={auto ? 'primary' : 'quiet'}
@@ -487,6 +492,15 @@ export function CombatScreen({ setup, onExit, title, scene, finish }: Props) {
               </>
             )}
           </div>
+          {finish !== undefined && result.winner === 'player' && (
+            <Countdown
+              enabled={auto && !paused}
+              text={(s) => t(finish.last ? 'combat.auto.claim' : 'combat.auto.next', { s })}
+              onDone={() => {
+                finish.onClick(true);
+              }}
+            />
+          )}
         </section>
       )}
 
