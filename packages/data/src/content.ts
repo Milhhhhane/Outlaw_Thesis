@@ -258,6 +258,14 @@ export function parseContent(raw: RawContent): Content {
 
   const quests = parseQuests(raw.quests, balance, issues);
   const tower = resolveTower(raw.tower, balance, enemyById, dungeonById, issues);
+  const bossElements = new Set<string>();
+  for (const id of balance.boss.bosses) {
+    const enemy = enemyById.get(id);
+    if (enemy?.boss !== true) issues.push(`boss de la semaine : « ${id} » n’est pas un boss connu`);
+    else bossElements.add(enemy.element);
+  }
+  if (bossElements.size !== balance.boss.bosses.length)
+    issues.push('boss de la semaine : un boss par élément, sans doublon');
 
   if (issues.length > 0) throw new ContentError(issues);
 

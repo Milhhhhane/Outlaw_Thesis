@@ -118,6 +118,10 @@
   peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro
   ni de récompense de rejeu ; courbe à confirmer au test humain.
 
+- Boss de la semaine — rotation hebdomadaire de 3 boss, 4 difficultés, 3 tentatives par jour,
+  paliers de dégâts payés une fois par semaine, accès depuis la tour, règles et effet économique
+  en CI. Ouvert : l'équipement pèse peu sur les dégâts (voir DECISIONS) ; pas de classement.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

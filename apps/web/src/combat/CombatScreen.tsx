@@ -3,6 +3,7 @@ import {
   enemyIntent,
   legalActions,
   type Action,
+  type BattleEvent,
   type BattleSetup,
   type Intent,
   type ResolvedSpell,
@@ -61,8 +62,11 @@ interface Props {
    */
   readonly finish?: {
     readonly label: (won: boolean) => string;
-    readonly onClick: (won: boolean) => void;
+    /** `journal` : tout le journal du combat (le boss de la semaine en tire ses dégâts). */
+    readonly onClick: (won: boolean, journal: readonly BattleEvent[]) => void;
     readonly last: boolean;
+    /** Titre du résultat à la place de victoire / défaite (boss de la semaine : les dégâts). */
+    readonly heading?: (journal: readonly BattleEvent[]) => string;
   };
 }
 
@@ -531,11 +535,13 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
           aria-labelledby="result-heading"
         >
           <h2 id="result-heading" className="outcome__title">
-            {result.winner === 'player'
-              ? t('combat.result.victory')
-              : result.reason === 'action_limit'
-                ? t('combat.result.limit')
-                : t('combat.result.defeat')}
+            {finish?.heading !== undefined
+              ? finish.heading(model.journal)
+              : result.winner === 'player'
+                ? t('combat.result.victory')
+                : result.reason === 'action_limit'
+                  ? t('combat.result.limit')
+                  : t('combat.result.defeat')}
           </h2>
           <p className="outcome__sub">{t('combat.result.actions', { count: state.actionCount })}</p>
           <div className="outcome__buttons">
@@ -544,7 +550,7 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
                 ref={resultRef}
                 size="large"
                 onClick={() => {
-                  finish.onClick(result.winner === 'player');
+                  finish.onClick(result.winner === 'player', model.journal);
                 }}
               >
                 {finish.label(result.winner === 'player')}
@@ -565,7 +571,7 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
               enabled={auto && !paused}
               text={(s) => t(finish.last ? 'combat.auto.claim' : 'combat.auto.next', { s })}
               onDone={() => {
-                finish.onClick(true);
+                finish.onClick(true, model.journal);
               }}
             />
           )}

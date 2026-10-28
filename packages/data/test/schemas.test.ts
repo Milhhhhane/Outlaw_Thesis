@@ -39,8 +39,13 @@ function rename<T extends { id: string }>(hero: T): T {
 }
 
 function rawFixture(): RawContent {
+  // Boss de la semaine : le seul boss du contenu de test.
+  const balance = {
+    ...clone(balanceJson),
+    boss: { ...clone(balanceJson.boss), bosses: ['test_boss'] },
+  };
   return {
-    balance: clone(balanceJson),
+    balance,
     heroes: [clone(heroFixture)],
     enemies: [clone(enemyFixture), clone(bossFixture)],
     items: [clone(itemFixture), clone(rareItemFixture)],
@@ -377,6 +382,15 @@ describe('ennemis, objets, donjons', () => {
 });
 
 describe('parseContent : références croisées', () => {
+  it('boss de la semaine : des boss connus, un par élément', () => {
+    const raw = rawFixture();
+    const bad = {
+      ...(raw.balance as typeof balanceJson),
+      boss: { ...balanceJson.boss, bosses: ['test_grunt', 'test_boss', 'test_boss'] },
+    };
+    expect(() => parseContent({ ...raw, balance: bad })).toThrow(/boss de la semaine/);
+  });
+
   it('accepte un contenu cohérent', () => {
     const content = parseContent(rawFixture());
     expect(content.heroById.get('test_hero')?.id).toBe('test_hero');
