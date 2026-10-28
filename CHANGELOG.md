@@ -2,6 +2,27 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — des héros qui ne se ressemblent plus
+
+### Modifié
+
+- Les 19 héros récents ne partagent plus les huit mêmes silhouettes : 18 d'entre eux portent une
+  coiffe ou un accessoire dessiné à la main sur leur personnage du pack (sombrero de Yucca,
+  cornes de Forge, crête en vague de Torrent, bois feuillus de Séquoia, bannière d'Étendard,
+  capuche et lanterne de Lanterne, voile de Brume, couronne de fleurs d'Éden, capuche de houx de
+  Houx, cornes de bélier de Soufre, cadran doré de Sablier, tricorne de Sillage, ailes de flammes
+  de Phénix, bachi d'Écume, chapeau-champignon de Mousse, crête de flammes de Tison, suroît de
+  Mousson, fleur de chardon de Chardon). Genêt et les six héros d'origine ne changent pas.
+- Palettes franches pour Forge (fer sombre, heaume rougi), Séquoia (écorce), Houx, Tison,
+  Chardon et Éden ; armes mieux réparties (machette, épée large, épée, épée à gemme, couperet).
+- Légendaires et épiques les plus marquants : ailes, cadran, bannière, bois, vague, cornes.
+
+### Technique
+
+- `tools/art/looks.py` : surcouches pixel par pixel qui suivent la tête sur chaque image (repos,
+  dégâts), sprite élargi symétriquement si besoin ; `export.py` refuse deux héros de même
+  silhouette. La prise d'arme (`HeroSprite.tsx`) se compte depuis le milieu du sprite.
+
 ## [Non publié] — 2026-10-28 — 19 héros de plus, rareté
 
 ### Ajouté
