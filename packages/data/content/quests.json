@@ -1,0 +1,43 @@
+{
+  "daily": [
+    { "id": "daily_wins", "metric": "wins", "target": 4 },
+    { "id": "daily_tier2", "metric": "wins_tier2", "target": 2 },
+    { "id": "daily_levels", "metric": "levels", "target": 3 },
+    { "id": "daily_chests", "metric": "chests", "target": 2 },
+    { "id": "daily_upgrade", "metric": "upgrades", "target": 1 },
+    { "id": "daily_wins_more", "metric": "wins", "target": 8, "minWins": 10 },
+    { "id": "daily_tier3", "metric": "wins_tier3", "target": 1, "minWins": 15 }
+  ],
+  "weekly": [
+    { "id": "weekly_wins", "metric": "wins", "target": 30 },
+    { "id": "weekly_tier2", "metric": "wins_tier2", "target": 10 },
+    { "id": "weekly_levels", "metric": "levels", "target": 12 },
+    { "id": "weekly_chests", "metric": "chests", "target": 10 },
+    { "id": "weekly_upgrades", "metric": "upgrades", "target": 4 },
+    { "id": "weekly_tier3", "metric": "wins_tier3", "target": 5, "minWins": 15 },
+    { "id": "weekly_star", "metric": "stars", "target": 1, "minWins": 20 },
+    { "id": "weekly_summon", "metric": "summons", "target": 1, "minWins": 40 }
+  ],
+  "achievements": [
+    { "id": "ach_first_win", "metric": "dungeons_cleared", "target": 1, "reward": "small" },
+    { "id": "ach_explorer", "metric": "dungeons_cleared", "target": 5, "reward": "medium" },
+    { "id": "ach_conqueror", "metric": "dungeons_cleared", "target": 10, "reward": "large" },
+    { "id": "ach_wins_50", "metric": "clears_total", "target": 50, "reward": "small" },
+    { "id": "ach_wins_250", "metric": "clears_total", "target": 250, "reward": "medium" },
+    { "id": "ach_tier3_first", "metric": "tier3_cleared", "target": 1, "reward": "small" },
+    { "id": "ach_tier3_all", "metric": "tier3_cleared", "target": 10, "reward": "large" },
+    { "id": "ach_mastery_1", "metric": "mastery_rank", "target": 1, "reward": "small" },
+    { "id": "ach_mastery_max", "metric": "mastery_rank", "target": 4, "reward": "large" },
+    { "id": "ach_items_all", "metric": "items_owned", "target": 20, "reward": "medium" },
+    { "id": "ach_maxed_1", "metric": "items_maxed", "target": 1, "reward": "small" },
+    { "id": "ach_maxed_8", "metric": "items_maxed", "target": 8, "reward": "medium" },
+    { "id": "ach_maxed_20", "metric": "items_maxed", "target": 20, "reward": "large" },
+    { "id": "ach_heroes_8", "metric": "heroes", "target": 8, "reward": "small" },
+    { "id": "ach_heroes_15", "metric": "heroes", "target": 15, "reward": "medium" },
+    { "id": "ach_heroes_25", "metric": "heroes", "target": 25, "reward": "large" },
+    { "id": "ach_star_1", "metric": "stars_total", "target": 1, "reward": "small" },
+    { "id": "ach_stars_8", "metric": "stars_total", "target": 8, "reward": "medium" },
+    { "id": "ach_level_10", "metric": "hero_level", "target": 10, "reward": "small" },
+    { "id": "ach_level_30", "metric": "hero_level", "target": 30, "reward": "large" }
+  ]
+}

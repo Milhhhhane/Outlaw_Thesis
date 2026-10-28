@@ -11,6 +11,7 @@ export type Route =
   | { readonly name: 'hero'; readonly id: string }
   | { readonly name: 'workshop' }
   | { readonly name: 'chests' }
+  | { readonly name: 'quests' }
   | { readonly name: 'credits' }
   /** `runs` : passages joués d'affilée en Auto (1 par défaut). */
   | {
