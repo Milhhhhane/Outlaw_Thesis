@@ -1,0 +1,494 @@
+{
+  "id": "sillage",
+  "element": "water",
+  "role": "control",
+  "tier": 2,
+  "stats": {
+    "hp": 425,
+    "atk": 51,
+    "def": 22,
+    "vit": 105
+  },
+  "spells": [
+    {
+      "id": "sillage_oar",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 95
+        }
+      ]
+    },
+    {
+      "id": "sillage_eddy",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": 20
+        },
+        {
+          "kind": "damage",
+          "power": 70
+        }
+      ]
+    },
+    {
+      "id": "sillage_countertide",
+      "slot": "b",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": 15
+        },
+        {
+          "kind": "tempo",
+          "target": "all_allies",
+          "amount": -10
+        },
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "sillage_capsize",
+      "slot": "ult",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "stun",
+          "duration": 1
+        },
+        {
+          "kind": "damage",
+          "power": 120
+        },
+        {
+          "kind": "tempo",
+          "target": "all_enemies",
+          "amount": 30
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "sillage_wake",
+    "triggers": [
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "other",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "on": "spell_cast",
+        "subject": "self",
+        "slots": ["a", "b", "ult"],
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "other_allies",
+            "amount": -6
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "sillage_page_whirl",
+      "nodes": [
+        {
+          "id": "sillage_whirl_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_vortex",
+          "requires": "sillage_whirl_core",
+          "group": "sillage_whirl_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_paddle",
+          "requires": "sillage_whirl_core",
+          "group": "sillage_whirl_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_undertow",
+          "requires": "sillage_whirl_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_drag",
+          "requires": "sillage_whirl_undertow",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "amount": 8
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_swamp",
+          "requires": "sillage_whirl_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_mire",
+          "requires": "sillage_whirl_swamp",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_whirl_silt",
+          "requires": "sillage_whirl_drag",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -10,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sillage_page_heading",
+      "nodes": [
+        {
+          "id": "sillage_heading_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -15
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_tailwind",
+          "requires": "sillage_heading_core",
+          "group": "sillage_heading_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_allies",
+                "amount": -25
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_bail",
+          "requires": "sillage_heading_core",
+          "group": "sillage_heading_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_trim",
+          "requires": "sillage_heading_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_sail",
+          "requires": "sillage_heading_trim",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "target": "all_allies",
+                "stat": "vit",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_row",
+          "requires": "sillage_heading_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -35
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_drift",
+          "requires": "sillage_heading_row",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 20
+            }
+          ]
+        },
+        {
+          "id": "sillage_heading_rapids",
+          "requires": "sillage_heading_sail",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sillage_page_wreck",
+      "nodes": [
+        {
+          "id": "sillage_wreck_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 80
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_keel",
+          "requires": "sillage_wreck_core",
+          "group": "sillage_wreck_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_flotsam",
+          "requires": "sillage_wreck_core",
+          "group": "sillage_wreck_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "damage",
+                "power": 50
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_ram",
+          "requires": "sillage_wreck_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_buoy",
+          "requires": "sillage_wreck_ram",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 1,
+                "power": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_reef",
+          "requires": "sillage_wreck_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_hull",
+          "requires": "sillage_wreck_reef",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "sillage_wreck_sink",
+          "requires": "sillage_wreck_buoy",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

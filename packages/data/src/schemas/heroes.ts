@@ -123,6 +123,8 @@ export type TalentNode = z.infer<typeof talentNodeSchema>;
 
 /** Nombre de nœuds d'une page : entre 5 (minimum historique) et 9. */
 export const NODES_PER_PAGE = { min: 5, max: 9 } as const;
+/** Palier maximal d'un héros (IV). */
+export const MAX_HERO_TIER = 4;
 export const PAGES_PER_HERO = 3;
 
 /** Une page de talents : 5 à 9 nœuds, une thèse (le texte de la thèse vit dans i18n). */
@@ -185,10 +187,17 @@ export const heroSchema = z
     id: idSchema,
     element: elementSchema,
     role: roleSchema,
+    /**
+     * Rareté du héros, de commun (1) à légendaire (4) : pondère les coffres et le coût d'invocation
+     * (balance.json → chests), et sert au budget de paliers des salons PvP.
+     */
+    tier: z.number().int().min(1).max(MAX_HERO_TIER).default(1),
     stats: baseStatsSchema,
     spells: z.array(spellSchema).length(SPELL_SLOTS.length),
     passive: passiveSchema,
     pages: z.array(talentPageSchema).length(PAGES_PER_HERO),
+    /** Héros de l'équipe de départ. Les autres s'obtiennent par un donjon (`unlocksHero`) ou par invocation. */
+    starter: z.boolean().default(false),
   })
   .superRefine((hero, ctx) => {
     const slots = new Set(hero.spells.map((s) => s.slot));

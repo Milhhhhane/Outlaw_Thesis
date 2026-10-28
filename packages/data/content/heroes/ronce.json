@@ -2,6 +2,8 @@
   "id": "ronce",
   "element": "nature",
   "role": "control",
+  "tier": 1,
+  "starter": true,
   "stats": {
     "hp": 430,
     "atk": 50,

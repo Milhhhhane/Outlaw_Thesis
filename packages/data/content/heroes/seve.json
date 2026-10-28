@@ -2,6 +2,7 @@
   "id": "seve",
   "element": "nature",
   "role": "support",
+  "tier": 1,
   "stats": {
     "hp": 460,
     "atk": 46,

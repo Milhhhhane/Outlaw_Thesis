@@ -1,0 +1,487 @@
+{
+  "id": "forge",
+  "element": "fire",
+  "role": "damage",
+  "tier": 2,
+  "stats": {
+    "hp": 395,
+    "atk": 58,
+    "def": 21,
+    "vit": 102
+  },
+  "spells": [
+    {
+      "id": "forge_hammer",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "forge_heat",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "forge_temper",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 160
+        }
+      ]
+    },
+    {
+      "id": "forge_anvil",
+      "slot": "ult",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 240
+        },
+        {
+          "kind": "status",
+          "status": "stun",
+          "duration": 1
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "forge_sparks",
+    "triggers": [
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "targetHasStatus": "burn",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 20
+          }
+        ]
+      },
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "targetHasStatus": "burn",
+        "limit": {
+          "per": "combat",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "teamPoints",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "forge_page_whitehot",
+      "nodes": [
+        {
+          "id": "forge_whitehot_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_soak",
+          "requires": "forge_whitehot_core",
+          "group": "forge_whitehot_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_slag",
+          "requires": "forge_whitehot_core",
+          "group": "forge_whitehot_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 1,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_quench",
+          "requires": "forge_whitehot_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 30
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_crucible",
+          "requires": "forge_whitehot_quench",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_furnace",
+          "requires": "forge_whitehot_core",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_coals",
+          "requires": "forge_whitehot_furnace",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "forge_whitehot_weld",
+          "requires": "forge_whitehot_crucible",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forge_page_anvil",
+      "nodes": [
+        {
+          "id": "forge_anvil_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_light",
+          "requires": "forge_anvil_core",
+          "group": "forge_anvil_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_split",
+          "requires": "forge_anvil_core",
+          "group": "forge_anvil_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -25,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_sledge",
+          "requires": "forge_anvil_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_swing",
+          "requires": "forge_anvil_sledge",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 30
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_rivet",
+          "requires": "forge_anvil_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_dent",
+          "requires": "forge_anvil_rivet",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -10,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_anvil_stamp",
+          "requires": "forge_anvil_swing",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "forge_page_bellows",
+      "nodes": [
+        {
+          "id": "forge_bellows_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_tongs",
+          "requires": "forge_bellows_core",
+          "group": "forge_bellows_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_draft",
+          "requires": "forge_bellows_core",
+          "group": "forge_bellows_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_blast",
+          "requires": "forge_bellows_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_forgefire",
+          "requires": "forge_bellows_blast",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_rhythm",
+          "requires": "forge_bellows_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": -15
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_steady",
+          "requires": "forge_bellows_rhythm",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "forge_bellows_roar",
+          "requires": "forge_bellows_forgefire",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -30
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

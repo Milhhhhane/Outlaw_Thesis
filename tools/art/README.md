@@ -1,7 +1,8 @@
 # Pixel art
 
 Les décors, effets, icônes et habillages sont générés par ces scripts (Python 3, Pillow, NumPy) ;
-les personnages viennent d'un pack CC0 (voir `pack.py` et `third_party/0x72/`) :
+les personnages (25 héros, 12 ennemis) viennent d'un pack CC0 (voir `pack.py` et
+`third_party/0x72/`) :
 
 | Fichier          | Contenu                                                                |
 | ---------------- | ---------------------------------------------------------------------- |

@@ -99,7 +99,8 @@
     }
   },
   "chests": {
-    "summonCost": 10,
+    "summonCosts": [10, 20, 40, 80],
+    "tierWeights": [12, 6, 3, 1],
     "starCosts": [10, 20],
     "focusRate": 0.5,
     "replayChestRate": 0.5,
@@ -130,9 +131,9 @@
     "dispensableMaxGapPoints": 10,
     "pacing": {
       "normal": [12, 24],
-      "boss": [21, 30],
+      "boss": [21, 32],
       "floor": 8,
-      "firstFightFloor": 9,
+      "firstFightFloor": 7,
       "firstDungeonMax": 60,
       "dungeonMax": 72
     },
@@ -141,7 +142,7 @@
     "averageCurve": {
       "first": 0.85,
       "last": 0.3,
-      "tolerance": 0.12
+      "tolerance": 0.15
     }
   }
 }

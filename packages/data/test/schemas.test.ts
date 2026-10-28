@@ -8,7 +8,9 @@ import {
   enemySchema,
   heroSchema,
   itemSchema,
+  MAX_HERO_TIER,
   MAX_SIDE,
+  TIER_STAT_BUDGET_PCT,
   loadContent,
   parseContent,
   talentPageSchema,
@@ -26,6 +28,14 @@ import {
 } from './fixtures';
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+/** Copie du héros de référence avec des identifiants de sorts, passif et talents tous préfixés. */
+function rename<T extends { id: string }>(hero: T): T {
+  const text = JSON.stringify(hero).replace(/"(test_[a-z0-9_]+)"/g, (_m, id: string) =>
+    id === hero.id ? `"${id}"` : `"${hero.id}_${id}"`,
+  );
+  return JSON.parse(text) as T;
+}
 
 function rawFixture(): RawContent {
   return {
@@ -249,6 +259,22 @@ describe('héros', () => {
     bad.id = 'Test-Hero';
     expect(heroSchema.safeParse(bad).success).toBe(false);
   });
+
+  it('rareté : commun par défaut, de 1 à 4 entiers seulement', () => {
+    expect(heroSchema.parse(heroFixture).tier).toBe(1);
+    expect(heroSchema.parse({ ...clone(heroFixture), tier: MAX_HERO_TIER }).tier).toBe(4);
+    for (const tier of [0, 5, 2.5]) {
+      expect(heroSchema.safeParse({ ...clone(heroFixture), tier }).success, String(tier)).toBe(
+        false,
+      );
+    }
+  });
+
+  it('héros de départ : faux par défaut', () => {
+    const plain: Record<string, unknown> = clone(heroFixture);
+    delete plain.starter;
+    expect(heroSchema.parse(plain).starter).toBe(false);
+  });
 });
 
 describe('pages de talents', () => {
@@ -410,6 +436,33 @@ describe('parseContent : références croisées', () => {
       (raw.enemies[0] as typeof enemyFixture).skills[0]!.id = 'test_strike';
       (raw.enemies[0] as typeof enemyFixture).script[0]!.skill = 'test_strike';
     }, 'utilisé par');
+  });
+
+  it('exige au moins un héros de départ, jamais offert par un donjon', () => {
+    expectIssue((raw) => {
+      (raw.heroes[0] as Record<string, unknown>).starter = false;
+    }, 'aucun héros de départ');
+    expectIssue((raw) => {
+      (raw.dungeons[0] as Record<string, unknown>).unlocksHero = 'test_hero';
+    }, 'de départ et débloqué par un donjon');
+  });
+
+  it('un héros de départ ou de donjon est commun ou rare', () => {
+    expectIssue((raw) => {
+      (raw.heroes[0] as Record<string, unknown>).tier = 3;
+    }, 'commun ou rare');
+  });
+
+  it('borne les stats d’un héros par sa rareté', () => {
+    const rich = { ...clone(heroFixture), id: 'test_rich', starter: false, tier: 2 };
+    rich.stats = { hp: 400, atk: 50, def: 20, vit: 103 }; // +3 % sur une stat : dans le budget
+    const content = parseContent({ ...rawFixture(), heroes: [clone(heroFixture), rename(rich)] });
+    expect(content.heroById.get('test_rich')?.tier).toBe(2);
+    expectIssue((raw) => {
+      const greedy = { ...rename(rich), stats: { hp: 480, atk: 60, def: 24, vit: 100 } };
+      Object.assign(raw, { heroes: [clone(heroFixture), greedy] });
+    }, 'budget de sa rareté');
+    expect(TIER_STAT_BUDGET_PCT).toBeGreaterThan(0);
   });
 
   it('refuse des doublons d’identifiant de héros', () => {

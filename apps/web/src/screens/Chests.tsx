@@ -8,6 +8,7 @@ import {
   setFocus,
   starCost,
   starUp,
+  summonCost,
   summonHero,
   type ChestReport,
 } from '@outlaw/engine';
@@ -17,6 +18,7 @@ import { Portrait } from '../combat/InitiativeTrack';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { useOptions } from '../game/options';
+import { Rarity } from '../game/Rarity';
 import { Button, Icon, Panel, Screen, Window } from '../game/ui';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
@@ -85,7 +87,6 @@ function Reveal({
   }, [phase]);
 
   const groups = grouped(report);
-  const { summonCost } = content.balance.chests;
   return (
     <Window
       title={tk(`chest.tier.${report.tier}`)}
@@ -123,10 +124,11 @@ function Reveal({
               const owned = profile.fragments[hero] ?? 0;
               const state = profile.unlocked.includes(hero) ? profile.heroes[hero] : undefined;
               const unlocked = state !== undefined;
-              const cost = state === undefined ? summonCost : starCost(content, state);
+              const summon = summonCost(content, hero);
+              const cost = state === undefined ? summon : starCost(content, state);
               const ready =
                 state === undefined
-                  ? owned >= summonCost
+                  ? owned >= summon
                   : atStarGate(state, content) && cost !== null && owned >= cost;
               return (
                 <li
@@ -138,7 +140,10 @@ function Reveal({
                 >
                   <Portrait kind={hero} size={36} />
                   <span className="chest-reveal__who">
-                    <span className="chest-reveal__name">{names.hero(hero)}</span>
+                    <span className="chest-reveal__name">
+                      <Rarity tier={content.heroById.get(hero)?.tier ?? 1} short />{' '}
+                      {names.hero(hero)}
+                    </span>
                     {ready ? (
                       <span className="chest-reveal__ready">
                         {unlocked ? t('chests.reveal.gate') : t('chests.reveal.ready')}
@@ -235,7 +240,8 @@ export function Chests() {
               const unlocked = profile.unlocked.includes(def.id) && hero !== undefined;
               const owned = profile.fragments[def.id] ?? 0;
               const gate = unlocked && atStarGate(hero, content);
-              const cost = unlocked ? starCost(content, hero) : chests.summonCost;
+              const summon = summonCost(content, def.id);
+              const cost = unlocked ? starCost(content, hero) : summon;
               const target = profile.focus === def.id;
               const pct = rates.find((r) => r.hero === def.id)?.pct ?? 0;
               return (
@@ -244,6 +250,7 @@ export function Chests() {
                   className={[
                     'frag-row',
                     `element-${def.element}`,
+                    `rarity-${String(def.tier)}`,
                     unlocked ? '' : 'frag-row--locked',
                     target ? 'frag-row--target' : '',
                   ].join(' ')}
@@ -251,7 +258,7 @@ export function Chests() {
                   <Portrait kind={def.id} size={36} />
                   <span className="frag-row__id">
                     <span className="frag-row__name">
-                      {names.hero(def.id)}
+                      <Rarity tier={def.tier} short /> {names.hero(def.id)}
                       {target && <span className="frag-row__tag">{t('chests.target.badge')}</span>}
                     </span>
                     <span className="hint frag-row__status">
@@ -289,7 +296,7 @@ export function Chests() {
                     {!unlocked ? (
                       <Button
                         size="small"
-                        disabled={owned < chests.summonCost}
+                        disabled={owned < summon}
                         onClick={() => {
                           apply(summonHero(content, profile, def.id));
                         }}
@@ -329,7 +336,7 @@ export function Chests() {
           </ul>
           <p className="hint chests__rules">
             {t('chests.rules', {
-              summon: chests.summonCost,
+              summon: chests.summonCosts.join(' / '),
               levels: content.balance.progression.levelsPerStar,
             })}
           </p>

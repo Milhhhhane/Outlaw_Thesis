@@ -4,6 +4,7 @@ export const heroFixture = {
   id: 'test_hero',
   element: 'fire',
   role: 'damage',
+  starter: true,
   stats: { hp: 400, atk: 50, def: 20, vit: 100 },
   spells: [
     {

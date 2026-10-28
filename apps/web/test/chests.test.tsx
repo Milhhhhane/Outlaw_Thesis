@@ -1,5 +1,5 @@
 import type { Profile } from '@outlaw/data';
-import { chestCount, newProfile } from '@outlaw/engine';
+import { chestCount, newProfile, summonCost } from '@outlaw/engine';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -75,7 +75,7 @@ describe('écran des coffres', () => {
 
   it('invoque un héros avec ses fragments, pas avant', async () => {
     const user = userEvent.setup();
-    const cost = content.balance.chests.summonCost;
+    const cost = summonCost(content, 'ressac');
     const initial = withStock({ fragments: { ressac: cost, seve: cost - 1 } });
     expect(initial.unlocked).not.toContain('ressac');
     render(<App version="test" initial={initial} start={{ name: 'chests' }} />);

@@ -2,6 +2,8 @@
   "id": "pyra",
   "element": "fire",
   "role": "damage",
+  "tier": 1,
+  "starter": true,
   "stats": {
     "hp": 380,
     "atk": 60,

@@ -1,0 +1,493 @@
+{
+  "id": "sablier",
+  "element": "water",
+  "role": "control",
+  "tier": 4,
+  "stats": {
+    "hp": 425,
+    "atk": 50,
+    "def": 23,
+    "vit": 104
+  },
+  "spells": [
+    {
+      "id": "sablier_tick",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 90
+        },
+        {
+          "kind": "tempo",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "id": "sablier_tock",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": -40
+        }
+      ]
+    },
+    {
+      "id": "sablier_halt",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "stun",
+          "duration": 1
+        },
+        {
+          "kind": "tempo",
+          "amount": 30
+        },
+        {
+          "kind": "damage",
+          "power": 70
+        }
+      ]
+    },
+    {
+      "id": "sablier_noon",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": 40
+        },
+        {
+          "kind": "tempo",
+          "target": "all_allies",
+          "amount": -15
+        },
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "sablier_gears",
+    "triggers": [
+      {
+        "on": "combat_start",
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "all_enemies",
+            "amount": 10
+          }
+        ]
+      },
+      {
+        "on": "status_applied",
+        "subject": "enemy",
+        "status": "stun",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "all_allies",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "sablier_page_tick",
+      "nodes": [
+        {
+          "id": "sablier_tick_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_spring",
+          "requires": "sablier_tick_core",
+          "group": "sablier_tick_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_enemies",
+                "amount": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_escapement",
+          "requires": "sablier_tick_core",
+          "group": "sablier_tick_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 25
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_pendulum",
+          "requires": "sablier_tick_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_lag",
+          "requires": "sablier_tick_pendulum",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_rust",
+          "requires": "sablier_tick_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_chime",
+          "requires": "sablier_tick_rust",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "sablier_tick_toll",
+          "requires": "sablier_tick_lag",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "damage",
+                "power": 80
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sablier_page_tock",
+      "nodes": [
+        {
+          "id": "sablier_tock_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_key",
+          "requires": "sablier_tock_core",
+          "group": "sablier_tock_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_chain",
+          "requires": "sablier_tock_core",
+          "group": "sablier_tock_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -60
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_wind",
+          "requires": "sablier_tock_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_case",
+          "requires": "sablier_tock_wind",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "shield",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_second",
+          "requires": "sablier_tock_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_alarm",
+          "requires": "sablier_tock_second",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_tock_jewel",
+          "requires": "sablier_tock_case",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sablier_page_works",
+      "nodes": [
+        {
+          "id": "sablier_works_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_cheap",
+          "requires": "sablier_works_core",
+          "group": "sablier_works_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 25
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_jam",
+          "requires": "sablier_works_core",
+          "group": "sablier_works_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_pin",
+          "requires": "sablier_works_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_stop",
+          "requires": "sablier_works_pin",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "stun",
+                "duration": 1
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_cog",
+          "requires": "sablier_works_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 1,
+                "power": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_oil",
+          "requires": "sablier_works_cog",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "sablier_works_mainspring",
+          "requires": "sablier_works_stop",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

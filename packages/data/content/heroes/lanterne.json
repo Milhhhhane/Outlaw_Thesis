@@ -1,0 +1,491 @@
+{
+  "id": "lanterne",
+  "element": "fire",
+  "role": "support",
+  "tier": 2,
+  "stats": {
+    "hp": 455,
+    "atk": 46,
+    "def": 26,
+    "vit": 101
+  },
+  "spells": [
+    {
+      "id": "lanterne_glow",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        }
+      ]
+    },
+    {
+      "id": "lanterne_halo",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 110,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "lanterne_watch",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "teamPoints",
+          "amount": 1
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "lanterne_beacon",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "teamPoints",
+          "amount": 2
+        },
+        {
+          "kind": "tempo",
+          "amount": -20
+        },
+        {
+          "kind": "heal",
+          "power": 40
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "lanterne_wick",
+    "triggers": [
+      {
+        "on": "spell_cast",
+        "subject": "ally",
+        "slots": ["b", "ult"],
+        "limit": {
+          "per": "combat",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "teamPoints",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "on": "spell_cast",
+        "subject": "ally",
+        "slots": ["ult"],
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "target": "subject",
+            "power": 25,
+            "duration": 1
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "lanterne_page_flame",
+      "nodes": [
+        {
+          "id": "lanterne_flame_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "teamPoints",
+              "field": "amount",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_trim",
+          "requires": "lanterne_flame_core",
+          "group": "lanterne_flame_choice",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_spare",
+          "requires": "lanterne_flame_core",
+          "group": "lanterne_flame_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_rally",
+          "requires": "lanterne_flame_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_long",
+          "requires": "lanterne_flame_rally",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_swift",
+          "requires": "lanterne_flame_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -20
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_shift",
+          "requires": "lanterne_flame_swift",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_flame_dawn",
+          "requires": "lanterne_flame_long",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 20,
+                "duration": 2
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lanterne_page_glass",
+      "nodes": [
+        {
+          "id": "lanterne_glass_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_dome",
+          "requires": "lanterne_glass_core",
+          "group": "lanterne_glass_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_tempered",
+          "requires": "lanterne_glass_core",
+          "group": "lanterne_glass_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_pane",
+          "requires": "lanterne_glass_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "shield",
+                "power": 40,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_lighthouse",
+          "requires": "lanterne_glass_pane",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_candle",
+          "requires": "lanterne_glass_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "lowest_hp_ally",
+                "power": 25,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_polish",
+          "requires": "lanterne_glass_candle",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "lanterne_glass_lens",
+          "requires": "lanterne_glass_lighthouse",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lanterne_page_night",
+      "nodes": [
+        {
+          "id": "lanterne_night_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_signal",
+          "requires": "lanterne_night_core",
+          "group": "lanterne_night_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_flare",
+          "requires": "lanterne_night_core",
+          "group": "lanterne_night_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_stride",
+          "requires": "lanterne_night_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_curfew",
+          "requires": "lanterne_night_stride",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_glare",
+          "requires": "lanterne_night_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "amount": 8
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_blind",
+          "requires": "lanterne_night_glare",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_enemies",
+                "amount": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "lanterne_night_vigil",
+          "requires": "lanterne_night_curfew",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,504 @@
+{
+  "id": "sequoia",
+  "element": "nature",
+  "role": "damage",
+  "tier": 3,
+  "stats": {
+    "hp": 470,
+    "atk": 55,
+    "def": 24,
+    "vit": 98
+  },
+  "spells": [
+    {
+      "id": "sequoia_branch",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        }
+      ]
+    },
+    {
+      "id": "sequoia_bark",
+      "slot": "a",
+      "targeting": "self",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 100,
+          "duration": 2
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 20,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "sequoia_deadwood",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 180
+        }
+      ]
+    },
+    {
+      "id": "sequoia_felling",
+      "slot": "ult",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 290
+        },
+        {
+          "kind": "teamPoints",
+          "amount": 1
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "sequoia_rings",
+    "triggers": [
+      {
+        "on": "hp_crossed",
+        "subject": "self",
+        "thresholdPct": 75,
+        "limit": {
+          "per": "combat",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "self",
+            "stat": "atk",
+            "percent": 20,
+            "duration": 9
+          },
+          {
+            "kind": "heal",
+            "target": "self",
+            "power": 10
+          }
+        ]
+      },
+      {
+        "on": "hp_crossed",
+        "subject": "self",
+        "thresholdPct": 40,
+        "limit": {
+          "per": "combat",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "self",
+            "stat": "atk",
+            "percent": 25,
+            "duration": 9
+          },
+          {
+            "kind": "heal",
+            "target": "self",
+            "power": 20
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "sequoia_page_cuirass",
+      "nodes": [
+        {
+          "id": "sequoia_cuirass_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_layer",
+          "requires": "sequoia_cuirass_core",
+          "group": "sequoia_cuirass_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_shelter",
+          "requires": "sequoia_cuirass_core",
+          "group": "sequoia_cuirass_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "ally"
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_burl",
+          "requires": "sequoia_cuirass_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 25,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_trunk",
+          "requires": "sequoia_cuirass_burl",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 80,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_knot",
+          "requires": "sequoia_cuirass_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_sap",
+          "requires": "sequoia_cuirass_knot",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "sequoia_cuirass_shade",
+          "requires": "sequoia_cuirass_trunk",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sequoia_page_gum",
+      "nodes": [
+        {
+          "id": "sequoia_gum_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_graft",
+          "requires": "sequoia_gum_core",
+          "group": "sequoia_gum_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "heal",
+                "power": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_pitch",
+          "requires": "sequoia_gum_core",
+          "group": "sequoia_gum_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 50
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_heartwood",
+          "requires": "sequoia_gum_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 80
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_seedfall",
+          "requires": "sequoia_gum_heartwood",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "teamPoints",
+              "field": "amount",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_callus",
+          "requires": "sequoia_gum_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "trigger",
+                "duration": 2,
+                "trigger": {
+                  "on": "damage_taken",
+                  "subject": "self",
+                  "limit": {
+                    "per": "turn",
+                    "count": 1
+                  },
+                  "effects": [
+                    {
+                      "kind": "heal",
+                      "target": "self",
+                      "power": 25
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_regrow",
+          "requires": "sequoia_gum_callus",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "sequoia_gum_amber",
+          "requires": "sequoia_gum_seedfall",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 100
+            },
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sequoia_page_axe",
+      "nodes": [
+        {
+          "id": "sequoia_axe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_light",
+          "requires": "sequoia_axe_core",
+          "group": "sequoia_axe_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_notch",
+          "requires": "sequoia_axe_core",
+          "group": "sequoia_axe_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -25,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_timber",
+          "requires": "sequoia_axe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_slow",
+          "requires": "sequoia_axe_timber",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 30
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_swing",
+          "requires": "sequoia_axe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_rage",
+          "requires": "sequoia_axe_swing",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 80
+            }
+          ]
+        },
+        {
+          "id": "sequoia_axe_fell",
+          "requires": "sequoia_axe_slow",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "stun",
+                "duration": 1
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

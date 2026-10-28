@@ -4,6 +4,7 @@ import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
+import { Rarity } from '../game/Rarity';
 import { Button, Panel, Screen, Stepper } from '../game/ui';
 import { names, t, tk } from '../i18n';
 import { shareUrl } from '../save/share';
@@ -60,7 +61,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
             <button
               key={id}
               type="button"
-              className={`team__slot element-${def?.element ?? 'fire'}`}
+              className={`team__slot element-${def?.element ?? 'fire'} rarity-${String(def?.tier ?? 1)}`}
               aria-label={t('team.remove', { hero: names.hero(id) })}
               onClick={() => {
                 toggle(id);
@@ -70,7 +71,9 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
               <span className="team__sprite">
                 <HeroSprite name={id} idle />
               </span>
-              <span className="team__name">{names.hero(id)}</span>
+              <span className="team__name">
+                {names.hero(id)} <Rarity tier={def?.tier ?? 1} short />
+              </span>
               <span className="team__meta">
                 {t('hub.level', { level: profile.heroes[id]?.level ?? 1 })} ·{' '}
                 {tk(`element.${def?.element ?? 'fire'}`)}
@@ -96,6 +99,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
                 className={[
                   'roster__card',
                   `element-${def.element}`,
+                  `rarity-${String(def.tier)}`,
                   inTeam ? 'roster__card--in' : '',
                 ].join(' ')}
               >
@@ -117,7 +121,9 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
                   <span className="roster__portrait">
                     <HeroSprite name={id} />
                   </span>
-                  <span className="roster__name">{names.hero(id)}</span>
+                  <span className="roster__name">
+                    {names.hero(id)} <Rarity tier={def.tier} short />
+                  </span>
                   <span className="roster__level">{t('hub.level', { level: hero.level })}</span>
                 </button>
                 {test && (

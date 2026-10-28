@@ -1,0 +1,487 @@
+{
+  "id": "torrent",
+  "element": "water",
+  "role": "damage",
+  "tier": 3,
+  "stats": {
+    "hp": 395,
+    "atk": 59,
+    "def": 19,
+    "vit": 105
+  },
+  "spells": [
+    {
+      "id": "torrent_sickle",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "torrent_reap",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "damage",
+          "target": "lowest_hp_enemy",
+          "power": 45
+        }
+      ]
+    },
+    {
+      "id": "torrent_skimmer",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 175
+        },
+        {
+          "kind": "tempo",
+          "target": "self",
+          "amount": -20
+        }
+      ]
+    },
+    {
+      "id": "torrent_slack",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 125
+        },
+        {
+          "kind": "tempo",
+          "target": "all_allies",
+          "amount": -20
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "torrent_stream",
+    "triggers": [
+      {
+        "on": "unit_down",
+        "subject": "enemy",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "self",
+            "amount": -20
+          },
+          {
+            "kind": "statMod",
+            "target": "self",
+            "stat": "atk",
+            "percent": 10,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "on": "hp_crossed",
+        "subject": "enemy",
+        "thresholdPct": 30,
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "subject",
+            "power": 15
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "torrent_page_scythe",
+      "nodes": [
+        {
+          "id": "torrent_scythe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_light",
+          "requires": "torrent_scythe_core",
+          "group": "torrent_scythe_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_wide",
+          "requires": "torrent_scythe_core",
+          "group": "torrent_scythe_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_heavy",
+          "requires": "torrent_scythe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_glean",
+          "requires": "torrent_scythe_heavy",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_notch",
+          "requires": "torrent_scythe_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_whet",
+          "requires": "torrent_scythe_notch",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "torrent_scythe_harvest",
+          "requires": "torrent_scythe_glean",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "torrent_page_flow",
+      "nodes": [
+        {
+          "id": "torrent_flow_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_rush",
+          "requires": "torrent_flow_core",
+          "group": "torrent_flow_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_slip",
+          "requires": "torrent_flow_core",
+          "group": "torrent_flow_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_ripple",
+          "requires": "torrent_flow_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": -15
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_current",
+          "requires": "torrent_flow_ripple",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -8
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_spring",
+          "requires": "torrent_flow_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_rise",
+          "requires": "torrent_flow_spring",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "torrent_flow_cascade",
+          "requires": "torrent_flow_current",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "torrent_page_foam",
+      "nodes": [
+        {
+          "id": "torrent_foam_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_sweep",
+          "requires": "torrent_foam_core",
+          "group": "torrent_foam_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -55
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_swath",
+          "requires": "torrent_foam_core",
+          "group": "torrent_foam_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_ebb",
+          "requires": "torrent_foam_core",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_undercut",
+          "requires": "torrent_foam_ebb",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_backwash",
+          "requires": "torrent_foam_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "amount": 8
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_swirl",
+          "requires": "torrent_foam_backwash",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_enemies",
+                "amount": 12
+              }
+            }
+          ]
+        },
+        {
+          "id": "torrent_foam_tide",
+          "requires": "torrent_foam_undercut",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

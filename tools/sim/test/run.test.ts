@@ -1,9 +1,9 @@
 import { loadContent } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
-import { availableNodes, randomBuild } from '../src/builds';
+import { MAX_PER_ROLE, availableNodes, pickTeam, randomBuild } from '../src/builds';
 import { createRng } from '../src/rng';
 import { summarize, toCsv } from '../src/run';
-import { teams } from '../src/rules';
+import { R1_TEAMS, TEAM_SAMPLE, sampleTeams, teams } from '../src/rules';
 import { randomBattles, sprint0Scenarios } from '../src/scenarios';
 import { validateBuild } from '@outlaw/engine';
 
@@ -75,8 +75,42 @@ describe('règles d’équilibre', () => {
     let expected = 1;
     for (let i = 0; i < size; i++) expected = (expected * (n - i)) / (i + 1);
     const all = teams(content);
-    expect(all).toHaveLength(expected); // 15 pour 4 héros parmi 6
+    expect(all).toHaveLength(expected); // 12 650 pour 4 héros parmi 25
     expect(new Set(all.map((team) => team.join('+'))).size).toBe(expected);
     expect(all.every((team) => new Set(team).size === size)).toBe(true);
+  });
+
+  it('échantillon d’équipes : fixe, sans doublon, jouable, chaque héros présent', () => {
+    const sample = sampleTeams(content, TEAM_SAMPLE, 1);
+    expect(sample).toHaveLength(Math.min(TEAM_SAMPLE, teams(content).length));
+    expect(sampleTeams(content, TEAM_SAMPLE, 1)).toEqual(sample);
+    expect(new Set(sample.map((team) => team.join('+'))).size).toBe(sample.length);
+    const size = content.balance.progression.teamSize;
+    const seen = new Map<string, number>();
+    for (const team of sample) {
+      expect(team).toHaveLength(size);
+      const roles = new Map<string, number>();
+      for (const id of team) {
+        const role = content.heroById.get(id)!.role;
+        roles.set(role, (roles.get(role) ?? 0) + 1);
+        seen.set(id, (seen.get(id) ?? 0) + 1);
+      }
+      expect(Math.max(...roles.values())).toBeLessThanOrEqual(MAX_PER_ROLE);
+    }
+    // Chaque héros figure dans l'échantillon, à peu près autant que les autres.
+    expect(seen.size).toBe(content.heroes.length);
+    const counts = [...seen.values()];
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(3);
+    // Les duels de R1 portent sur des équipes où chaque héros figure.
+    const r1 = new Set(sample.slice(0, R1_TEAMS).flat());
+    expect(r1.size).toBe(content.heroes.length);
+  });
+
+  it('équipe jouable : au plus deux héros du même rôle, dans l’ordre proposé', () => {
+    const ids = content.heroes.filter((h) => h.role === 'support').map((h) => h.id);
+    const other = content.heroes.find((h) => h.role === 'damage')!.id;
+    const team = pickTeam(content, [...ids, other], 3);
+    expect(team).toEqual([ids[0], ids[1], other]);
+    expect(pickTeam(content, ids, 4)).toHaveLength(MAX_PER_ROLE);
   });
 });

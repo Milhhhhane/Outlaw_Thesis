@@ -51,7 +51,8 @@ describe('mode test', () => {
     await user.click(screen.getByRole('button', { name: t('hub.menu.testExit') }));
     expect(screen.queryByText(t('test.badge'))).toBeNull();
     expect(screen.getByText(t('hub.gold', { gold: 0 }))).toBeInTheDocument();
-  });
+    // Le mode test débloque les 25 héros : dix-huit clics rerendent tout le vivier, d'où le délai.
+  }, 20_000);
 
   it('un lien de build ouvre le mode test avec l’équipe partagée', () => {
     const code = encodeBuilds([

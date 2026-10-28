@@ -1,0 +1,516 @@
+{
+  "id": "eden",
+  "element": "nature",
+  "role": "support",
+  "tier": 3,
+  "stats": {
+    "hp": 460,
+    "atk": 47,
+    "def": 27,
+    "vit": 99
+  },
+  "spells": [
+    {
+      "id": "eden_watering",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 115
+        }
+      ]
+    },
+    {
+      "id": "eden_cutting",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 110
+        },
+        {
+          "kind": "tempo",
+          "amount": -15
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "eden_greenhouse",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 50,
+          "duration": 2
+        },
+        {
+          "kind": "heal",
+          "power": 50
+        },
+        {
+          "kind": "trigger",
+          "target": "primary",
+          "duration": 3,
+          "trigger": {
+            "on": "turn_start",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "heal",
+                "target": "self",
+                "power": 15
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "eden_greenage",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 110
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 25,
+          "duration": 3
+        },
+        {
+          "kind": "teamPoints",
+          "amount": 2
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "eden_greenthumb",
+    "triggers": [
+      {
+        "on": "spell_cast",
+        "subject": "self",
+        "slots": ["a", "b", "ult"],
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "lowest_hp_ally",
+            "power": 20
+          }
+        ]
+      },
+      {
+        "on": "hp_crossed",
+        "subject": "ally",
+        "thresholdPct": 35,
+        "limit": {
+          "per": "combat",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "subject",
+            "power": 40
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "eden_page_seedlings",
+      "nodes": [
+        {
+          "id": "eden_seedlings_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_bed",
+          "requires": "eden_seedlings_core",
+          "group": "eden_seedlings_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -55
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_slip",
+          "requires": "eden_seedlings_core",
+          "group": "eden_seedlings_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -35
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_harvest",
+          "requires": "eden_seedlings_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_dew",
+          "requires": "eden_seedlings_harvest",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "heal",
+                "target": "lowest_hp_ally",
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_stake",
+          "requires": "eden_seedlings_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_prune",
+          "requires": "eden_seedlings_stake",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "eden_seedlings_orchard",
+          "requires": "eden_seedlings_dew",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "power": 50,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eden_page_blossom",
+      "nodes": [
+        {
+          "id": "eden_blossom_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_pollen",
+          "requires": "eden_blossom_core",
+          "group": "eden_blossom_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_bud",
+          "requires": "eden_blossom_core",
+          "group": "eden_blossom_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_breeze",
+          "requires": "eden_blossom_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_seeds",
+          "requires": "eden_blossom_breeze",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "teamPoints",
+              "field": "amount",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_compost",
+          "requires": "eden_blossom_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_cuttings",
+          "requires": "eden_blossom_compost",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "eden_blossom_spring",
+          "requires": "eden_blossom_seeds",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "amount": -20
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eden_page_glasshouse",
+      "nodes": [
+        {
+          "id": "eden_glasshouse_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_cold",
+          "requires": "eden_glasshouse_core",
+          "group": "eden_glasshouse_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_warm",
+          "requires": "eden_glasshouse_core",
+          "group": "eden_glasshouse_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_bell",
+          "requires": "eden_glasshouse_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "shield",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_dome",
+          "requires": "eden_glasshouse_bell",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_frame",
+          "requires": "eden_glasshouse_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "lowest_hp_ally",
+                "power": 20,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_humid",
+          "requires": "eden_glasshouse_frame",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 50
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "eden_glasshouse_trellis",
+          "requires": "eden_glasshouse_dome",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

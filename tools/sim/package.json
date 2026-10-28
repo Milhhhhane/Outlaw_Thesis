@@ -13,7 +13,8 @@
     "curve": "tsx src/curve.ts",
     "auto": "tsx src/auto.ts",
     "tunecurve": "tsx src/tunecurve.ts",
-    "farm": "tsx src/farm.ts"
+    "farm": "tsx src/farm.ts",
+    "heroes": "tsx src/heroes.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

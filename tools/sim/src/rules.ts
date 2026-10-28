@@ -1,13 +1,14 @@
 import type { Content, Dungeon } from '@outlaw/data';
 import { compileTeam, type HeroBuild } from '@outlaw/engine';
-import { randomBuild } from './builds';
+import { pickTeam, randomBuild } from './builds';
 import { runDungeon } from './dungeons';
 import { average, lookahead } from './policy';
 import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
- * Règles d'équilibre du rapport, mesurées sur toutes les équipes possibles (`teamSize` héros parmi ceux du jeu) :
+ * Règles d'équilibre du rapport, mesurées sur un échantillon d'équipes (`sampleTeams`, toutes les
+ * équipes possibles tant qu'il y en a au plus `TEAM_SAMPLE`, R1 sur les `R1_TEAMS` premières) :
  *  - R1 : à niveau égal, le meilleur build bat le pire build de la même équipe (duels miroirs,
  *    chaque camp joué par la politique d'anticipation, dans les deux sens) dans ≥ r1MinWinRate.
  *  - R2 : avec r2LevelGap niveaux de retard, le meilleur build termine le donjon pour plus de
@@ -33,6 +34,43 @@ export function teams(content: Content): string[][] {
     for (let i = start; i < ids.length; i++) walk(i + 1, [...picked, ids[i] as string]);
   };
   walk(0, []);
+  return result;
+}
+
+/**
+ * Équipes mesurées par les règles. 25 héros font 12 650 équipes de quatre : trop pour la CI. Au-delà
+ * de `TEAM_SAMPLE` équipes possibles, on en tire `TEAM_SAMPLE` avec une graine fixe, par tours : à
+ * chaque tour, les héros sont mélangés puis groupés en équipes jouables (`pickTeam` : au plus deux du
+ * même rôle), si bien que chaque héros figure dans à peu près autant d'équipes que les autres. Même
+ * contenu, mêmes équipes.
+ * R2 et « aucun héros indispensable » portent sur tout l'échantillon (8 équipes par héros) ; R1,
+ * dont les duels font l'essentiel du temps de calcul et qui compare des builds d'une même équipe,
+ * sur les `R1_TEAMS` premières (deux tours de mélange : chaque héros y figure).
+ */
+export const TEAM_SAMPLE = 50;
+export const R1_TEAMS = 12;
+
+export function sampleTeams(content: Content, count: number, seed: number): string[][] {
+  const all = teams(content);
+  if (all.length <= count) return all;
+  const ids = content.heroes.map((h) => h.id);
+  const size = content.balance.progression.teamSize;
+  const rng = createRng(seed);
+  const seen = new Set<string>();
+  const result: string[][] = [];
+  while (result.length < count) {
+    let order = rng.shuffle(ids);
+    while (order.length >= size && result.length < count) {
+      const picked = pickTeam(content, order, size);
+      if (picked.length < size) break;
+      order = order.filter((id) => !picked.includes(id));
+      const team = picked.sort((a, b) => ids.indexOf(a) - ids.indexOf(b));
+      const key = team.join('+');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(team);
+    }
+  }
   return result;
 }
 
@@ -114,6 +152,10 @@ export interface RulesReport {
   readonly r1: { readonly rate: number; readonly ok: boolean };
   readonly r2: { readonly worst: number; readonly ok: boolean };
   readonly dispensable: { readonly gap: number; readonly hero: string; readonly ok: boolean };
+  /** Meilleur score d'une équipe échantillonnée qui contient chaque héros. */
+  readonly viability: readonly { readonly hero: string; readonly best: number }[];
+  /** Nombre d'équipes mesurées. */
+  readonly teams: number;
 }
 
 const outcome = (won: boolean): BattleOutcome => ({
@@ -123,7 +165,7 @@ const outcome = (won: boolean): BattleOutcome => ({
 
 export function evaluateRules(content: Content, samples: number, seed: number): RulesReport {
   const { targets } = content.balance;
-  const all = teams(content);
+  const all = sampleTeams(content, TEAM_SAMPLE, seed);
   const duels: BattleOutcome[] = [];
   const r1Rows: ScenarioRow[] = [];
   const r2Rows: ScenarioRow[] = [];
@@ -140,7 +182,8 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       const key = team.join('+');
       // R1 : meilleur et pire build jugés au duel, contre un groupe de référence qu'ils ne
       // rencontrent qu'une fois classés ; puis ils s'affrontent dans les deux sens.
-      const pair = duelExtremes(content, team, level, samples, seed + 3000 * d + t);
+      const pair =
+        t < R1_TEAMS ? duelExtremes(content, team, level, samples, seed + 3000 * d + t) : null;
       if (pair !== null) {
         local.push(outcome(duel(content, pair.best, pair.worst)));
         local.push(outcome(!duel(content, pair.worst, pair.best)));
@@ -181,7 +224,18 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
   const best = Math.max(...scores.map((s) => s.rate));
   const heroRows = content.heroes.map((hero) => {
     const without = Math.max(...scores.filter((s) => !s.team.includes(hero.id)).map((s) => s.rate));
-    return { hero: hero.id, without, row: asRow(`best_team_without_${hero.id}`, without) };
+    // Viabilité : la meilleure équipe échantillonnée qui contient ce héros.
+    const within = Math.max(
+      0,
+      ...scores.filter((s) => s.team.includes(hero.id)).map((s) => s.rate),
+    );
+    return {
+      hero: hero.id,
+      without,
+      within,
+      row: asRow(`best_team_without_${hero.id}`, without),
+      withRow: asRow(`best_team_with_${hero.id}`, within),
+    };
   });
   const worstGap = heroRows.reduce(
     (acc, h) =>
@@ -191,7 +245,16 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
   const r2Worst = Math.min(...r2Rows.map((r) => r.winRate));
 
   return {
-    rows: [r1Row, ...r1Rows, ...r2Rows, asRow('best_team', best), ...heroRows.map((h) => h.row)],
+    rows: [
+      r1Row,
+      ...r1Rows,
+      ...r2Rows,
+      asRow('best_team', best),
+      ...heroRows.map((h) => h.row),
+      ...heroRows.map((h) => h.withRow),
+    ],
+    viability: heroRows.map((h) => ({ hero: h.hero, best: h.within })),
+    teams: all.length,
     r1: { rate: r1Row.winRate, ok: r1Row.winRate >= targets.r1MinWinRate },
     r2: { worst: r2Worst, ok: r2Worst > targets.r2MinWinRate },
     dispensable: { ...worstGap, ok: worstGap.gap <= targets.dispensableMaxGapPoints },

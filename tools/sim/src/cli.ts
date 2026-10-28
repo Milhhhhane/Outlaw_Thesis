@@ -42,6 +42,10 @@ const verdicts: string[] = [
   `R2 ${rules.r2.ok ? 'tenue' : 'NON TENUE'} : pire donjon ${(rules.r2.worst * 100).toFixed(0)} % avec ${targets.r2LevelGap} niveaux de retard (cible > ${targets.r2MinWinRate * 100} %)`,
   `Aucun héros indispensable ${rules.dispensable.ok ? 'tenue' : 'NON TENUE'} : écart maximal ${rules.dispensable.gap.toFixed(0)} points (cible ≤ ${targets.dispensableMaxGapPoints})`,
 ];
+const viable = [...rules.viability].sort((a, b) => a.best - b.best);
+verdicts.push(
+  `Meilleure équipe avec chaque héros : de ${(100 * (viable[0]?.best ?? 0)).toFixed(0)} % (${viable[0]?.hero ?? ''}) à ${(100 * (viable.at(-1)?.best ?? 0)).toFixed(0)} % (${viable.at(-1)?.hero ?? ''}), ${String(rules.teams)} équipes mesurées`,
+);
 verdicts.push(
   `Rythme et difficulté ${pace.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert ${(pace.expertRate * 100).toFixed(0)} %, joueur moyen ${(pace.averageRate * 100).toFixed(0)} % au niveau conseillé`,
   ...pace.problems.map((p) => `  - ${p}`),
