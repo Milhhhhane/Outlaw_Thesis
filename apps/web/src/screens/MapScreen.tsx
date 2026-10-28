@@ -4,7 +4,7 @@ import {
   lootRates,
   masteryNext,
   masteryRank,
-  tierChest,
+  chestOdds,
   tierCleared,
   tierCount,
   tierLevel,
@@ -290,8 +290,16 @@ export function MapScreen({
                           gold: Math.round((tier - 1) * tierRules.rewardPctPerTier.gold),
                           dust: Math.round((tier - 1) * tierRules.rewardPctPerTier.materials),
                           rare: (tier - 1) * tierRules.rareWeightPerTier,
-                          chest: tk(`chest.tier.${tierChest(content, dungeon, tier)}`),
-                        })}
+                        })}{' '}
+                    {t('tier.chests', {
+                      odds: chestOdds(content, dungeon, tier)
+                        .filter((o) => o.pct > 0)
+                        .map(
+                          (o) =>
+                            `${tk(`chest.short.${o.chest}`)}\u00a0${String(Math.round(o.pct))}`,
+                        )
+                        .join(', '),
+                    })}
                   </span>
                 </div>
               )}

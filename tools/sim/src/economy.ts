@@ -32,7 +32,7 @@ import {
   openChest,
   setFocus,
   starUp,
-  tierChest,
+  chestOdds,
   tierCleared,
   tierReached,
   tierRewardFactor,
@@ -106,8 +106,14 @@ export function candidates(content: Content, profile: Profile): Candidate[] {
     if (!open) break;
     const rank = masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0);
     for (let tier = 1; tier <= tierReached(content, profile, dungeon.id); tier++) {
-      const chest = chests.tiers.find((t) => t.id === tierChest(content, dungeon, tier));
-      const chestRate = tierCleared(profile, dungeon.id, tier) ? chests.replayChestRate : 1;
+      // Fragments attendus : chance de chaque coffre × sa taille ; au premier passage, le reste de
+      // la chance tombe sur le plus modeste (coffre garanti).
+      const odds = chestOdds(content, dungeon, tier);
+      const sizeOf = (id: string): number => chests.tiers.find((t) => t.id === id)?.fragments ?? 0;
+      const expected = odds.reduce((sum, o) => sum + (o.pct / 100) * sizeOf(o.chest), 0);
+      const missing = 1 - odds.reduce((sum, o) => sum + o.pct / 100, 0);
+      const first = !tierCleared(profile, dungeon.id, tier);
+      const fragments = expected + (first ? missing * sizeOf(chests.tiers[0]?.id ?? '') : 0);
       out.push({
         dungeon: dungeon.id,
         tier,
@@ -121,7 +127,7 @@ export function candidates(content: Content, profile: Profile): Candidate[] {
             tierRewardFactor(content, tier, 'materials') *
             masteryMaterialsFactor(content, rank),
         },
-        fragments: (chest?.fragments ?? 0) * chestRate,
+        fragments,
       });
     }
   }
@@ -516,13 +522,20 @@ export function printTables(content: Content): void {
   console.log(
     'Ce qui tombe (premier passage ; rejeu × ' + String(economy.replayRewardRate) + ') :',
   );
-  console.log('  donjon            niv   XP     or  poussière  coffre (fragments)');
+  console.log(
+    '  donjon            niv   XP     or  poussière  coffres palier I (or / argent / bronze %)',
+  );
   for (const d of content.dungeons) {
-    const chest = chests.tiers.find((t) => t.id === d.chest);
+    const odds = chestOdds(content, d, 1)
+      .map((o) => o.pct.toFixed(0))
+      .join(' / ');
     console.log(
-      `  ${d.id.padEnd(16)} ${String(d.recommendedLevel).padStart(3)} ${String(d.rewards.xp).padStart(5)} ${String(d.rewards.gold).padStart(5)}  ${String(d.rewards.materials.amount).padStart(3)} T${String(d.rewards.materials.tier)}     ${d.chest} (${String(chest?.fragments ?? 0)})`,
+      `  ${d.id.padEnd(16)} ${String(d.recommendedLevel).padStart(3)} ${String(d.rewards.xp).padStart(5)} ${String(d.rewards.gold).padStart(5)}  ${String(d.rewards.materials.amount).padStart(3)} T${String(d.rewards.materials.tier)}     ${odds}`,
     );
   }
+  console.log(
+    `  coffres : ${chests.tiers.map((t) => `${t.id} ${String(t.fragments)} fragments, poids ${t.weights.join('/')}`).join(' ; ')} ; héros ciblé × ${String(chests.focusMultiplier)}`,
+  );
   console.log('Ce qui se dépense :');
   const team = progression.teamSize;
   for (const tier of [1, 2, 3]) {

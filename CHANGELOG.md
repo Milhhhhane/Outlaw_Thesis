@@ -2,6 +2,25 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — coffres revus
+
+### Modifié
+
+- Héros ciblé : son poids dans le coffre est multiplié (× 12) au lieu de recevoir 50 % des
+  fragments ; sa chance suit sa rareté (un légendaire ciblé : 0 % en bronze, 6 % en argent,
+  26 % en or ; un commun : 30 à 50 %).
+- Coffres distincts : poids de rareté propres (bronze sans légendaire, or riche en épiques et
+  légendaires) et 4 / 7 / 14 fragments ; barre de raretés et nombre en réserve sur l'écran.
+- Chance de coffre à chaque passage selon la difficulté du palier (or 0 % au premier donjon,
+  15 % au palier III du dernier) ; premier passage d'un palier : coffre garanti. Chances
+  affichées sur la carte, par palier.
+- Jalons du joueur modèle conservés (équipe au niveau 30 : 110 → 114 passages ; voir
+  `docs/ECONOMY.md`).
+
+### Supprimé
+
+- `chest` des donjons, `chestStepPerTier`, `focusRate`, `replayChestRate`, `tierWeights`.
+
 ## [Non publié] — 2026-10-28 — arbre des talents lisible
 
 ### Corrigé

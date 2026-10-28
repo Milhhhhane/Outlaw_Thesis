@@ -1,6 +1,7 @@
 import {
   atStarGate,
   chestCount,
+  chestRarityRates,
   chestSize,
   fragmentRates,
   heroStars,
@@ -163,13 +164,38 @@ function Reveal({
   );
 }
 
+/** Part de chaque rareté dans un coffre : une barre aux couleurs des raretés, le détail au survol. */
+function RarityMix({ chest }: { readonly chest: string }) {
+  const mix = chestRarityRates(content, chest);
+  const [c = 0, r = 0, e = 0, l = 0] = mix.map((x) => Math.round(x));
+  const label = t('chests.mix', { c, r, e, l });
+  return (
+    <span className="chest-card__mix">
+      <span className="mix" role="img" aria-label={label} title={label}>
+        {mix.map((pct, i) =>
+          pct > 0 ? (
+            <span
+              key={i}
+              className={`mix__part rarity-${String(i + 1)}`}
+              style={{ width: `${String(pct)}%` }}
+            />
+          ) : null,
+        )}
+      </span>
+      <span className="hint">{t('chests.mix.short', { l })}</span>
+    </span>
+  );
+}
+
 /** Coffres : ouvrir, voir ses fragments, invoquer un héros, payer une étoile, cibler un héros. */
 export function Chests() {
   const { go } = useGame();
   const { profile, apply } = useProfile();
   const [reveal, setReveal] = useState<ChestReport | null>(null);
   const { chests } = content.balance;
-  const rates = fragmentRates(content, profile);
+  const rates = Object.fromEntries(
+    chests.tiers.map((tier) => [tier.id, fragmentRates(content, profile, tier.id)]),
+  );
   const total = chestCount(profile);
 
   function open(tier: string): void {
@@ -205,12 +231,20 @@ export function Chests() {
                   key={tier.id}
                   className={['chest-card', count === 0 ? 'chest-card--none' : ''].join(' ')}
                 >
-                  <ChestArt tier={tier.id} />
-                  <span className="chest-card__name">{tk(`chest.tier.${tier.id}`)}</span>
-                  <span className="hint">
-                    {t('chests.size', { n: chestSize(content, tier.id) ?? 0 })} ·{' '}
-                    {t('chests.owned', { n: count })}
+                  <span className="chest-card__art">
+                    <ChestArt tier={tier.id} />
+                    <span
+                      className="chest-card__count"
+                      aria-label={t('chests.owned', { n: count })}
+                    >
+                      ×{count}
+                    </span>
                   </span>
+                  <span className="chest-card__name">{tk(`chest.tier.${tier.id}`)}</span>
+                  <span className="hint chest-card__size">
+                    {t('chests.size', { n: chestSize(content, tier.id) ?? 0 })}
+                  </span>
+                  <RarityMix chest={tier.id} />
                   <Button
                     size="small"
                     disabled={count === 0}
@@ -230,9 +264,12 @@ export function Chests() {
         <Panel className="chests__heroes" label={t('chests.fragments')}>
           <h2 className="chests__heading">{t('chests.fragments')}</h2>
           <p className="hint chests__target-hint">
-            {profile.focus === null
-              ? t('chests.target.none')
-              : t('chests.target.hint', { pct: Math.round(chests.focusRate * 100) })}
+            <span>
+              {profile.focus === null
+                ? t('chests.target.none')
+                : t('chests.target.hint', { k: chests.focusMultiplier })}
+            </span>{' '}
+            <span>{t('chests.rate.legend')}</span>
           </p>
           <ul className="frag-list">
             {content.heroes.map((def) => {
@@ -243,7 +280,12 @@ export function Chests() {
               const summon = summonCost(content, def.id);
               const cost = unlocked ? starCost(content, hero) : summon;
               const target = profile.focus === def.id;
-              const pct = rates.find((r) => r.hero === def.id)?.pct ?? 0;
+              const pcts = chests.tiers.map(
+                (tier) => rates[tier.id]?.find((r) => r.hero === def.id)?.pct ?? 0,
+              );
+              const perChest = chests.tiers
+                .map((tier, i) => `${tk(`chest.short.${tier.id}`)} ${rate(pcts[i] ?? 0)} %`)
+                .join(', ');
               return (
                 <li
                   key={def.id}
@@ -290,7 +332,13 @@ export function Chests() {
                         </span>
                       </span>
                     )}
-                    <span className="hint">{t('chests.rate', { pct: rate(pct) })}</span>
+                    <span
+                      className="hint frag-row__rates"
+                      title={t('chests.rate', { rates: perChest })}
+                      aria-label={t('chests.rate', { rates: perChest })}
+                    >
+                      {pcts.map((p) => rate(p)).join(' / ')} %
+                    </span>
                   </span>
                   <span className="frag-row__actions">
                     {!unlocked ? (

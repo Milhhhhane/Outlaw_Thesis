@@ -58,7 +58,7 @@ Ressac et Sève se débloquent en terminant les donjons 4 et 6. Les 19 autres s'
 invocation (fragments des coffres). Ordre d'affichage : `content/heroes/index.ts`.
 
 **Rareté** (`tier`, 1 à 4 : commun, rare, épique, légendaire ; 1 par défaut). Elle fixe le poids
-du héros dans le tirage des fragments (`balance.chests.tierWeights`) et son coût d'invocation
+du héros dans le tirage des fragments (`weights` de chaque coffre de `balance.chests.tiers`) et son coût d'invocation
 (`chests.summonCosts`). Elle enrichit le kit (passif à deux déclencheurs, mécanique qui plie une
 règle pour les légendaires), pas les stats : le chargement refuse un héros dont l'indice de stats
 dépasse celui du commun le mieux doté de plus de `TIER_STAT_BUDGET_PCT` (2 %) par palier, et un
@@ -116,8 +116,8 @@ ouvre le suivant du même donjon. Rien n'est écrit par donjon : une seule formu
 - XP, or et poussière sont multipliés par 1 + (k − 1) × `rewardPctPerTier` % (XP à 0 par défaut :
   les niveaux viennent de la progression, les paliers servent au craft) ;
 - le rare gagne (k − 1) × `rareWeightPerTier` de poids ;
-- le coffre monte de (k − 1) × `chestStepPerTier` paliers dans `chests.tiers` (bronze → argent →
-  or, borné au plus riche).
+- les ennemis plus forts montent la chance des coffres riches (`chests.dropLevels` et `drop` de
+  chaque coffre : le niveau d'ennemis du palier choisit la chance de bronze, d'argent et d'or).
 
 Le premier passage de chaque palier compte comme un premier passage (rare et coffre garantis).
 La maîtrise et la garantie du rare restent par donjon, tous paliers confondus. Le profil garde

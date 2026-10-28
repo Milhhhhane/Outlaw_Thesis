@@ -208,7 +208,7 @@ sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (el
 - Niveaux conseillés : 1, 4, 8, 12, 17, 22, 27, 28, 29, 30. Le donjon 4 (niveau 12) demande la première étoile
   (plafond 10 → 20) et le donjon 6 (niveau 22) la seconde (20 → 30), soit 30 fragments par héros
   de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
-  `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
+  `starCosts` ou monter les chances de coffre (`chests.tiers[].drop`) avant de toucher aux niveaux.
 
 ## Combat automatique
 
@@ -403,7 +403,7 @@ que l'or et la poussière pure comptent désormais et que la fin coûte bien plu
 
 Ce que le réglage ne règle pas : la première étoile (20 passages, 10 fragments) et la seconde
 (niveau 22, 80 fragments pour quatre héros) gouvernent le milieu de partie (4ᵉ donjon ouvert au
-37ᵉ passage en moyenne, 30 à 46 selon le tirage) ; `starCosts` et `replayChestRate` n'ont pas été
+37ᵉ passage en moyenne, 30 à 46 selon le tirage) ; `starCosts` et la chance de coffre n'ont pas été
 touchés, faute de cible chiffrée dans le brief. L'or n'a toujours que les objets et le respec
 comme puits : une fois la collection finie, il s'accumule.
 
@@ -499,7 +499,7 @@ Valeurs de `balance.json` → `chests`. Répartition : 10 communs, 8 rares, 5 é
   viennent donc surtout de la part ciblée. Équipe de 4 équipée 38,5 → 46,0 passages gagnants,
   équipe au niveau 30 101,6 → 110,3, objets au maximum 116,0 → 122,2 ; premier objet (8,1) et
   première étoile (20,0) inchangés. Dans les bornes de `economy.test.ts` ; si le propriétaire
-  trouve la fin trop longue, monter `focusRate` (0,5) avant de toucher aux coûts d'étoile.
+  trouve la fin trop longue, monter `focusMultiplier` avant de toucher aux coûts d'étoile (voir « Coffres » dans `docs/ECONOMY.md`).
 
 ### Après fusion des paliers de donjon
 

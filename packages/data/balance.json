@@ -94,8 +94,7 @@
     "levelsPerTier": 5,
     "enemyPctPerTier": { "hp": 20, "atk": 20 },
     "rewardPctPerTier": { "xp": 0, "gold": 25, "materials": 25 },
-    "rareWeightPerTier": 5,
-    "chestStepPerTier": 1
+    "rareWeightPerTier": 5
   },
   "economy": {
     "replayRewardRate": 1,
@@ -113,23 +112,13 @@
   },
   "chests": {
     "summonCosts": [10, 20, 40, 80],
-    "tierWeights": [12, 6, 3, 1],
     "starCosts": [10, 20],
-    "focusRate": 0.5,
-    "replayChestRate": 0.5,
+    "focusMultiplier": 12,
+    "dropLevels": [1, 40],
     "tiers": [
-      {
-        "id": "bronze",
-        "fragments": 3
-      },
-      {
-        "id": "silver",
-        "fragments": 5
-      },
-      {
-        "id": "gold",
-        "fragments": 8
-      }
+      { "id": "bronze", "fragments": 4, "weights": [12, 4, 1, 0], "drop": [45, 25] },
+      { "id": "silver", "fragments": 7, "weights": [12, 6, 3, 1], "drop": [5, 30] },
+      { "id": "gold", "fragments": 14, "weights": [6, 8, 8, 5], "drop": [0, 15] }
     ]
   },
   "energy": {

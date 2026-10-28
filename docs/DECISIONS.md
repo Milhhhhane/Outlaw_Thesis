@@ -797,3 +797,28 @@ reçu la classe `.effects`, déjà utilisée par les listes d'effets des fiches 
 chargé ensemble, ces listes devenaient flottantes et recouvraient l'onglet Talents. Choix : les
 couches de la scène de combat portent le préfixe `stage__` (`.stage__effects`). Raison : un nom
 générique partagé entre deux écrans casse l'autre sans erreur ; le préfixe de bloc l'évite.
+
+## Coffres : ciblage proportionnel, coffres distincts, chance selon la difficulté
+
+**Le héros ciblé multiplie son poids, il ne prend plus une part fixe** — Contexte : `focusRate`
+donnait 50 % des fragments au héros ciblé quelle que soit sa rareté ; un légendaire (80 fragments
+à invoquer) se ciblait comme un commun, et la rareté ne pesait plus que sur le prix. Choix : le
+ciblé pèse `focusMultiplier` (× 12) fois son poids dans le coffre. Raison : sa chance monte en
+proportion de sa rareté (commun 30 à 50 %, légendaire 0 à 26 % selon le coffre) ; un seul nombre
+à régler ; le tirage et l'affichage partagent le calcul. Écarté : une part fixe par rareté
+(quatre nombres sans lien avec les poids, à recaler à chaque héros ajouté).
+
+**Trois coffres qui diffèrent par leur contenu, pas seulement leur taille** — Choix : chaque coffre
+a ses poids de rareté (`weights`) ; un bronze ne donne jamais de légendaire, l'or en donne cinq
+fois plus que l'argent, et plus de fragments (4 / 7 / 14). Raison : un coffre d'or doit être un
+événement ; l'écran l'affiche par une barre aux couleurs des raretés.
+
+**La chance de coffre suit la difficulté, pas le donjon** — Contexte : chaque donjon avait son
+coffre (champ `chest`), donné au premier passage puis une fois sur deux, et chaque palier montait
+d'un cran : l'or tombait une fois sur deux dès le palier III des Landes. Choix : une chance par
+coffre et par passage, en ligne droite selon le niveau des ennemis du palier
+(`chests.dropLevels` 1 → 40, `drop` de chaque coffre) ; le premier passage d'un palier garantit
+au moins un bronze. Raison : plus le passage est dur, plus le coffre est riche, avec une seule
+règle pour tous les donjons et paliers (un donjon ajouté n'a rien à déclarer). Le champ `chest`
+des donjons et `chestStepPerTier` disparaissent ; les sauvegardes ne stockent ni l'un ni l'autre.
+Tailles 4 / 7 / 14 choisies pour garder les jalons du joueur modèle (`docs/ECONOMY.md`).
