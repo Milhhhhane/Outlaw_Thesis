@@ -10,9 +10,14 @@
   min-height: 0;
 }
 
-/* Les emplacements tiennent dans leurs 172 px : la barre de tri passe juste dessous. */
+/* Les emplacements tiennent dans leurs 150 px : la barre de tri passe juste dessous et le vivier
+   garde une rangée entière (le sprite déborde vers le haut, comme les armes). */
 .team__top .team__sprite {
-  height: 88px;
+  height: 66px;
+}
+
+.team__roster .gbtn--ghost {
+  min-height: 28px;
 }
 
 .presets {
@@ -104,6 +109,7 @@
 }
 
 .preset .gbtn--small {
+  min-height: 30px;
   padding: 0 8px;
   font-size: 13px;
 }
@@ -235,6 +241,11 @@
 
 .hub__badge + .hub__badge {
   margin-left: 4px;
+}
+
+/* L'icône prend la couleur du texte du badge, pas le doré du badge : chaque badge se reconnaît. */
+.hub__badge .icon {
+  color: var(--ink);
 }
 
 .hub__badge > span[aria-hidden] {

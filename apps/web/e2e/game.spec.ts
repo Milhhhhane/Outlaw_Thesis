@@ -36,6 +36,17 @@ async function inView(page: Page, selector: string): Promise<void> {
   expect(box.y + box.height).toBeLessThanOrEqual(vp.height + 1);
 }
 
+/** Le vivier de l'équipe ne défile pas : toutes ses cartes, bouton « Fiche » compris, sont visibles. */
+async function rosterFits(page: Page): Promise<void> {
+  await expect(page.locator('.roster__card')).toHaveCount(4);
+  const m = await page.evaluate(() => {
+    const el = document.querySelector('.team__roster');
+    return el === null ? null : { sh: el.scrollHeight, ch: el.clientHeight };
+  });
+  expect(m).not.toBeNull();
+  expect(m?.sh ?? 0).toBeLessThanOrEqual((m?.ch ?? 0) + 1);
+}
+
 const portrait = (page: Page): boolean =>
   (page.viewportSize()?.height ?? 0) > (page.viewportSize()?.width ?? 0);
 
@@ -67,6 +78,17 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
     }
     await page.keyboard.press('Escape');
   }
+  // Équipe avant un donjon (équipes enregistrées, tri, passages) : le vivier des quatre héros de
+  // départ tient en entier dans son cadre, bouton « Fiche » compris.
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await noScroll(page);
+  await rosterFits(page);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Équipe/ }).click();
+  await rosterFits(page);
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Options' }).click();
   await noScroll(page);
   await page.keyboard.press('Escape');
@@ -546,5 +568,47 @@ test('série de trois passages en Auto : rejeu, puis bilan qui tient à l’écr
   await expect(page.getByRole('heading', { name: 'Le camp' })).toBeVisible();
   // Le coffre gagné est signalé sur l'entrée des coffres.
   await expect(page.getByRole('button', { name: /^Coffres/ })).toContainText('Coffres à ouvrir');
+  await noScroll(page);
+});
+
+test('badges du camp : chaque icône se détache de son badge', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  // Niveau 4 : des points de talent à placer ; un coffre fermé.
+  const profile = {
+    ...base,
+    heroes: Object.fromEntries(
+      Object.entries(base.heroes).map(([id, hero]) => [id, { ...hero, level: 4 }]),
+    ),
+    chests: { bronze: 1 },
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  const heroes = page.getByRole('button', { name: /^Héros/ });
+  await expect(heroes).toContainText('Points de talent à placer : 8');
+  await expect(page.getByRole('button', { name: /^Coffres/ })).toContainText(
+    'Coffres à ouvrir : 1',
+  );
+  const colors = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hub__badge')).map((badge) => ({
+      badge: getComputedStyle(badge).backgroundColor,
+      icon: (() => {
+        const icon = badge.querySelector('.icon');
+        return icon === null ? null : getComputedStyle(icon).backgroundColor;
+      })(),
+    })),
+  );
+  const withIcon = colors.filter((c) => c.icon !== null);
+  expect(withIcon.length).toBeGreaterThan(0);
+  for (const c of withIcon) expect(c.icon).not.toBe(c.badge);
   await noScroll(page);
 });
