@@ -62,7 +62,7 @@ function Sparks({
 }) {
   const count = flash.heavy ? 10 : 6;
   return (
-    <span className="sparks" style={{ top }} aria-hidden="true">
+    <span className={`sparks sparks--${element}`} style={{ top }} aria-hidden="true">
       {Array.from({ length: count }, (_, i) => {
         const angle = (i / count) * Math.PI * 2 + (flash.key % 7) * 0.3;
         const dist = (flash.heavy ? 22 : 14) + ((flash.key * 13 + i * 7) % 9);
@@ -115,6 +115,8 @@ function Actor(props: {
   const { x, y } = placeOf(unit);
   const hit = flash?.tone === 'damage' ? flash.key : 0;
   const heavy = flash?.tone === 'damage' && flash.heavy;
+  // Élément du coup reçu (celui de l'attaquant, porté par l'effet), pour teinter le choc.
+  const hitElement = flash?.fx?.split('_')[1] ?? unit.element;
   const style = {
     left: x - info.w / 2,
     top: y - info.bottom,
@@ -143,7 +145,11 @@ function Actor(props: {
       <span className="actor__body">
         <span
           key={hit}
-          className={hit > 0 ? (heavy ? 'actor__hit actor__hit--heavy' : 'actor__hit') : ''}
+          className={
+            hit > 0
+              ? `actor__hit actor__hit--${hitElement}${heavy ? ' actor__hit--heavy' : ''}`
+              : ''
+          }
         >
           {unit.side === 'player' ? (
             <HeroSprite name={unit.kind} idle={unit.alive} />
@@ -152,11 +158,29 @@ function Actor(props: {
           )}
         </span>
       </span>
-      {flash?.fx != null && (
+    </div>
+  );
+}
+
+/**
+ * Effets posés sur une unité (impact, étincelles, chiffre) : dans une couche au-dessus des
+ * acteurs, pour qu'un attaquant au contact ne cache pas le coup qu'il porte.
+ */
+function Effects({ unit, flash }: { readonly unit: UnitView; readonly flash: Flash }) {
+  const info = sprite(unit.kind);
+  if (info === undefined) return null;
+  const { x, y } = placeOf(unit);
+  const hitElement = flash.fx?.split('_')[1] ?? unit.element;
+  return (
+    <div
+      className="effects"
+      style={{ left: x - info.w / 2, top: y - info.bottom, width: info.w, height: info.h }}
+    >
+      {flash.fx != null && (
         <span
           key={`fx${flash.key}`}
           className={flash.feet ? 'actor__fx actor__fx--feet' : 'actor__fx'}
-          style={flash.feet ? { top: info.bottom - 12 } : { top: info.top + 6 }}
+          style={{ top: flash.feet ? info.bottom - 12 : (info.top + info.bottom) / 2 - 16 }}
         >
           <PixelSprite
             name={flash.fx}
@@ -164,15 +188,10 @@ function Actor(props: {
           />
         </span>
       )}
-      {flash?.tone === 'damage' && (
-        <Sparks
-          key={`sp${flash.key}`}
-          flash={flash}
-          element={flash.fx?.split('_')[1] ?? unit.element}
-          top={info.top + 22}
-        />
+      {flash.tone === 'damage' && (
+        <Sparks key={`sp${flash.key}`} flash={flash} element={hitElement} top={info.top + 22} />
       )}
-      {flash !== undefined && flash.text !== '' && (
+      {flash.text !== '' && (
         <span key={`n${flash.key}`} className="actor__number" style={{ top: info.top - 4 }}>
           <PixelText text={flash.text} tone={flash.tone} />
         </span>
@@ -297,6 +316,12 @@ export function Stage({
               />
             ))}
             <Bolts view={view} />
+            {view.units.map((unit) => {
+              const flash = latest.get(unit.id);
+              return flash === undefined ? null : (
+                <Effects key={unit.id} unit={unit} flash={flash} />
+              );
+            })}
           </div>
         </div>
       </div>

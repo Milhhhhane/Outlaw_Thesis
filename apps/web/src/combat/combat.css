@@ -322,17 +322,35 @@
   animation: actor-hit 0.32s steps(1, end);
 }
 
+/* Le choc prend la couleur de l'élément du coup (halo), le sprite passe au blanc. */
+.actor__hit {
+  --glow: #fff6d8;
+}
+
+.actor__hit--fire {
+  --glow: #ff8a2a;
+}
+
+.actor__hit--water {
+  --glow: #6ac8ff;
+}
+
+.actor__hit--nature {
+  --glow: #8ad84a;
+}
+
 @keyframes actor-hit {
   0% {
-    filter: brightness(4) saturate(0);
+    filter: brightness(4) saturate(0) drop-shadow(0 0 2px var(--glow))
+      drop-shadow(0 0 1px var(--glow));
     transform: translateX(calc(var(--dir) * -5px)) rotate(calc(var(--dir) * -6deg));
   }
   25% {
-    filter: none;
+    filter: drop-shadow(0 0 1px var(--glow));
     transform: translateX(calc(var(--dir) * 2px)) scale(1.06, 0.94);
   }
   50% {
-    filter: brightness(2.5) saturate(0.4);
+    filter: brightness(2.5) saturate(0.4) drop-shadow(0 0 2px var(--glow));
     transform: translateX(calc(var(--dir) * -2px));
   }
   75% {
@@ -365,20 +383,21 @@
 
 @keyframes actor-hit-heavy {
   0% {
-    filter: brightness(6) saturate(0);
+    filter: brightness(6) saturate(0) drop-shadow(0 0 3px var(--glow))
+      drop-shadow(0 0 2px var(--glow));
     transform: translateX(calc(var(--dir) * -9px)) rotate(calc(var(--dir) * -12deg))
       scale(1.1, 0.85);
   }
   20% {
-    filter: brightness(4) saturate(0);
+    filter: brightness(4) saturate(0) drop-shadow(0 0 3px var(--glow));
     transform: translateX(calc(var(--dir) * -7px)) rotate(calc(var(--dir) * -8deg));
   }
   40% {
-    filter: none;
+    filter: drop-shadow(0 0 2px var(--glow));
     transform: translateX(calc(var(--dir) * 3px)) scale(1.08, 0.92);
   }
   60% {
-    filter: brightness(2) saturate(0.5);
+    filter: brightness(2) saturate(0.5) drop-shadow(0 0 2px var(--glow));
     transform: translateX(calc(var(--dir) * -2px));
   }
   80% {
@@ -435,6 +454,13 @@
   }
 }
 
+/* Couche des effets d'une unité : au-dessus des acteurs, sous les projectiles. */
+.effects {
+  position: absolute;
+  z-index: 350;
+  pointer-events: none;
+}
+
 .actor__fx {
   position: absolute;
   left: 50%;
@@ -466,6 +492,32 @@
   opacity: 0;
 }
 
+/* Chaque élément a sa physique : les braises montent, les gouttes retombent, les feuilles
+   dérivent. --g : chute en fin de course, --drift : dérive latérale. */
+.sparks--fire {
+  --g: -12px;
+  --drift: 0px;
+}
+
+.sparks--water {
+  --g: 22px;
+  --drift: 0px;
+}
+
+.sparks--water .spark {
+  height: 3px;
+}
+
+.sparks--nature {
+  --g: 8px;
+  --drift: 6px;
+}
+
+.sparks--nature .spark {
+  width: 3px;
+  animation-duration: 0.6s;
+}
+
 @keyframes spark-fly {
   0% {
     opacity: 1;
@@ -477,7 +529,10 @@
   }
   100% {
     opacity: 0;
-    transform: translate(calc(var(--sx) * 1.2), calc(var(--sy) + 10px));
+    transform: translate(
+      calc(var(--sx) * 1.2 + var(--drift, 0px)),
+      calc(var(--sy) + var(--g, 10px))
+    );
   }
 }
 

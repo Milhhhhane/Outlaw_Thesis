@@ -56,6 +56,141 @@ def burst(ramp, frame, seed, shards=14):
     return im
 
 
+def disk(im, cx, cy, r, c, ry=None):
+    ry = r if ry is None else ry
+    for y in range(int(cy - ry) - 1, int(cy + ry) + 2):
+        for x in range(int(cx - r) - 1, int(cx + r) + 2):
+            if ((x - cx) / r) ** 2 + ((y - cy) / ry) ** 2 < 1:
+                put(im, x, y, c)
+
+
+def ring(im, cx, cy, rx, ry, c, gap=1):
+    for k in range(0, 360, 3):
+        if (k // 3) % (gap + 1) == 0:
+            a = math.radians(k)
+            put(im, cx + math.cos(a) * rx, cy + math.sin(a) * ry, c)
+
+
+def fire_hit(ramp, frame, seed, size=32):
+    """Feu : éclat, langues de flammes qui montent, braises, puis fumée."""
+    im = canvas(size, size)
+    rnd = random.Random(seed)
+    cx, cy = size / 2, size / 2 + size / 8
+    s = size / 32
+    if frame == 0:
+        disk(im, cx, cy, 5 * s, ramp[4], 4 * s)
+        disk(im, cx, cy - 2 * s, 3 * s, '#ffffff', 2.5 * s)
+    tongues = [(-9, 7), (-4, 12), (0, 15), (4, 11), (9, 8), (-13, 4), (13, 5)]
+    for i, (ox, h) in enumerate(tongues):
+        if (frame == 0 and i >= 5) or frame == 3:
+            continue
+        h = h * s * (0.7, 1.0, 1.25, 0.6)[frame]
+        lean = (i % 2 * 2 - 1) * frame * 0.5
+        base_y = cy + 3 * s - frame * 3 * s
+        x = cx + ox * s
+        for k in range(int(h)):
+            t = k / max(1, h)
+            w = max(0, int((1 - t) * 2.5 * s))
+            tone = 4 - frame if t < 0.35 else (3 - frame if t < 0.7 else 2 - frame)
+            if frame == 3:
+                tone = 1 if t < 0.5 else 0
+            if tone < 0:
+                continue
+            if frame == 3 and (k + i) % 2:
+                continue
+            for dx in range(-w, w + 1):
+                put(im, x + dx + lean * t * 4, base_y - k, ramp[max(0, tone)])
+    if frame >= 1:  # braises
+        for i in range(6 + frame * 2):
+            x = cx + rnd.uniform(-10, 10) * s
+            y = cy - (4 + frame * 5 + rnd.uniform(0, 6)) * s
+            put(im, x, y, ramp[4 if (i + frame) % 3 == 0 else 3])
+    if frame == 3:  # fumée
+        for i in range(7):
+            x = cx + rnd.uniform(-9, 9) * s
+            y = cy - 4 * s - rnd.uniform(0, 8) * s
+            disk(im, x, y, (2 + i % 2) * s, '#4a3240' if i % 2 else '#2e2030', 1.5 * s)
+            put(im, x - 1, y - 1, '#5a4450')
+    return im
+
+
+def water_hit(ramp, frame, seed, size=32):
+    """Eau : gerbe en couronne, gouttes qui retombent, rond dans l'eau."""
+    im = canvas(size, size)
+    rnd = random.Random(seed)
+    s = size / 32
+    cx, base = size / 2, size / 2 + 8 * s
+    if frame <= 1:  # couronne
+        disk(im, cx, base - 4 * s, 6 * s, ramp[2 + (1 - frame)], 3 * s)
+        if frame == 0:
+            disk(im, cx, base - 5 * s, 3.5 * s, ramp[4], 2 * s)
+        for i in range(7):
+            x = cx + (i - 3) * 3.4 * s
+            h = (10 - abs(i - 3) * 2) * s * (1.0, 1.3)[frame]
+            for k in range(int(h)):
+                tone = 4 if k > h - 3 * s else (3 if (k + i) % 2 else 2)
+                put(im, x, base - 3 * s - k, ramp[tone])
+            put(im, x, base - 3 * s - h - 1, ramp[4])
+    for i in range(10):  # gouttes
+        a = (i / 10) * math.pi
+        vx, vy = math.cos(a) * 9 * s, -math.sin(a) * 12 * s
+        t = frame + 0.5
+        x = cx + vx * t * 0.45
+        y = base - 6 * s + vy * t * 0.45 + 2.2 * s * t * t
+        if frame >= 1 and y < base + 2 * s:
+            tone = 4 if frame < 3 else 2
+            put(im, x, y, ramp[tone])
+            if frame == 1:
+                put(im, x, y + 1, ramp[3])
+    if frame >= 1:  # ondes
+        rx = (5 + frame * 4) * s
+        ring(im, cx, base, rx, rx * 0.35, ramp[4 - frame if frame < 3 else 1], gap=frame - 1)
+        if frame >= 2:
+            ring(im, cx, base, rx * 0.55, rx * 0.2, ramp[2], gap=1)
+    return im
+
+
+LEAF = [[(0, 0), (1, 0), (2, 0), (1, -1), (1, 1)], [(0, 0), (1, -1), (2, -2), (1, 0), (2, -1)],
+        [(0, 0), (0, 1), (0, 2), (-1, 1), (1, 1)], [(0, 0), (1, 1), (2, 2), (1, 0), (2, 1)]]
+
+
+def nature_hit(ramp, frame, seed, size=32):
+    """Nature : épines qui jaillissent, feuilles qui tourbillonnent puis retombent."""
+    im = canvas(size, size)
+    rnd = random.Random(seed)
+    s = size / 32
+    cx = cy = size / 2
+    if frame == 0:
+        disk(im, cx, cy, 5 * s, ramp[4], 4.5 * s)
+        disk(im, cx, cy, 2.5 * s, '#ffffff')
+    if frame <= 2:  # épines
+        n = 7
+        for i in range(n):
+            a = i / n * math.tau + 0.4
+            r0 = (2 + frame * 5) * s
+            r1 = r0 + (9 - frame * 2) * s
+            for r in range(int(r0), int(r1)):
+                tip = r > r1 - 3 * s
+                put(im, cx + math.cos(a) * r, cy + math.sin(a) * r * 0.85, ramp[4 if tip else 2 - (frame == 2)])
+                if not tip and r < r0 + 3 * s:
+                    put(im, cx + math.cos(a) * r + 1, cy + math.sin(a) * r * 0.85, ramp[1])
+    if frame >= 1:  # feuilles
+        for i in range(8):
+            a = i / 8 * math.tau + frame * 0.7 + rnd.uniform(0, 0.3)
+            r = (5 + frame * 4.5) * s
+            x = cx + math.cos(a) * r
+            y = cy + math.sin(a) * r * 0.8 + (frame - 1) * 3 * s
+            shape = LEAF[(i + frame) % 4]
+            tone = (3, 3, 2)[frame - 1] if i % 2 else (4, 3, 1)[frame - 1]
+            for dx, dy in shape:
+                put(im, x + dx, y + dy, ramp[tone])
+            put(im, x + shape[1][0], y + shape[1][1], ramp[min(4, tone + 1)])
+    return im
+
+
+HITS = {'fire': fire_hit, 'water': water_hit, 'nature': nature_hit}
+
+
 def rising(ramp, frame, seed, glyph):
     """Soin, renforcement, affaiblissement : signes qui montent et s'éteignent."""
     im = canvas()
@@ -275,12 +410,13 @@ def impact(ramp, frame, seed):
 def all_fx():
     out = {}
     for el, ramp in ELEMENT.items():
-        out[f'burst_{el}'] = [burst(ramp, f, hash(el) % 97) for f in range(4)]
+        hit = HITS[el]
+        out[f'burst_{el}'] = [hit(ramp, f, 11, 32) for f in range(4)]
         kind = {'fire': 'orb', 'water': 'orb', 'nature': 'thorn'}[el]
         out[f'bolt_{el}'] = [projectile(ramp, f, kind) for f in range(2)]
         out[f'aura_{el}'] = [aura(ramp, f) for f in range(2)]
         out[f'slash_{el}'] = [slash(ramp, f) for f in range(4)]
-        out[f'impact_{el}'] = [impact(ramp, f, hash(el) % 89) for f in range(4)]
+        out[f'impact_{el}'] = [hit(ramp, f, 23, 48) for f in range(4)]
     out['dust'] = [dust(f) for f in range(4)]
     out['heal'] = [rising(ELEMENT['nature'], f, 5, PLUS) for f in range(4)]
     out['buff'] = [rising(['#3a2208', '#6e4612', '#b07a20', '#e2b440', '#fbe58a'], f, 6, UP) for f in range(4)]

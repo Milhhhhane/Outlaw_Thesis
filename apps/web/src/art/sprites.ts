@@ -123,7 +123,7 @@ export const SPRITES: SpriteMap = {
     w: 32,
   },
   burst_fire: {
-    bottom: 23,
+    bottom: 24,
     frames: [
       [594, 248],
       [627, 248],
@@ -131,11 +131,11 @@ export const SPRITES: SpriteMap = {
       [693, 248],
     ],
     h: 32,
-    top: 10,
+    top: 14,
     w: 32,
   },
   burst_nature: {
-    bottom: 23,
+    bottom: 25,
     frames: [
       [726, 248],
       [759, 248],
@@ -143,7 +143,7 @@ export const SPRITES: SpriteMap = {
       [825, 248],
     ],
     h: 32,
-    top: 10,
+    top: 7,
     w: 32,
   },
   burst_water: {
@@ -452,7 +452,7 @@ export const SPRITES: SpriteMap = {
   icon_trigger: { bottom: 11, frames: [[468, 353]], h: 12, top: 0, w: 12 },
   icon_xp: { bottom: 11, frames: [[481, 353]], h: 12, top: 0, w: 12 },
   impact_fire: {
-    bottom: 35,
+    bottom: 36,
     frames: [
       [165, 142],
       [214, 142],
@@ -460,11 +460,11 @@ export const SPRITES: SpriteMap = {
       [312, 142],
     ],
     h: 48,
-    top: 13,
+    top: 20,
     w: 48,
   },
   impact_nature: {
-    bottom: 35,
+    bottom: 37,
     frames: [
       [361, 142],
       [410, 142],
@@ -472,7 +472,7 @@ export const SPRITES: SpriteMap = {
       [508, 142],
     ],
     h: 48,
-    top: 13,
+    top: 11,
     w: 48,
   },
   impact_water: {
@@ -484,7 +484,7 @@ export const SPRITES: SpriteMap = {
       [704, 142],
     ],
     h: 48,
-    top: 13,
+    top: 15,
     w: 48,
   },
   landmark_bridge: { bottom: 12, frames: [[494, 353]], h: 12, top: 0, w: 12 },
