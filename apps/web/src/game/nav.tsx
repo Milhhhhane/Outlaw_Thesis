@@ -27,6 +27,9 @@ export type Route =
   /** Sanctuaires d'essence (depuis la carte), puis le passage d'un sanctuaire à un palier. */
   | { readonly name: 'essences'; readonly dungeon?: string }
   | { readonly name: 'essence_run'; readonly id: string; readonly tier: number }
+  /** Boss de la semaine (depuis la tour) : difficulté choisie, puis son combat. */
+  | { readonly name: 'boss'; readonly difficulty?: number }
+  | { readonly name: 'boss_run'; readonly difficulty: number }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
   | { readonly name: 'pvp_room'; readonly code: string };

@@ -267,6 +267,14 @@ export function parseContent(raw: RawContent): Content {
   // Sans donjon d'essence (contenus de test), l'éveil n'a rien à ouvrir.
   if (essenceDungeons.length > 0 && !dungeonById.has(balance.awakening.openAfter))
     issues.push(`éveil : donjon inconnu « ${balance.awakening.openAfter} » (openAfter)`);
+  const bossElements = new Set<string>();
+  for (const id of balance.boss.bosses) {
+    const enemy = enemyById.get(id);
+    if (enemy?.boss !== true) issues.push(`boss de la semaine : « ${id} » n’est pas un boss connu`);
+    else bossElements.add(enemy.element);
+  }
+  if (bossElements.size !== balance.boss.bosses.length)
+    issues.push('boss de la semaine : un boss par élément, sans doublon');
 
   if (issues.length > 0) throw new ContentError(issues);
 

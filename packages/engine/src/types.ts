@@ -80,6 +80,8 @@ export interface BattleRules {
   readonly firstSide: Side;
   /** « enemy_wins » : la limite est une défaite des héros. « hp_ratio » : le plus fort ratio de PV gagne. */
   readonly limit: LimitRule;
+  /** Limite d'actions de ce combat (boss de la semaine) ; absente, `balance.combat.actionLimit`. */
+  readonly actionLimit?: number;
 }
 
 export interface BattleSetup {

@@ -22,6 +22,8 @@ import { OptionsWindow } from './screens/OptionsWindow';
 import { Quests } from './screens/Quests';
 import { Team } from './screens/Team';
 import { Title } from './screens/Title';
+import { Boss } from './screens/Boss';
+import { BossRun } from './screens/BossRun';
 import { Tower } from './screens/Tower';
 import { TowerRun } from './screens/TowerRun';
 import { EssenceRun } from './screens/EssenceRun';
@@ -83,6 +85,10 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <Essences initial={route.dungeon} />;
     case 'essence_run':
       return <EssenceRun id={route.id} tier={route.tier} />;
+    case 'boss':
+      return <Boss initial={route.difficulty} />;
+    case 'boss_run':
+      return <BossRun difficulty={route.difficulty} />;
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
     case 'pvp':

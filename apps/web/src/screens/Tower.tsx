@@ -66,6 +66,20 @@ export function Tower({ initial }: { readonly initial?: number }) {
         go({ name: 'hub' });
       }}
       className="tower"
+      aside={
+        // Boss de la semaine : depuis la tour, le menu du camp étant plein.
+        <Button
+          variant="quiet"
+          size="small"
+          icon="damage"
+          title={t('boss.open.hint')}
+          onClick={() => {
+            go({ name: 'boss' });
+          }}
+        >
+          {t('boss.open')}
+        </Button>
+      }
     >
       <div className="tower__layout">
         <Panel className="tower__column" label={t('tower.floors')}>

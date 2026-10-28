@@ -125,6 +125,10 @@
   passage et équipe au 137ᵉ (`economy`). Ouvert : pas de quête ni de succès d'éveil, essences non
   échangeables entre éléments.
 
+- Boss de la semaine — rotation hebdomadaire de 3 boss, 4 difficultés, 3 tentatives par jour,
+  paliers de dégâts payés une fois par semaine, accès depuis la tour, règles et effet économique
+  en CI. Ouvert : l'équipement pèse peu sur les dégâts (voir DECISIONS) ; pas de classement.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

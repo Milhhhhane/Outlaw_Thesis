@@ -186,6 +186,14 @@ ouverture (`openAfter`) et essences par palier (`drops`) : `balance.awakening`. 
 changement : `pnpm sim` (lignes `essence_*`, `awakening_*`, `awake_*`) et
 `pnpm --filter @outlaw/sim economy`.
 
+## Boss de la semaine
+
+Tout est dans `balance.boss` : `bosses` (identifiants d'ennemis `boss`, un par élément, ordre de
+la rotation), `difficulties` (niveau, `unlockLevel` = niveau du donjon à terminer, `hpPct`,
+`atkPct`, équipement conseillé, `thresholds` croissants, un par récompense) et `rewards`. Le
+script affiché est celui de l'ennemi. Après un changement : `pnpm --filter @outlaw/sim boss 32`
+pour replacer les paliers, puis les tests de `tools/sim` (règles et économie).
+
 ## Ajouter un donjon
 
 1. Ennemis et boss dans `content/enemies.json` (un boss : `"boss": true`, seulement au 3e combat).

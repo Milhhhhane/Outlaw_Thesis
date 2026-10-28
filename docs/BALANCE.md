@@ -594,6 +594,36 @@ Lecture :
   plus de 15 % plus tôt. Leviers : `passagePct` (gain continu), coffres des succès (milieu de
   partie), `count` (nombre de quêtes).
 
+## Boss de la semaine
+
+Valeurs : `balance.json` → `boss` et `targets.boss`. Mesure : `pnpm --filter @outlaw/sim boss 32`
+(32 équipes tirées par boss et par difficulté, soit 96 combats ; builds aléatoires au niveau et à
+l'équipement conseillés ; expert = `lookahead`, joueur moyen = `average`) : 6 s.
+
+| Diff. | Niv. | ATK % | Objets | Moyen q20 / q50 | Expert q75 / q90 | Paliers                       |
+| ----: | ---: | ----: | ------ | --------------- | ---------------- | ----------------------------- |
+|     1 |   10 |   150 | aucun  | 1 156 / 1 684   | 2 205 / 2 670    | 1 100 / 1 700 / 2 200 / 2 700 |
+|     2 |   18 |   200 | aucun  | 1 626 / 2 132   | 2 836 / 3 451    | 1 600 / 2 100 / 2 800 / 3 500 |
+|     3 |   25 |   300 | 2 + 0  | 1 912 / 2 922   | 4 233 / 6 024    | 1 900 / 2 900 / 4 200 / 4 600 |
+|     4 |   30 |   400 | 2 + 2  | 2 118 / 3 128   | 5 174 / 6 183    | 2 100 / 3 100 / 4 200 / 4 800 |
+
+- **Placement** : palier 1 ≈ q20 du joueur moyen (il l'atteint 4 combats sur 5), palier 2 ≈ sa
+  médiane, palier 3 ≈ q75 de l'expert, palier 4 ≈ q85–q90 de l'expert (q75 à la difficulté 3
+  et 4 pour garder 4 de la difficulté 4 au-dessus). Les dégâts croissent peu avec la difficulté
+  (le boss gagne aussi en DEF) : la difficulté change surtout la menace et la récompense.
+- **ATK** : à 100 %, aucune équipe ne tombe en 50 actions et l'équipement ne compte plus ; à
+  400 % (difficulté 4), les équipes sans objets tombent parfois (9 sur 48) et perdent 30 % de
+  dégâts. À la difficulté 1, 400 % tuait la moitié des équipes (niveau 10) : 150 %.
+- **Règles en CI** (`tools/sim/test/boss.test.ts`, 48 combats) : difficulté 1, palier 1 atteint
+  par 79 % des combats du joueur moyen (cible ≥ 50 %) ; difficulté 4, palier 4 atteint par 31 %
+  de l'expert équipé au maximum (≥ 25 %) et 2 % sans objets (≤ 10 %). L'expert à l'équipement
+  conseillé (2 + 2) l'atteint autant qu'au maximum : voir DECISIONS (« Écart au brief »).
+- **PV** 1 500 % : sur 960 combats mesurés, le boss ne tombe jamais ; le meilleur inflige
+  12 452 dégâts, près des PV du boss de la difficulté 4 (12 735) : la marge est mince pour les
+  meilleures équipes, d'où des paliers placés bien en dessous.
+- **Limite** 50 actions : environ 12 tours d'équipe, la durée d'un combat de boss de donjon.
+- **Récompenses** : voir `docs/ECONOMY.md`.
+
 ## Tour à étages
 
 Valeurs : `balance.json` → `tower` et `targets.tower`, compositions dans `content/tower.json`.

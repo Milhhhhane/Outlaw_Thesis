@@ -29,3 +29,4 @@ export * from './counters';
 export * from './quests';
 export * from './tower';
 export * from './awakening';
+export * from './boss';

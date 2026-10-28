@@ -56,7 +56,10 @@ export type Refusal =
   | 'floor_locked'
   | 'already_awakened'
   | 'level_too_low'
-  | 'not_enough_essences';
+  | 'not_enough_essences'
+  | 'unknown_difficulty'
+  | 'boss_locked'
+  | 'no_attempts';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -130,6 +133,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     tower: { cleared: 0 },
     essences: { fire: [0, 0, 0], water: [0, 0, 0], nature: [0, 0, 0] },
     essenceDungeons: {},
+    boss: { week: -1, best: [], claimed: [], day: -1, attempts: 0 },
     testMode: false,
   };
 }

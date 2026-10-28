@@ -174,7 +174,7 @@ describe('fin de combat en mode Auto', () => {
         'true',
       );
       await userEvent.setup().click(within(dialog).getByRole('button', { name: 'Suite' }));
-      expect(onClick).toHaveBeenCalledWith(true);
+      expect(onClick).toHaveBeenCalledWith(true, expect.any(Array));
     },
     LONG_UI_TEST,
   );
