@@ -58,6 +58,8 @@ describe('écran-titre et camp', () => {
       speed: 'fast',
       animations: false,
       auto: false,
+      runs: 1,
+      heroView: { sort: 'rarity', element: null, role: null, rarity: null, owned: false },
     });
     expect(document.documentElement.dataset.motion).toBe('off');
     await user.keyboard('{Escape}');
