@@ -14,6 +14,9 @@ export type Route =
   | { readonly name: 'credits' }
   | { readonly name: 'dungeon'; readonly id: string; readonly tier?: number }
   | { readonly name: 'demo' }
+  /** Tour à étages : la colonne des étages (étage choisi), puis le combat d'un étage. */
+  | { readonly name: 'tower'; readonly floor?: number }
+  | { readonly name: 'tower_run'; readonly floor: number }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
   | { readonly name: 'pvp_room'; readonly code: string };

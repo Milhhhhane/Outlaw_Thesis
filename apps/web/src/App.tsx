@@ -22,6 +22,8 @@ import { OptionsWindow } from './screens/OptionsWindow';
 import { Quests } from './screens/Quests';
 import { Team } from './screens/Team';
 import { Title } from './screens/Title';
+import { Tower } from './screens/Tower';
+import { TowerRun } from './screens/TowerRun';
 import { Workshop } from './screens/Workshop';
 import { normalizeCode } from './pvp/api';
 import { PvpMenu } from './pvp/PvpMenu';
@@ -64,6 +66,10 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <Credits />;
     case 'dungeon':
       return <DungeonRun dungeonId={route.id} tier={route.tier ?? 1} onExit={hub} />;
+    case 'tower':
+      return <Tower initial={route.floor} />;
+    case 'tower_run':
+      return <TowerRun floor={route.floor} />;
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
     case 'pvp':

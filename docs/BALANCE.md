@@ -558,3 +558,44 @@ Lecture :
 - Vérifié en CI (`tools/sim/test/economy.test.ts`) : à 5 et 10 passages par jour, aucun jalon
   plus de 15 % plus tôt. Leviers : `passagePct` (gain continu), coffres des succès (milieu de
   partie), `count` (nombre de quêtes).
+
+## Tour à étages
+
+Valeurs : `balance.json` → `tower` et `targets.tower`, compositions dans `content/tower.json`.
+Mesure : lignes `tower_<étage>_expert` de `pnpm sim` (32 équipes jouables par étage, builds
+aléatoires, niveau visé = étage jusqu'à 30, équipement visé de `gear`, politique experte, un
+combat) ; détail lisible : `pnpm --filter @outlaw/sim tower [équipes]`. Coût : 1 600 combats,
+environ 10 s de calcul ajoutées à `sim:check` (140 s mesurées avant, sur une machine chargée).
+
+| Étages  | Niveau | ATK % (courbe) |      PV % | Objets        | Expert, moyenne (min) | Actions |
+| ------- | -----: | -------------- | --------: | ------------- | --------------------- | ------- |
+| 1 à 9   |  1 à 9 | 80 → 133       |       100 | aucun         | 100 % (97)            | 13 à 25 |
+| 11 à 19 |  11–19 | 145 → 185      | 100 → 105 | aucun         | 84 % (66)             | 19 à 29 |
+| 21 à 29 |  21–29 | 199 → 271      | 106 → 110 | aucun         | 79 % (66)             | 18 à 26 |
+| 31 à 39 |     30 | 300 → 318      | 115 → 125 | 2 + 0 / 2 + 1 | 80 % (53)             | 17 à 24 |
+| 41 à 49 |     30 | 318 → 320      | 129 → 139 | 2 + 2 / 2 + 3 | 79 % (59)             | 18 à 23 |
+
+Boss (étages 10 / 20 / 30 / 40 / 50) : expert 72 / 75 / 66 / 75 / 59 %, 29 à 35 actions.
+Groupes : 2 ennemis (étages 1–3), 3 (4–11), 4 (12 et plus) ; à partir de l'étage 21, le dernier
+vient de l'élément suivant.
+
+- **Corrections par élément** (`pools.*.atkPct`) : eau 125, feu 100, nature 90. Mesure à 48 équipes
+  sans correction : eau 94 % en moyenne des étages 11 à 49, feu 75 %, nature 70 %. Après : les
+  trois groupes à quelques points près ; il reste ±20 points selon l'alternance des ennemis d'un
+  même élément (deux molosses et un crabe à l'étage 49 : 59 % ; deux acolytes et une appelante à
+  l'étage 46 : 81 %), d'où la règle par groupes de trois étages.
+- **Boss** (`bosses[].atkPct`) : 100 / 140 / 82 / 85 / 80. Mesures à 48 équipes, sans correction :
+  92 % au 20 (le modificateur des Salles englouties avance les héros), 46 % au 30, 46 % au 40, 8 %
+  au 50 avec trois boss ; le 40 et le 50 passent à deux boss (tyran et hydre, colosse et tyran).
+  Essais écartés : 40 à 95 % (56 %) et 30 à 88 % (50 %, à la limite).
+- **Courbe après 30** : un appui à l'étage 31 (300) puis 36 (318) absorbe les deux objets bruts ;
+  sans eux (ATK 280 → 340 en ligne droite), les étages 31 à 36 repassaient à 90–98 % et l'étage 49
+  tombait à 33 %. Fin de courbe à 320 et PV à 140 % : à 340 / 150 %, les étages 49 et 50 passaient
+  sous 50 %.
+- **Lecture** : le premier boss attend à l'étage 10 ce qu'un donjon de niveau 10 demande ; ensuite
+  la tour se stabilise autour de 80 % pour l'expert à l'étage ordinaire, avec un pic à chaque boss.
+  Au-delà du niveau 30, gagner un étage demande d'avoir crafté : la tour récompense l'équipement.
+- Règle la plus serrée : l'étage 37 à 53 % (feu, deux molosses). Si un réglage des héros ou des
+  ennemis la fait passer sous 50 %, baisser `pools.fire.atkPct` avant de toucher à la courbe.
+- À vérifier au test humain : le joueur moyen n'est pas mesuré ici (la règle porte sur l'expert,
+  comme les paliers) ; si la tour paraît trop dure dès l'étage 11, baisser l'appui de l'étage 20.

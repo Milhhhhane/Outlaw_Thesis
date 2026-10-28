@@ -1063,10 +1063,63 @@ seulement avec un classement ou un adversaire non choisi.
 **Mode test : pas de quêtes** — rien n'y est gagné ; l'entrée du camp est masquée comme celle des
 coffres.
 
-**Entrée dans la barre du haut du camp** — Le menu de droite tient six entrées à 844 × 390 (la
-septième poussait « PvP » hors de l'écran, e2e rouge) ; le bouton « Quêtes » et son badge vont donc
-juste après le titre du camp, toujours visibles, sans réduire les entrées existantes.
+**Entrée dans la barre du haut du camp** — Le menu de droite est plein à 844 × 390 (une entrée
+de plus poussait « PvP » hors de l'écran, e2e rouge ; la Tour y a pris la septième place) ; le
+bouton « Quêtes » et son badge vont donc juste après le titre du camp, toujours visibles.
 
 **Textes générés depuis la mesure** — « Gagner {n} donjons » vient de `quests.metric.<mesure>` :
 ajouter une quête ou un succès d'une mesure existante est une ligne de JSON (plus le nom du
 succès dans `quests.fr.json`, vérifié par un test).
+
+## Tour à étages
+
+**Une formule et des règles, pas 50 combats** — Contexte : un défi vertical de 50 étages (inspiré
+de la Tour de l'Ascension et de la Doom Tower). Choix : `balance.tower` porte les chiffres (niveau
+par étage, courbe de PV et d'ATK par points d'appui, taille des groupes, équipement visé,
+récompenses), `content/tower.json` la composition (groupe d'ennemis par élément avec sa correction
+en %, cinq étages de boss avec le modificateur d'un donjon existant). Raison : comme les paliers de
+donjon, un nombre global se règle et se mesure en une fois ; un étage écrit à la main divergerait.
+
+**Un seul combat par étage, PV et réserve neufs** — Raison : le brief ; l'étage est un essai
+court, rejouable, et la difficulté vient de l'étage lui-même, pas de l'usure d'un enchaînement.
+
+**Correction par élément** — Constat (simulation, 48 équipes) : à chiffres égaux, les étages
+d'eau passaient à 94 %, ceux de feu à 75 %, ceux de nature à 70 % (molosses et sorcières frappent
+plus fort que crabes et appelantes). Choix : `atkPct` par groupe (eau 125, feu 100, nature 90) et
+par boss. Raison : la rotation des éléments doit changer l'équipe à amener, pas faire alterner
+étages faciles et durs.
+
+**Au-delà du niveau 30, l'équipement fait la marche** — Choix : niveau visé = étage jusqu'à 30,
+puis niveau 30 et `gear` (2 objets bruts à 31, +1 amélioration aux étages 36, 41, 46), mesurés
+comme les paliers de donjon. Raison : la croissance des monstres est plate et leur niveau borné
+à 30 ; la courbe d'ATK seule aurait fait un mur ou une pente nulle.
+
+**Courbe monotone au bruit près** — Choix (règle `targets.tower`, en CI) : chaque étage ≥ 50 %
+pour l'expert ; trois étages ordinaires consécutifs (une rotation complète) jamais plus faciles
+que les trois d'avant de plus de 15 points ; un boss jamais plus facile que les étages qui le
+précèdent ni que le boss précédent. La courbe des données (niveau, PV, ATK, équipement) ne
+baisse jamais (schéma et test du moteur). Raison : comparer étage à étage mesurait surtout la
+composition (un même élément varie de 20 points selon l'alternance des ennemis) ; un boss est un
+pic voulu, l'étage qui le suit redescend.
+
+**Rejouer ne rapporte rien** — Choix : seule la première victoire d'un étage paie ; rejouer sert à
+essayer un build ou une équipe. Raison : la tour est une échelle, pas un farm ; le farm reste les
+donjons (butin exclusif, maîtrise, paliers) et les bornes `farm` / `economy` ne bougent pas. Un taux
+de rejeu même faible ferait de l'étage 1 le farm de poussière le plus rapide du jeu (combat
+de 13 actions).
+
+**Récompenses de première victoire** — Choix : poussière du palier qu'exige le niveau de l'étage
+(4 brutes, 5 fines, 4 pures ; × 3 aux boss), 1 fragment tiré comme dans un coffre de bronze (héros
+ciblé compris, même fonction que les coffres), un coffre aux étages de boss. Raison : sur les 50
+étages, 28 brutes, 90 fines, 140 pures et 96 fragments, soit 6 à 10 % de ce que le joueur modèle
+gagne sur toute sa progression (`docs/ECONOMY.md`) : un vrai bonus, pas une seconde économie.
+
+**Pas de remise à zéro** — Choix : `tower.cleared` ne fait que monter ; pas de saison ni de remise
+à zéro pour l'instant. Raison : le brief ; à rouvrir si une tour périodique est voulue (il faudra
+alors des récompenses de rejeu).
+
+**L'enchaînement monte d'un étage seulement sur demande** — Choix : option `towerClimb`
+(« Auto : monter à l'étage suivant », retenue sur l'appareil) ; en mode Auto et après une victoire,
+le décompte du bilan entre à l'étage suivant ; sans l'option, le bilan attend le joueur (rejouer un
+étage ne rapportant rien, le relancer seul n'aurait pas de sens). Raison : même règle que
+l'enchaînement des donjons, une navigation différée ; monter est une décision.

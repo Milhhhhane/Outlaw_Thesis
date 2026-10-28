@@ -157,6 +157,15 @@ la période courante au chargement, toutes les 30 s et après chaque action. Con
 `balance.quests` ; écran `apps/web/src/screens/Quests.tsx`, textes `i18n/quests.fr.json`. La
 simulation économique les mesure (`QuestModel` dans `tools/sim/src/economy.ts`).
 
+La tour à étages est dans `packages/engine/src/tower.ts` (`towerFloor`, `towerPct`, `towerGear`,
+`towerReward`, `towerOpen`, `enterTower`, `completeTower`) : chaque étage est calculé depuis
+`balance.tower` et `content.tower` (`packages/data/content/tower.json`, schéma
+`schemas/tower.ts`, résolu dans `content.ts`) ; le profil garde `tower.cleared`. Les fragments
+sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écrans :
+`apps/web/src/screens/Tower.tsx` (colonne des étages et fiche) et `TowerRun.tsx` (combat et
+bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
+en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille

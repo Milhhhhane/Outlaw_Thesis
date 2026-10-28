@@ -8,10 +8,12 @@ export interface Options {
   readonly animations: boolean;
   /** Combat automatique : le jeu joue les tours des héros. Retenu d'un combat à l'autre (donjon). */
   readonly auto: boolean;
+  /** Tour : en mode Auto, une victoire enchaîne sur l'étage suivant (sinon retour à la tour). */
+  readonly towerClimb: boolean;
 }
 
 export const OPTIONS_KEY = 'outlaw-thesis/options';
-const DEFAULTS: Options = { speed: 'normal', animations: true, auto: false };
+const DEFAULTS: Options = { speed: 'normal', animations: true, auto: false, towerClimb: false };
 
 function prefersReducedMotion(): boolean {
   return (
@@ -37,6 +39,7 @@ function load(): Options {
             : base.speed,
       animations: typeof parsed.animations === 'boolean' ? parsed.animations : base.animations,
       auto: typeof parsed.auto === 'boolean' ? parsed.auto : base.auto,
+      towerClimb: typeof parsed.towerClimb === 'boolean' ? parsed.towerClimb : base.towerClimb,
     };
   } catch {
     return base;

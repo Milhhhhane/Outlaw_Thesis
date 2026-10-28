@@ -96,6 +96,40 @@
     "rewardPctPerTier": { "xp": 0, "gold": 25, "materials": 25 },
     "rareWeightPerTier": 5
   },
+  "tower": {
+    "floors": 50,
+    "bossEvery": 10,
+    "level": { "start": 1, "perFloor": 1 },
+    "sizes": [
+      { "from": 1, "count": 2 },
+      { "from": 4, "count": 3 },
+      { "from": 12, "count": 4 }
+    ],
+    "mixFrom": 21,
+    "curve": [
+      { "floor": 1, "hpPct": 100, "atkPct": 80 },
+      { "floor": 10, "hpPct": 100, "atkPct": 140 },
+      { "floor": 20, "hpPct": 105, "atkPct": 190 },
+      { "floor": 30, "hpPct": 110, "atkPct": 280 },
+      { "floor": 31, "hpPct": 115, "atkPct": 300 },
+      { "floor": 36, "hpPct": 125, "atkPct": 318 },
+      { "floor": 50, "hpPct": 140, "atkPct": 320 }
+    ],
+    "boss": { "hpPct": 100, "atkPct": 100 },
+    "gear": [
+      { "from": 31, "items": 2, "upgrade": 0 },
+      { "from": 36, "items": 2, "upgrade": 1 },
+      { "from": 41, "items": 2, "upgrade": 2 },
+      { "from": 46, "items": 2, "upgrade": 3 }
+    ],
+    "rewards": {
+      "dust": [4, 5, 4],
+      "bossDustPct": 300,
+      "fragments": 1,
+      "fragmentChest": "bronze",
+      "bossChests": ["bronze", "silver", "silver", "gold", "gold"]
+    }
+  },
   "economy": {
     "replayRewardRate": 1,
     "loot": {
@@ -162,6 +196,10 @@
     "tiers": {
       "expertMin": 0.5,
       "tolerance": 0.12
+    },
+    "tower": {
+      "expertMin": 0.5,
+      "tolerance": 0.15
     }
   }
 }

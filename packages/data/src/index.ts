@@ -4,6 +4,7 @@ import dungeonsJson from '../content/dungeons.json' with { type: 'json' };
 import enemiesJson from '../content/enemies.json' with { type: 'json' };
 import itemsJson from '../content/items.json' with { type: 'json' };
 import questsJson from '../content/quests.json' with { type: 'json' };
+import towerJson from '../content/tower.json' with { type: 'json' };
 import { parseContent, type Content } from './content';
 
 export * from './content';
@@ -16,6 +17,7 @@ export * from './schemas/heroes';
 export * from './schemas/items';
 export * from './schemas/profile';
 export * from './schemas/quests';
+export * from './schemas/tower';
 
 /** Charge et valide tout le contenu embarqué (aucun appel réseau : tout est statique). */
 export function loadContent(): Content {
@@ -26,5 +28,6 @@ export function loadContent(): Content {
     items: itemsJson,
     dungeons: dungeonsJson,
     quests: questsJson,
+    tower: towerJson,
   });
 }

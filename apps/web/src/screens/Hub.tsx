@@ -11,12 +11,13 @@ import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 
 const ENTRIES: readonly {
-  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
+  readonly route: 'map' | 'tower' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
   readonly label: TextKey;
   readonly hint: TextKey;
   readonly icon: string;
 }[] = [
   { route: 'map', label: 'hub.menu.dungeons', hint: 'hub.menu.dungeons.hint', icon: 'mark' },
+  { route: 'tower', label: 'hub.menu.tower', hint: 'hub.menu.tower.hint', icon: 'star' },
   { route: 'team', label: 'hub.menu.team', hint: 'hub.menu.team.hint', icon: 'shield' },
   { route: 'heroes', label: 'hub.menu.heroes', hint: 'hub.menu.heroes.hint', icon: 'stat' },
   { route: 'workshop', label: 'hub.menu.workshop', hint: 'hub.menu.workshop.hint', icon: 'item' },
@@ -46,7 +47,7 @@ export function Hub() {
       </div>
       <header className="hub__bar">
         <h1 className="hub__title">{t('hub.title')}</h1>
-        {/* Quêtes : dans la barre du haut, le menu de droite est plein (six entrées). */}
+        {/* Quêtes : dans la barre du haut, le menu de droite est plein. */}
         {!test && (
           <Button
             variant="quiet"

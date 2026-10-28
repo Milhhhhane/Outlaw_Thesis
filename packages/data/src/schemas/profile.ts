@@ -82,6 +82,11 @@ export const profileSchema = z.strictObject({
   stats: z.record(idSchema, nonNegInt).default({}),
   /** Quêtes du jour, de la semaine et succès réclamés. Absent des anciennes sauvegardes. */
   quests: questStateSchema.default(emptyQuestState),
+  /**
+   * Tour à étages : plus haut étage battu (0 : aucun). On tente l'étage suivant ou on rejoue un
+   * étage battu. Absent des anciennes sauvegardes.
+   */
+  tower: z.strictObject({ cleared: nonNegInt }).default({ cleared: 0 }),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });

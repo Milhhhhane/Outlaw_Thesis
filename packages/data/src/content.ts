@@ -1,10 +1,11 @@
 import type { ZodType } from 'zod';
 import { balanceSchema, type Balance } from './schemas/balance';
-import { dungeonSchema, type Dungeon } from './schemas/dungeons';
+import { dungeonSchema, type Dungeon, type DungeonModifier } from './schemas/dungeons';
 import { enemySchema, type Enemy } from './schemas/enemies';
 import { heroSchema, type Hero } from './schemas/heroes';
 import { itemSchema, type Item } from './schemas/items';
 import { questsContentSchema, type QuestsContent } from './schemas/quests';
+import { towerSchema, type TowerData } from './schemas/tower';
 
 export interface RawContent {
   balance: unknown;
@@ -14,6 +15,18 @@ export interface RawContent {
   dungeons: readonly unknown[];
   /** Quêtes et succès (`content/quests.json`) ; absent : aucune quête. */
   quests?: unknown;
+  tower: unknown;
+}
+
+/** Tour à étages résolue : les modificateurs des étages de boss sont ceux des donjons cités. */
+export interface Tower {
+  readonly pools: TowerData['pools'];
+  readonly bosses: readonly {
+    readonly enemies: readonly string[];
+    readonly hpPct: number;
+    readonly atkPct: number;
+    readonly modifier?: DungeonModifier;
+  }[];
 }
 
 /** Contenu validé et indexé, prêt à être utilisé par le moteur, la simulation et l'interface. */
@@ -23,6 +36,7 @@ export interface Content {
   enemies: readonly Enemy[];
   items: readonly Item[];
   dungeons: readonly Dungeon[];
+  tower: Tower;
   heroById: ReadonlyMap<string, Hero>;
   enemyById: ReadonlyMap<string, Enemy>;
   itemById: ReadonlyMap<string, Item>;
@@ -243,6 +257,7 @@ export function parseContent(raw: RawContent): Content {
   }
 
   const quests = parseQuests(raw.quests, balance, issues);
+  const tower = resolveTower(raw.tower, balance, enemyById, dungeonById, issues);
 
   if (issues.length > 0) throw new ContentError(issues);
 
@@ -252,6 +267,7 @@ export function parseContent(raw: RawContent): Content {
     enemies,
     items,
     dungeons,
+    tower,
     heroById,
     enemyById,
     itemById,
@@ -285,4 +301,44 @@ function parseQuests(raw: unknown, balance: Balance, issues: string[]): QuestsCo
       );
   }
   return quests;
+}
+
+/** Valide la tour et ses références (ennemis, boss, donjons des modificateurs). */
+function resolveTower(
+  raw: unknown,
+  balance: Balance,
+  enemyById: ReadonlyMap<string, Enemy>,
+  dungeonById: ReadonlyMap<string, Dungeon>,
+  issues: string[],
+): Tower {
+  const parsed = towerSchema.safeParse(raw);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues)
+      issues.push(`tour : ${issue.path.join('.') || '(racine)'} : ${issue.message}`);
+    const empty = { enemies: [], hpPct: 100, atkPct: 100 };
+    return { pools: { fire: empty, water: empty, nature: empty }, bosses: [] };
+  }
+  const { pools, bosses } = parsed.data;
+  for (const [element, pool] of Object.entries(pools)) {
+    for (const id of pool.enemies) {
+      const enemy = enemyById.get(id);
+      if (enemy === undefined) issues.push(`tour : ennemi inconnu « ${id} »`);
+      else if (enemy.boss) issues.push(`tour : « ${id} » est un boss (groupe ${element})`);
+    }
+  }
+  const expected = balance.tower.floors / balance.tower.bossEvery;
+  if (bosses.length !== expected)
+    issues.push(`tour : ${String(bosses.length)} étages de boss pour ${String(expected)} attendus`);
+  const resolved = bosses.map((boss, i) => {
+    for (const id of boss.enemies)
+      if (!enemyById.has(id)) issues.push(`tour : ennemi inconnu « ${id} »`);
+    if (!boss.enemies.some((id) => enemyById.get(id)?.boss === true))
+      issues.push(`tour : l’étage de boss n° ${String(i + 1)} n’a pas de boss`);
+    const { modifierOf, ...floor } = boss;
+    if (modifierOf === undefined) return floor;
+    const dungeon = dungeonById.get(modifierOf);
+    if (dungeon === undefined) issues.push(`tour : donjon inconnu « ${modifierOf} »`);
+    return { ...floor, modifier: dungeon?.modifier };
+  });
+  return { pools, bosses: resolved };
 }

@@ -45,7 +45,9 @@ export type Refusal =
   | 'tier_locked'
   | 'unknown_quest'
   | 'quest_not_done'
-  | 'already_claimed';
+  | 'already_claimed'
+  | 'unknown_floor'
+  | 'floor_locked';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -112,6 +114,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     focus: null,
     stats: {},
     quests: emptyQuestState(),
+    tower: { cleared: 0 },
     testMode: false,
   };
 }

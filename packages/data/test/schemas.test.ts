@@ -25,6 +25,7 @@ import {
   heroFixture,
   itemFixture,
   rareItemFixture,
+  towerFixture,
 } from './fixtures';
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -44,6 +45,7 @@ function rawFixture(): RawContent {
     enemies: [clone(enemyFixture), clone(bossFixture)],
     items: [clone(itemFixture), clone(rareItemFixture)],
     dungeons: [clone(dungeonFixture)],
+    tower: clone(towerFixture),
   };
 }
 
@@ -416,6 +418,44 @@ describe('parseContent : références croisées', () => {
     expectIssue((raw) => {
       (raw.balance as typeof balanceJson).quests.daily.bonus.chest = 'diamond';
     }, 'coffre inconnu « diamond »');
+  });
+
+  it('tour : refuse un boss dans un groupe, un étage de boss sans boss, un donjon inconnu', () => {
+    expectIssue((raw) => {
+      (raw.tower as typeof towerFixture).pools.fire = { enemies: ['test_boss'] };
+    }, 'est un boss');
+    expectIssue((raw) => {
+      (raw.tower as typeof towerFixture).bosses[0] = { enemies: ['test_grunt'] };
+    }, 'n’a pas de boss');
+    expectIssue((raw) => {
+      (raw.tower as { bosses: unknown[] }).bosses[1] = {
+        enemies: ['test_boss'],
+        modifierOf: 'nowhere',
+      };
+    }, 'donjon inconnu');
+    expectIssue((raw) => {
+      (raw.tower as typeof towerFixture).bosses.pop();
+    }, 'étages de boss');
+    expectIssue((raw) => {
+      raw.tower = {};
+    }, 'tour :');
+  });
+
+  it('tour : la courbe ne baisse jamais et chaque étage de boss a son coffre', () => {
+    const bad = clone(balanceJson);
+    const [first, second] = bad.tower.curve;
+    if (first !== undefined && second !== undefined) second.atkPct = first.atkPct - 1;
+    expect(balanceSchema.safeParse(bad).success).toBe(false);
+    const chests = clone(balanceJson);
+    chests.tower.rewards.bossChests.pop();
+    expect(balanceSchema.safeParse(chests).success).toBe(false);
+    const gear = clone(balanceJson);
+    gear.tower.gear.reverse();
+    expect(balanceSchema.safeParse(gear).success).toBe(false);
+    const sizes = clone(balanceJson);
+    sizes.tower.floors = 45;
+    sizes.tower.sizes[0] = { from: 2, count: 2 };
+    expect(balanceSchema.safeParse(sizes).success).toBe(false);
   });
 
   it('refuse un ennemi inconnu dans un donjon', () => {
