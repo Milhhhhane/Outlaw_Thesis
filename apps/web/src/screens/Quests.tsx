@@ -26,7 +26,7 @@ type Tab = QuestKind | 'achievements';
 const HOUR = 3_600_000;
 
 /** « 8 h 12 min » sous la journée, « 4 j 6 h » au-delà. */
-function duration(ms: number): string {
+export function duration(ms: number): string {
   const hours = Math.floor(ms / HOUR);
   if (hours >= 24) return t('quests.time.days', { d: Math.floor(hours / 24), h: hours % 24 });
   return t('quests.time.hours', { h: hours, m: Math.floor((ms % HOUR) / 60_000) });

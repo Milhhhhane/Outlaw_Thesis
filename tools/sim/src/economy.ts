@@ -21,7 +21,13 @@
 import { loadContent, SPELL_SLOTS, type Content, type Profile } from '@outlaw/data';
 import {
   atStarGate,
+  bossDifficulties,
+  bossFight,
+  bossProgress,
+  bossUnlocked,
+  completeBoss,
   completeDungeon,
+  enterBoss,
   equip,
   levelDust,
   levelUpCost,
@@ -80,6 +86,8 @@ export interface Ledger {
   teamFragmentsLeft: number;
   /** Récompenses des quêtes et succès (avec `quests` seulement). */
   readonly quests: { gold: number; dust: number[]; chests: number; claims: number };
+  /** Paliers du boss de la semaine payés (avec `boss` seulement). */
+  readonly boss: { dust: number[]; chests: number; fragments: number; claims: number };
   readonly items: {
     drops: number;
     rares: number;
@@ -370,6 +378,7 @@ function emptyLedger(): Ledger {
     grimoires: 0,
     teamFragmentsLeft: 0,
     quests: { gold: 0, dust: [0, 0, 0], chests: 0, claims: 0 },
+    boss: { dust: [0, 0, 0], chests: 0, fragments: 0, claims: 0 },
     items: { drops: 0, rares: 0, upgrades: 0, maxed: 0, wornLevel: 0 },
   };
 }
@@ -389,6 +398,38 @@ export function winRun(
  */
 export interface QuestModel {
   readonly perDay: number;
+  /** Sans quêtes ni succès (pour mesurer le boss seul). */
+  readonly noQuests?: boolean;
+  /**
+   * Boss de la semaine : après chaque passage, chaque difficulté ouverte dont un palier reste à
+   * payer cette semaine est tentée (tentatives du jour permises) et rapporte **tous** ses paliers.
+   * Borne haute : un vrai joueur n'atteint pas toujours le dernier palier.
+   */
+  readonly boss?: boolean;
+}
+
+/** Tente le boss à chaque difficulté qui a encore un palier à payer ; note ce qu'il rapporte. */
+function bossAll(content: Content, profile: Profile, now: number, ledger: Ledger): Profile {
+  let current = profile;
+  for (let d = 1; d <= bossDifficulties(content); d++) {
+    const fight = bossFight(content, now, d);
+    if (fight === null || !bossUnlocked(content, current, d)) continue;
+    const claimed = bossProgress(content, current, now).claimed[d - 1] ?? 0;
+    if (claimed >= fight.thresholds.length) continue;
+    const entered = ok(enterBoss(content, current, d, now));
+    if (entered === null) break;
+    const done = ok(completeBoss(content, entered, d, fight.thresholds.at(-1) ?? 0, now));
+    if (done === null) break;
+    for (const paid of done.report.paid) {
+      ledger.boss.dust[paid.materials.tier - 1] =
+        (ledger.boss.dust[paid.materials.tier - 1] ?? 0) + paid.materials.amount;
+      ledger.boss.fragments += paid.fragments.length;
+      if (paid.chest !== null) ledger.boss.chests += 1;
+      ledger.boss.claims += 1;
+    }
+    current = done.profile;
+  }
+  return current;
 }
 
 const DAY_MS = 86_400_000;
@@ -446,7 +487,8 @@ export function simulateEconomy(
     content.dungeons.every((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0);
   while (runs < maxRuns && (teamMaxLevel === null || collection === null || !allCleared())) {
     const now = quests === null ? 0 : START + Math.floor(runs / quests.perDay) * DAY_MS;
-    if (quests !== null) profile = rollQuests(content, profile, now);
+    const questsOn = quests !== null && quests.noQuests !== true;
+    if (questsOn) profile = rollQuests(content, profile, now);
     const pick = pickRun(content, profile);
     const won = winRun(content, profile, pick);
     if (won === null) break;
@@ -465,7 +507,8 @@ export function simulateEconomy(
     ledger.grimoires += report.grimoires;
     if (content.itemById.get(report.item.item)?.rarity === 'rare') ledger.items.rares += 1;
 
-    if (quests !== null) profile = claimAll(content, profile, now, ledger);
+    if (questsOn) profile = claimAll(content, profile, now, ledger);
+    if (quests?.boss === true) profile = bossAll(content, profile, now, ledger);
     profile = openAll(content, profile, ledger);
     const stars = starAll(content, profile);
     profile = stars.profile;
@@ -482,7 +525,7 @@ export function simulateEconomy(
     }
     // Les quêtes faites par les dépenses de ce passage (niveaux, objets, coffres) : réclamées
     // maintenant, dépensées au passage suivant.
-    if (quests !== null) profile = claimAll(content, profile, now, ledger);
+    if (questsOn) profile = claimAll(content, profile, now, ledger);
 
     if (firstMaxItem === null && profile.items.some((o) => o.upgrade >= itemRules.maxUpgradeLevel))
       firstMaxItem = runs;
@@ -583,6 +626,10 @@ export function summarizeEconomy(
   ledger.quests.chests = avg((l) => l.quests.chests);
   ledger.quests.claims = avg((l) => l.quests.claims);
   for (const tier of [0, 1, 2]) ledger.quests.dust[tier] = avg((l) => l.quests.dust[tier] ?? 0);
+  ledger.boss.chests = avg((l) => l.boss.chests);
+  ledger.boss.fragments = avg((l) => l.boss.fragments);
+  ledger.boss.claims = avg((l) => l.boss.claims);
+  for (const tier of [0, 1, 2]) ledger.boss.dust[tier] = avg((l) => l.boss.dust[tier] ?? 0);
   ledger.chests = avg((l) => l.chests);
   ledger.grimoires = avg((l) => l.grimoires);
   ledger.teamFragmentsLeft = avg((l) => l.teamFragmentsLeft);
@@ -730,6 +777,32 @@ function main(): void {
     option('--runs', 600),
     perDay > 0 ? [perDay] : [5, 10, 20],
   );
+  printBossEffect(content, summary, seeds, option('--runs', 600), perDay > 0 ? [perDay] : [5, 10]);
+}
+
+function printBossEffect(
+  content: Content,
+  base: EconomySummary,
+  seeds: number,
+  maxRuns: number,
+  rhythms: readonly number[],
+): void {
+  console.log(
+    'Boss de la semaine (tous les paliers chaque semaine, borne haute) : jalons et raccourcissement :',
+  );
+  for (const perDay of rhythms) {
+    const q = summarizeEconomy(content, seeds, maxRuns, { perDay, noQuests: true, boss: true });
+    const effect = questEffect(base, q);
+    const cells = (Object.keys(effect) as (keyof typeof effect)[]).map(
+      (key) =>
+        `${key} ${q.milestones[key]?.toFixed(1) ?? '—'} (${effect[key]?.toFixed(1) ?? '—'} %)`,
+    );
+    const l = q.ledger.boss;
+    console.log(`  ${String(perDay)} passages/jour : ${cells.join(', ')}`);
+    console.log(
+      `    paliers payés ${l.claims.toFixed(0)} : poussière ${l.dust.map((d) => d.toFixed(0)).join('/')} (donjons ${q.ledger.dust.earned.map((d) => d.toFixed(0)).join('/')}), fragments ${l.fragments.toFixed(0)} + coffres ${l.chests.toFixed(1)} (sur ${q.ledger.chests.toFixed(1)} ouverts, ${q.ledger.fragments.toFixed(0)} fragments)`,
+    );
+  }
 }
 
 /** Effet des quêtes et succès sur les jalons, pour quelques rythmes de jeu (passages gagnants par jour). */

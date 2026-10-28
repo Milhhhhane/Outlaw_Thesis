@@ -24,6 +24,8 @@ export interface Model {
   /** Ce qui est affiché : rattrape l'état en rejouant les événements en attente. */
   readonly view: BattleView;
   readonly queue: readonly BattleEvent[];
+  /** Tout le journal du combat depuis son début (dégâts du boss de la semaine : `damageDealt`). */
+  readonly journal: readonly BattleEvent[];
   readonly log: readonly LogEntry[];
   readonly counter: number;
   /** Temps d'affichage (ms) du dernier événement montré, à attendre avant le suivant. */
@@ -45,6 +47,7 @@ function withResult(model: Model, result: StepResult): Model {
     ...model,
     state: result.state,
     queue: [...model.queue, ...result.events],
+    journal: [...model.journal, ...result.events],
     hold: model.queue.length > 0 ? model.hold : 0,
   };
 }
@@ -89,7 +92,7 @@ export function init(setup: BattleSetup): Model {
     points: { player: start, enemy: start },
   };
   return withResult(
-    { setup, state: result.state, view, queue: [], log: [], counter: 0, hold: 0 },
+    { setup, state: result.state, view, queue: [], journal: [], log: [], counter: 0, hold: 0 },
     result,
   );
 }

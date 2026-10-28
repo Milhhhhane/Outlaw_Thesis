@@ -14,6 +14,26 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Page de confidentialité et `docs/ACCOUNTS.md` : ce que l'administrateur voit.
   `docs/DEPLOY.md` : créer le secret (compte d'abord, secret ensuite).
 
+## [Non publié] — 2026-10-28 — boss de la semaine
+
+### Ajouté
+
+- Boss de la semaine, ouvert depuis la tour (bouton « Boss de la semaine » de sa barre) : un boss
+  existant seul, aux PV × 15, en rotation feu → eau → nature chaque lundi 00:00 UTC (tyran du
+  bûcher, hydre des marées, colosse du bosquet). Le combat s'arrête à 50 actions ; ce sont les
+  dégâts infligés qui comptent (`damageDealt`, lu dans le journal du combat).
+- 4 difficultés (niveaux 10, 18, 25, 30) ouvertes par le meilleur donjon terminé (labyrinthe de
+  ronces, flèche engloutie, couronne verdoyante, trône creux), 3 tentatives par jour UTC (prises à
+  l'entrée), meilleur score de la semaine par difficulté.
+- 4 paliers de dégâts par difficulté, payés tout de suite et une fois par semaine : poussière
+  (3/4/5/6, palier du niveau du boss), 1 fragment, coffre de bronze puis d'argent.
+- Écran du boss (script du boss, difficultés, tentatives, meilleur score, paliers) et bilan du
+  combat (dégâts, nouveau record, paliers atteints, récompenses).
+- Simulation : `pnpm --filter @outlaw/sim boss` (dégâts par difficulté, expert et joueur moyen) ;
+  règles `targets.boss` et effet économique (≤ 10 %) vérifiés en CI (`tools/sim/test/boss.test.ts`).
+- Moteur : `BattleRules.actionLimit` (limite d'actions propre à un combat). Profil : `boss`
+  (absent des anciennes sauvegardes).
+
 ## [Non publié] — 2026-10-28 — montée des sorts
 
 ### Ajouté

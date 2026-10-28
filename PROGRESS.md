@@ -122,6 +122,10 @@
   avancement, fiche par compte. Reste au propriétaire : créer le secret dans Cloudflare
   (`docs/DEPLOY.md`).
 
+- Boss de la semaine — rotation hebdomadaire de 3 boss, 4 difficultés, 3 tentatives par jour,
+  paliers de dégâts payés une fois par semaine, accès depuis la tour, règles et effet économique
+  en CI. Ouvert : l'équipement pèse peu sur les dégâts (voir DECISIONS) ; pas de classement.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

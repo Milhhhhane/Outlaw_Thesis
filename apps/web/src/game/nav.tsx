@@ -24,6 +24,9 @@ export type Route =
   /** Tour à étages : la colonne des étages (étage choisi), puis le combat d'un étage. */
   | { readonly name: 'tower'; readonly floor?: number }
   | { readonly name: 'tower_run'; readonly floor: number }
+  /** Boss de la semaine (depuis la tour) : difficulté choisie, puis son combat. */
+  | { readonly name: 'boss'; readonly difficulty?: number }
+  | { readonly name: 'boss_run'; readonly difficulty: number }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
   | { readonly name: 'pvp_room'; readonly code: string }

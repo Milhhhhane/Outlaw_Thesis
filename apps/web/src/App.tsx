@@ -22,6 +22,8 @@ import { OptionsWindow } from './screens/OptionsWindow';
 import { Quests } from './screens/Quests';
 import { Team } from './screens/Team';
 import { Title } from './screens/Title';
+import { Boss } from './screens/Boss';
+import { BossRun } from './screens/BossRun';
 import { Tower } from './screens/Tower';
 import { TowerRun } from './screens/TowerRun';
 import { Workshop } from './screens/Workshop';
@@ -78,6 +80,10 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <Tower initial={route.floor} />;
     case 'tower_run':
       return <TowerRun floor={route.floor} />;
+    case 'boss':
+      return <Boss initial={route.difficulty} />;
+    case 'boss_run':
+      return <BossRun difficulty={route.difficulty} />;
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
     case 'pvp':

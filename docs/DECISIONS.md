@@ -1195,6 +1195,52 @@ sauvegarde validée par le schéma, `null` si elle est absente ou invalide.
 92 ms à froid mesurés sous Node) : au-delà des 10 ms du plan gratuit, comme le scrypt de la
 connexion déjà toléré ; un seul utilisateur, de temps en temps. Mesures dans `docs/ACCOUNTS.md`.
 
+## Boss de la semaine
+
+**Un boss existant, seul, multiplié** — Contexte : un boss quasi increvable façon Clan Boss.
+Choix : les trois boss de fin (`pyre_tyrant`, `tidal_hydra`, `grove_colossus`, un par élément),
+seuls, PV × `hpPct` (1 500 %), ATK × `atkPct` par difficulté ; leur script existant est le kit
+affiché. Raison : sprite, nom, sorts et script lisibles existent déjà ; un nouvel ennemi demandait
+du pixel art et un réglage à part pour un gain nul. Mesure : aucun boss tombé en 960 combats.
+
+**Le temps finit le combat** — Choix : `BattleRules.actionLimit` (50) propre au combat, limite
+`enemy_wins` ; le résultat n'est pas une victoire : l'écran affiche les dégâts à la place
+(`finish.heading`). Raison : la limite globale (100) aurait doublé la durée ; une règle de limite
+de plus aurait touché le PvP et son schéma réseau.
+
+**Dégâts lus dans le journal** — `damageDealt(journal)` : PV réellement perdus sous les coups
+(bouclier absorbé, excédent d'un coup fatal et soins du boss exclus). Raison : rejouable et
+indépendant de l'interface ; un soin du boss ne retire pas un score déjà fait.
+
+**3 tentatives par jour UTC, prises à l'entrée** — Raison : abandonner un mauvais départ ne doit
+pas rendre la tentative. Le meilleur score de la semaine par difficulté est gardé
+(`profile.boss`, remis à zéro par le moteur au lundi suivant).
+
+**Paliers payés tout de suite, une fois par semaine et par difficulté** — Écarté : un paiement en
+fin de semaine (il faut revenir pour comprendre ce qu'on a gagné) et un palier unique pour toutes
+les difficultés (règle du « différentiel » peu lisible). Conséquence : un joueur à la difficulté 4
+peut aussi encaisser les paliers des difficultés 1 à 3 ; l'économie est mesurée dans ce cas (borne
+haute, voir `docs/ECONOMY.md`).
+
+**Ouverture par le meilleur donjon terminé** — `unlockLevel` 8 / 17 / 22 / 30 (labyrinthe,
+flèche, couronne, trône). Raison : déjà lisible sur la carte, aucune nouvelle progression.
+
+**Accès depuis la tour** — Le menu du camp est plein à 844 × 390 et la barre du haut accueille
+déjà les quêtes (Hub.tsx est aussi modifié par le confort de farm) : le bouton est dans la barre
+de l'écran de la tour, dont l'aide du camp dit « Cinquante étages et le boss de la semaine ».
+
+**Écart au brief : l'équipement au maximum n'est pas mesurable seul** — Constat (simulation,
+expert, 96 combats) : passer de 2 objets au niveau 2 à 2 objets au niveau 3 ne change les dégâts
+que de 2 à 5 % ; la composition de l'équipe pèse ±30 %. Une règle « atteint au maximum, pas avec
+une amélioration de moins » est donc impossible à tenir. Choix (`targets.boss`) : le dernier palier
+de la difficulté 4 est atteint par ≥ 25 % des combats de l'expert équipé au maximum et par ≤ 10 %
+sans objets. À rouvrir si les objets gagnent un effet sur les dégâts.
+
+**Pas de grimoires dans les paliers** — Les grimoires (montée des sorts) sont arrivés dans main
+pendant ce chantier. Ils tombent déjà des coffres d'argent (1) que paie le palier 4 ; en ajouter
+directement aurait demandé de rejouer la borne économique avec leur puits. À reprendre si la
+montée des sorts manque de grimoires en fin de partie.
+
 ## Confort de farm (MaJ 1/7)
 
 **Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le

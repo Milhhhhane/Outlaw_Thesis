@@ -118,6 +118,20 @@ export const profileSchema = z.strictObject({
    * étage battu. Absent des anciennes sauvegardes.
    */
   tower: z.strictObject({ cleared: nonNegInt }).default({ cleared: 0 }),
+  /**
+   * Boss de la semaine : semaine et jour UTC (`periodOf`) des valeurs gardées ; meilleurs dégâts et
+   * paliers déjà payés cette semaine, par difficulté ; tentatives prises ce jour. Le moteur les
+   * remet à zéro à la semaine ou au jour suivant. Absent des anciennes sauvegardes.
+   */
+  boss: z
+    .strictObject({
+      week: z.number().int(),
+      best: z.array(nonNegInt),
+      claimed: z.array(nonNegInt),
+      day: z.number().int(),
+      attempts: nonNegInt,
+    })
+    .default({ week: -1, best: [], claimed: [], day: -1, attempts: 0 }),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });
