@@ -49,6 +49,24 @@ describe('éveil : effet sur l’unité compilée', () => {
   });
 });
 
+describe('éveil et montée des sorts', () => {
+  it('se combinent dans la même compilation : sorts montés, passif et stats éveillés', () => {
+    const max = content.balance.spellLevels.max;
+    const spells = { basic: max, a: max, b: max, ult: max };
+    const build = { hero: 'cendre', level: 20, talents: [], items: [] };
+    const place = { side: 'player', slot: 0 } as const;
+    const plain = compileHero(content, build, place);
+    const leveled = compileHero(content, { ...build, spells }, place);
+    const both = compileHero(content, { ...build, spells, awakened: true }, place);
+    const awake = compileHero(content, { ...build, awakened: true }, place);
+    // Les sorts ne dépendent que des niveaux de sort, le passif et les stats que de l'éveil.
+    expect(both.spells).toEqual(leveled.spells);
+    expect(both.spells).not.toEqual(plain.spells);
+    expect(both.triggers).toEqual(awake.triggers);
+    expect(both.stats).toEqual(awake.stats);
+  });
+});
+
 describe('donjons d’essence', () => {
   it('ouverts après `openAfter`, paliers ouverts un à un, tous en mode test', () => {
     const fresh = newProfile(content, 3);

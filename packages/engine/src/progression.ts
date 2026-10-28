@@ -1,4 +1,5 @@
 import {
+  BASE_SPELL_LEVELS,
   emptyQuestState,
   PROFILE_VERSION,
   type Content,
@@ -43,6 +44,8 @@ export type Refusal =
   | 'star_gate'
   | 'not_enough_xp'
   | 'tier_locked'
+  | 'not_enough_grimoires'
+  | 'max_spell_level'
   | 'no_preset'
   | 'bad_name'
   | 'preset_unavailable'
@@ -97,6 +100,7 @@ export function freshHero(level: number, content: Content): HeroProgress {
     items: Array.from({ length: content.balance.progression.items.slots }, () => null),
     freeRespecUsed: false,
     stars: starsForLevel(level, content),
+    spells: BASE_SPELL_LEVELS,
     awakened: false,
   };
 }
@@ -118,6 +122,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     sinceRare: 0,
     fragments: {},
     chests: {},
+    grimoires: 0,
     focus: null,
     presets: [],
     stats: {},
@@ -217,7 +222,13 @@ export function heroBuild(profile: Profile, heroId: string): HeroBuild {
     .map((uid) => profile.items.find((owned) => owned.uid === uid))
     .filter((owned) => owned !== undefined)
     .map((owned) => ({ id: owned.item, upgrade: owned.upgrade }));
-  const build = { hero: heroId, level: hero.level, talents: hero.talents, items };
+  const build = {
+    hero: heroId,
+    level: hero.level,
+    talents: hero.talents,
+    items,
+    spells: hero.spells,
+  };
   return hero.awakened ? { ...build, awakened: true } : build;
 }
 
@@ -391,6 +402,8 @@ export interface DungeonReport {
   readonly unlockedHero: string | null;
   /** Coffre gagné, ou null (pas de coffre à ce passage). */
   readonly chest: string | null;
+  /** Grimoires gagnés (selon le palier joué, `spellLevels.grimoires.tiers`). */
+  readonly grimoires: number;
 }
 
 /**
@@ -506,6 +519,7 @@ export function completeDungeon(
     );
   }
 
+  const grimoires = balance.spellLevels.grimoires.tiers[tier - 1] ?? 0;
   const clears = progress.clears + 1;
   const rankAfter = masteryRank(content, clears);
   // Terminer le palier le plus avancé ouvre le suivant (au-delà du dernier : tous terminés).
@@ -516,6 +530,7 @@ export function completeDungeon(
     seed,
     gold: profile.gold + gain(dungeon.rewards.gold, 'gold'),
     materials,
+    grimoires: profile.grimoires + grimoires,
     heroes,
     unlocked,
     items,
@@ -553,6 +568,7 @@ export function completeDungeon(
       },
       unlockedHero,
       chest,
+      grimoires,
     },
   });
 }
@@ -605,6 +621,7 @@ export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = 
       items: slots,
       freeRespecUsed: false,
       stars: starsForLevel(build.level, content),
+      spells: build.spells ?? BASE_SPELL_LEVELS,
       awakened: build.awakened === true,
     };
   });

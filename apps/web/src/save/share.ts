@@ -1,9 +1,9 @@
-import { MAX_SIDE, type Content } from '@outlaw/data';
+import { MAX_SIDE, SPELL_SLOTS, type Content, type SpellLevels } from '@outlaw/data';
 import { validateBuild, type HeroBuild } from '@outlaw/engine';
 
 /**
  * Planificateur de build partagé par URL : l'équipe (héros, niveau, talents, objets et
- * améliorations) est encodée dans le fragment `#build=…`. Rien ne part sur un serveur.
+ * améliorations, niveaux de sort s'ils dépassent 1) est encodée dans le fragment `#build=…`. Rien ne part sur un serveur.
  */
 export const SHARE_PREFIX = '#build=';
 const FORMAT = 1;
@@ -17,6 +17,8 @@ interface Shared {
     i: readonly [string, number][];
     /** 1 : héros éveillé (absent sinon, les anciens liens restent valides). */
     a?: 1;
+    /** Niveaux de sort (base, A, B, ultime) ; absent : tous au niveau 1 (anciens liens). */
+    s?: readonly number[];
   }[];
 }
 
@@ -41,6 +43,9 @@ export function encodeBuilds(builds: readonly HeroBuild[]): string {
       t: b.talents,
       i: b.items.map((i) => [i.id, i.upgrade]),
       ...(b.awakened === true ? { a: 1 } : {}),
+      ...(b.spells !== undefined && SPELL_SLOTS.some((slot) => b.spells?.[slot] !== 1)
+        ? { s: SPELL_SLOTS.map((slot) => b.spells?.[slot] ?? 1) }
+        : {}),
     })),
   };
   return toBase64Url(JSON.stringify(shared));
@@ -59,7 +64,7 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
     const builds: HeroBuild[] = [];
     for (const entry of b as unknown[]) {
       if (typeof entry !== 'object' || entry === null) return null;
-      const { h, l, t, i, a } = entry as Record<string, unknown>;
+      const { h, l, t, i, s, a } = entry as Record<string, unknown>;
       if (!isString(h) || !isInt(l) || !Array.isArray(t) || !Array.isArray(i)) return null;
       if (!t.every(isString)) return null;
       const items: HeroBuild['items'][number][] = [];
@@ -67,8 +72,20 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
         if (!Array.isArray(pair) || !isString(pair[0]) || !isInt(pair[1])) return null;
         items.push({ id: pair[0], upgrade: pair[1] });
       }
-      const base: HeroBuild = { hero: h, level: l, talents: t, items };
-      const build: HeroBuild = a === 1 ? { ...base, awakened: true } : base;
+      let spells: SpellLevels | undefined;
+      if (s !== undefined) {
+        if (!Array.isArray(s) || s.length !== SPELL_SLOTS.length || !s.every(isInt)) return null;
+        const [basic, a, b, ult] = s;
+        spells = { basic: basic ?? 1, a: a ?? 1, b: b ?? 1, ult: ult ?? 1 };
+      }
+      const build: HeroBuild = {
+        hero: h,
+        level: l,
+        talents: t,
+        items,
+        ...(spells === undefined ? {} : { spells }),
+        ...(a === 1 ? { awakened: true } : {}),
+      };
       if (validateBuild(content, build).length > 0) return null;
       builds.push(build);
     }

@@ -52,6 +52,7 @@ describe('profil', () => {
       items: [null, null],
       freeRespecUsed: false,
       stars: 0,
+      spells: { basic: 1, a: 1, b: 1, ult: 1 },
       awakened: false,
     });
     expect(profile.fragments).toEqual({});
@@ -341,6 +342,7 @@ describe('mode test', () => {
       level: 12,
       talents: ['ronce_snare_core'],
       items: [{ id: 'storm_sigil', upgrade: 1 }],
+      spells: { basic: 1, a: 1, b: 1, ult: 1 },
     });
     expect(heroBuild(sandbox, 'pyra').items).toEqual([{ id: 'storm_sigil', upgrade: 2 }]);
   });

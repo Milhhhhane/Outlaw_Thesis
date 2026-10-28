@@ -3,6 +3,17 @@ import { MAX_SIDE } from './balance';
 import { idSchema } from './common';
 import { emptyQuestState, questStateSchema } from './quests';
 
+/** Niveau de chaque sort d'un héros (1 = sans montée). */
+export const spellLevelsSchema = z.strictObject({
+  basic: z.number().int().min(1),
+  a: z.number().int().min(1),
+  b: z.number().int().min(1),
+  ult: z.number().int().min(1),
+});
+export type SpellLevels = z.infer<typeof spellLevelsSchema>;
+/** Tous les sorts au niveau 1 : valeur des anciennes sauvegardes et d'un héros neuf. */
+export const BASE_SPELL_LEVELS: SpellLevels = Object.freeze({ basic: 1, a: 1, b: 1, ult: 1 });
+
 const nonNegInt = z.number().int().min(0);
 const posInt = z.number().int().min(1);
 const essenceStock = z.tuple([nonNegInt, nonNegInt, nonNegInt]);
@@ -22,6 +33,8 @@ export const heroProgressSchema = z.strictObject({
    * le plus grand de cette valeur et de celle que le niveau implique (`heroStars`).
    */
   stars: nonNegInt.default(0),
+  /** Niveau de chaque sort (montée des sorts). Absent des anciennes sauvegardes : tous au niveau 1. */
+  spells: spellLevelsSchema.default(BASE_SPELL_LEVELS),
   /** Éveil payé (une fois par héros). Absent des anciennes sauvegardes. */
   awakened: z.boolean().default(false),
 });
@@ -87,6 +100,8 @@ export const profileSchema = z.strictObject({
   fragments: z.record(idSchema, nonNegInt).default({}),
   /** Coffres fermés par palier. Absent des anciennes sauvegardes. */
   chests: z.record(idSchema, nonNegInt).default({}),
+  /** Grimoires (montée des sorts, commune à tous les héros). Absent des anciennes sauvegardes. */
+  grimoires: nonNegInt.default(0),
   /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
   focus: idSchema.nullable().default(null),
   /**

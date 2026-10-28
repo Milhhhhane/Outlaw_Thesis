@@ -119,6 +119,7 @@ function Reveal({
         <>
           <p className="chest-reveal__total">
             {t('chests.reveal.total', { n: report.fragments.length })}
+            {report.grimoires > 0 && ` · ${t('chests.reveal.grimoires', { n: report.grimoires })}`}
           </p>
           <ul className="chest-reveal__list" aria-label={t('chests.fragments')}>
             {groups.map(({ hero, n }, i) => {

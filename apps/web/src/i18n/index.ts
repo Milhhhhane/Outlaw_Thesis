@@ -8,6 +8,7 @@ import fr from './fr.json';
 import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
 import pvp from './pvp.fr.json';
+import spellLevels from './spells.fr.json';
 import quests from './quests.fr.json';
 import tiers from './tiers.fr.json';
 import tower from './tower.fr.json';
@@ -25,6 +26,7 @@ export type TextKey =
   | keyof typeof loot
   | keyof typeof pvp
   | keyof typeof quests
+  | keyof typeof spellLevels
   | keyof typeof tiers
   | keyof typeof tower;
 
@@ -39,6 +41,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...heroTexts,
   ...loot,
   ...pvp,
+  ...spellLevels,
   ...quests,
   ...tiers,
   ...tower,
