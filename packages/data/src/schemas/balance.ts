@@ -121,8 +121,8 @@ export const balanceSchema = z
      * seule formule pour tous les donjons : le palier k ajoute (k − 1) × `levelsPerTier` au niveau
      * des ennemis et (k − 1) × `enemyPctPerTier` % à leurs PV et ATK (les niveaux seuls pèsent
      * peu, la croissance des monstres étant plate), (k − 1) × `rewardPctPerTier` % aux
-     * récompenses, (k − 1) × `rareWeightPerTier` au poids du rare, et monte le coffre de
-     * (k − 1) × `chestStepPerTier` paliers.
+     * récompenses et (k − 1) × `rareWeightPerTier` au poids du rare ; le niveau plus haut des
+     * ennemis monte aussi la chance des coffres riches (`chests.dropLevels`).
      */
     tiers: z.strictObject({
       count: posInt,
@@ -130,7 +130,6 @@ export const balanceSchema = z
       enemyPctPerTier: z.strictObject({ hp: nonNeg, atk: nonNeg }),
       rewardPctPerTier: z.strictObject({ xp: nonNeg, gold: nonNeg, materials: nonNeg }),
       rareWeightPerTier: nonNegInt,
-      chestStepPerTier: nonNegInt,
     }),
 
     economy: z.strictObject({
@@ -164,19 +163,34 @@ export const balanceSchema = z
     chests: z.strictObject({
       /** Fragments d'un héros pour l'invoquer, selon sa rareté (commun, rare, épique, légendaire). */
       summonCosts: z.array(posInt).length(MAX_HERO_TIER),
-      /**
-       * Poids d'un héros de chaque rareté dans le tirage d'un fragment (hors part du héros ciblé) :
-       * un héros commun de poids 12 sort douze fois plus souvent qu'un légendaire de poids 1.
-       */
-      tierWeights: z.array(posInt).length(MAX_HERO_TIER),
       /** Fragments pour passer l'étoile 1, 2, 3… (une entrée par palier jusqu'au niveau maximum). */
       starCosts: z.array(posInt),
-      /** Part des fragments d'un coffre qui va au héros ciblé par le joueur (le reste est au hasard). */
-      focusRate: z.number().min(0).max(1),
-      /** Chance qu'un donjon déjà terminé redonne son coffre (le premier passage le donne toujours). */
-      replayChestRate: z.number().min(0).max(1),
+      /**
+       * Le héros ciblé pèse ce multiple de son poids normal dans chaque coffre : sa chance monte en
+       * proportion de sa rareté (un commun ciblé sort souvent, un légendaire ciblé reste rare).
+       */
+      focusMultiplier: z.number().min(1),
+      /**
+       * Niveaux d'ennemis (palier compris) entre lesquels la chance de chaque coffre va de
+       * `drop[0]` à `drop[1]`, en ligne droite, bornée aux extrémités.
+       */
+      dropLevels: z.tuple([posInt, posInt]),
       /** Paliers de coffre, du plus modeste au plus riche. */
-      tiers: z.array(z.strictObject({ id: idSchema, fragments: posInt })).min(1),
+      tiers: z
+        .array(
+          z.strictObject({
+            id: idSchema,
+            fragments: posInt,
+            /**
+             * Poids d'un héros de chaque rareté (commun, rare, épique, légendaire) dans le tirage
+             * d'un fragment de ce coffre : 0, la rareté n'y sort jamais.
+             */
+            weights: z.array(nonNegInt).length(MAX_HERO_TIER),
+            /** Chance (%) de ce coffre par passage, au plus bas puis au plus haut de `dropLevels`. */
+            drop: z.tuple([z.number().min(0).max(100), z.number().min(0).max(100)]),
+          }),
+        )
+        .min(1),
     }),
 
     /** L'énergie existe dès le MVP avec un coût de 0 : levier de monétisation sans gacha, plus tard. */
@@ -251,6 +265,32 @@ export const balanceSchema = z
         path: ['chests', 'starCosts'],
       });
     }
+    for (const end of [0, 1] as const) {
+      const sum = b.chests.tiers.reduce((total, tier) => total + tier.drop[end], 0);
+      if (sum > 100) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `chests.tiers : chances de coffre cumulées ${String(sum)} % > 100 %`,
+          path: ['chests', 'tiers'],
+        });
+      }
+    }
+    if (b.chests.dropLevels[0] >= b.chests.dropLevels[1]) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'chests.dropLevels : le premier niveau doit être sous le second',
+        path: ['chests', 'dropLevels'],
+      });
+    }
+    b.chests.tiers.forEach((tier, i) => {
+      if (tier.weights.every((w) => w === 0)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `chests.tiers : le coffre « ${tier.id} » ne peut donner aucun héros`,
+          path: ['chests', 'tiers', i, 'weights'],
+        });
+      }
+    });
     const tierIds = b.chests.tiers.map((tier) => tier.id);
     if (new Set(tierIds).size !== tierIds.length) {
       ctx.addIssue({

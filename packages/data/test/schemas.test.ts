@@ -94,8 +94,20 @@ describe('balance.json', () => {
 
   it('refuse deux paliers de coffre de même identifiant', () => {
     const bad = clone(balanceJson);
-    bad.chests.tiers.push({ id: 'bronze', fragments: 1 });
+    bad.chests.tiers.push({ id: 'bronze', fragments: 1, weights: [1, 0, 0, 0], drop: [0, 0] });
     expect(balanceSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it('refuse des chances de coffre au-delà de 100 % ou un coffre sans héros possible', () => {
+    const over = clone(balanceJson);
+    over.chests.tiers[0]!.drop = [99, 99];
+    expect(balanceSchema.safeParse(over).success).toBe(false);
+    const empty = clone(balanceJson);
+    empty.chests.tiers[0]!.weights = [0, 0, 0, 0];
+    expect(balanceSchema.safeParse(empty).success).toBe(false);
+    const flat = clone(balanceJson);
+    flat.chests.dropLevels = [40, 1];
+    expect(balanceSchema.safeParse(flat).success).toBe(false);
   });
 });
 
@@ -411,12 +423,6 @@ describe('parseContent : références croisées', () => {
     expectIssue((raw) => {
       (raw.dungeons[0] as Record<string, unknown>).unlocksHero = 'fantome';
     }, 'héros débloqué inconnu');
-  });
-
-  it('refuse un palier de coffre inconnu', () => {
-    expectIssue((raw) => {
-      (raw.dungeons[0] as typeof dungeonFixture).chest = 'diamant';
-    }, 'palier de coffre inconnu');
   });
 
   it('refuse un niveau recommandé au-dessus du niveau maximum', () => {

@@ -60,15 +60,41 @@ export function tierRareWeight(content: Content, tier: number): number {
   return (tier - 1) * content.balance.tiers.rareWeightPerTier;
 }
 
-/** Coffre d'un donjon au palier donné : celui du donjon, monté d'un cran par palier (borné au plus riche). */
-export function tierChest(content: Content, dungeon: Dungeon, tier: number): string {
-  const tiers = content.balance.chests.tiers;
-  const base = tiers.findIndex((t) => t.id === dungeon.chest);
-  const index = Math.min(
-    tiers.length - 1,
-    Math.max(0, base) + (tier - 1) * content.balance.tiers.chestStepPerTier,
-  );
-  return tiers[index]?.id ?? dungeon.chest;
+/**
+ * Chance (%) de chaque coffre à la fin d'un passage, du plus riche au plus modeste : elle suit le
+ * niveau des ennemis du palier (`chests.dropLevels`), en ligne droite entre `drop[0]` et `drop[1]`.
+ * Plus le passage est dur, plus les coffres riches tombent. Le reste (100 − somme) : aucun coffre.
+ */
+export function chestOdds(
+  content: Content,
+  dungeon: Dungeon,
+  tier: number,
+): { readonly chest: string; readonly pct: number }[] {
+  const { dropLevels, tiers } = content.balance.chests;
+  const [low, high] = dropLevels;
+  const t = Math.min(1, Math.max(0, (tierLevel(content, dungeon, tier) - low) / (high - low)));
+  return tiers
+    .map((chest) => ({ chest: chest.id, pct: chest.drop[0] + (chest.drop[1] - chest.drop[0]) * t }))
+    .reverse();
+}
+
+/**
+ * Coffre gagné pour un tirage `value` dans [0, 1) : le plus riche d'abord, selon `chestOdds`.
+ * `guaranteed` (premier passage du palier) : sans coffre tiré, le plus modeste est donné.
+ */
+export function rollChest(
+  content: Content,
+  dungeon: Dungeon,
+  tier: number,
+  value: number,
+  guaranteed: boolean,
+): string | null {
+  let cursor = value * 100;
+  for (const { chest, pct } of chestOdds(content, dungeon, tier)) {
+    cursor -= pct;
+    if (cursor < 0) return chest;
+  }
+  return guaranteed ? (content.balance.chests.tiers[0]?.id ?? null) : null;
 }
 
 /**

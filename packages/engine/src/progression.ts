@@ -2,7 +2,7 @@ import { PROFILE_VERSION, type Content, type HeroProgress, type Profile } from '
 import { validateBuild, type HeroBuild } from './compile';
 import { lootTable, masteryMaterialsFactor, masteryNext, masteryRank, ownedItem } from './loot';
 import { salvageOf } from './items';
-import { tierChest, tierFrontier, tierOpen, tierRewardFactor } from './tiers';
+import { rollChest, tierFrontier, tierOpen, tierRewardFactor } from './tiers';
 
 /**
  * Progression hors combat : XP, niveaux, talents, respec, objets, récompenses et butin.
@@ -362,7 +362,7 @@ export interface DungeonReport {
     readonly next: number | null;
   };
   readonly unlockedHero: string | null;
-  /** Palier du coffre gagné, ou null (donjon rejoué sans chance). */
+  /** Coffre gagné, ou null (pas de coffre à ce passage). */
   readonly chest: string | null;
 }
 
@@ -450,13 +450,11 @@ export function completeDungeon(
     }
   }
 
-  // Coffre du palier : toujours au premier passage, sinon une chance (tirée après le butin, qui ne bouge pas).
-  let chest: string | null = tierChest(content, dungeon, tier);
-  if (!firstClear) {
-    const chestRoll = nextRandom(seed);
-    seed = chestRoll.seed;
-    if (chestRoll.value >= balance.chests.replayChestRate) chest = null;
-  }
+  // Coffre : une chance par passage selon la difficulté du palier (`chestOdds`), au moins le plus
+  // modeste au premier passage du palier ; tiré après le butin, qui ne bouge pas.
+  const chestRoll = nextRandom(seed);
+  seed = chestRoll.seed;
+  const chest = rollChest(content, dungeon, tier, chestRoll.value, firstClear);
 
   const materials: Profile['materials'] = [...profile.materials];
   const dustTier = dungeon.rewards.materials.tier - 1;

@@ -211,7 +211,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
 
   // Le coffre d'or : la fenêtre d'ouverture tient en entier, même avec beaucoup de héros tirés.
   await page.locator('.chest-card', { hasText: "Coffre d'or" }).getByRole('button').click();
-  await expect(page.getByText('8 fragments obtenus')).toBeVisible();
+  await expect(page.getByText('14 fragments obtenus')).toBeVisible();
   await inView(page, '.window');
   await noScroll(page);
   await page.keyboard.press('Escape');
