@@ -16,7 +16,8 @@
     "farm": "tsx src/farm.ts",
     "heroes": "tsx src/heroes.ts",
     "economy": "tsx src/economy.ts",
-    "pvp": "tsx src/pvp-cli.ts"
+    "pvp": "tsx src/pvp-cli.ts",
+    "skillups": "tsx src/skillups-cli.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

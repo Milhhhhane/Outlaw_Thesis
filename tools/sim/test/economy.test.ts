@@ -66,6 +66,11 @@ describe('économie : joueur modèle', () => {
     within(m.teamMaxLevel, 85, 120);
     within(m.teamMaxed, 100, 140);
     within(m.collection, 200, 300);
+    // Montée des sorts (docs/BALANCE.md) : un héros au milieu de partie, l'équipe après ses objets.
+    within(m.spellsOneHero, 50, 100);
+    within(m.spellsTeam, 120, 200);
+    // Les doublons paient les sorts : il reste des fragments aux héros de l'équipe.
+    expect(ledger.teamFragmentsLeft).toBeGreaterThan(72);
     // L'or et la poussière pure servent : au moins les trois quarts de ce qui tombe est dépensé.
     expect(ledger.gold.items).toBeGreaterThan(0.75 * ledger.gold.earned);
     const pure = (ledger.dust.levels[2] ?? 0) + (ledger.dust.items[2] ?? 0);

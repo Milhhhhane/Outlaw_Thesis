@@ -18,7 +18,7 @@
  *   libre de l'équipe, améliore d'abord les objets portés qu'il peut payer, puis monte les
  *   niveaux avec ce qui reste.
  */
-import { loadContent, type Content, type Profile } from '@outlaw/data';
+import { loadContent, SPELL_SLOTS, type Content, type Profile } from '@outlaw/data';
 import {
   atStarGate,
   completeDungeon,
@@ -38,6 +38,7 @@ import {
   tierRewardFactor,
   tierTargetLevel,
   upgradeItem,
+  spellMaxCost,
   xpToNext,
   type DungeonReport,
 } from '@outlaw/engine';
@@ -52,6 +53,10 @@ export interface Milestones {
   readonly teamMaxed: number | null;
   /** Tous les objets du jeu possédés et au niveau maximum. */
   readonly collection: number | null;
+  /** Grimoires gagnés de quoi monter tous les sorts d'un héros au maximum (non dépensés). */
+  readonly spellsOneHero: number | null;
+  /** Pareil pour les quatre héros de l'équipe. */
+  readonly spellsTeam: number | null;
   /** Passage de la première victoire de chaque donjon. */
   readonly firstClears: Readonly<Record<string, number>>;
 }
@@ -63,6 +68,9 @@ export interface Ledger {
   readonly dust: { earned: number[]; levels: number[]; items: number[]; salvage: number[] };
   fragments: number;
   chests: number;
+  /** Grimoires gagnés (passages et coffres) ; fragments restants par héros de l'équipe à la fin. */
+  grimoires: number;
+  teamFragmentsLeft: number;
   readonly items: {
     drops: number;
     rares: number;
@@ -318,6 +326,7 @@ function openAll(content: Content, profile: Profile, ledger: Ledger): Profile {
       const opened = ok(openChest(content, current, tier.id));
       if (opened === null) break;
       ledger.fragments += opened.report.fragments.length;
+      ledger.grimoires += opened.report.grimoires;
       ledger.chests += 1;
       current = opened.profile;
     }
@@ -349,6 +358,8 @@ function emptyLedger(): Ledger {
     dust: { earned: [0, 0, 0], levels: [0, 0, 0], items: [0, 0, 0], salvage: [0, 0, 0] },
     fragments: 0,
     chests: 0,
+    grimoires: 0,
+    teamFragmentsLeft: 0,
     items: { drops: 0, rares: 0, upgrades: 0, maxed: 0, wornLevel: 0 },
   };
 }
@@ -374,6 +385,9 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
   let teamMaxLevel: number | null = null;
   let teamMaxed: number | null = null;
   let collection: number | null = null;
+  let spellsOneHero: number | null = null;
+  let spellsTeam: number | null = null;
+  const spellsCost = spellMaxCost(content).grimoires * SPELL_SLOTS.length;
   let runs = 0;
   const allCleared = (): boolean =>
     content.dungeons.every((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0);
@@ -393,6 +407,7 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
       ledger.dust.salvage[tier - 1] = (ledger.dust.salvage[tier - 1] ?? 0) + amount;
     }
     ledger.items.drops += 1;
+    ledger.grimoires += report.grimoires;
     if (content.itemById.get(report.item.item)?.rarity === 'rare') ledger.items.rares += 1;
 
     profile = openAll(content, profile, ledger);
@@ -438,11 +453,15 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
       )
     )
       collection = runs;
+    if (spellsOneHero === null && ledger.grimoires >= spellsCost) spellsOneHero = runs;
+    if (spellsTeam === null && ledger.grimoires >= spellsCost * profile.team.length)
+      spellsTeam = runs;
   }
   ledger.items.maxed = profile.items.filter((o) => o.upgrade >= itemRules.maxUpgradeLevel).length;
   const wornUids = profile.team.flatMap((id) => profile.heroes[id]?.items ?? []);
   const worn = profile.items.filter((o) => wornUids.includes(o.uid));
   ledger.items.wornLevel = mean(worn.map((o) => o.upgrade));
+  ledger.teamFragmentsLeft = mean(profile.team.map((id) => profile.fragments[id] ?? 0));
   return {
     runs,
     milestones: {
@@ -452,6 +471,8 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
       teamMaxLevel,
       teamMaxed,
       collection,
+      spellsOneHero,
+      spellsTeam,
       firstClears,
     },
     ledger,
@@ -493,6 +514,8 @@ export function summarizeEconomy(content: Content, seeds: number, maxRuns = 600)
   }
   ledger.fragments = avg((l) => l.fragments);
   ledger.chests = avg((l) => l.chests);
+  ledger.grimoires = avg((l) => l.grimoires);
+  ledger.teamFragmentsLeft = avg((l) => l.teamFragmentsLeft);
   ledger.items.drops = avg((l) => l.items.drops);
   ledger.items.rares = avg((l) => l.items.rares);
   ledger.items.upgrades = avg((l) => l.items.upgrades);
@@ -507,6 +530,8 @@ export function summarizeEconomy(content: Content, seeds: number, maxRuns = 600)
       teamMaxLevel: pick('teamMaxLevel'),
       teamMaxed: pick('teamMaxed'),
       collection: pick('collection'),
+      spellsOneHero: pick('spellsOneHero'),
+      spellsTeam: pick('spellsTeam'),
     },
     firstClears,
     ledger,
@@ -598,6 +623,8 @@ function main(): void {
   );
   console.log(`  équipe de 4 aux objets au maximum  : ${f(summary.milestones.teamMaxed)}`);
   console.log(`  collection complète au maximum     : ${f(summary.milestones.collection)}`);
+  console.log(`  grimoires des sorts d'un héros     : ${f(summary.milestones.spellsOneHero)}`);
+  console.log(`  grimoires des sorts de l'équipe    : ${f(summary.milestones.spellsTeam)}`);
   if (summary.unreached > 0)
     console.log(`  ! ${summary.unreached} partie(s) n'ont pas atteint le dernier jalon`);
   console.log('Première victoire (passage gagnant) :');
@@ -619,6 +646,10 @@ function main(): void {
   );
   console.log(
     `  objets tombés ${l.items.drops.toFixed(0)} dont rares ${l.items.rares.toFixed(1)}, améliorations ${l.items.upgrades.toFixed(1)} (objets au maximum ${l.items.maxed.toFixed(1)}, niveau moyen des objets portés ${l.items.wornLevel.toFixed(2)}) ; coffres ${l.chests.toFixed(1)}, fragments ${l.fragments.toFixed(0)}`,
+  );
+  const spell = spellMaxCost(content);
+  console.log(
+    `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
   );
 }
 

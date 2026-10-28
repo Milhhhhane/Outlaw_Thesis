@@ -24,6 +24,8 @@ export interface ChestReport {
   readonly tier: string;
   /** Héros de chaque fragment, dans l'ordre du tirage (pour l'ouverture animée). */
   readonly fragments: readonly string[];
+  /** Grimoires du coffre (`spellLevels.grimoires.chests`). */
+  readonly grimoires: number;
 }
 
 /** Nombre total de coffres fermés. */
@@ -126,14 +128,16 @@ export function openChest(
     drawn.push(hero);
     fragments[hero] = (fragments[hero] ?? 0) + 1;
   }
+  const grimoires = content.balance.spellLevels.grimoires.chests[tier] ?? 0;
   return ok({
     profile: {
       ...profile,
       seed,
       fragments,
+      grimoires: profile.grimoires + grimoires,
       chests: { ...profile.chests, [tier]: (profile.chests[tier] ?? 0) - 1 },
     },
-    report: { tier, fragments: drawn },
+    report: { tier, fragments: drawn, grimoires },
   });
 }
 
