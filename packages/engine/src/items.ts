@@ -19,15 +19,32 @@ export interface UpgradeCost {
   readonly materials: { readonly tier: number; readonly amount: number };
 }
 
-/** Coût de l'amélioration suivante d'un objet, ou null au niveau maximum. */
+/**
+ * Coût de l'amélioration suivante d'un objet, ou null au niveau maximum : copies, puis or et
+ * poussière de `upgradeCosts` multipliés par `tierCostPct` du palier de l'objet.
+ */
 export function upgradeCost(content: Content, itemId: string, upgrade: number): UpgradeCost | null {
-  const step = content.balance.progression.items.upgradeCosts[upgrade];
+  const { upgradeCosts, tierCostPct } = content.balance.progression.items;
+  const step = upgradeCosts[upgrade];
   if (step === undefined) return null;
+  const tier = itemTier(content, itemId);
+  const scaled = (value: number, pct: readonly number[]): number =>
+    Math.round((value * (pct[tier - 1] ?? 100)) / 100);
   return {
-    copies: step.copies,
-    gold: step.gold,
-    materials: { tier: itemTier(content, itemId), amount: step.materials },
+    copies: Math.max(1, scaled(step.copies, tierCostPct.copies)),
+    gold: scaled(step.gold, tierCostPct.gold),
+    materials: { tier, amount: scaled(step.materials, tierCostPct.materials) },
   };
+}
+
+/** Copies qu'il faut encore pour amener un objet au niveau maximum. */
+export function copiesToMax(content: Content, owned: OwnedItem): number {
+  let total = 0;
+  for (let level = owned.upgrade; ; level++) {
+    const cost = upgradeCost(content, owned.item, level);
+    if (cost === null) return total;
+    total += cost.copies;
+  }
 }
 
 export function upgradeItem(content: Content, profile: Profile, uid: number): Outcome {
@@ -49,12 +66,6 @@ export function upgradeItem(content: Content, profile: Profile, uid: number): Ou
       i.uid === uid ? { ...i, upgrade: i.upgrade + 1, copies: i.copies - cost.copies } : i,
     ),
   });
-}
-
-/** Copies qu'il faut encore pour amener un objet au niveau maximum. */
-export function copiesToMax(content: Content, owned: OwnedItem): number {
-  const { upgradeCosts } = content.balance.progression.items;
-  return upgradeCosts.slice(owned.upgrade).reduce((sum, step) => sum + step.copies, 0);
 }
 
 /** Poussière rendue par une copie dissoute, au palier du donjon d'origine. */

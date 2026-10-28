@@ -4,8 +4,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Tests de bout en bout : le build de production servi par `vite preview` (jeu seul, cinq
  * résolutions), puis par `wrangler dev` (jeu + Worker des comptes + base D1 locale neuve).
  */
-const port = 4174;
-const apiPort = 8788;
+// Ports surchargeables (E2E_PORT, E2E_API_PORT) pour lancer plusieurs copies du dépôt en parallèle.
+const port = Number(process.env.E2E_PORT ?? 4174);
+const apiPort = Number(process.env.E2E_API_PORT ?? 8788);
 const d1 = '.wrangler/e2e';
 
 export default defineConfig({

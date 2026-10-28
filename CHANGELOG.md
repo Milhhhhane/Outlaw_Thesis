@@ -2,6 +2,27 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — paliers de donjon et économie
+
+### Ajouté
+
+- Paliers de donjon (I, II, III) : terminer un palier ouvre le suivant du même donjon. Chaque
+  palier monte le niveau des ennemis (+5) et leurs PV et ATK (+20 %), et le butin : or et
+  poussière +25 %, rare plus fréquent, coffre d'un cran. Choix du palier sur la carte, titre de la
+  salle et récompenses avec le palier, badge du palier atteint sur la carte. Les sauvegardes
+  gardent tout : un donjon déjà terminé a son palier II ouvert.
+- Simulation : lignes `tier_*` et règles « chaque palier reste gagnable par l'expert, jamais plus
+  facile que le précédent » (`pnpm sim:check`) ; `pnpm --filter @outlaw/sim economy` : joueur
+  modèle et jalons de l'économie (`docs/ECONOMY.md`), bornés en CI.
+
+### Modifié
+
+- Améliorer un objet coûte selon le palier de poussière de son donjon : 4 copies, 440 or et
+  16 poussières brutes pour un objet des premiers donjons ; 8 copies, 22 000 or et 160 poussières
+  pures pour un objet de fin de jeu (avant : 6 copies, 1 200 or, 25 poussières partout).
+- Poussière brute des deux premiers donjons doublée (4 → 8). Premier objet au maximum en 8
+  passages gagnants (avant : 29) ; collection complète en 244.
+
 ## [Non publié] — 2026-10-28 — enchaînement automatique
 
 ### Ajouté

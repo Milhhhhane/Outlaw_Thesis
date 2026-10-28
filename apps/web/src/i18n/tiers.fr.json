@@ -1,0 +1,15 @@
+{
+  "tier.choose": "Palier",
+  "tier.name": "Palier {tier}",
+  "tier.short": "{dungeon} {tier}",
+  "tier.locked": "Terminez le palier précédent pour ouvrir celui-ci.",
+  "tier.cleared": "terminé",
+  "tier.open": "ouvert",
+  "tier.state": "{name}, {state}",
+  "tier.base": "Palier I : récompenses de base.",
+  "tier.effects": "Ennemis niv. {level}, +{pct} % PV et ATK · or +{gold} % · poussière +{dust} % · rare +{rare} · {chest}",
+  "tier.hint": "Terminer un palier ouvre le suivant du même donjon.",
+  "reward.tier": "Palier {tier}.",
+  "reward.tierUnlocked": "Palier {tier} ouvert !",
+  "refusal.tier_locked": "Ce palier n'est pas encore ouvert."
+}
