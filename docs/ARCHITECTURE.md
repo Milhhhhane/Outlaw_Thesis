@@ -122,6 +122,9 @@ lui-même est dans `completeDungeon` (`progression.ts`). Un objet vient d'un seu
 Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
 moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
 active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.
+L'enchaînement des salles et la relance du donjon en mode Auto sont une navigation différée de
+l'interface (`apps/web/src/game/Countdown.tsx`, utilisé par `combat/CombatScreen.tsx` et
+`screens/Rewards.tsx`) : le décompte déclenche le bouton de fin existant, rien de plus.
 
 ### Passer à quatre héros
 

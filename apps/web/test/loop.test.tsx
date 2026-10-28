@@ -30,7 +30,7 @@ function leveled(level: number): Profile {
 /** Joue le combat affiché au clic : l'ultime dès que possible, sinon l'attaque de base. */
 async function playFight(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   for (let turn = 0; turn < 200 && screen.queryByRole('dialog') === null; turn++) {
-    const actions = screen.getByRole('region', { name: /Au tour de/ });
+    const actions = await screen.findByRole('region', { name: /Au tour de/ });
     const spells = within(actions).getAllByRole<HTMLButtonElement>('button');
     const ult = spells[3];
     await user.click(ult !== undefined && !ult.disabled ? ult : spells[0]!);

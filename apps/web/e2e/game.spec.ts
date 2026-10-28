@@ -2,10 +2,10 @@ import { loadContent } from '@outlaw/data';
 import { newProfile } from '@outlaw/engine';
 import { expect, test, type Page } from '@playwright/test';
 
-/** Combats instantanés et premiers pas déjà lus, pour aller droit au but. */
+/** Combats à ×2 et premiers pas déjà lus, pour aller droit au but. */
 async function start(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
     localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
   });
   await page.goto('/');
@@ -92,6 +92,8 @@ async function fight(page: Page, keyboard: boolean): Promise<void> {
   const outcome = page.locator('.outcome');
   for (let turn = 0; turn < 300 && !(await outcome.isVisible()); turn++) {
     const spells = page.locator('.actions__spells button:not([disabled])');
+    // L'animation de l'action précédente se joue (à ×2) avant le tour suivant, ou le combat finit.
+    await expect(spells.or(outcome).first()).toBeVisible();
     if ((await spells.count()) === 0) continue;
     if (keyboard) {
       const key = String(await spells.count());
@@ -164,8 +166,9 @@ test('combat automatique : le bouton joue les trois salles seul, l’en-tête ti
   for (let room = 1; room <= 3; room++) {
     await expect(page.getByRole('heading', { level: 1 })).toContainText(`combat ${room} sur 3`);
     // Aucun clic sur un sort : seul Auto joue.
-    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
     await noScroll(page);
+    // Le clic interrompt le décompte d'Auto et passe à la suite.
     await page.locator('.outcome button').first().click();
     if (!(await page.locator('.battle').isVisible())) break;
     // Le mode reste actif d'une salle à l'autre.
@@ -189,7 +192,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   await page.addInitScript(
     (save) => {
       localStorage.setItem('outlaw-thesis/save', save);
-      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
       localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
     },
     JSON.stringify({ version: 1, profile }),
@@ -234,7 +237,7 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await page.addInitScript(
     (save) => {
       localStorage.setItem('outlaw-thesis/save', save);
-      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
       localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
     },
     JSON.stringify({ version: 1, profile }),
@@ -248,12 +251,15 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   // (sorts de soutien enchaînés), même au niveau 30.
   await page.getByRole('button', { name: 'Auto', exact: true }).click();
   for (let room = 1; room <= 3; room++) {
-    await expect(page.locator('.outcome')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('.outcome')).toContainText('Victoire');
     await page.locator('.outcome button').first().click();
     if (!(await page.locator('.battle').isVisible())) break;
   }
   await expect(page.locator('.reward-card')).toHaveCount(8);
+  // Auto relancerait le donjon après son décompte : une touche rend la main.
+  await page.keyboard.press('Shift');
+  await expect(page.locator('.countdown')).toHaveCount(0);
   await page.waitForTimeout(1500); // fin de l'animation d'entrée des cartes
   await inView(page, '.end__go');
   await inView(page, '.reward-cards');
@@ -273,4 +279,67 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   expect(list).toBeLessThanOrEqual(1);
   await page.getByRole('button', { name: 'Retour au camp' }).click();
   await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
+});
+
+test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  test.skip(
+    (page.viewportSize()?.width ?? 0) !== 1280 && (page.viewportSize()?.width ?? 0) !== 844,
+    'une résolution d’ordinateur, plus le téléphone',
+  );
+  test.setTimeout(300_000);
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  const profile = {
+    ...base,
+    heroes: Object.fromEntries(
+      Object.entries(base.heroes).map(([id, hero]) => [id, { ...hero, level: 30, xp: 0 }]),
+    ),
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast', auto: true }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await page.getByRole('button', { name: /^Partir/ }).click();
+  const auto = page.getByRole('button', { name: 'Auto', exact: true });
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  const heading = page.getByRole('heading', { level: 1 });
+  for (let room = 1; room <= 3; room++) {
+    await expect(heading).toContainText(`combat ${room} sur 3`);
+    await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('.outcome')).toContainText('Victoire');
+    // Le décompte : chiffre, phrase, bouton, le tout dans la fenêtre ; puis la suite sans clic.
+    const countdown = page.locator('.countdown');
+    await expect(countdown).toContainText(
+      room === 3 ? /Récompenses dans [1-5] s/ : /Salle suivante dans [1-5] s/,
+    );
+    await expect(countdown.getByRole('button', { name: 'Continuer maintenant' })).toBeVisible();
+    await inView(page, '.countdown');
+    await noScroll(page);
+  }
+  await expect(page.locator('.end--rewards')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.countdown')).toContainText(/Nouveau passage dans [1-5] s/);
+  await inView(page, '.countdown');
+  await inView(page, '.end__go');
+  await noScroll(page);
+  // Relance du même donjon avec la même équipe, Auto toujours coché.
+  await expect(heading).toContainText('combat 1 sur 3', { timeout: 10_000 });
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
+  // Le joueur reprend la main d'une touche : le décompte disparaît, le résultat reste.
+  await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
+  await expect(page.locator('.countdown')).toBeVisible();
+  await page.keyboard.press('Shift');
+  await expect(page.locator('.countdown')).toHaveCount(0);
+  await page.waitForTimeout(5500);
+  await expect(page.locator('.outcome')).toBeVisible();
+  await expect(heading).toContainText('combat 1 sur 3');
+  await expect(auto).toHaveAttribute('aria-pressed', 'true');
 });
