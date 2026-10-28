@@ -77,6 +77,12 @@
   (écart 7 points, cible ≤ 10). Cibles de rythme ajustées (voir BALANCE.md), à revoir avec les
   paliers de donjon. Ouvert : marier les raretés hautes avec des donjons plus durs.
 
+- Animations de combat — attaque de base au contact, impacts par élément, ultimes (bandes,
+  zoom sur le lanceur, flash à l'impact), soins et bulles de bouclier, altérations persistantes
+  (brûlure, marque, étourdissement), mort par dissolution. Tout en CSS et sprites générés, piloté
+  par la vue rejouée ; durées à l'échelle de la vitesse ; tests dans
+  `apps/web/test/stage-sim.test.tsx`.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

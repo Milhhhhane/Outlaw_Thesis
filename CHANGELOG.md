@@ -31,6 +31,28 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Nœuds « Torrent » (Marée) et « Sillage » (Ressac) renommés « Flux » et « Remorque » : ce sont
   désormais des noms de héros.
 
+## [Non publié] — 2026-10-28 — animations de combat
+
+### Ajouté
+
+- Attaque de base au corps à corps : le sprite court jusqu'à sa cible, frappe au contact (arme et
+  arc de frappe à l'arrivée) et revient ; plus de projectile pour ce coup. Héros et ennemis.
+- Un impact par élément : flammes qui montent puis braises et fumée (feu), gerbe, gouttes et
+  ronds au sol (eau), épines puis feuilles qui tourbillonnent (nature) ; le choc sur la cible et
+  les étincelles prennent la couleur et la physique de l'élément.
+- Ultimes : bandes noires, décor assombri, zoom sur le lanceur qui s'éclaire, puis flash blanc
+  et grosse secousse au premier effet (dégâts, soin, bouclier…).
+- Soins et boucliers : lueur sur le corps, colonne de lumière verte au soin, bulle bleue autour
+  de l'unité tant qu'elle a du bouclier, qui éclate quand un coup l'use entièrement.
+- Altérations affichées tant qu'elles durent : flammes aux pieds (brûlure), viseur sur le corps
+  (marque), étoiles cerclées de noir autour du crâne (étourdissement).
+- Mort : après la chute, le corps se dissout en cendres de son élément ; la place reste vide.
+
+### Modifié
+
+- Les animations de combat suivent la vitesse (×1, ×2). Les effets d'une unité (impact,
+  étincelles, chiffres) passent au-dessus des sprites. Mouvement réduit : rien ne bouge ni ne clignote ; la bulle de bouclier et les altérations restent affichées, immobiles.
+
 ## [Non publié] — 2026-10-28 — paliers de donjon et économie
 
 ### Ajouté

@@ -752,3 +752,40 @@ qu'ils ont d'autres coéquipiers) et se règlent par les donjons ; à arbitrer p
 **Galerie à quatre colonnes qui défile** — Choix : cartes plus compactes (sprite ×1,5, thèse sur
 trois lignes), grille qui défile dans son cadre ; le vivier de l'équipe et la liste des fragments
 défilaient déjà. Raison : 25 cartes lisibles à 844 × 390 sans pagination à inventer.
+
+## Animations de combat
+
+**Tout part de la vue rejouée** — Contexte : rendre le combat plus vivant sans logique de jeu
+dans l'interface. Choix : chaque effet se déduit d'un événement du journal déjà appliqué à la vue
+(`cast.slot`, `cast.targets`, `damage.absorbed`/`shieldAfter`, `shield.total`, `status`,
+`expired`, `unit_down`) ; la vue garde seulement des repères d'animation (`cast.seq`,
+`cast.dash`, `ultHit`). Raison : aucune règle recalculée ; l'état affiché reste recalé sur le
+moteur à la fin du rejeu.
+
+**Course seulement pour l'attaque de base sur un ennemi** — Choix : emplacement `basic` et une
+seule cible de l'autre camp ; les compétences gardent projectile et arc. Raison : la course
+signale le coup simple et lisible ; un sort à plusieurs cibles ou sur un allié n'a pas de point
+de contact unique.
+
+**Rejouer sans remonter, durées liées à la vitesse** — Choix : deux noms de keyframes (a/b)
+alternés par le rang du sort (`cast.seq`, et non la position de l'événement, dont la parité peut
+se répéter d'un sort au suivant) ; durées en `calc(… * var(--pace))` avec le facteur de vitesse
+du rejeu. Raison : jamais de `key` React sur un conteneur (la chute rejouerait), et à ×2 chaque
+effet finit avant l'événement suivant.
+
+**Ultime : flash à l'impact, assombrissement par un voile** — Choix : un flash bref au lancer,
+un flash franc au premier effet de l'ultime ; le décor s'assombrit par un calque unique
+au-dessus des figurants et sous le lanceur, plutôt qu'un filtre par acteur. Raison : un filtre
+sur chaque acteur entrait en conflit avec les animations de choc et de chute (même propriété
+`filter`) ; un calque n'en touche aucune. La scène prend `z-index: 0` : flashs et bandes restent
+sous l'en-tête et la barre d'actions, qui restent lisibles.
+
+**Altérations persistantes plutôt qu'un effet à la pose** — Choix : brûlure, marque et
+étourdissement restent dessinés tant que la vue les porte. Raison : un effet de 0,4 s à la pose
+ne disait pas, trois tours plus tard, qui brûle ou qui est étourdi ; les étiquettes du repère
+restent, l'image le dit d'un coup d'œil.
+
+**Mort : l'unité disparaît** — Contexte : le corps grisé restait couché sur sa place. Choix :
+après la chute, dissolution en cendres de son élément, puis plus rien ; le repère « Hors
+combat » reste. Raison : la dissolution lit la mort sans ambiguïté et libère la scène à quatre
+contre quatre ; qui est tombé reste écrit.
