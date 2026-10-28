@@ -6,12 +6,12 @@ describe('création de compte', () => {
     const api = server();
     const res = await api.register('Bob_42');
     expect(res.status).toBe(201);
-    expect(res.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: false });
+    expect(res.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: false, admin: false });
     expect(res.setCookie).toMatch(/^__Host-session=[0-9a-f]{64}; /);
     for (const flag of ['HttpOnly', 'Secure', 'SameSite=Lax', 'Path=/', 'Max-Age=2592000'])
       expect(res.setCookie).toContain(flag);
     const me = await api.call('GET', '/api/me', { cookie: res.cookie });
-    expect(me.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: false });
+    expect(me.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: false, admin: false });
   });
 
   it('refuse un pseudo déjà pris sans distinction de casse', async () => {

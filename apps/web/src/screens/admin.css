@@ -1,0 +1,167 @@
+/* Administration : totaux en tête, tableau des comptes dans son panneau, pagination en pied. */
+
+.admin__layout {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  height: 100%;
+}
+
+.admin__totals {
+  margin: 0;
+  font-size: 15px;
+}
+
+.admin__panel {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admin__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin__status {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin: 0;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--text);
+  font-size: 14px;
+  table-layout: fixed;
+}
+
+.admin-table th {
+  padding: 4px 8px;
+  color: var(--bone-muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 2px solid var(--line);
+}
+
+.admin-table th:nth-child(1) {
+  width: 170px;
+}
+
+.admin-table th:nth-child(2) {
+  width: 140px;
+}
+
+.admin-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid rgb(74 63 87 / 60%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-table tbody tr:hover {
+  background: rgb(0 0 0 / 22%);
+}
+
+.admin-table__open {
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: var(--gold);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  text-overflow: ellipsis;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.admin-table__open:hover,
+.admin-table__open:focus-visible {
+  text-decoration: underline;
+}
+
+.admin-table__progress {
+  font-size: 13px;
+}
+
+.admin__detail {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 10px;
+  height: 100%;
+}
+
+.admin__facts {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admin__pseudo {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 20px;
+}
+
+.admin__facts dl {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-family: var(--text);
+  font-size: 14px;
+}
+
+.admin__facts dt {
+  color: var(--bone-muted);
+  font-size: 12px;
+}
+
+.admin__facts dd {
+  margin: 0;
+}
+
+.admin__lists {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.admin__list {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admin__list h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.admin__list ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 2px;
+  margin: 0;
+  padding: 0;
+  font-family: var(--text);
+  font-size: 13px;
+  list-style: none;
+}
+
+.admin__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.admin__list .hint {
+  font-size: 13px;
+}

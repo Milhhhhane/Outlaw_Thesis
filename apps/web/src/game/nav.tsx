@@ -19,7 +19,9 @@ export type Route =
   | { readonly name: 'tower_run'; readonly floor: number }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
-  | { readonly name: 'pvp_room'; readonly code: string };
+  | { readonly name: 'pvp_room'; readonly code: string }
+  /** Administration : comptes, activité et avancement (administrateurs seulement). */
+  | { readonly name: 'admin' };
 
 export interface GameApi {
   readonly go: (route: Route) => void;

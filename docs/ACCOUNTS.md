@@ -16,6 +16,40 @@ Pas d'e-mail, pas de nom réel, pas de journal persistant (`observability` désa
 `wrangler.jsonc`, le Worker n'écrit que le type d'une erreur interne). La page « Confidentialité
 et conditions » du jeu décrit la même chose ; elle est un **brouillon à faire valider**.
 
+L'administrateur du jeu peut voir, pour chaque compte, le pseudo, les dates de création, de
+dernière connexion et de dernière sauvegarde, le nombre de sessions ouvertes et l'avancement (voir
+« Administration » plus bas). La page de confidentialité le dit aussi.
+
+## Administration (lecture seule)
+
+Les administrateurs sont les pseudos du secret Cloudflare `ADMIN_PSEUDOS` (séparés par des
+virgules, comparés sans distinction de casse, comme à l'inscription). Il n'est **pas** dans le
+dépôt ; secret absent ou vide : personne n'est administrateur. Le créer : `docs/DEPLOY.md`.
+
+| Route                       | Réponse                                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/me`               | en plus de `pseudo` et `mustChangePassword` : `admin` (booléen), aussi renvoyé à l'inscription et à la connexion                                   |
+| `GET /api/admin/users`      | `limit` (1 à 100, 20 par défaut), `offset` ; totaux (comptes, actifs sur 24 h et sur 7 jours) et une page de comptes, la dernière activité d'abord |
+| `GET /api/admin/users/<id>` | le même compte, plus chaque héros débloqué (niveau, étoiles) et chaque donjon (victoires, palier ouvert)                                           |
+
+- Session obligatoire (sinon 401). Un compte qui n'est pas administrateur reçoit **404
+  `not_found`**, exactement comme une route inconnue : l'administration ne se révèle pas.
+- Lecture seule : toute autre méthode répond 404. Réponses `Cache-Control: no-store`.
+- Par compte : identifiant, pseudo, création, dernière connexion, dernière sauvegarde, dernière
+  activité, sessions non expirées, résumé d'avancement. Jamais de hash, de jeton ni de clé de pseudo.
+- **Dernière activité** : la plus récente de la création, de la connexion, de la sauvegarde et du
+  dernier usage d'une session. Ce dernier se déduit de l'expiration glissante (repoussée au plus une
+  fois par jour), donc à un jour près, sans écriture supplémentaire.
+- **Résumé d'avancement**, calculé par le Worker depuis la sauvegarde validée par le schéma du jeu
+  (`null` si absente ou invalide) : héros débloqués / total, niveaux extrêmes de l'équipe,
+  donjons terminés / total et plus haut palier ouvert, or, objets différents, succès réclamés (si
+  la sauvegarde connaît les quêtes).
+- Coût : chaque compte de la page fait relire et valider sa sauvegarde ; l'écran du jeu en
+  demande 10 à la fois (temps processeur non mesuré sur Cloudflare). Pas de limite de débit : la
+  route n'est ouverte qu'aux administrateurs.
+- Écran du jeu : bouton « Administration » en pied du camp, présent seulement si `/api/me` répond
+  `admin: true` (`apps/web/src/screens/Admin.tsx`, textes `i18n/admin.fr.json`).
+
 ## Limites de débit
 
 | Action                    | Règle                                                                                                                                          |

@@ -8,6 +8,8 @@ import { defineConfig, devices } from '@playwright/test';
 const port = Number(process.env.E2E_PORT ?? 4174);
 const apiPort = Number(process.env.E2E_API_PORT ?? 8788);
 const d1 = '.wrangler/e2e';
+/** Administrateur des e2e (secret `ADMIN_PSEUDOS` simulé ; e2e/admin.spec.ts crée « e2e_chef »). */
+const E2E_ADMIN = 'E2E_Chef';
 
 export default defineConfig({
   testDir: 'e2e',
@@ -23,7 +25,7 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
-      command: `node -e "require('fs').rmSync('${d1}',{recursive:true,force:true})" && pnpm exec wrangler dev --port ${String(apiPort)} --persist-to ${d1} --show-interactive-dev-session=false`,
+      command: `node -e "require('fs').rmSync('${d1}',{recursive:true,force:true})" && pnpm exec wrangler dev --port ${String(apiPort)} --persist-to ${d1} --var ADMIN_PSEUDOS:${E2E_ADMIN} --show-interactive-dev-session=false`,
       cwd: '../..',
       url: `http://localhost:${String(apiPort)}/config.json`,
       env: { WRANGLER_SEND_METRICS: 'false', CI: 'true' },
@@ -34,7 +36,7 @@ export default defineConfig({
   projects: [
     {
       name: 'comptes',
-      testMatch: /(accounts|pvp)\.spec\.ts/,
+      testMatch: /(accounts|admin|pvp)\.spec\.ts/,
       use: {
         baseURL: `http://localhost:${String(apiPort)}`,
         viewport: { width: 1280, height: 720 },
@@ -43,23 +45,23 @@ export default defineConfig({
     {
       name: '1920x1080',
       // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
+      testIgnore: /(accounts|admin|pvp|quests)\.spec\.ts/,
       use: { viewport: { width: 1920, height: 1080 } },
     },
     {
       name: '1366x768',
       // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
+      testIgnore: /(accounts|admin|pvp|quests)\.spec\.ts/,
       use: { viewport: { width: 1366, height: 768 } },
     },
     {
       name: '1280x720',
-      testIgnore: /(accounts|pvp)\.spec\.ts/,
+      testIgnore: /(accounts|admin|pvp)\.spec\.ts/,
       use: { viewport: { width: 1280, height: 720 } },
     },
     {
       name: '844x390',
-      testIgnore: /(accounts|pvp)\.spec\.ts/,
+      testIgnore: /(accounts|admin|pvp)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',
@@ -69,7 +71,7 @@ export default defineConfig({
     {
       name: '390x844',
       // Quêtes : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|pvp|quests)\.spec\.ts/,
+      testIgnore: /(accounts|admin|pvp|quests)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',

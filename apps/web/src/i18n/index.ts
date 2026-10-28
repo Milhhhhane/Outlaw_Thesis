@@ -1,5 +1,6 @@
 import { tierNumeral } from '@outlaw/engine';
 import account from './account.fr.json';
+import admin from './admin.fr.json';
 import auto from './auto.fr.json';
 import chests from './chests.fr.json';
 import fr from './fr.json';
@@ -15,6 +16,7 @@ import names from './content.fr.json';
 export type TextKey =
   | keyof typeof fr
   | keyof typeof account
+  | keyof typeof admin
   | keyof typeof auto
   | keyof typeof chests
   | keyof typeof heroTexts
@@ -24,10 +26,11 @@ export type TextKey =
   | keyof typeof tiers
   | keyof typeof tower;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), administration (admin.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
+  ...admin,
   ...auto,
   ...chests,
   ...heroTexts,

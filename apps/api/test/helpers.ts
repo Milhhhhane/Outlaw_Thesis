@@ -1,6 +1,6 @@
 import { loadContent } from '@outlaw/data';
 import { newProfile } from '@outlaw/engine';
-import { handle, type RoomNamespace } from '../src/index';
+import { handle, type Env, type RoomNamespace } from '../src/index';
 import { SqliteDatabase } from '../src/testing';
 
 export const ORIGIN = 'https://jeu.example';
@@ -11,9 +11,17 @@ export function envelope(gold = 0) {
   return { version: profile.version, profile };
 }
 
-/** Un serveur en mémoire, une horloge réglable et des appels qui gardent le cookie. */
-export function server(pvp?: RoomNamespace) {
+/**
+ * Un serveur en mémoire, une horloge réglable et des appels qui gardent le cookie. `admins` tient
+ * lieu du secret `ADMIN_PSEUDOS` du Worker (absent par défaut : personne n'est administrateur).
+ */
+export function server(pvp?: RoomNamespace, admins?: string) {
   const db = new SqliteDatabase();
+  const env: Env = {
+    DB: db,
+    ...(pvp === undefined ? {} : { PVP: pvp }),
+    ...(admins === undefined ? {} : { ADMIN_PSEUDOS: admins }),
+  };
   let now = Date.UTC(2026, 9, 27);
   const call = async (
     method: string,
@@ -35,7 +43,7 @@ export function server(pvp?: RoomNamespace) {
               ? options.body
               : JSON.stringify(options.body),
       }),
-      pvp === undefined ? { DB: db } : { DB: db, PVP: pvp },
+      env,
       now,
     );
     const text = await response.text();
@@ -55,11 +63,7 @@ export function server(pvp?: RoomNamespace) {
     call('POST', '/api/login', { body: { pseudo, password }, ip });
   /** Une requête GET avec des en-têtes à la main (mise à niveau WebSocket), réponse brute. */
   const fetchRaw = (path: string, headers: Record<string, string>) =>
-    handle(
-      new Request(`${ORIGIN}${path}`, { headers }),
-      pvp === undefined ? { DB: db } : { DB: db, PVP: pvp },
-      now,
-    );
+    handle(new Request(`${ORIGIN}${path}`, { headers }), env, now);
   return {
     db,
     call,

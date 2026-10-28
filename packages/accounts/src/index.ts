@@ -120,6 +120,67 @@ export const savePutSchema = z.strictObject({
 export interface Me {
   readonly pseudo: string;
   readonly mustChangePassword: boolean;
+  /** Administrateur du jeu (secret `ADMIN_PSEUDOS` du Worker, voir docs/DEPLOY.md). */
+  readonly admin: boolean;
+}
+
+/**
+ * Administration (`/api/admin/*`, réservée aux pseudos du secret `ADMIN_PSEUDOS`). Dates en
+ * millisecondes depuis 1970. Jamais de hash, de jeton ni de clé de pseudo dans ces réponses.
+ */
+export const ADMIN_PAGE_DEFAULT = 20;
+export const ADMIN_PAGE_MAX = 100;
+
+/** Avancement d'un compte, calculé par le serveur depuis sa sauvegarde (null : absente ou invalide). */
+export interface AdminProgress {
+  readonly heroes: { readonly unlocked: number; readonly total: number };
+  /** Niveaux extrêmes des héros de l'équipe (null : équipe vide). */
+  readonly team: { readonly min: number; readonly max: number } | null;
+  /** Donjons terminés au moins une fois, et plus haut palier ouvert (`tierReached`). */
+  readonly dungeons: {
+    readonly cleared: number;
+    readonly total: number;
+    readonly bestTier: number;
+  };
+  readonly gold: number;
+  /** Objets différents possédés. */
+  readonly items: number;
+  /** Succès réclamés (null : sauvegarde antérieure aux quêtes). */
+  readonly quests: { readonly achievements: number; readonly total: number } | null;
+}
+
+export interface AdminAccount {
+  readonly id: number;
+  readonly pseudo: string;
+  readonly createdAt: number;
+  readonly lastLoginAt: number | null;
+  readonly lastSaveAt: number | null;
+  /** La plus récente de : création, connexion, sauvegarde, usage d'une session (à un jour près). */
+  readonly lastActivityAt: number;
+  /** Sessions non expirées. */
+  readonly activeSessions: number;
+  readonly progress: AdminProgress | null;
+}
+
+export interface AdminAccountList {
+  readonly total: {
+    readonly accounts: number;
+    readonly active24h: number;
+    readonly active7d: number;
+  };
+  readonly limit: number;
+  readonly offset: number;
+  /** Tri par dernière activité, la plus récente d'abord. */
+  readonly accounts: readonly AdminAccount[];
+}
+
+export interface AdminAccountDetail extends AdminAccount {
+  /** Héros débloqués (null : sauvegarde absente ou invalide). */
+  readonly heroes:
+    readonly { readonly id: string; readonly level: number; readonly stars: number }[] | null;
+  /** Chaque donjon du jeu : victoires et palier ouvert. */
+  readonly dungeons:
+    readonly { readonly id: string; readonly clears: number; readonly tier: number }[] | null;
 }
 export interface CloudSave {
   readonly rev: number;
