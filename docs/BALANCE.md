@@ -599,3 +599,54 @@ vient de l'élément suivant.
   ennemis la fait passer sous 50 %, baisser `pools.fire.atkPct` avant de toucher à la courbe.
 - À vérifier au test humain : le joueur moyen n'est pas mesuré ici (la règle porte sur l'expert,
   comme les paliers) ; si la tour paraît trop dure dès l'étage 11, baisser l'appui de l'étage 20.
+
+## Éveil et sanctuaires d'essence
+
+Valeurs : `balance.json` → `awakening` et `targets.awakening` ; sanctuaires dans
+`content/essences.json`. Mesures : lignes `awakening_*`, `essence_*` et `awake_*` de `pnpm sim`
+(en CI), jalons par `pnpm --filter @outlaw/sim economy`.
+
+**Écart d'un héros éveillé** (règle : ≤ `maxGapPoints` = 10 points) — pour chaque héros, 16
+équipes jouables par donjon où l'éveil est possible (niveau en retard ≥ 20 : Carrefour brisé,
+Salines blêmes, Col d'obsidienne, Trône creux), jouées par le joueur moyen avec 3 niveaux de
+retard, une fois le héros non éveillé, une fois éveillé (mêmes builds, même politique). Un héros
+au-dessus de 10 points est remesuré sur 48 équipes de plus (voir `docs/DECISIONS.md`).
+
+| Réglage essayé (stats % / passif %) | Moyenne des 25 héros | Pire héros (graine 1 / 2)          |
+| ----------------------------------- | -------------------: | ---------------------------------- |
+| 5 / 25 (premier jet)                |            4,1 à 4,3 | Cendre 10,2 / Soufre 15,2          |
+| 4 / 25 sans `percent`               |            2,5 à 3,6 | Cendre 9,8 / Soufre 10,5           |
+| 3 / 20                              |            2,8 à 3,8 | Mousse 9,4 / Soufre 9,4            |
+| **4 / 20 (retenu)**                 |            3,0 à 4,2 | **Pyra 9,4 / Brume, Étendard 9,8** |
+
+Retenu : 4 % et 20 %, le plus visible des réglages qui tiennent sur deux graines. Le tempo
+(Cendre, Sillage) et le ralentissement (Soufre) sont les effets qui gagnent le plus à +20 % ; si la
+règle casse, baisser `mulPct` avant `statPct`. Mesure en CI (graine 1) : **pire écart 9 points
+(Pyra), moyenne 3,0**.
+
+**Règles avec tous les héros éveillés** (mêmes définitions, builds tirés puis éveillés) : R1 79 %
+sur 4 équipes (82 % sur 12), R2 92 % (pire donjon), « aucun héros indispensable » 4 points.
+Toutes tenues, en CI.
+
+**Sanctuaires** — niveau 10 au palier I (15 et 20 aux paliers II et III, +20 % puis +40 % de PV
+et d'ATK : `balance.tiers`), mêmes ennemis que la tour par élément. Correction d'ATK par élément
+(`atkPct`) : eau 140, nature 90, feu 100. Sans correction, l'expert passait l'eau à 100 / 100 /
+100 % ; à 125 % encore 100 / 100 / 84. Mesure en CI (32 équipes, expert au niveau visé) : feu
+100 / 84 / 66, eau 100 / 91 / 78, nature 97 / 91 / 59 (règle : chaque palier ≥ 50 %). Le palier
+III est le plus dur, comme le palier III des donjons tardifs.
+
+**Rythme** (cible du brief : un héros vers le milieu de partie, l'équipe en fin de partie) —
+joueur modèle de `economy` avec l'éveil (`AwakeningModel` : dès qu'un héros de l'équipe atteint le
+niveau 20 et que les sanctuaires sont ouverts, il y passe tant qu'une qualité lui manque, au plus
+haut palier à sa portée ; l'éveil passe avant les objets pour l'or), 20 graines :
+
+| Réglage (niveau du palier I, coût faible / moyenne / supérieure) |    Premier héros | dont essence |     Équipe éveillée |
+| ---------------------------------------------------------------- | ---------------: | -----------: | ------------------: |
+| 14, 30 / 20 / 10 (premier jet, 5 graines)                        |            117,4 |         28,8 |               178,8 |
+| **10, 15 / 10 / 6 (retenu)**                                     | **81,0** (71–95) |     **14,7** | **136,5** (131–146) |
+
+Repères : sans éveil, l'équipe atteint le niveau 30 au 113,8ᵉ passage et la collection au 251ᵉ ;
+avec, ces jalons reculent des 47 passages d'essence (160,7 et 306,2). Le premier héros s'éveille
+donc entre l'équipe équipée (44) et l'équipe au niveau 30, l'équipe juste avant le niveau 30 de
+l'équipe. Bornes en CI (`economy.test.ts`, 5 graines) : premier héros entre 60 et 100 passages,
+équipe entre 110 et 170, au plus 20 passages d'essence pour le premier.

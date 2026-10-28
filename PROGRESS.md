@@ -109,6 +109,13 @@
   peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro
   ni de récompense de rejeu ; courbe à confirmer au test humain.
 
+- Éveil et sanctuaires d'essence — trois donjons d'essence (un par élément, paliers I à III,
+  essences seulement), éveil une fois par héros (niveau 20, essences de son élément, or) : +4 %
+  de stats et passif +20 % par une formule commune ; badge et liseré en combat. Mesuré : écart
+  d'un héros éveillé ≤ 9 points, règles tenues avec tous éveillés, premier héros éveillé au 81ᵉ
+  passage et équipe au 137ᵉ (`economy`). Ouvert : pas de quête ni de succès d'éveil, essences non
+  échangeables entre éléments.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).
