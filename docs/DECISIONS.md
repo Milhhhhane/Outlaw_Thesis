@@ -1063,6 +1063,10 @@ seulement avec un classement ou un adversaire non choisi.
 **Mode test : pas de quêtes** — rien n'y est gagné ; l'entrée du camp est masquée comme celle des
 coffres.
 
+**Entrée dans la barre du haut du camp** — Le menu de droite tient six entrées à 844 × 390 (la
+septième poussait « PvP » hors de l'écran, e2e rouge) ; le bouton « Quêtes » et son badge vont donc
+juste après le titre du camp, toujours visibles, sans réduire les entrées existantes.
+
 **Textes générés depuis la mesure** — « Gagner {n} donjons » vient de `quests.metric.<mesure>` :
 ajouter une quête ou un succès d'une mesure existante est une ligne de JSON (plus le nom du
 succès dans `quests.fr.json`, vérifié par un test).

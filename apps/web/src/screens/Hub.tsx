@@ -11,7 +11,7 @@ import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 
 const ENTRIES: readonly {
-  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests' | 'quests' | 'pvp';
+  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
   readonly label: TextKey;
   readonly hint: TextKey;
   readonly icon: string;
@@ -21,7 +21,6 @@ const ENTRIES: readonly {
   { route: 'heroes', label: 'hub.menu.heroes', hint: 'hub.menu.heroes.hint', icon: 'stat' },
   { route: 'workshop', label: 'hub.menu.workshop', hint: 'hub.menu.workshop.hint', icon: 'item' },
   { route: 'chests', label: 'hub.menu.chests', hint: 'hub.menu.chests.hint', icon: 'chest' },
-  { route: 'quests', label: 'hub.menu.quests', hint: 'hub.menu.quests.hint', icon: 'check' },
   { route: 'pvp', label: 'hub.menu.pvp', hint: 'hub.menu.pvp.hint', icon: 'damage' },
 ];
 
@@ -47,15 +46,33 @@ export function Hub() {
       </div>
       <header className="hub__bar">
         <h1 className="hub__title">{t('hub.title')}</h1>
+        {/* Quêtes : dans la barre du haut, le menu de droite est plein (six entrées). */}
+        {!test && (
+          <Button
+            variant="quiet"
+            size="small"
+            icon="check"
+            className="hub__quests"
+            title={t('hub.menu.quests.hint')}
+            onClick={() => {
+              go({ name: 'quests' });
+            }}
+          >
+            {t('hub.menu.quests')}
+            {claims > 0 && (
+              <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
+                {claims}
+              </span>
+            )}
+          </Button>
+        )}
         <SyncBadge />
         <Resources />
       </header>
       {test && <p className="hub__notice">{t('test.banner')}</p>}
       {recovered && <p className="hub__notice">{t('hub.saveRecovered')}</p>}
       <nav className="hub__menu" aria-label={t('hub.title')}>
-        {ENTRIES.filter(
-          (entry) => !test || (entry.route !== 'chests' && entry.route !== 'quests'),
-        ).map((entry) => (
+        {ENTRIES.filter((entry) => !test || entry.route !== 'chests').map((entry) => (
           <button
             key={entry.route}
             type="button"
@@ -69,11 +86,6 @@ export function Hub() {
               {t(entry.label)}
               {entry.route === 'chests' && chestCount(profile) > 0 && (
                 <span className="hub__badge">{chestCount(profile)}</span>
-              )}
-              {entry.route === 'quests' && claims > 0 && (
-                <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
-                  {claims}
-                </span>
               )}
             </span>
             <span className="hub__entry-hint">{t(entry.hint)}</span>

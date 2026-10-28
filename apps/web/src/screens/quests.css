@@ -116,3 +116,9 @@
 .quest-row .gbtn {
   justify-self: end;
 }
+
+/* Entrée du camp : dans la barre du haut, juste après le titre. */
+.hub__quests {
+  margin-right: auto;
+  margin-left: 16px;
+}
