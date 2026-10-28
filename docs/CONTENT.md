@@ -92,6 +92,24 @@ de poussière d'un objet est celui de son donjon (`rewards.materials.tier`).
 
 Le tirage reste déterministe (graine du profil) : même profil, même butin.
 
+### Paliers
+
+Chaque donjon a des paliers (I, II, III… : `balance.json` → `tiers.count`) ; terminer un palier
+ouvre le suivant du même donjon. Rien n'est écrit par donjon : une seule formule, dans
+`balance.tiers`, s'applique à tous. Au palier k :
+
+- les ennemis sont au niveau conseillé + (k − 1) × `levelsPerTier` (le moteur borne au niveau
+  maximum) et leurs PV et ATK sont multipliés par 1 + (k − 1) × `enemyPctPerTier` % ;
+- XP, or et poussière sont multipliés par 1 + (k − 1) × `rewardPctPerTier` % (XP à 0 par défaut :
+  les niveaux viennent de la progression, les paliers servent au craft) ;
+- le rare gagne (k − 1) × `rareWeightPerTier` de poids ;
+- le coffre monte de (k − 1) × `chestStepPerTier` paliers dans `chests.tiers` (bronze → argent →
+  or, borné au plus riche).
+
+Le premier passage de chaque palier compte comme un premier passage (rare et coffre garantis).
+La maîtrise et la garantie du rare restent par donjon, tous paliers confondus. Le profil garde
+`dungeons[id].tier` (palier atteint, I par défaut ; voir `packages/engine/src/tiers.ts`).
+
 ### Carte
 
 `map` place le donjon sur la carte du monde : `x`, `y` en pixels de la carte native (320 × 180,

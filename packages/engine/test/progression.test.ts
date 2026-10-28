@@ -243,13 +243,14 @@ describe('donjons et butin', () => {
     expect(first.report).toMatchObject({
       firstClear: true,
       gold: 80,
-      materials: { tier: 1, amount: 4 },
+      materials: { tier: 1, amount: 8 },
     });
     expect(first.report.xp.pyra).toEqual({ gained: 60, ready: true });
     expect(first.report.xp.ronce).toEqual({ gained: 30, ready: false });
     expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 60 });
     expect(profile.items).toHaveLength(1);
-    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0 });
+    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0, tier: 2 });
+    expect(first.report).toMatchObject({ tier: 1, tierUnlocked: 2 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);
     expect(dungeonOpen(content, { ...profile, testMode: true }, 'thorn_maze')).toBe(true);
     expect(dungeonOpen(content, profile, 'nowhere')).toBe(false);

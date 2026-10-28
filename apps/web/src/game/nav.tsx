@@ -4,14 +4,14 @@ import { createContext, useContext } from 'react';
 export type Route =
   | { readonly name: 'title' }
   | { readonly name: 'hub' }
-  | { readonly name: 'map'; readonly dungeon?: string }
-  | { readonly name: 'team'; readonly dungeon?: string }
+  | { readonly name: 'map'; readonly dungeon?: string; readonly tier?: number }
+  | { readonly name: 'team'; readonly dungeon?: string; readonly tier?: number }
   | { readonly name: 'heroes' }
   | { readonly name: 'hero'; readonly id: string }
   | { readonly name: 'workshop' }
   | { readonly name: 'chests' }
   | { readonly name: 'credits' }
-  | { readonly name: 'dungeon'; readonly id: string }
+  | { readonly name: 'dungeon'; readonly id: string; readonly tier?: number }
   | { readonly name: 'demo' }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }

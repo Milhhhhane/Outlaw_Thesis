@@ -22,3 +22,4 @@ export * from './loot';
 export * from './items';
 export * from './progression';
 export * from './chests';
+export * from './tiers';
