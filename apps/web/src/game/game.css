@@ -1929,14 +1929,33 @@ button:disabled {
   inset: 0;
 }
 
+/*
+ * Un trait par prérequis, du centre du parent au centre de l'enfant (les nœuds le recouvrent).
+ * Fermé : gris clair, lisible sur le fond noir. Ouvert (parent pris) : pointillé de l'élément.
+ * Allumé (enfant pris) : plein et plus épais.
+ */
 .tree__link {
   fill: none;
-  stroke: #3a2e46;
-  stroke-width: 4;
+  stroke: #8e859b;
+  stroke-width: 3;
+  transition: stroke 120ms steps(2, end);
+}
+
+.tree__link--open {
+  stroke: var(--element);
+  stroke-dasharray: 5 4;
 }
 
 .tree__link--on {
   stroke: var(--element);
+  stroke-width: 5;
+}
+
+/* Accolade sous les nœuds d'un choix exclusif, coupée par le mot « ou ». */
+.tree__or-bracket {
+  fill: none;
+  stroke: var(--bone-muted);
+  stroke-width: 2;
 }
 
 .tree__or {

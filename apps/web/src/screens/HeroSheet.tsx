@@ -28,6 +28,7 @@ import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { Rarity } from '../game/Rarity';
+import { BOARD, treeLayout, type Point } from '../game/talentTree';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
 import { dustName, names, t, tk } from '../i18n';
@@ -142,18 +143,28 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
   const cost = respecCost(content, profile, heroId);
   const allNodes = def.pages.flatMap((p) => p.nodes);
 
-  const stateOf = (node: TalentNode, pageIndex: number): 'taken' | 'ready' | 'locked' => {
-    if (hero.talents.includes(node.id)) return 'taken';
+  /** Le nœud rival d'un choix exclusif est déjà pris. */
+  const excluded = (node: TalentNode): boolean => {
     const rival = node.group
       ? allNodes.find((n) => n.group === node.group && n.id !== node.id)
       : undefined;
-    const blocked = rival !== undefined && hero.talents.includes(rival.id);
+    return rival !== undefined && hero.talents.includes(rival.id);
+  };
+
+  const stateOf = (node: TalentNode, pageIndex: number): 'taken' | 'ready' | 'locked' => {
+    if (hero.talents.includes(node.id)) return 'taken';
     const ok =
       pageIndex < pages &&
-      !blocked &&
+      !excluded(node) &&
       free > 0 &&
       (node.requires === undefined || hero.talents.includes(node.requires));
     return ok ? 'ready' : 'locked';
+  };
+
+  /** Lien allumé (enfant pris), ouvert (parent pris, enfant encore à prendre) ou fermé. */
+  const linkState = (from: string, to: TalentNode): 'on' | 'open' | 'locked' => {
+    if (hero.talents.includes(to.id)) return 'on';
+    return hero.talents.includes(from) && !excluded(to) ? 'open' : 'locked';
   };
 
   const node = allNodes.find((n) => n.id === picked);
@@ -176,30 +187,17 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
       <div className="talents__pages">
         {def.pages.map((page, index) => {
           const locked = index >= pages;
-          // Rangées par profondeur de prérequis ; chaque rangée est centrée.
+          // Chaque nœud sous son prérequis : un trait par lien, sans tronc commun.
+          const layout = treeLayout(page.nodes);
           const byId = new Map(page.nodes.map((n) => [n.id, n] as const));
-          const depthOf = (n: TalentNode): number => {
-            let d = 0;
-            let cursor = n.requires === undefined ? undefined : byId.get(n.requires);
-            while (cursor !== undefined && d < 8) {
-              d += 1;
-              cursor = cursor.requires === undefined ? undefined : byId.get(cursor.requires);
-            }
-            return d;
-          };
-          const rows = new Map<number, TalentNode[]>();
-          for (const n of page.nodes) {
-            const d = depthOf(n);
-            rows.set(d, [...(rows.get(d) ?? []), n]);
-          }
-          const pos = new Map<string, { x: number; y: number }>();
-          for (const [d, list] of rows) {
-            list.forEach((n, i) => {
-              pos.set(n.id, { x: 72 + (i - (list.length - 1) / 2) * 36, y: 22 + d * 54 });
-            });
-          }
-          const at = (id: string): { x: number; y: number } => pos.get(id) ?? { x: 72, y: 22 };
-          const children = rows.get(1) ?? [];
+          const at = (id: string): Point => layout.pos.get(id) ?? { x: BOARD.width / 2, y: 0 };
+          // Choix exclusif : une accolade sous les nœuds rivaux, « ou » au milieu, à mi-chemin
+          // de la rangée suivante (entre deux nœuds, 4 px séparent les pastilles).
+          const choices = layout.choices.map((group) => {
+            const xs = group.map((id) => at(id).x);
+            const y = Math.max(...group.map((id) => at(id).y)) + 27;
+            return { key: group.join(' '), left: Math.min(...xs), right: Math.max(...xs), y };
+          });
           return (
             <section
               key={page.id}
@@ -216,35 +214,48 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                 </p>
               )}
               <div className="tree__board">
-                <svg className="tree__links" width="144" height="210" aria-hidden="true">
-                  {page.nodes
-                    .filter((n) => n.requires !== undefined)
-                    .map((n) => {
-                      const a = at(n.requires ?? '');
-                      const b = at(n.id);
-                      const lit = hero.talents.includes(n.id);
-                      return (
-                        <path
-                          key={n.id}
-                          d={`M${a.x} ${a.y} V${(a.y + b.y) / 2} H${b.x} V${b.y}`}
-                          className={lit ? 'tree__link tree__link--on' : 'tree__link'}
-                        />
-                      );
-                    })}
+                <svg
+                  className="tree__links"
+                  width={BOARD.width}
+                  height={BOARD.height}
+                  aria-hidden="true"
+                >
+                  {choices.map((c) => (
+                    <path
+                      key={c.key}
+                      className="tree__or-bracket"
+                      d={`M${c.left} ${c.y - 5} V${c.y} H${c.right} V${c.y - 5}`}
+                    />
+                  ))}
+                  {layout.links.map(({ from, to }) => {
+                    const a = at(from);
+                    const b = at(to);
+                    const child = byId.get(to);
+                    const state = child === undefined ? 'locked' : linkState(from, child);
+                    return (
+                      <line
+                        key={to}
+                        x1={a.x}
+                        y1={a.y}
+                        x2={b.x}
+                        y2={b.y}
+                        className={`tree__link tree__link--${state}`}
+                        data-from={from}
+                        data-to={to}
+                        data-state={state}
+                      />
+                    );
+                  })}
                 </svg>
-                {(() => {
-                  const pair = children.filter((c) => c.group !== undefined);
-                  if (pair.length !== 2) return null;
-                  const a = at(pair[0]?.id ?? '');
-                  const b = at(pair[1]?.id ?? '');
-                  // Sous la paire, à mi-chemin de la rangée suivante (54 px plus bas) : entre les
-                  // deux nœuds, 4 px séparent les pastilles, le mot y serait caché.
-                  return (
-                    <span className="tree__or" style={{ left: (a.x + b.x) / 2, top: a.y + 27 }}>
-                      {t('sheet.or')}
-                    </span>
-                  );
-                })()}
+                {choices.map((c) => (
+                  <span
+                    key={c.key}
+                    className="tree__or"
+                    style={{ left: (c.left + c.right) / 2, top: c.y }}
+                  >
+                    {t('sheet.or')}
+                  </span>
+                ))}
                 {page.nodes.map((n) => {
                   const { x, y } = at(n.id);
                   const state = stateOf(n, index);
@@ -259,6 +270,7 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                         picked === n.id ? 'node--picked' : '',
                       ].join(' ')}
                       style={{ left: x, top: y }}
+                      data-node={n.id}
                       aria-label={t('sheet.node.label', {
                         node: names.node(n.id),
                         state: tk(`sheet.node.state.${state}`),
