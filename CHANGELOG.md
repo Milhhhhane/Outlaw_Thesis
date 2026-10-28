@@ -18,6 +18,14 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Profil : compteurs à vie (`stats`) et état des quêtes (`quests`), absents des anciennes
   sauvegardes (valeurs par défaut, succès déjà mérités aussitôt réclamables).
 
+## [Non publié] — 2026-10-28 — barre d'XP de la fiche
+
+### Corrigé
+
+- Fiche d'un héros : avec plus d'XP en banque que le niveau suivant n'en demande, la barre d'XP
+  débordait de son cadre. Elle s'arrête à 100 %, et la fiche dit quelle poussière manque quand
+  l'XP suffit mais pas la poussière.
+
 ## [Non publié] — 2026-10-28 — coffres revus
 
 ### Modifié
