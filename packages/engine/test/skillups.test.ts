@@ -70,10 +70,15 @@ describe('montée des sorts : profil', () => {
   };
 
   it('une ancienne sauvegarde charge avec tous les sorts au niveau 1 et aucun grimoire', () => {
-    const fresh = newProfile(content, 5);
-    const { grimoires: _g, ...old } = fresh;
+    // Sauvegarde d'avant la montée des sorts : ni `grimoires`, ni `spells` par héros.
+    const old: Record<string, unknown> = { ...newProfile(content, 5) };
+    delete old.grimoires;
     const heroes = Object.fromEntries(
-      Object.entries(old.heroes).map(([id, { spells: _s, ...hero }]) => [id, hero]),
+      Object.entries(newProfile(content, 5).heroes).map(([id, hero]) => {
+        const legacy: Record<string, unknown> = { ...hero };
+        delete legacy.spells;
+        return [id, legacy];
+      }),
     );
     const parsed = profileSchema.parse({ ...old, heroes });
     expect(parsed.grimoires).toBe(0);

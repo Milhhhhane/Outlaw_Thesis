@@ -72,7 +72,7 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
       let spells: SpellLevels | undefined;
       if (s !== undefined) {
         if (!Array.isArray(s) || s.length !== SPELL_SLOTS.length || !s.every(isInt)) return null;
-        const [basic, a, b, ult] = s as number[];
+        const [basic, a, b, ult] = s;
         spells = { basic: basic ?? 1, a: a ?? 1, b: b ?? 1, ult: ult ?? 1 };
       }
       const build: HeroBuild = {
