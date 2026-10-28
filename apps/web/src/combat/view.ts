@@ -187,13 +187,15 @@ function applyOne(view: BattleView, event: BattleEvent, key: number): BattleView
         shake: event.cause === 'burn' ? next.shake : { key, power: heavy ? 2 : 1 },
         hurt: target?.side === 'player' && event.cause !== 'burn' ? key : next.hurt,
       };
+      // Bouclier brisé sans que rien ne passe : la bulle éclate à la place de l'impact.
+      const shattered = event.absorbed > 0 && event.shieldAfter === 0 && dealt === 0;
       return flash(
         shaken,
         key,
         event.target,
         `−${dealt}`,
         'damage',
-        heavy ? `impact_${element}` : `burst_${element}`,
+        shattered ? 'shatter' : heavy ? `impact_${element}` : `burst_${element}`,
         { heavy },
       );
     }

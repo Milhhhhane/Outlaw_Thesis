@@ -224,6 +224,80 @@ def shield(frame):
     return im
 
 
+HEAL = ['#16361a', '#2e6a2c', '#5ab04a', '#9de26a', '#e8ffd0']
+
+
+def heal_fx(frame):
+    """Soin 32 × 48 : colonne de lumière verte qui monte, feuilles et croix, anneau au sol."""
+    im = canvas(32, 48)
+    rnd = random.Random(21)
+    cx, base = 16, 42
+    # anneau au sol qui s'élargit
+    rx = (6, 10, 12, 13)[frame]
+    ring(im, cx, base, rx, rx * 0.35, HEAL[4 if frame < 2 else 3 - (frame == 3)], gap=frame)
+    # colonne : deux bords clairs, cœur tramé, qui monte puis s'étire
+    top = base - (14, 30, 40, 44)[frame]
+    half = (7, 6, 5, 3)[frame]
+    for y in range(int(top), base - 2):
+        t = (y - top) / max(1, base - top)
+        for x in range(cx - half, cx + half + 1):
+            edge = abs(x - cx) == half
+            if edge and frame < 3:
+                put(im, x, y, HEAL[3 if t > 0.3 else 2])
+            elif (x + y * 3 + frame * 2) % 5 == 0 and t > 0.15:
+                put(im, x, y, HEAL[4 if (x + y) % 2 else 3])
+    # croix et feuilles qui montent
+    for i in range(7):
+        x = 4 + rnd.randint(0, 24)
+        y = base - 6 - rnd.randint(0, 10) - frame * 7 - (i % 3) * 2
+        if y < 1:
+            continue
+        glyph = PLUS if i % 2 else LEAF[i % 4]
+        for dx, dy in glyph:
+            put(im, x + dx, y + dy, HEAL[4 if i % 2 else 3])
+    return im
+
+
+def bubble(w, h, frame):
+    """Bulle de bouclier persistante : contour bleu, reflet qui tourne, quelques bulles."""
+    im = canvas(w, h)
+    ramp = ELEMENT['water']
+    rx, ry = w / 2 - 1, h / 2 - 1
+    cx, cy = w / 2 - 0.5, h / 2 - 0.5
+    for y in range(h):
+        for x in range(w):
+            d = math.hypot((x - cx) / rx, (y - cy) / ry)
+            a = math.atan2((y - cy) / ry, (x - cx) / rx)
+            if 0.94 <= d < 1.0:
+                hi = -2.6 < a < -1.2  # reflet en haut à gauche
+                put(im, x, y, ramp[4] if hi != (frame == 1) and -2.9 < a < -0.9 else ramp[3])
+            elif 0.84 <= d < 0.94 and -2.8 < a < -1.0 and (x + y + frame) % 2 == 0:
+                put(im, x, y, ramp[4])
+            elif d < 0.84 and (x * 5 + y * 7 + frame * 3) % 41 == 0:
+                put(im, x, y, ramp[4])
+    return im
+
+
+def shatter(frame):
+    """Bouclier brisé 32 × 32 : éclats d'un cercle bleu qui s'écartent et tombent."""
+    im = canvas()
+    ramp = ELEMENT['water']
+    rnd = random.Random(9)
+    for i in range(12):
+        a = i / 12 * math.tau
+        r = 10 + frame * 4
+        x = 16 + math.cos(a) * r
+        y = 16 + math.sin(a) * r * 0.9 + frame * frame * 1.2
+        L = 4 - frame // 2
+        for k in range(L):
+            tone = 4 - (k > 1) - frame // 2
+            put(im, x + math.cos(a + 1.3) * k, y + math.sin(a + 1.3) * k, ramp[tone])
+            put(im, x + math.cos(a + 1.3) * k + 1, y + math.sin(a + 1.3) * k, ramp[max(0, tone - 1)])
+    if frame == 0:
+        ring(im, 16, 16, 9, 9, ramp[4], gap=0)
+    return im
+
+
 def stun(frame):
     im = canvas()
     for i in range(3):
@@ -418,7 +492,10 @@ def all_fx():
         out[f'slash_{el}'] = [slash(ramp, f) for f in range(4)]
         out[f'impact_{el}'] = [hit(ramp, f, 23, 48) for f in range(4)]
     out['dust'] = [dust(f) for f in range(4)]
-    out['heal'] = [rising(ELEMENT['nature'], f, 5, PLUS) for f in range(4)]
+    out['heal'] = [heal_fx(f) for f in range(4)]
+    out['bubble_s'] = [bubble(36, 44, f) for f in range(2)]
+    out['bubble_l'] = [bubble(56, 76, f) for f in range(2)]
+    out['shatter'] = [shatter(f) for f in range(4)]
     out['buff'] = [rising(['#3a2208', '#6e4612', '#b07a20', '#e2b440', '#fbe58a'], f, 6, UP) for f in range(4)]
     out['debuff'] = [rising(['#140a1c', '#3c2058', '#5a3478', '#8256a0', '#c8a0f0'], f, 7, DOWN) for f in range(4)]
     out['shield'] = [shield(f) for f in range(4)]

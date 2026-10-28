@@ -155,3 +155,63 @@ describe('ultime', () => {
     );
   });
 });
+
+describe('soins et boucliers', () => {
+  it('la bulle suit le bouclier, le soin fait luire, le bouclier brisé éclate', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    if (a === undefined || b === undefined) throw new Error('deux unités attendues');
+    let view: BattleView = viewFromState(state);
+    const render1 = () =>
+      render(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    const { container, rerender } = render1();
+    const actor = () => container.querySelector(`[data-unit="${b.def.id}"]`);
+    expect(actor()?.querySelector('.actor__bubble')).toBeNull();
+
+    view = applyEvent(
+      view,
+      { type: 'shield', source: a.def.id, target: b.def.id, amount: 20, total: 20, turns: 2 },
+      1,
+    );
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__bubble')).not.toBeNull();
+    expect(actor()?.querySelector('.actor__glow--shield')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      {
+        type: 'damage',
+        source: a.def.id,
+        target: b.def.id,
+        cause: 'spell',
+        amount: 20,
+        absorbed: 20,
+        multiplier: 1,
+        hpAfter: b.hp,
+        shieldAfter: 0,
+        killed: false,
+      },
+      2,
+    );
+    expect(view.flashes.at(-1)?.fx).toBe('shatter');
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__bubble')).toBeNull();
+    expect(container.querySelector('.actor__fx--shatter')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      {
+        type: 'heal',
+        source: a.def.id,
+        target: b.def.id,
+        cause: 'spell',
+        amount: 5,
+        hpAfter: b.hp,
+      },
+      3,
+    );
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__glow--heal')).not.toBeNull();
+    expect(container.querySelector('.actor__fx--heal')).not.toBeNull();
+  });
+});

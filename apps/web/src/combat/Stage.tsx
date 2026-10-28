@@ -116,10 +116,22 @@ function Actor(props: {
   const info = sprite(unit.kind);
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
-  const hit = flash?.tone === 'damage' ? flash.key : 0;
-  const heavy = flash?.tone === 'damage' && flash.heavy;
+  // Réaction du corps au dernier événement : choc (dégâts) ou lueur (soin, bouclier).
+  const pulse =
+    flash !== undefined &&
+    (flash.tone === 'damage' || flash.tone === 'heal' || flash.tone === 'shield')
+      ? flash
+      : undefined;
   // Élément du coup reçu (celui de l'attaquant, porté par l'effet), pour teinter le choc.
   const hitElement = flash?.fx?.split('_')[1] ?? unit.element;
+  const pulseClass =
+    pulse === undefined
+      ? ''
+      : pulse.tone === 'damage'
+        ? `actor__hit actor__hit--${hitElement}${pulse.heavy ? ' actor__hit--heavy' : ''}`
+        : `actor__glow actor__glow--${pulse.tone}`;
+  const height = info.bottom - info.top;
+  const bubble = height > 44 ? sprite('bubble_l') : sprite('bubble_s');
   const style = {
     left: x - info.w / 2,
     top: y - info.bottom,
@@ -147,20 +159,26 @@ function Actor(props: {
     <div className={className} style={style} data-unit={unit.id}>
       <span className="actor__shadow" style={{ top: info.bottom - 2 }} />
       <span className="actor__body">
-        <span
-          key={hit}
-          className={
-            hit > 0
-              ? `actor__hit actor__hit--${hitElement}${heavy ? ' actor__hit--heavy' : ''}`
-              : ''
-          }
-        >
+        <span key={pulse?.key ?? 0} className={pulseClass}>
           {unit.side === 'player' ? (
             <HeroSprite name={unit.kind} idle={unit.alive} />
           ) : (
             <PixelSprite name={unit.kind} idle={unit.alive} />
           )}
         </span>
+        {/* Bulle de bouclier, dans le corps pour suivre la course : visible tant qu'il reste du
+            bouclier (valeur portée par le journal). */}
+        {unit.shield > 0 && unit.alive && bubble !== undefined && (
+          <span
+            className="actor__bubble"
+            style={{
+              left: info.w / 2 - bubble.w / 2,
+              top: (info.top + info.bottom) / 2 - bubble.h / 2 + 2,
+            }}
+          >
+            <PixelSprite name={height > 44 ? 'bubble_l' : 'bubble_s'} idle />
+          </span>
+        )}
       </span>
     </div>
   );
@@ -175,28 +193,38 @@ function Effects({ unit, flash }: { readonly unit: UnitView; readonly flash: Fla
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
   const hitElement = flash.fx?.split('_')[1] ?? unit.element;
+  const fx = flash.fx === null ? undefined : sprite(flash.fx);
   return (
     <div
       className="effects"
       style={{ left: x - info.w / 2, top: y - info.bottom, width: info.w, height: info.h }}
     >
-      {flash.fx != null && (
+      {fx !== undefined && flash.fx !== null && (
         <span
           key={`fx${flash.key}`}
-          className={flash.feet ? 'actor__fx actor__fx--feet' : 'actor__fx'}
-          style={{ top: flash.feet ? info.bottom - 12 : (info.top + info.bottom) / 2 - 16 }}
+          className={`actor__fx actor__fx--${flash.fx}`}
+          style={{
+            left: info.w / 2 - fx.w / 2,
+            // Aux pieds (poussière), posé au sol (soin), sinon centré sur le corps.
+            top: flash.feet
+              ? info.bottom - fx.h + 4
+              : flash.fx === 'heal'
+                ? info.bottom - fx.h + 6
+                : (info.top + info.bottom) / 2 - fx.h / 2,
+          }}
         >
-          <PixelSprite
-            name={flash.fx}
-            className={flash.fx.startsWith('impact_') ? 'fx-play fx-play--big' : 'fx-play'}
-          />
+          <PixelSprite name={flash.fx} className="fx-play" />
         </span>
       )}
       {flash.tone === 'damage' && (
         <Sparks key={`sp${flash.key}`} flash={flash} element={hitElement} top={info.top + 22} />
       )}
       {flash.text !== '' && (
-        <span key={`n${flash.key}`} className="actor__number" style={{ top: info.top - 4 }}>
+        <span
+          key={`n${flash.key}`}
+          className={`actor__number actor__number--${flash.tone}`}
+          style={{ top: info.top - 4 }}
+        >
           <PixelText text={flash.text} tone={flash.tone} />
         </span>
       )}
