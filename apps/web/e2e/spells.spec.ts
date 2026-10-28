@@ -9,6 +9,10 @@ test('grimoire : sorts au maximum en mode test, sans défilement de page', async
     localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
     localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
   });
+  // Le jeu se joue en paysage : le projet portrait (390 × 844) est tourné, rien n'est sauté.
+  const size = page.viewportSize() ?? { width: 0, height: 0 };
+  if (size.height > size.width)
+    await page.setViewportSize({ width: size.height, height: size.width });
   await page.goto('/');
   await page.getByRole('button', { name: 'Mode test' }).click();
   await page.keyboard.press('Escape');
