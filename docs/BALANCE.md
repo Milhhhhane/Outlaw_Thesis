@@ -508,6 +508,41 @@ La mesure des paliers (`tools/sim/src/tiers.ts`) tire elle aussi des équipes jo
 de 50 à 100 % pour l'expert) ; sans `pickTeam`, le palier II des Salines blêmes passait 12 points
 au-dessus du palier I.
 
+## Montée des sorts
+
+Valeurs de `balance.json` → `spellLevels`. Mesures : `pnpm --filter @outlaw/sim skillups --rules`
+(`tools/sim/src/skillups.ts`) ; mêmes 50 équipes que les règles, deux builds par équipe et par
+donjon, le même build et le même joueur moyen des deux côtés (seuls les sorts changent).
+
+| Réglage                            | Valeur                                           |
+| ---------------------------------- | ------------------------------------------------ |
+| Niveaux                            | 1 à 5                                            |
+| Puissance (dégâts, soin, bouclier) | +2,5 % par niveau, +10 % au niveau 5             |
+| Bonus du niveau 5                  | ultime : délai −10 (150 → 140) ; autres : aucun  |
+| Coût vers 2 / 3 / 4 / 5            | 1 / 2 / 3 / 5 grimoires, 2 / 3 / 5 / 8 fragments |
+| Un sort au maximum                 | 11 grimoires, 18 fragments                       |
+| Un héros au maximum (4 sorts)      | 44 grimoires, 72 fragments                       |
+
+Écart « tous les sorts au niveau 5 » contre « niveau 1 », à niveau de héros égal (1 900 donjons) :
+
+| Mesure                                    | Niveau 1 | Niveau 5 |        Écart |
+| ----------------------------------------- | -------: | -------: | -----------: |
+| Donjons terminés avec 3 niveaux de retard |   33,2 % |   47,0 % | +13,8 points |
+| Donjons terminés au niveau conseillé      |   63,3 % |   72,4 % |  +9,1 points |
+| Duel miroir, même équipe et mêmes talents |          |   61,7 % |              |
+
+- Cible : ≤ 20 points en retard (`targets.spellLevelsMaxGapPoints`), vérifiée en CI sur 12 équipes
+  (`tools/sim/test/skillups.test.ts`). En relatif : +14 % au niveau conseillé, +42 % en retard
+  (voir `docs/DECISIONS.md`, « Montée des sorts »).
+- Règles avec tous les sorts au niveau 5 : R1 84,3 % (86 % au niveau 1), R2 82 % sur le pire
+  donjon, « aucun héros indispensable » écart 6 points (7 au niveau 1). Toutes tenues : la montée
+  renforce tous les héros pareil, elle ne crée pas de héros obligatoire.
+- Réglage (25 équipes, un build, écart en retard) : premier jet +4 %/niveau, délai −10 de A et
+  B, coût −1 de l'ultime : +36 points. Seuls : +4 %/niveau 25 ; +2 % 12 ; coût de l'ultime −1
+  10 ; délais de A et B 11 ; délai −15 de l'ultime 6 (avec +2 % : 14). Retenu : +2,5 % et délai −10
+  de l'ultime (13,8 sur 50 équipes), un gain lisible (+10 %) sous la cible avec 6 points de marge.
+- `baseline.csv` inchangée : les scénarios gardent les sorts au niveau 1.
+
 ## Quêtes et succès
 
 Valeurs de `balance.json` → `quests` ; contenu dans `packages/data/content/quests.json`. Une

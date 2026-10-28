@@ -8,6 +8,7 @@ import fr from './fr.json';
 import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
 import pvp from './pvp.fr.json';
+import spellLevels from './spells.fr.json';
 import quests from './quests.fr.json';
 import tiers from './tiers.fr.json';
 import tower from './tower.fr.json';
@@ -25,10 +26,11 @@ export type TextKey =
   | keyof typeof loot
   | keyof typeof pvp
   | keyof typeof quests
+  | keyof typeof spellLevels
   | keyof typeof tiers
   | keyof typeof tower;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), combat auto (auto.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), montée des sorts (spells.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
@@ -39,6 +41,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...heroTexts,
   ...loot,
   ...pvp,
+  ...spellLevels,
   ...quests,
   ...tiers,
   ...tower,

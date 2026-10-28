@@ -314,6 +314,7 @@ describe('séries de passages', () => {
       firstClear: false,
       xp: {},
       gold: 10,
+      grimoires: 0,
       materials: { tier: 2, amount: 4 },
       item: {
         uid: 1,

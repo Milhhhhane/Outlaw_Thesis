@@ -244,6 +244,32 @@ Leviers : `focusMultiplier` (légendaires plus ou moins accessibles), `weights` 
 rares), `drop` (fréquence), `fragments` (rythme général, à recaler avec
 `pnpm --filter @outlaw/sim economy`).
 
+## Montée des sorts (2026-10-28)
+
+Grimoires (`spellLevels.grimoires`) : 0 / 1 / 2 par passage gagnant au palier I / II / III ;
+0 / 1 / 3 par coffre de bronze / d'argent / d'or. Un niveau de sort se paie en grimoires et en
+fragments du héros (tableau dans `docs/BALANCE.md`, « Montée des sorts »).
+
+Le joueur modèle ne dépense pas en sorts (ses jalons ne bougent pas : 8,1 / 20,0 / 44,0 / 113,8 /
+122,7 / 251,3) ; `economy` compte ce qu'il gagne (20 graines) :
+
+| Jalon                                      |  Passages gagnants | Tentatives à 58 % |
+| ------------------------------------------ | -----------------: | ----------------: |
+| Grimoires des 4 sorts d'un héros (44)      |               72,0 |               124 |
+| Grimoires des sorts de l'équipe de 4 (176) |              145,7 |               251 |
+| Grimoires à la collection complète         | 455 (251 passages) |                 — |
+
+- Un héros au maximum vers le 6ᵉ donjon (première victoire au 85ᵉ passage) : un choix de milieu
+  de partie, pas un passage obligé.
+- L'équipe entière après ses objets au maximum (122,7) et avant la collection (251,3) : le grind
+  de fin de partie a un deuxième puits.
+- Fragments : 72 par héros au maximum. Le joueur modèle garde en fin de partie 111 fragments par
+  héros de l'équipe (les doublons du héros ciblé, après ses deux étoiles) : ils paient les sorts.
+  Un héros hors de l'équipe, rarement ciblé, reste limité par ses fragments.
+- Bornes en CI (`tools/sim/test/economy.test.ts`) : un héros entre 50 et 100 passages, l'équipe
+  entre 120 et 200, plus de 72 fragments restants par héros de l'équipe.
+- Leviers : `grimoires.tiers` et `grimoires.chests` (rythme), `costs` (prix par niveau).
+
 ## Quêtes et succès (2026-10-28)
 
 Nouvelles entrées hors donjon : 5 quêtes du jour (15 % d'un passage du meilleur donjon chacune,
