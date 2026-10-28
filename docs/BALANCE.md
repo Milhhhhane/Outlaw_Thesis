@@ -507,3 +507,54 @@ La mesure des paliers (`tools/sim/src/tiers.ts`) tire elle aussi des équipes jo
 (`pickTeam`). Résultat : toutes les règles tenues (R1 86 %, R2 82 %, écart 7 points, rythme, paliers
 de 50 à 100 % pour l'expert) ; sans `pickTeam`, le palier II des Salines blêmes passait 12 points
 au-dessus du palier I.
+
+## Quêtes et succès
+
+Valeurs de `balance.json` → `quests` ; contenu dans `packages/data/content/quests.json`. Une
+récompense vaut `passagePct` % de l'or et de la poussière d'**un passage du donjon le plus avancé
+terminé** (palier I, sans maîtrise), plus un coffre facultatif. Elle garde donc le même poids
+relatif au premier donjon (80 or, 8 brutes par passage) et au dernier (1 500 or, 12 pures).
+
+| Récompense                  | `passagePct` | Coffre | Par période              |
+| --------------------------- | -----------: | ------ | ------------------------ |
+| Quête du jour (×5)          |           15 | —      | 0,75 passage par jour    |
+| Bonus « tout fait » du jour |            0 | bronze | 4 fragments par jour     |
+| Quête de la semaine (×5)    |           50 | —      | 2,5 passages par semaine |
+| Succès « small » (8)        |          100 | bronze | une fois                 |
+| Succès « medium » (6)       |          200 | argent | une fois                 |
+| Succès « large » (6)        |          400 | or     | une fois                 |
+
+Cible du propriétaire : le gain des quêtes ne raccourcit aucun jalon de plus d'environ 15 %.
+Mesure : `pnpm --filter @outlaw/sim economy` joue la partie modèle avec les vraies fonctions
+(`rollQuests`, `claimQuest`, `claimBonus`, `claimAchievement`), `perDay` passages gagnants par
+jour UTC, tout réclamé dès que prêt (20 graines). Jalons en passages gagnants, raccourcissement
+entre parenthèses :
+
+| Rythme             | Premier objet max | Première étoile | Équipe équipée | Équipe niv. 30 |    Objets max |    Collection | Or des quêtes |
+| ------------------ | ----------------: | --------------: | -------------: | -------------: | ------------: | ------------: | ------------: |
+| Sans quêtes        |               8,1 |            20,0 |           44,0 |          113,8 |         122,7 |         251,3 |             — |
+| Succès seuls       |      8,7 (−6,8 %) |      20,0 (0 %) |   39,9 (9,4 %) |  108,3 (4,7 %) | 119,5 (2,6 %) | 244,8 (2,6 %) |        + 12 % |
+| 5 passages / jour  |      8,7 (−6,8 %) |   20,6 (−2,8 %) |  38,3 (13,1 %) |  105,0 (7,7 %) | 119,8 (2,3 %) | 240,7 (4,3 %) |        + 28 % |
+| 10 passages / jour |      8,7 (−6,8 %) |   20,4 (−2,2 %) |  38,0 (13,7 %) |  103,2 (9,3 %) | 116,0 (5,5 %) | 236,2 (6,0 %) |        + 22 % |
+| 20 passages / jour |      8,7 (−6,8 %) |      20,0 (0 %) |  39,1 (11,2 %) |  106,2 (6,7 %) | 118,5 (3,4 %) | 236,2 (6,0 %) |        + 17 % |
+
+(« Succès seuls » : un jour de 1 000 passages, les quêtes ne comptent presque plus.)
+
+Lecture :
+
+- **Plus fort raccourcissement : 13,7 %** (équipe de quatre équipée, à 10 passages par jour) ; la
+  fin de progression (niveau 30, collection) gagne 5 à 9 %. La cible tient, avec peu de marge sur
+  l'équipe équipée : les deux tiers de cet effet viennent des succès (9,4 % seuls), surtout des
+  coffres des premiers succès qui avancent les étoiles, donc les donjons, donc les objets.
+- Un négatif veut dire « plus tard » : le joueur modèle dépense la poussière brute des succès en
+  niveaux avant l'objet des Landes (premier objet au maximum 8,1 → 8,7). Effet de sa politique,
+  sans conséquence pour un vrai joueur.
+- L'or des quêtes pèse 17 à 28 % de l'or des donjons : l'or ne sert qu'aux objets, il avance
+  surtout la collection. Ce n'est pas un raccourci de progression (niveaux et étoiles n'en
+  dépendent pas).
+- Premier réglage essayé : 20 % par quête du jour et 60 % par quête de la semaine : même plafond
+  (13,7 %, il vient des succès) mais niveau 30 à −10,4 % et or + 33 % à 5 passages par jour ;
+  ramené à 15 / 50 pour garder de la marge.
+- Vérifié en CI (`tools/sim/test/economy.test.ts`) : à 5 et 10 passages par jour, aucun jalon
+  plus de 15 % plus tôt. Leviers : `passagePct` (gain continu), coffres des succès (milieu de
+  partie), `count` (nombre de quêtes).

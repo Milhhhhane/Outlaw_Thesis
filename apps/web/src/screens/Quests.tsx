@@ -43,7 +43,9 @@ function rewardText(reward: RewardValue): string {
   const parts: string[] = [];
   if (reward.gold > 0) parts.push(t('quests.reward.gold', { n: reward.gold }));
   if (reward.dust.amount > 0)
-    parts.push(t('quests.reward.dust', { n: reward.dust.amount, dust: dustName(reward.dust.tier) }));
+    parts.push(
+      t('quests.reward.dust', { n: reward.dust.amount, dust: dustName(reward.dust.tier) }),
+    );
   if (reward.chest !== null) parts.push(tk(`chest.tier.${reward.chest}`));
   return t('quests.reward', { list: parts.join(', ') });
 }

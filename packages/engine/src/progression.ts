@@ -1,4 +1,10 @@
-import { emptyQuestState, PROFILE_VERSION, type Content, type HeroProgress, type Profile } from '@outlaw/data';
+import {
+  emptyQuestState,
+  PROFILE_VERSION,
+  type Content,
+  type HeroProgress,
+  type Profile,
+} from '@outlaw/data';
 import { validateBuild, type HeroBuild } from './compile';
 import { lootTable, masteryMaterialsFactor, masteryNext, masteryRank, ownedItem } from './loot';
 import { countAction } from './counters';

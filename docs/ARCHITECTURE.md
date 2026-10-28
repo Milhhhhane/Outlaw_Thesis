@@ -147,6 +147,16 @@ L'enchaînement des salles et la relance du donjon en mode Auto sont une navigat
 l'interface (`apps/web/src/game/Countdown.tsx`, utilisé par `combat/CombatScreen.tsx` et
 `screens/Rewards.tsx`) : le décompte déclenche le bouton de fin existant, rien de plus.
 
+Les quêtes et succès sont dans `packages/engine/src/quests.ts` (`periodOf`, `rollQuests`,
+`drawQuests`, `questStatus`, `achievementStatus`, `metricValue`, `rewardValue`, `claimQuest`,
+`claimBonus`, `claimAchievement`, `claimableCount`) ; les compteurs à vie qu'elles lisent sont
+avancés par les fonctions de progression elles-mêmes (`counters.ts`, `profile.stats`). L'heure
+(`now`) est un paramètre ; `ProfileProvider` (`apps/web/src/state/profile.tsx`) passe le profil à
+la période courante au chargement, toutes les 30 s et après chaque action. Contenu :
+`packages/data/content/quests.json` (schéma `schemas/quests.ts`), récompenses dans
+`balance.quests` ; écran `apps/web/src/screens/Quests.tsx`, textes `i18n/quests.fr.json`. La
+simulation économique les mesure (`QuestModel` dans `tools/sim/src/economy.ts`).
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille

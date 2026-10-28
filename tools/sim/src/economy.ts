@@ -391,7 +391,8 @@ function claimAll(content: Content, profile: Profile, now: number, ledger: Ledge
     if (next === null) return;
     ledger.quests.gold += next.gold - current.gold;
     next.materials.forEach((m, tier) => {
-      ledger.quests.dust[tier] = (ledger.quests.dust[tier] ?? 0) + m - (current.materials[tier] ?? 0);
+      ledger.quests.dust[tier] =
+        (ledger.quests.dust[tier] ?? 0) + m - (current.materials[tier] ?? 0);
     });
     const chests = (p: Profile): number => Object.values(p.chests).reduce((a, b) => a + b, 0);
     ledger.quests.chests += chests(next) - chests(current);
@@ -691,7 +692,13 @@ function main(): void {
   console.log(
     `  objets tombés ${l.items.drops.toFixed(0)} dont rares ${l.items.rares.toFixed(1)}, améliorations ${l.items.upgrades.toFixed(1)} (objets au maximum ${l.items.maxed.toFixed(1)}, niveau moyen des objets portés ${l.items.wornLevel.toFixed(2)}) ; coffres ${l.chests.toFixed(1)}, fragments ${l.fragments.toFixed(0)}`,
   );
-  printQuestEffect(content, summary, seeds, option('--runs', 600), perDay > 0 ? [perDay] : [5, 10, 20]);
+  printQuestEffect(
+    content,
+    summary,
+    seeds,
+    option('--runs', 600),
+    perDay > 0 ? [perDay] : [5, 10, 20],
+  );
 }
 
 /** Effet des quêtes et succès sur les jalons, pour quelques rythmes de jeu (passages gagnants par jour). */

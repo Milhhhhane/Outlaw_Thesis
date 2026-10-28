@@ -170,7 +170,10 @@ describe('quêtes du jour et de la semaine', () => {
       chest: null,
     });
     const last = content.dungeons.at(-1)!;
-    const late = { ...newProfile(content), dungeons: { [last.id]: { clears: 1, dry: 0, tier: 2 } } };
+    const late = {
+      ...newProfile(content),
+      dungeons: { [last.id]: { clears: 1, dry: 0, tier: 2 } },
+    };
     expect(rewardValue(content, late, reward).gold).toBe(Math.round(last.rewards.gold / 2));
   });
 });
@@ -191,7 +194,9 @@ describe('succès', () => {
     expect(metricValue(content, p, 'hero_level')).toBe(1);
     expect(metricValue(content, p, 'wins')).toBe(3);
     // Sauvegarde d'avant les quêtes : ni compteurs ni quêtes, les valeurs par défaut s'appliquent.
-    const { stats: _s, quests: _q, ...legacy } = p;
+    const legacy: Partial<Profile> = { ...p };
+    delete legacy.stats;
+    delete legacy.quests;
     const read = profileSchema.parse(JSON.parse(JSON.stringify(legacy)));
     expect(read.stats).toEqual({});
     expect(read.quests.achievements).toEqual([]);

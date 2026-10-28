@@ -243,3 +243,13 @@ dont la part ciblée baisse dans l'or).
 Leviers : `focusMultiplier` (légendaires plus ou moins accessibles), `weights` de l'or (part des
 rares), `drop` (fréquence), `fragments` (rythme général, à recaler avec
 `pnpm --filter @outlaw/sim economy`).
+
+## Quêtes et succès (2026-10-28)
+
+Nouvelles entrées hors donjon : 5 quêtes du jour (15 % d'un passage du meilleur donjon chacune,
+coffre de bronze quand toutes sont réclamées), 5 de la semaine (50 % chacune), 20 succès (une
+fois : 1, 2 ou 4 passages et un coffre de bronze, d'argent ou d'or). Rien de nouveau à dépenser :
+or, poussière et coffres vont dans les puits existants. `pnpm --filter @outlaw/sim economy`
+affiche maintenant l'effet sur les jalons à 5, 10 et 20 passages gagnants par jour
+(`--per-day N` pour un autre rythme) ; tableau et justification dans `docs/BALANCE.md`,
+« Quêtes et succès ». Les jalons sans quêtes (tableaux plus haut) sont inchangés.

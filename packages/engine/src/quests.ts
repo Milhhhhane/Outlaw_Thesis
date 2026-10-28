@@ -116,7 +116,9 @@ export function questStatus(content: Content, profile: Profile, kind: QuestKind)
     if (quest === undefined) return [];
     const raw = counter(profile, quest.metric) - (state.base[quest.metric] ?? 0);
     const progress = Math.min(quest.target, Math.max(0, raw));
-    return [{ quest, progress, done: progress >= quest.target, claimed: state.claimed.includes(id) }];
+    return [
+      { quest, progress, done: progress >= quest.target, claimed: state.claimed.includes(id) },
+    ];
   });
 }
 
@@ -255,7 +257,9 @@ export function claimQuest(
 /** Le bonus du jour : toutes les quêtes du jour réclamées. */
 export function bonusReady(profile: Profile): boolean {
   const { daily } = profile.quests;
-  return !daily.bonus && daily.ids.length > 0 && daily.ids.every((id) => daily.claimed.includes(id));
+  return (
+    !daily.bonus && daily.ids.length > 0 && daily.ids.every((id) => daily.claimed.includes(id))
+  );
 }
 
 export function claimBonus(content: Content, profile: Profile, now: number): Outcome {
@@ -266,7 +270,10 @@ export function claimBonus(content: Content, profile: Profile, now: number): Out
   return {
     ok: true,
     value: grant(
-      { ...current, quests: { ...current.quests, daily: { ...current.quests.daily, bonus: true } } },
+      {
+        ...current,
+        quests: { ...current.quests, daily: { ...current.quests.daily, bonus: true } },
+      },
       bonusReward(content, current),
     ),
   };

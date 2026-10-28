@@ -54,11 +54,16 @@ describe('écran des quêtes', () => {
     await user.click(screen.getByRole('tab', { name: new RegExp(t('quests.tab.achievements')) }));
     const first = screen.getByText(tk('quests.ach.ach_first_win')).closest('li');
     if (first === null) throw new Error('succès introuvable');
-    const gold = (): string => screen.getByText(/ or$/, { selector: '.resources__gold' }).textContent;
+    const gold = (): string =>
+      screen.getByText(/ or$/, { selector: '.resources__gold' }).textContent;
     const before = gold();
     await user.click(within(first).getByRole('button', { name: t('quests.claim') }));
     expect(within(first).getByText(t('quests.claimed'))).toBeInTheDocument();
     expect(gold()).not.toBe(before);
-    expect(screen.getByText(t('quests.achievements.summary', { n: 1, total: content.quests.achievements.length }))).toBeVisible();
+    expect(
+      screen.getByText(
+        t('quests.achievements.summary', { n: 1, total: content.quests.achievements.length }),
+      ),
+    ).toBeVisible();
   });
 });

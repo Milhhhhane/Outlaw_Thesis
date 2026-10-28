@@ -2,6 +2,22 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — quêtes et succès
+
+### Ajouté
+
+- Écran « Quêtes » au camp (onglets Quotidiennes, Hebdomadaires, Succès ; bouton Réclamer ; temps
+  avant la réinitialisation) et badge sur l'entrée quand une récompense attend.
+- 5 quêtes du jour (minuit UTC) et 5 de la semaine (lundi 00:00 UTC) tirées dans
+  `content/quests.json` : donjons gagnés, palier II ou III, niveaux payés, objets améliorés,
+  coffres ouverts, étoiles, invocations. Bonus du jour : un coffre de bronze.
+- 20 succès permanents (premières victoires, maîtrise, palier III, objets, héros, étoiles,
+  niveaux), récompense unique avec coffre de bronze, d'argent ou d'or.
+- Récompenses relatives au donjon le plus avancé terminé (`balance.quests`) ; effet sur les
+  jalons mesuré par `pnpm --filter @outlaw/sim economy` (au plus 13,7 %, borné à 15 % en CI).
+- Profil : compteurs à vie (`stats`) et état des quêtes (`quests`), absents des anciennes
+  sauvegardes (valeurs par défaut, succès déjà mérités aussitôt réclamables).
+
 ## [Non publié] — 2026-10-28 — coffres revus
 
 ### Modifié

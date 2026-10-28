@@ -106,7 +106,13 @@ export const questPeriodSchema = z.strictObject({
 });
 export type QuestPeriod = z.infer<typeof questPeriodSchema>;
 
-const emptyPeriod = (): QuestPeriod => ({ period: -1, ids: [], base: {}, claimed: [], bonus: false });
+const emptyPeriod = (): QuestPeriod => ({
+  period: -1,
+  ids: [],
+  base: {},
+  claimed: [],
+  bonus: false,
+});
 
 export const questStateSchema = z.strictObject({
   daily: questPeriodSchema.default(emptyPeriod),
