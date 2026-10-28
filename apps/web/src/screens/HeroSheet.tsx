@@ -235,8 +235,10 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                   if (pair.length !== 2) return null;
                   const a = at(pair[0]?.id ?? '');
                   const b = at(pair[1]?.id ?? '');
+                  // Sous la paire, à mi-chemin de la rangée suivante (54 px plus bas) : entre les
+                  // deux nœuds, 4 px séparent les pastilles, le mot y serait caché.
                   return (
-                    <span className="tree__or" style={{ left: (a.x + b.x) / 2, top: a.y }}>
+                    <span className="tree__or" style={{ left: (a.x + b.x) / 2, top: a.y + 27 }}>
                       {t('sheet.or')}
                     </span>
                   );

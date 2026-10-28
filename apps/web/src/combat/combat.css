@@ -481,8 +481,9 @@
   }
 }
 
-/* Couche des effets d'une unité : au-dessus des acteurs, sous les projectiles. */
-.effects {
+/* Couche des effets d'une unité : au-dessus des acteurs, sous les projectiles. Nom préfixé :
+   la liste « .effects » des fiches (game.css) ne doit pas devenir une couche absolue. */
+.stage__effects {
   position: absolute;
   z-index: 350;
   pointer-events: none;

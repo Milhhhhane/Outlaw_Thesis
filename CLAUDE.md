@@ -22,7 +22,9 @@ Avant un e2e : `pnpm build` (il sert `dist/`). Sprites : `python3 tools/art/expo
 
 - `tools/sim/baseline.csv` et `pnpm sim --update` : seulement sur décision explicite du propriétaire.
 - Pas de `skip`, `eslint-disable`, seuil de couverture baissé (moteur ≥ 90 % branches) pour faire passer la CI.
-- Jamais de push sur `main`, jamais de force-push, jamais de fusion sans accord du propriétaire.
+- Jamais de push sur `main`, jamais de force-push. Fusion d'une PR : autorisée par le propriétaire
+  dès que les deux checks « Vérification » sont verts (« Workers Builds » échoue hors `main`, à
+  ignorer) ; jamais une PR rouge ou jugée KO.
 - Pas de nouvelle dépendance npm sans la justifier.
 
 ## Pièges connus
