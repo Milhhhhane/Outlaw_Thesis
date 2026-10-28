@@ -1513,6 +1513,43 @@ button:disabled {
   }
 }
 
+/* Décompte du mode Auto (fin de combat, récompenses) : chiffre, phrase, bouton pour ne pas
+   attendre. Sur une ligne avec les boutons de fin, pour ne rien pousser hors de l'écran. */
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fade-in 300ms ease-out;
+}
+
+.countdown__text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--bone);
+  font-size: 14px;
+}
+
+.countdown__digit {
+  display: grid;
+  place-content: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-size: 18px;
+  line-height: 1;
+  animation: countdown-tick 1s ease-out;
+}
+
+@keyframes countdown-tick {
+  from {
+    transform: scale(1.3);
+    opacity: 0.4;
+  }
+}
+
 /* ===== Fiche de héros ===== */
 .sheet__layout {
   display: grid;

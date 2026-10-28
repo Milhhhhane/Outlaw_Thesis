@@ -47,7 +47,8 @@ describe('écran de combat', () => {
       render(<CombatScreen setup={demoSetup()} onExit={() => undefined} />);
       for (let turn = 0; turn < 200; turn++) {
         if (screen.queryByRole('dialog') !== null) break;
-        const actions = screen.getByRole('region', { name: /Au tour de/ });
+        // Le journal d'ouverture (puis de chaque action) se rejoue avant le tour suivant.
+        const actions = await screen.findByRole('region', { name: /Au tour de/ });
         const spells = within(actions)
           .getAllByRole('button')
           .filter((b) => !(b as HTMLButtonElement).disabled);
@@ -67,6 +68,7 @@ describe('écran de combat', () => {
   it('cible, annulation au clavier et réserve affichée', async () => {
     const user = userEvent.setup();
     render(<CombatScreen setup={demoSetup()} onExit={() => undefined} />);
+    await screen.findByRole('region', { name: /Au tour de/ });
     expect(
       screen.getByRole('img', { name: t('combat.reserve', { points: 3, cap: 6 }) }),
     ).toBeInTheDocument();

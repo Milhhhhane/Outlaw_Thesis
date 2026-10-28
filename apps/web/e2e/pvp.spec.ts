@@ -21,7 +21,7 @@ async function player(browser: Browser, pseudo: string): Promise<Page> {
   });
   const page = await context.newPage();
   await page.addInitScript(() => {
-    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
     localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
   });
   await page.goto('/');
@@ -81,7 +81,7 @@ async function getReady(page: Page): Promise<void> {
 async function playUntilResult(page: Page): Promise<void> {
   const result = page.getByTestId('pvp-result');
   const myTurn = page.getByRole('region', { name: /^Au tour de/ });
-  for (let guard = 0; guard < 400; guard++) {
+  for (let guard = 0; guard < 3000; guard++) {
     if (await result.isVisible()) return;
     if (await myTurn.isVisible()) {
       await page.keyboard.press('1');

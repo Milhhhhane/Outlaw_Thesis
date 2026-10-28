@@ -63,6 +63,10 @@
 - Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
   recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
   en CI). Or non recalibré.
+- Enchaînement automatique — en mode Auto, décompte de 5 s entre les salles et sur l'écran de
+  récompenses, qui relance le même donjon ; tout clic ou touche rend la main. Vitesse
+  « instantanée » supprimée (×1, ×2). Tests : `apps/web/test/countdown.test.tsx`, e2e à 1280×720
+  et 844×390.
 - PvP, salon personnalisé (« Duel en ligne ») : moteur (règles de combat, action par défaut,
   empreinte d'état), protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`),
   interface (salon, équipe, combat en direct, émotes, revanche, reprise). Remis à jour après le

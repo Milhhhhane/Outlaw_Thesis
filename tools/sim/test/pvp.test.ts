@@ -48,7 +48,8 @@ describe('mesure du PVP', () => {
   it('est reproductible à graine égale', () => {
     expect(evaluatePvp(content, small)).toEqual(report);
     expect(evaluatePvp(content, { ...small, seed: 2 })).not.toEqual(report);
-  });
+    // Deux mesures de 15 × 2 miroirs et 15 × 14 croisés à quatre héros : plusieurs secondes sur une machine chargée.
+  }, 60_000);
 
   it('imprime un rapport qui précise que rien n’est appliqué', () => {
     const text = formatReport(report);
