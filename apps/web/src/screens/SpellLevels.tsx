@@ -15,6 +15,9 @@ import { previewDiff } from './HeroSheet';
 import { UpgradePips } from './Workshop';
 import './spells.css';
 
+/** Pourcentage à la française : « 2,5 ». */
+export const frPct = (n: number): string => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+
 const signed = (n: number): string => (n > 0 ? `+${String(n)}` : `−${String(Math.abs(n))}`);
 
 /** Bonus du dernier niveau d'un emplacement, en texte (« délai −10 »). */
@@ -43,7 +46,7 @@ export function SpellLevels({ heroId }: { readonly heroId: string }) {
   return (
     <div className="spell-levels">
       <p className="spell-levels__intro hint">
-        {t('spells.intro', { pct: content.balance.spellLevels.powerPctPerLevel })}
+        {t('spells.intro', { pct: frPct(content.balance.spellLevels.powerPctPerLevel) })}
       </p>
       {!profile.testMode ? (
         <p className="spell-levels__stock">
@@ -89,7 +92,7 @@ export function SpellLevels({ heroId }: { readonly heroId: string }) {
                 <span>{t('spells.level', { level, max })}</span>
                 {' · '}
                 <span className="gold-text">
-                  {pct > 0 ? t('spells.gain', { pct }) : t('spells.gain.none')}
+                  {pct > 0 ? t('spells.gain', { pct: frPct(pct) }) : t('spells.gain.none')}
                 </span>
               </p>
               <p className="hint">{t('spells.capstone', { max, bonus: capstoneText(slot) })}</p>

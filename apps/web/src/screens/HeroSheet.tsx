@@ -34,7 +34,7 @@ import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
 import { Glossed } from '../game/Glossed';
-import { SpellLevels } from './SpellLevels';
+import { frPct, SpellLevels } from './SpellLevels';
 
 type Tab = 'stats' | 'talents' | 'items' | 'spells';
 

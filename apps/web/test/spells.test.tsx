@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from '../src/App';
 import { content } from '../src/combat/session';
 import { names, t } from '../src/i18n';
+import { frPct } from '../src/screens/SpellLevels';
 
 beforeEach(() => {
   window.localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
@@ -46,7 +47,7 @@ describe('onglet Grimoire de la fiche', () => {
     expect(saved().grimoires).toBe(0);
     expect(saved().fragments.pyra).toBe(0);
     expect(
-      screen.getByText(t('spells.gain', { pct: spellPowerPct(content.balance, 2) })),
+      screen.getByText(t('spells.gain', { pct: frPct(spellPowerPct(content.balance, 2)) })),
     ).toBeInTheDocument();
     // Plus rien en réserve : les autres boutons sont grisés.
     expect(
