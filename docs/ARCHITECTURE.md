@@ -166,6 +166,16 @@ sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écran
 bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
 en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
 
+Le boss de la semaine est dans `packages/engine/src/boss.ts` (`weeklyBoss`, `bossFight`,
+`bossUnlocked`, `bossProgress`, `bossReward`, `enterBoss`, `damageDealt`, `completeBoss`) : chiffres
+dans `balance.boss`, état de la semaine dans `profile.boss`, l'heure (`now`) en paramètre. Le
+combat porte sa propre limite d'actions (`BattleRules.actionLimit`) ; l'écran de combat transmet le
+journal complet (`Model.journal` de `useBattle`) à `finish.onClick` et `finish.heading`, d'où
+`BossRun.tsx` tire les dégâts. Écrans : `apps/web/src/screens/Boss.tsx` (ouvert depuis la tour) et
+`BossRun.tsx`, textes `i18n/boss.fr.json`. Simulation : `tools/sim/src/boss.ts` (règles en CI par
+`tools/sim/test/boss.test.ts`, lecture `pnpm --filter @outlaw/sim boss`) et le modèle `boss` de
+`economy.ts`.
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille

@@ -49,7 +49,8 @@ test('boss de la semaine : depuis la tour, fiche sans défilement, combat et bil
   await fight.click();
   await page.getByRole('button', { name: 'Voir le score' }).click({ timeout: 90_000 });
   await expect(page.getByRole('heading', { level: 1, name: /dégâts infligés/ })).toBeVisible();
-  await expect(page.getByText(/Paliers atteints : \d sur 4/)).toBeVisible();
+  const tiers = String(content.balance.boss.rewards.length);
+  await expect(page.getByText(new RegExp(`Paliers atteints : \\d sur ${tiers}`))).toBeVisible();
   await page.getByRole('button', { name: 'Retour au boss' }).click();
   await expect(page.getByText(/Tentatives du jour : 2 sur 3/)).toBeVisible();
 });

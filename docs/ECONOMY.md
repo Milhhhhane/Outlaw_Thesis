@@ -254,6 +254,37 @@ affiche maintenant l'effet sur les jalons à 5, 10 et 20 passages gagnants par j
 (`--per-day N` pour un autre rythme) ; tableau et justification dans `docs/BALANCE.md`,
 « Quêtes et succès ». Les jalons sans quêtes (tableaux plus haut) sont inchangés.
 
+## Boss de la semaine (2026-10-28)
+
+Paliers payés une fois par semaine et par difficulté (`balance.boss.rewards`, poussière du palier
+qu'exige le niveau du boss : fine aux difficultés 1 et 2, pure aux 3 et 4) :
+
+| Palier | Poussière | Fragments | Coffre |
+| -----: | --------: | --------: | ------ |
+|      1 |         3 |         0 | —      |
+|      2 |         4 |         1 | —      |
+|      3 |         5 |         0 | bronze |
+|      4 |         6 |         0 | argent |
+
+Mesure : `pnpm --filter @outlaw/sim economy` (modèle `boss`, sans quêtes) joue `enterBoss` et
+`completeBoss` : à chaque passage, chaque difficulté ouverte dont un palier reste à payer est
+tentée (3 par jour) et rapporte **tous** ses paliers. Borne haute : un vrai joueur n'atteint pas
+toujours le palier 4. Raccourcissement des jalons (premier objet max / première étoile / équipe
+équipée / niveau 30 / objets max / collection) :
+
+| Rythme             | Raccourcissement (%)          | Paliers payés : poussière fine / pure, coffres |
+| ------------------ | ----------------------------- | ---------------------------------------------- |
+| 5 passages / jour  | 0 / 0 / 6,6 / 7,7 / 4,8 / 4,8 | 243 / 183, 47 coffres (sur 170 ouverts)        |
+| 10 passages / jour | 0 / 0 / 4,9 / 4,2 / 2,1 / 0,1 | 148 / 110, 29 coffres                          |
+
+- Cible : ≤ ~10 % sur chaque jalon (testé en CI à 10 %). Plus fort effet : 7,7 % (niveau 30, à
+  5 passages par jour, le rythme qui laisse le plus de semaines).
+- Réglages écartés : poussière 4/6/8/10, fragments 1/1/2/2, bronze et argent : 12,3 % sur
+  l'équipe équipée ; coffre au palier 4 seul et plus de fragments : 7,5 % mais un palier 3 sans
+  attrait. Le coffre d'or n'est pas donné : à 14 fragments, il dépassait la cible seul.
+- Les jalons sans boss et les bornes `economy` / `farm` sont inchangés (le modèle n'est actif
+  qu'avec `boss: true`). Effet cumulé avec les quêtes non borné en CI (chacun l'est seul).
+
 ## Tour à étages (2026-10-28)
 
 Récompense de **première victoire** seulement (rejouer un étage ne rapporte rien) ; formule dans
