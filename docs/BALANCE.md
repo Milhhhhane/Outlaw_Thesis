@@ -516,13 +516,13 @@ aléatoires, niveau visé = étage jusqu'à 30, équipement visé de `gear`, pol
 combat) ; détail lisible : `pnpm --filter @outlaw/sim tower [équipes]`. Coût : 1 600 combats,
 environ 10 s de calcul ajoutées à `sim:check` (140 s mesurées avant, sur une machine chargée).
 
-| Étages  | Niveau | ATK % (courbe) | PV % | Objets        | Expert, moyenne (min) | Actions |
-| ------- | -----: | -------------- | ---: | ------------- | --------------------- | ------- |
-| 1 à 9   |  1 à 9 | 80 → 133       |  100 | aucun         | 100 % (97)            | 13 à 25 |
-| 11 à 19 |  11–19 | 145 → 185      |  100 | aucun         | 84 % (66)             | 19 à 29 |
-| 21 à 29 |  21–29 | 199 → 271      |  106 | aucun         | 79 % (66)             | 19 à 26 |
-| 31 à 39 |     30 | 300 → 318      |  120 | 2 + 0 / 2 + 1 | 80 % (53)             | 17 à 24 |
-| 41 à 49 |     30 | 318 → 320      |  135 | 2 + 2 / 2 + 3 | 79 % (59)             | 18 à 23 |
+| Étages  | Niveau | ATK % (courbe) |      PV % | Objets        | Expert, moyenne (min) | Actions |
+| ------- | -----: | -------------- | --------: | ------------- | --------------------- | ------- |
+| 1 à 9   |  1 à 9 | 80 → 133       |       100 | aucun         | 100 % (97)            | 13 à 25 |
+| 11 à 19 |  11–19 | 145 → 185      | 100 → 105 | aucun         | 84 % (66)             | 19 à 29 |
+| 21 à 29 |  21–29 | 199 → 271      | 106 → 110 | aucun         | 79 % (66)             | 18 à 26 |
+| 31 à 39 |     30 | 300 → 318      | 115 → 125 | 2 + 0 / 2 + 1 | 80 % (53)             | 17 à 24 |
+| 41 à 49 |     30 | 318 → 320      | 129 → 139 | 2 + 2 / 2 + 3 | 79 % (59)             | 18 à 23 |
 
 Boss (étages 10 / 20 / 30 / 40 / 50) : expert 72 / 75 / 66 / 75 / 59 %, 29 à 35 actions.
 Groupes : 2 ennemis (étages 1–3), 3 (4–11), 4 (12 et plus) ; à partir de l'étage 21, le dernier
