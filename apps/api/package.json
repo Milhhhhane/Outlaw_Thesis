@@ -15,12 +15,13 @@
   "dependencies": {
     "@outlaw/accounts": "workspace:*",
     "@outlaw/data": "workspace:*",
+    "@outlaw/engine": "workspace:*",
+    "@outlaw/net": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
-    "@outlaw/engine": "workspace:*"
+    "vitest": "catalog:"
   }
 }

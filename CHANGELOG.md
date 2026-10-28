@@ -21,6 +21,47 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 
 - `chest` des donjons, `chestStepPerTier`, `focusRate`, `replayChestRate`, `tierWeights`.
 
+## [Non publié] — 2026-10-28 — PvP : duel en ligne, à quatre héros, accessible depuis le camp
+
+### Ajouté
+
+- Duel en ligne entre amis (salon privé par code ou lien `#salon=CODE`), arbitré par un Durable
+  Object : règles de l'hôte (niveau maximum, objets, budget de paliers, temps par action), combat
+  en direct avec chrono serveur, émotes, revanche, reprise après coupure (`docs/PVP.md`).
+- Entrée **PvP** au camp. En invité, l'écran explique que le duel exige un compte (gratuit, sans
+  e-mail) et ouvre la connexion ou l'inscription sur place.
+- `pnpm sim:pvp` : mesure de l'équilibrage du duel (priorité, durée, héros), sans rien appliquer.
+
+### Modifié
+
+- Le PvP suit la taille d'équipe du jeu : `teamSize` (4) héros par camp, sans nombre écrit dans le
+  code ; le budget de paliers va de `teamSize` à `teamSize` × 4 (4 à 16) et le salon refuse un
+  budget hors de ces bornes.
+- Le bouton Auto n'apparaît pas en duel : chaque joueur joue lui-même.
+- `pnpm sim:pvp` mesure un échantillon de compositions (`--teams`, 24 par défaut) : 25 héros font
+  12 650 équipes de quatre.
+
+## [Non publié] — 2026-10-28 — des héros qui ne se ressemblent plus
+
+### Modifié
+
+- Les 19 héros récents ne partagent plus les huit mêmes silhouettes : 18 d'entre eux portent une
+  coiffe ou un accessoire dessiné à la main sur leur personnage du pack (sombrero de Yucca,
+  cornes de Forge, crête en vague de Torrent, bois feuillus de Séquoia, bannière d'Étendard,
+  capuche et lanterne de Lanterne, voile de Brume, couronne de fleurs d'Éden, capuche de houx de
+  Houx, cornes de bélier de Soufre, cadran doré de Sablier, tricorne de Sillage, ailes de flammes
+  de Phénix, bachi d'Écume, chapeau-champignon de Mousse, crête de flammes de Tison, suroît de
+  Mousson, fleur de chardon de Chardon). Genêt et les six héros d'origine ne changent pas.
+- Palettes franches pour Forge (fer sombre, heaume rougi), Séquoia (écorce), Houx, Tison,
+  Chardon et Éden ; armes mieux réparties (machette, épée large, épée, épée à gemme, couperet).
+- Légendaires et épiques les plus marquants : ailes, cadran, bannière, bois, vague, cornes.
+
+### Technique
+
+- `tools/art/looks.py` : surcouches pixel par pixel qui suivent la tête sur chaque image (repos,
+  dégâts), sprite élargi symétriquement si besoin ; `export.py` refuse deux héros de même
+  silhouette. La prise d'arme (`HeroSprite.tsx`) se compte depuis le milieu du sprite.
+
 ## [Non publié] — 2026-10-28 — arbre des talents lisible
 
 ### Corrigé

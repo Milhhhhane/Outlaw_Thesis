@@ -26,14 +26,24 @@ import type { z } from 'zod';
 import { ensureSchema, type Database } from './db';
 import { allow, clear, fail, ipId, waitFor } from './throttle';
 
+export { PvpRoom } from './pvp-room';
+
 /**
  * Worker des comptes : seules les routes `/api/*` l'atteignent (`run_worker_first`), le reste du
  * site est servi directement par les fichiers statiques. Aucun journal n'est écrit ici.
+ * Les salons PvP (`/api/pvp/*`) sont des Durable Objects, branchés par `PVP` (voir pvp-room.ts).
  */
+
+/** Le sous-ensemble de l'espace de noms des Durable Objects utilisé ici (testable sans Cloudflare). */
+export interface RoomNamespace {
+  idFromName(name: string): unknown;
+  get(id: unknown): { fetch(request: Request): Promise<Response> };
+}
 
 export interface Env {
   readonly DB: Database;
   readonly ASSETS?: { fetch(request: Request): Promise<Response> };
+  readonly PVP?: RoomNamespace;
 }
 
 const COOKIE = '__Host-session';
@@ -49,6 +59,10 @@ const LIMITS = {
   /** Échecs gratuits avant le délai croissant, par pseudo puis par adresse IP. */
   freeFailuresPseudo: 5,
   freeFailuresIp: 10,
+  /** Salons PvP créés par compte et par heure. */
+  roomsPerHour: 20,
+  /** Connexions à un salon par compte et par minute (reconnexions comprises). */
+  socketsPerMinute: 30,
 } as const;
 
 interface UserRow {
@@ -335,6 +349,79 @@ async function exportData(db: Database, s: Session) {
   });
 }
 
+/* ------------------------------------------------------------------ PvP */
+
+/** Code de salon : 6 caractères sans 0/O/1/I (faciles à dicter), 32^6 ≈ un milliard de codes. */
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const PVP_SOCKET = /^\/api\/pvp\/rooms\/([A-HJ-NP-Z2-9]{6})\/ws$/;
+
+export function newRoomCode(): string {
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  // 256 est un multiple de 32 : aucun biais.
+  return Array.from(bytes, (byte) => CODE_ALPHABET.charAt(byte % CODE_ALPHABET.length)).join('');
+}
+
+/** L'identité vérifiée par le Worker, transmise au salon (jamais lue dans les en-têtes du client). */
+function identity(s: Session, headers: Headers = new Headers()): Headers {
+  headers.set('X-Outlaw-Account', String(s.user.id));
+  headers.set('X-Outlaw-Pseudo', encodeURIComponent(s.user.pseudo));
+  return headers;
+}
+
+async function pvpCreate(env: Env, db: Database, s: Session, now: number): Promise<Response> {
+  const rooms = env.PVP;
+  if (rooms === undefined) throw new HttpError(503, 'unavailable');
+  if (!(await allow(db, `pvp-create:${String(s.user.id)}`, LIMITS.roomsPerHour, HOUR, now)))
+    throw tooMany(HOUR);
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = newRoomCode();
+    const stub = rooms.get(rooms.idFromName(code));
+    const created = await stub.fetch(
+      new Request(`https://pvp.internal/init?code=${code}`, {
+        method: 'POST',
+        headers: identity(s),
+      }),
+    );
+    if (created.status === 201) return json(201, { code });
+    // 409 : ce code existe déjà (rarissime), on en tire un autre.
+    if (created.status !== 409) break;
+  }
+  throw new HttpError(503, 'unavailable');
+}
+
+async function pvpConnect(
+  request: Request,
+  env: Env,
+  db: Database,
+  s: Session,
+  code: string,
+  now: number,
+): Promise<Response> {
+  const rooms = env.PVP;
+  if (rooms === undefined) throw new HttpError(503, 'unavailable');
+  // Une connexion WebSocket n'est pas couverte par la vérification des requêtes qui modifient :
+  // le navigateur envoie toujours l'origine de la page, on la compare ici (anti-détournement).
+  if (request.headers.get('Origin') !== new URL(request.url).origin) {
+    throw new HttpError(403, 'bad_origin');
+  }
+  if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+    throw new HttpError(400, 'invalid');
+  }
+  if (!(await allow(db, `pvp-ws:${String(s.user.id)}`, LIMITS.socketsPerMinute, 60 * 1000, now)))
+    throw tooMany(60 * 1000);
+  const headers = new Headers(request.headers);
+  headers.delete('Cookie');
+  const stub = rooms.get(rooms.idFromName(code));
+  const response = await stub.fetch(
+    new Request('https://pvp.internal/ws', { method: 'GET', headers: identity(s, headers) }),
+  );
+  if (response.status === 101) return response;
+  if (response.status === 404) throw new HttpError(404, 'room_not_found');
+  if (response.status === 409) throw new HttpError(409, 'room_full');
+  throw new HttpError(503, 'unavailable');
+}
+
 /** Routes accessibles pendant qu'un changement de mot de passe est exigé. */
 const ALLOWED_WHEN_LOCKED = new Set(['GET /api/me', 'POST /api/password', 'POST /api/logout']);
 
@@ -362,6 +449,10 @@ async function route(request: Request, env: Env, now: number): Promise<Response>
   if (s.user.must_change === 1 && !ALLOWED_WHEN_LOCKED.has(route)) {
     throw new HttpError(403, 'must_change_password');
   }
+
+  if (route === 'POST /api/pvp/rooms') return pvpCreate(env, db, s, now);
+  const socket = request.method === 'GET' ? PVP_SOCKET.exec(url.pathname) : null;
+  if (socket !== null) return pvpConnect(request, env, db, s, socket[1] ?? '', now);
 
   let response: Response;
   switch (route) {

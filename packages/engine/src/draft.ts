@@ -2,6 +2,7 @@ import type { Balance, SpellSlot, StatusKind } from '@outlaw/data';
 import type {
   BattleEvent,
   BattleResult,
+  BattleRules,
   BattleState,
   PointsReason,
   Side,
@@ -51,6 +52,8 @@ export type Signal =
  */
 export interface Draft {
   readonly balance: Balance;
+  /** Règles du combat, ou undefined : les valeurs par défaut s'appliquent (voir rulesOf). */
+  readonly rules: BattleRules | undefined;
   readonly units: DraftUnit[];
   clock: number;
   readonly points: Record<Side, number>;
@@ -67,6 +70,7 @@ export interface Draft {
 export function openDraft(state: BattleState): Draft {
   return {
     balance: state.balance,
+    rules: state.rules,
     units: state.units.map((unit) => ({ ...unit })),
     clock: state.clock,
     points: { ...state.points },
@@ -82,6 +86,8 @@ export function openDraft(state: BattleState): Draft {
 export function closeDraft(draft: Draft): StepResult {
   const state: BattleState = {
     balance: draft.balance,
+    // Sans règles explicites, l'état garde exactement sa forme d'avant (PvE inchangé).
+    ...(draft.rules === undefined ? {} : { rules: draft.rules }),
     units: draft.units.map((unit) => ({ ...unit })),
     clock: draft.clock,
     points: { ...draft.points },

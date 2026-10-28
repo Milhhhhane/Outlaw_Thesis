@@ -77,6 +77,13 @@ Voir [`CONTENT.md`](CONTENT.md).
 Politique gloutonne déterministe ; sortie CSV stable. `pnpm sim:check` compare à
 `tools/sim/baseline.csv` en CI : tout changement de règle ou d'équilibrage doit être assumé en
 mettant la référence à jour dans le même commit.
+`pnpm sim:pvp` mesure l'équilibrage du PvP (priorité, durée, héros) sans rien appliquer.
+
+## PVP (`packages/net`)
+
+Protocole et logique de salon du mode PvP, en fonctions pures (aucun Cloudflare, aucun DOM). Le
+Durable Object `PvpRoom` (`apps/api/src/pvp-room.ts`) n'expédie que les messages, stocke le salon et
+programme l'alarme ; l'interface est dans `apps/web/src/pvp/`. Voir [`PVP.md`](PVP.md).
 
 ## Interface (`apps/web`)
 

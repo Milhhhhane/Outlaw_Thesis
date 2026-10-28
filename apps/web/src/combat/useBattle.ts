@@ -33,6 +33,8 @@ export interface Model {
 type Msg =
   | { readonly type: 'reset'; readonly setup: BattleSetup }
   | { readonly type: 'act'; readonly action: Action }
+  /** Action décidée ailleurs (le serveur du PvP) : jamais ignorée, même pendant l'animation. */
+  | { readonly type: 'apply'; readonly action: Action }
   | { readonly type: 'advance' }
   | { readonly type: 'flush' };
 
@@ -99,6 +101,14 @@ export function reducer(model: Model, msg: Msg): Model {
     case 'act':
       if (model.queue.length > 0 || model.state.active === null) return model;
       return withResult(model, step(model.state, msg.action));
+    case 'apply':
+      if (model.state.active === null) return model;
+      try {
+        return withResult(model, step(model.state, msg.action));
+      } catch {
+        // Action illégale chez nous : l'état a divergé. Le contrôle d'empreinte du PvP le détecte et resynchronise.
+        return model;
+      }
     case 'advance':
       return advance(model, false);
     case 'flush':
@@ -106,9 +116,24 @@ export function reducer(model: Model, msg: Msg): Model {
   }
 }
 
-/** Combat interactif : l'état du moteur, sa vue animée et les commandes. `pace` : 1 normal, 0,5 à ×2. */
-export function useBattle(setup: BattleSetup, pace = 1) {
-  const [model, dispatch] = useReducer(reducer, setup, init);
+/** Reprise d'un combat en cours : les actions déjà jouées sont appliquées d'un coup, sans animation. */
+export function restore(setup: BattleSetup, history: readonly Action[]): Model {
+  let model = init(setup);
+  for (const action of history) model = reducer(model, { type: 'apply', action });
+  return history.length > 0 ? advance(model, true) : model;
+}
+
+/**
+ * Combat interactif : l'état du moteur, sa vue animée et les commandes. `pace` : 1 normal, 0,5 à ×2.
+ * `history` (lu au montage seulement) reprend un combat déjà commencé.
+ */
+export function useBattle(setup: BattleSetup, pace = 1, history: readonly Action[] = []) {
+  const [model, dispatch] = useReducer(
+    reducer,
+    { setup, history },
+    (start: { setup: BattleSetup; history: readonly Action[] }) =>
+      restore(start.setup, start.history),
+  );
 
   useEffect(() => {
     const next = model.queue[0];
@@ -126,6 +151,9 @@ export function useBattle(setup: BattleSetup, pace = 1) {
   const act = useCallback((action: Action) => {
     dispatch({ type: 'act', action });
   }, []);
+  const apply = useCallback((action: Action) => {
+    dispatch({ type: 'apply', action });
+  }, []);
   const skip = useCallback(() => {
     dispatch({ type: 'flush' });
   }, []);
@@ -133,5 +161,8 @@ export function useBattle(setup: BattleSetup, pace = 1) {
     dispatch({ type: 'reset', setup });
   }, [setup]);
 
-  return { model, busy: model.queue.length > 0, act, skip, reset };
+  return { model, busy: model.queue.length > 0, act, apply, skip, reset };
 }
+
+/** Ce que renvoie `useBattle` : l'écran de combat en dépend sans savoir d'où viennent les actions. */
+export type BattleHandle = ReturnType<typeof useBattle>;

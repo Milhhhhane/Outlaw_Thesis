@@ -22,6 +22,9 @@ import { OptionsWindow } from './screens/OptionsWindow';
 import { Team } from './screens/Team';
 import { Title } from './screens/Title';
 import { Workshop } from './screens/Workshop';
+import { normalizeCode } from './pvp/api';
+import { PvpMenu } from './pvp/PvpMenu';
+import { PvpRoom } from './pvp/PvpRoom';
 import { ProfileProvider } from './state/profile';
 import './App.css';
 
@@ -60,6 +63,10 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <DungeonRun dungeonId={route.id} tier={route.tier ?? 1} onExit={hub} />;
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
+    case 'pvp':
+      return <PvpMenu />;
+    case 'pvp_room':
+      return <PvpRoom code={route.code} />;
   }
 }
 
@@ -117,6 +124,14 @@ function sandboxFromLocation(): Sandbox | null {
   return { profile: sandboxProfile(content, builds ?? []), invalidLink: builds === null };
 }
 
+const SALON_PREFIX = '#salon=';
+
+/** Un lien `#salon=CODE` ouvre directement le salon d'un ami. */
+function salonFromLocation(): string | null {
+  const { hash } = window.location;
+  return hash.startsWith(SALON_PREFIX) ? normalizeCode(hash.slice(SALON_PREFIX.length)) : null;
+}
+
 function clearHash(): void {
   window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
 }
@@ -132,6 +147,11 @@ function Main({ version, initial, start }: AppProps) {
   // Une sauvegarde remplacée par le compte (connexion, conflit) recharge le profil.
   const generation = useAccount()?.generation ?? 0;
   const [sandbox, setSandbox] = useState<Sandbox | null>(sandboxFromLocation);
+  const [salon] = useState<string | null>(salonFromLocation);
+  // Le lien est consommé : un rechargement ne rouvre pas le salon.
+  useEffect(() => {
+    if (window.location.hash.startsWith(SALON_PREFIX)) clearHash();
+  }, []);
   // En quittant le mode test, on revient au camp de la partie normale.
   const [resume, setResume] = useState<Route | null>(null);
 
@@ -164,7 +184,11 @@ function Main({ version, initial, start }: AppProps) {
     <ProfileProvider key={`game-${String(generation)}`} initial={initial}>
       <Game
         version={version}
-        start={resume ?? start ?? { name: 'title' }}
+        start={
+          salon === null
+            ? (resume ?? start ?? { name: 'title' })
+            : { name: 'pvp_room', code: salon }
+        }
         onTestMode={() => {
           setSandbox({ profile: sandboxProfile(content), invalidLink: false });
         }}

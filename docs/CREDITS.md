@@ -39,8 +39,9 @@ source).
   (https://0x72.itch.io/dungeontileset-ii), licence Creative Commons Zero (CC0), note jointe dans
   `tools/art/third_party/0x72/LICENSE.txt`. Les personnages et les armes des héros sont recolorés par
   teinte et agrandis ×2 par `tools/art/pack.py` ; les monstres sont retournés. Les 25 héros
-  partagent les huit personnages héros de la planche (elfes, chevaliers, mages, lézards) :
-  teinte et arme les distinguent ; aucun nouveau fichier tiers. Les anciens personnages générés
+  partagent les huit personnages héros de la planche (elfes, chevaliers, mages, lézards) ; 18
+  d'entre eux portent une coiffe ou un accessoire dessiné pour le projet (`tools/art/looks.py`,
+  création originale) ; aucun nouveau fichier tiers. Les anciens personnages générés
   (`heroes.py`, `enemies.py`) ne sont plus utilisés.
 
 ## Données

@@ -14,6 +14,9 @@
   // Sans identifiant : Wrangler crée la base au premier déploiement (provisionnement automatique).
   // Le schéma est appliqué par le Worker lui-même (apps/api/src/db.ts). Voir docs/DEPLOY.md.
   "d1_databases": [{ "binding": "DB", "database_name": "outlaw-thesis" }],
+  // Salons PvP : un Durable Object par salon (stockage SQLite, WebSocket en veille). Voir docs/PVP.md.
+  "durable_objects": { "bindings": [{ "name": "PVP", "class_name": "PvpRoom" }] },
+  "migrations": [{ "tag": "v1-pvp", "new_sqlite_classes": ["PvpRoom"] }],
   // Pas de journaux persistants (docs/ACCOUNTS.md).
   "observability": { "enabled": false },
 }

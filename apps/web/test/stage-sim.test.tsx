@@ -54,7 +54,8 @@ describe('simulation du champ de bataille', () => {
       }
     });
     expect(fallen.size).toBe(ids.length);
-  });
+    // Un rendu par événement d'un combat entier à quatre contre quatre : plusieurs secondes sur une machine chargée.
+  }, 30_000);
 
   it('les secousses et le zoom ne recréent pas les acteurs', () => {
     const { events } = playBattle();
@@ -72,7 +73,7 @@ describe('simulation du champ de bataille', () => {
       expect(container.querySelector('.actor')).toBe(first);
     });
     expect(shakes).toBeGreaterThan(5);
-  });
+  }, 30_000);
 });
 
 describe('course de l’attaque de base', () => {
