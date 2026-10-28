@@ -45,13 +45,18 @@ describe('rareté des héros', () => {
     render(<App version="test" initial={withLegend()} start={{ name: 'heroes' }} />);
     const cards = document.querySelectorAll('.hero-card');
     expect(cards).toHaveLength(content.heroes.length);
-    content.heroes.forEach((hero, i) => {
-      const card = cards[i] as HTMLElement;
-      expect(card).toHaveClass(`rarity-${String(hero.tier)}`);
-      expect(within(card).getByText(rarityName(hero.tier))).toBeInTheDocument();
-    });
+    // Chaque rareté a autant de cartes que de héros, et chaque carte en porte le nom.
+    for (const tier of [1, 2, 3, 4]) {
+      const ofTier = document.querySelectorAll(`.hero-card.rarity-${String(tier)}`);
+      expect(ofTier).toHaveLength(content.heroes.filter((h) => h.tier === tier).length);
+      ofTier.forEach((card) => {
+        expect(within(card as HTMLElement).getByText(rarityName(tier))).toBeInTheDocument();
+      });
+    }
     // Un épique verrouillé : rareté visible, nom caché, coût de sa rareté.
-    const locked = cards[content.heroes.indexOf(epic)] as HTMLElement;
+    const locked = Array.from(cards).find(
+      (card) => card.classList.contains('rarity-3') && (card as HTMLButtonElement).disabled,
+    ) as HTMLElement;
     expect(locked).toBeDisabled();
     expect(
       within(locked).getByText(t('heroes.locked.summon', { n: summonCost(content, epic.id) })),

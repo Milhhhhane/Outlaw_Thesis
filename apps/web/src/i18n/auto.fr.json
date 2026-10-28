@@ -1,9 +1,8 @@
 {
   "combat.auto": "Auto",
-  "combat.auto.hint": "Combat automatique : le jeu joue les tours de vos héros (touche A) et enchaîne les salles, puis relance le donjon. Il reste plus prudent qu'un joueur attentif.",
+  "combat.auto.hint": "Combat automatique : le jeu joue les tours de vos héros (touche A) et enchaîne les salles ; l'écran d'équipe règle combien de passages il joue d'affilée. Il reste plus prudent qu'un joueur attentif.",
   "combat.auto.waiting": "Combat automatique en cours",
   "combat.auto.next": "Salle suivante dans {s} s",
   "combat.auto.claim": "Récompenses dans {s} s",
-  "combat.auto.replay": "Nouveau passage dans {s} s",
   "combat.auto.now": "Continuer maintenant"
 }

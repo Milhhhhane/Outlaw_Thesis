@@ -1,0 +1,255 @@
+/* ===== Confort de farm : équipes enregistrées, tri des héros, séries, bilan, badges ===== */
+
+/* Équipe : emplacements à gauche, équipes enregistrées à droite. */
+.team__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Les emplacements tiennent dans leurs 150 px : la barre de tri passe juste dessous et le vivier
+   garde une rangée entière (le sprite déborde vers le haut, comme les armes). */
+.team__top .team__sprite {
+  height: 66px;
+}
+
+.team__roster .gbtn--ghost {
+  min-height: 28px;
+}
+
+.presets {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 3px;
+  min-height: 0;
+  padding: 0 4px;
+  border: 8px solid transparent;
+  border-image: var(--frame) 4 fill / 8px / 0 stretch;
+  image-rendering: pixelated;
+}
+
+.presets__title {
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.presets__list {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 4px;
+  min-height: 0;
+}
+
+.preset__load {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-width: 0;
+  padding: 0 6px;
+  border: 2px solid #3a2e46;
+  background: rgb(7 5 10 / 55%);
+  color: var(--bone);
+  text-align: left;
+}
+
+.preset__load:hover:not(:disabled),
+.preset__load:focus-visible {
+  border-color: var(--gold);
+}
+
+.preset__load:disabled {
+  color: var(--bone-muted);
+}
+
+.preset__load--missing {
+  border-color: #7a2a18;
+}
+
+.preset__name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset__team {
+  display: flex;
+  gap: 2px;
+}
+
+.preset__missing {
+  max-width: 100%;
+  overflow: hidden;
+  color: #ffb4a8;
+  font-family: var(--text);
+  font-size: 11px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preset .gbtn--small {
+  min-height: 30px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+.preset-window__form {
+  display: grid;
+  gap: 6px;
+}
+
+.preset-window__form input {
+  padding: 6px 8px;
+  border: 2px solid #3a2e46;
+  background: #0d0a11;
+  color: var(--bone);
+  font: 16px var(--pixel);
+}
+
+.preset-window__team {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  color: var(--bone-muted);
+  font-size: 14px;
+}
+
+/* Nombre de passages, à côté de « Partir ». */
+.team__runs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+}
+
+/* Tri et filtres (galerie, vivier). */
+.choice {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.choice .gbtn--small {
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filters__count {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.filters__row {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.heroes__tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heroes__none {
+  grid-column: 1 / -1;
+}
+
+/* Récompenses d'un passage dans une série. */
+.reward__series {
+  color: var(--gold);
+}
+
+/* Bilan d'une série : sept cartes sur deux rangées, les objets sur deux colonnes. */
+.recap-cards {
+  grid-template-columns: repeat(4, 190px);
+}
+
+.recap-card--wide {
+  grid-column: span 2;
+}
+
+.recap__counts {
+  margin: 0;
+  font-size: 13px;
+}
+
+.recap__items {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  list-style: none;
+}
+
+.recap__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recap__item--rare {
+  color: var(--gold);
+}
+
+.recap__heroes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+}
+
+/* Badges « à faire » du camp. */
+.hub__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.hub__badge + .hub__badge {
+  margin-left: 4px;
+}
+
+/* L'icône prend la couleur du texte du badge, pas le doré du badge : chaque badge se reconnaît. */
+.hub__badge .icon {
+  color: var(--ink);
+}
+
+.hub__badge > span[aria-hidden] {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
