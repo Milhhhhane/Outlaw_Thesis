@@ -88,9 +88,13 @@ jeu fonctionne normalement.
      `npx wrangler secret put ADMIN_PSEUDOS`, puis taper son pseudo.
 3. Recharger le jeu : le bouton « Administration » apparaît en pied du camp.
 
-Plusieurs administrateurs : pseudos séparés par des virgules (`Milhhhhane,Autre`), sans
-distinction de casse. Retirer un administrateur : modifier ou supprimer le secret. Un compte administrateur supprimé libère son pseudo : retirer aussi ce pseudo du secret, sinon le premier qui le reprend devient administrateur. Les secrets ne
-sont pas dans `wrangler.jsonc` et survivent aux déploiements de Workers Builds
+Plusieurs administrateurs : pseudos séparés par des virgules (`Patron_Fictif,Autre`), sans
+distinction de casse. Retirer un administrateur : modifier ou supprimer le secret. Un compte
+administrateur supprimé libère son pseudo : retirer aussi ce pseudo du secret, sinon le premier qui
+le reprend devient administrateur.
+
+Le secret survit aux déploiements (Workers Builds lance `wrangler deploy`) : « Wrangler will not
+delete your secrets (encrypted environment variables) unless you run `wrangler secret delete <key>` »
 ([source de vérité de la configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth)).
 
 En local, `wrangler dev` lit `.dev.vars` (à ne jamais committer) ou `--var ADMIN_PSEUDOS:<pseudo>` ;

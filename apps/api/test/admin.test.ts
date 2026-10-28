@@ -37,10 +37,10 @@ function advanced() {
   return { version: profile.version, profile };
 }
 
-/** Un serveur avec l'administrateur « Milhhhhane » (casse différente dans le secret) et trois joueurs. */
+/** Un serveur avec l'administrateur « Patron_Fictif » (casse différente dans le secret) et trois joueurs. */
 async function populated() {
-  const api = server(undefined, ' milhhhhane , Autre_Chef ');
-  const admin = (await api.register('Milhhhhane', undefined, '192.0.2.1')).cookie;
+  const api = server(undefined, ' patron_fictif , Autre_Chef ');
+  const admin = (await api.register('Patron_Fictif', undefined, '192.0.2.1')).cookie;
   api.advance(1_000);
   const bob = (await api.register('Bob_42', undefined, '192.0.2.2')).cookie;
   api.advance(1_000);
@@ -60,7 +60,7 @@ const ids = (list: Json | null) => (list?.accounts as Json[]).map((a) => a.pseud
 
 describe('accès à l’administration', () => {
   it('exige une session (401)', async () => {
-    const api = server(undefined, 'Milhhhhane');
+    const api = server(undefined, 'Patron_Fictif');
     for (const path of ['/api/admin/users', '/api/admin/users/1']) {
       const res = await api.call('GET', path);
       expect(res.status).toBe(401);
@@ -87,7 +87,7 @@ describe('accès à l’administration', () => {
   it('sans secret, ou secret vide, personne n’est administrateur', async () => {
     for (const secret of [undefined, '', ' , ,']) {
       const api = server(undefined, secret);
-      const { cookie, json } = await api.register('Milhhhhane');
+      const { cookie, json } = await api.register('Patron_Fictif');
       expect(json?.admin).toBe(false);
       expect((await api.call('GET', '/api/me', { cookie })).json?.admin).toBe(false);
       expect((await api.call('GET', '/api/admin/users', { cookie })).status).toBe(404);
@@ -95,10 +95,14 @@ describe('accès à l’administration', () => {
   });
 
   it('reconnaît le pseudo administrateur sans distinction de casse', async () => {
-    const api = server(undefined, 'MILHHHHANE');
-    const created = await api.register('Milhhhhane');
-    expect(created.json).toEqual({ pseudo: 'Milhhhhane', mustChangePassword: false, admin: true });
-    const login = await api.login('milhhhhane');
+    const api = server(undefined, 'PATRON_FICTIF');
+    const created = await api.register('Patron_Fictif');
+    expect(created.json).toEqual({
+      pseudo: 'Patron_Fictif',
+      mustChangePassword: false,
+      admin: true,
+    });
+    const login = await api.login('patron_fictif');
     expect(login.json?.admin).toBe(true);
     expect((await api.call('GET', '/api/me', { cookie: login.cookie })).json?.admin).toBe(true);
     expect((await api.call('GET', '/api/admin/users', { cookie: login.cookie })).status).toBe(200);
@@ -124,7 +128,7 @@ describe('liste des comptes', () => {
     expect(body?.limit).toBe(20);
     expect(body?.offset).toBe(0);
     // La sauvegarde de Dave est la plus récente, puis son inscription… l'administrateur en dernier.
-    expect(ids(body)).toEqual(['Dave', 'Carol', 'Bob_42', 'Milhhhhane']);
+    expect(ids(body)).toEqual(['Dave', 'Carol', 'Bob_42', 'Patron_Fictif']);
 
     const text = JSON.stringify(body);
     for (const word of SENSITIVE) expect(text).not.toContain(word);
@@ -182,7 +186,7 @@ describe('liste des comptes', () => {
     await api.login('Bob_42', undefined, '192.0.2.9');
     const res = await api.call('GET', '/api/admin/users', { cookie: admin });
     expect(res.json?.total).toEqual({ accounts: 4, active24h: 2, active7d: 4 });
-    expect(ids(res.json).slice(0, 2).sort()).toEqual(['Bob_42', 'Milhhhhane']);
+    expect(ids(res.json).slice(0, 2).sort()).toEqual(['Bob_42', 'Patron_Fictif']);
     const bob = (res.json?.accounts as Json[]).find((a) => a.pseudo === 'Bob_42');
     expect(bob?.activeSessions).toBe(2);
     api.advance(10 * DAY);
@@ -197,7 +201,7 @@ describe('liste des comptes', () => {
     const first = await page('?limit=2');
     const second = await page('?limit=2&offset=2');
     expect(ids(first)).toEqual(['Dave', 'Carol']);
-    expect(ids(second)).toEqual(['Bob_42', 'Milhhhhane']);
+    expect(ids(second)).toEqual(['Bob_42', 'Patron_Fictif']);
     expect(second?.offset).toBe(2);
     expect(ids(await page('?limit=2&offset=4'))).toEqual([]);
     expect((await page('?limit=1000'))?.limit).toBe(100);

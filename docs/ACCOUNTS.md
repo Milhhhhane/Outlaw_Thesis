@@ -17,7 +17,8 @@ Pas d'e-mail, pas de nom réel, pas de journal persistant (`observability` désa
 et conditions » du jeu décrit la même chose ; elle est un **brouillon à faire valider**.
 
 L'administrateur du jeu peut voir, pour chaque compte, le pseudo, les dates de création, de
-dernière connexion et de dernière sauvegarde, le nombre de sessions ouvertes et l'avancement (voir
+dernière connexion et de dernière sauvegarde, la date de dernière activité (déduite du dernier
+usage de la session, à un jour près), le nombre de sessions ouvertes et l'avancement (voir
 « Administration » plus bas). La page de confidentialité le dit aussi.
 
 ## Administration (lecture seule)
@@ -44,9 +45,12 @@ dépôt ; secret absent ou vide : personne n'est administrateur. Le créer : `do
   (`null` si absente ou invalide) : héros débloqués / total, niveaux extrêmes de l'équipe,
   donjons terminés / total et plus haut palier ouvert, or, objets différents, succès réclamés (si
   la sauvegarde connaît les quêtes).
-- Coût : chaque compte de la page fait relire et valider sa sauvegarde ; l'écran du jeu en
-  demande 10 à la fois (temps processeur non mesuré sur Cloudflare). Pas de limite de débit : la
-  route n'est ouverte qu'aux administrateurs.
+- Coût processeur (mesuré sous Node 22) : relire et valider une sauvegarde courante prend
+  0,26 à 0,46 ms, soit 2,6 à 4,6 ms pour les 10 comptes d'une page de l'écran du jeu, et jusqu'à
+  23 ms pour 10 sauvegardes de 171 Kio. Surtout, le premier `loadContent()` d'une instance du
+  Worker coûte environ 92 ms à froid (22 ms à chaud) : la première requête d'administration
+  dépasse les 10 ms du plan gratuit, comme le scrypt de la connexion, déjà toléré (voir
+  `docs/DEPLOY.md`). Pas de limite de débit : la route n'est ouverte qu'aux administrateurs.
 - Écran du jeu : bouton « Administration » en pied du camp, présent seulement si `/api/me` répond
   `admin: true` (`apps/web/src/screens/Admin.tsx`, textes `i18n/admin.fr.json`).
 

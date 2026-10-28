@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
+import { content } from '../src/combat/session';
 import { ago } from '../src/screens/Admin';
 import { names, t } from '../src/i18n';
 
@@ -62,6 +63,15 @@ const lastPage: AdminAccountList = {
   ],
 };
 
+/** Un joueur de fin de partie : tous les héros, chaque donjon gagné 40 fois au palier III. */
+const veteran: AdminAccountDetail = {
+  ...bob,
+  id: 7,
+  pseudo: 'Veteran_Fictif',
+  heroes: content.heroes.map((hero) => ({ id: hero.id, level: 30, stars: 3 })),
+  dungeons: content.dungeons.map((dungeon) => ({ id: dungeon.id, clears: 40, tier: 3 })),
+};
+
 function reply(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -69,8 +79,8 @@ function reply(status: number, body: unknown): Response {
   });
 }
 
-/** Un serveur simulé : `me` est la réponse de `/api/me` (null : invité). */
-function stubApi(me: Me | null) {
+/** Un serveur simulé : `me` est la réponse de `/api/me` (null : invité), `first` la première page. */
+function stubApi(me: Me | null, first: AdminAccountList = list) {
   const fetchMock = vi.fn((input: RequestInfo | URL): Promise<Response> => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (url === '/config.json') return Promise.resolve(reply(200, { contact: '' }));
@@ -83,11 +93,12 @@ function stubApi(me: Me | null) {
       return Promise.resolve(reply(200, { rev: 0, updatedAt: null, save: null }));
     }
     if (me?.admin === true) {
-      if (url === '/api/admin/users?limit=10&offset=0') return Promise.resolve(reply(200, list));
+      if (url === '/api/admin/users?limit=10&offset=0') return Promise.resolve(reply(200, first));
       if (url === '/api/admin/users?limit=10&offset=10') {
         return Promise.resolve(reply(200, lastPage));
       }
       if (url === '/api/admin/users/2') return Promise.resolve(reply(200, bob));
+      if (url === '/api/admin/users/7') return Promise.resolve(reply(200, veteran));
     }
     return Promise.resolve(reply(404, { error: 'not_found' }));
   });
@@ -127,7 +138,7 @@ describe('entrée « Administration » du camp', () => {
   });
 
   it('mène un administrateur à la liste des comptes, puis au détail d’un compte', async () => {
-    const fetchMock = stubApi({ pseudo: 'Milhhhhane', mustChangePassword: false, admin: true });
+    const fetchMock = stubApi({ pseudo: 'Patron_Fictif', mustChangePassword: false, admin: true });
     const user = userEvent.setup();
     render(<App version="test" start={{ name: 'hub' }} />);
     await user.click(await screen.findByRole('button', { name: new RegExp(t('admin.entry')) }));
@@ -180,12 +191,50 @@ describe('entrée « Administration » du camp', () => {
   });
 
   it('signale une erreur de l’API et permet de réessayer', async () => {
-    stubApi({ pseudo: 'Milhhhhane', mustChangePassword: false, admin: false });
+    stubApi({ pseudo: 'Patron_Fictif', mustChangePassword: false, admin: false });
     const user = userEvent.setup();
     render(<App version="test" start={{ name: 'admin' }} />);
     expect(await screen.findByRole('alert')).toHaveTextContent(t('admin.error'));
     await user.click(screen.getByRole('button', { name: t('admin.retry') }));
     expect(await screen.findByRole('alert')).toBeInTheDocument();
+  });
+
+  it('affiche en entier la fiche d’un joueur de fin de partie (25 héros, 10 donjons au palier III)', async () => {
+    expect(veteran.heroes).toHaveLength(25);
+    expect(veteran.dungeons).toHaveLength(10);
+    stubApi(
+      { pseudo: 'Patron_Fictif', mustChangePassword: false, admin: true },
+      { ...list, accounts: [veteran] },
+    );
+    const user = userEvent.setup();
+    render(<App version="test" start={{ name: 'admin' }} />);
+    await user.click(
+      await screen.findByRole('button', { name: t('admin.open', { pseudo: 'Veteran_Fictif' }) }),
+    );
+    expect(await screen.findByRole('heading', { level: 2, name: 'Veteran_Fictif' })).toBeVisible();
+
+    // Chaque héros a sa ligne, avec son niveau et ses étoiles.
+    const heroes = within(screen.getByRole('region', { name: t('admin.detail.heroes') }));
+    const heroRows = heroes.getAllByRole('listitem');
+    expect(heroRows).toHaveLength(25);
+    veteran.heroes!.forEach((hero, i) => {
+      const row = within(heroRows[i]!);
+      expect(row.getByText(names.hero(hero.id))).toBeInTheDocument();
+      expect(row.getByText(t('admin.detail.hero', { level: 30, stars: 3 }))).toBeInTheDocument();
+    });
+
+    // Chaque donjon : son nom, ses 40 victoires et le palier III, dans la même ligne.
+    const dungeons = within(screen.getByRole('region', { name: t('admin.detail.dungeons') }));
+    const dungeonRows = dungeons.getAllByRole('listitem');
+    expect(dungeonRows).toHaveLength(10);
+    veteran.dungeons!.forEach((dungeon, i) => {
+      const row = within(dungeonRows[i]!);
+      expect(row.getByText(names.dungeon(dungeon.id))).toBeInTheDocument();
+      expect(
+        row.getByText(t('admin.detail.dungeon', { clears: 40, tier: 'III' })),
+      ).toBeInTheDocument();
+      expect(dungeonRows[i]).toHaveTextContent(/\bIII$/);
+    });
   });
 });
 

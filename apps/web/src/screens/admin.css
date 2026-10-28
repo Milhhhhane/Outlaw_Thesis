@@ -91,9 +91,12 @@
   font-size: 13px;
 }
 
+/* Fiche d'un compte : faits à gauche, héros puis donjons à droite, chaque panneau à la hauteur
+   de son contenu. Rien n'est coupé : une valeur trop longue passe à la ligne, un panneau trop
+   plein défile (barre visible). Joueur de fin de partie (25 héros, 10 donjons) : tout tient. */
 .admin__detail {
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr);
+  grid-template-columns: 290px minmax(0, 1fr);
   gap: 10px;
   height: 100%;
 }
@@ -101,12 +104,14 @@
 .admin__facts {
   min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .admin__pseudo {
   margin: 0 0 6px;
   color: var(--gold);
   font-size: 20px;
+  overflow-wrap: anywhere;
 }
 
 .admin__facts dl {
@@ -127,15 +132,17 @@
 }
 
 .admin__lists {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   min-height: 0;
 }
 
 .admin__list {
+  flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .admin__list h3 {
@@ -155,13 +162,17 @@
   list-style: none;
 }
 
+.admin__list--heroes ul {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .admin__list li {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  column-gap: 8px;
 }
 
 .admin__list .hint {
+  margin-left: auto;
   font-size: 13px;
 }

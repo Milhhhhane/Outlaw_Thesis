@@ -240,7 +240,7 @@ function AccountDetail({ id }: { readonly id: number }) {
       </Panel>
       {value.heroes !== null && value.dungeons !== null && (
         <div className="admin__lists">
-          <Panel className="admin__list" label={t('admin.detail.heroes')}>
+          <Panel className="admin__list admin__list--heroes" label={t('admin.detail.heroes')}>
             <h3>{t('admin.detail.heroes')}</h3>
             <ul>
               {value.heroes.map((hero) => (
