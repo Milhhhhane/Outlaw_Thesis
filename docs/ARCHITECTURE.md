@@ -174,6 +174,16 @@ sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écran
 bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
 en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
 
+Le boss de la semaine est dans `packages/engine/src/boss.ts` (`weeklyBoss`, `bossFight`,
+`bossUnlocked`, `bossProgress`, `bossReward`, `enterBoss`, `damageDealt`, `completeBoss`) : chiffres
+dans `balance.boss`, état de la semaine dans `profile.boss`, l'heure (`now`) en paramètre. Le
+combat porte sa propre limite d'actions (`BattleRules.actionLimit`) ; l'écran de combat transmet le
+journal complet (`Model.journal` de `useBattle`) à `finish.onClick` et `finish.heading`, d'où
+`BossRun.tsx` tire les dégâts. Écrans : `apps/web/src/screens/Boss.tsx` (ouvert depuis la tour) et
+`BossRun.tsx`, textes `i18n/boss.fr.json`. Simulation : `tools/sim/src/boss.ts` (règles en CI par
+`tools/sim/test/boss.test.ts`, lecture `pnpm --filter @outlaw/sim boss`) et le modèle `boss` de
+`economy.ts`.
+
 Le confort de farm est dans `packages/engine/src/farm.ts` : équipes enregistrées (`savePreset`,
 `loadPreset`, `presetMissing`, champ `presets` du profil, absent des anciennes sauvegardes),
 choses à faire au camp (`campTodo`, `heroTodo`, `canUpgradeItem` : badges de `screens/Hub.tsx`),
@@ -183,6 +193,16 @@ route `dungeon`) ; `DungeonRun` garde les rapports, `Rewards` enchaîne le passa
 `screens/Recap.tsx` affiche le bilan. Le tri et les filtres de la galerie et du vivier
 (`game/heroList.ts`, `game/HeroFilters.tsx`) ne sont que de l'ordre d'affichage, retenu dans les
 options de l'appareil (`heroView`).
+
+L'éveil et les donjons d'essence sont dans `packages/engine/src/awakening.ts` (`essencesOpen`,
+`essenceTierOpen`, `essenceEncounter`, `essenceDrop`, `enterEssence`, `completeEssence`,
+`awakenCost`, `awaken`, `setAwakened`) ; l'effet est appliqué par `compileHero` quand le build porte
+`awakened` (`heroBuild` le recopie du profil), par la même fonction que les objets pour le passif.
+`UnitDef.awakened` ne sert qu'à l'affichage (liseré, classe `actor--awakened`). Contenu :
+`content/essences.json` (schéma `schemas/essences.ts`, `content.essenceDungeons`), chiffres dans
+`balance.awakening` ; écrans `screens/Essences.tsx` (depuis la carte) et `EssenceRun.tsx`, onglet
+« Éveil » de `HeroSheet.tsx`, textes `i18n/awakening.fr.json`. Simulation :
+`tools/sim/src/awakening.ts` (règles en CI) et l'option `AwakeningModel` de `economy.ts`.
 
 ### Passer à quatre héros
 

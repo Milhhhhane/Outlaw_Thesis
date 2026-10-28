@@ -2210,3 +2210,13 @@ button:disabled {
 .tip--above {
   transform: translateY(-100%);
 }
+
+.map__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.map__foot .map__legend {
+  flex: 1;
+}

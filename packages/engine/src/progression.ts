@@ -53,7 +53,13 @@ export type Refusal =
   | 'quest_not_done'
   | 'already_claimed'
   | 'unknown_floor'
-  | 'floor_locked';
+  | 'floor_locked'
+  | 'already_awakened'
+  | 'level_too_low'
+  | 'not_enough_essences'
+  | 'unknown_difficulty'
+  | 'boss_locked'
+  | 'no_attempts';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -98,6 +104,7 @@ export function freshHero(level: number, content: Content): HeroProgress {
     freeRespecUsed: false,
     stars: starsForLevel(level, content),
     spells: BASE_SPELL_LEVELS,
+    awakened: false,
   };
 }
 
@@ -124,6 +131,9 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     stats: {},
     quests: emptyQuestState(),
     tower: { cleared: 0 },
+    essences: { fire: [0, 0, 0], water: [0, 0, 0], nature: [0, 0, 0] },
+    essenceDungeons: {},
+    boss: { week: -1, best: [], claimed: [], day: -1, attempts: 0 },
     testMode: false,
   };
 }
@@ -216,7 +226,14 @@ export function heroBuild(profile: Profile, heroId: string): HeroBuild {
     .map((uid) => profile.items.find((owned) => owned.uid === uid))
     .filter((owned) => owned !== undefined)
     .map((owned) => ({ id: owned.item, upgrade: owned.upgrade }));
-  return { hero: heroId, level: hero.level, talents: hero.talents, items, spells: hero.spells };
+  const build = {
+    hero: heroId,
+    level: hero.level,
+    talents: hero.talents,
+    items,
+    spells: hero.spells,
+  };
+  return hero.awakened ? { ...build, awakened: true } : build;
 }
 
 function withHero(profile: Profile, heroId: string, hero: HeroProgress): Profile {
@@ -609,6 +626,7 @@ export function sandboxProfile(content: Content, builds: readonly HeroBuild[] = 
       freeRespecUsed: false,
       stars: starsForLevel(build.level, content),
       spells: build.spells ?? BASE_SPELL_LEVELS,
+      awakened: build.awakened === true,
     };
   });
   const all = content.heroes.map((h) => h.id);

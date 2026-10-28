@@ -4,6 +4,7 @@ export const MAX_SIDE = 4;
 import { z } from 'zod';
 import { idSchema } from './common';
 import { MAX_HERO_TIER } from './heroes';
+import { passiveModSchema } from './items';
 import { questRewardSchema } from './quests';
 
 const pos = z.number().positive();
@@ -137,6 +138,26 @@ export const balanceSchema = z
     }),
 
     /**
+     * Éveil des héros (une fois par héros) et donjons d'essence. L'éveil se paie en essences de
+     * l'élément du héros (`cost.essences` : faible, moyenne, supérieure) et en or, à partir du
+     * niveau `minLevel`. Il donne, par une formule commune à tous les héros : `statPct` % de PV,
+     * d'ATK et de DEF (hors plafond des objets, donc borné ici) et les modifications de passif
+     * `mods` (mêmes mécanismes que les objets). Les donjons d'essence s'ouvrent quand `openAfter`
+     * est terminé ; au palier k, un passage gagnant donne `drops[k − 1]` essences de qualité k.
+     */
+    awakening: z.strictObject({
+      minLevel: posInt,
+      statPct: z.number().min(0).max(10),
+      mods: z.array(passiveModSchema).min(1).max(4),
+      cost: z.strictObject({
+        essences: z.tuple([nonNegInt, nonNegInt, nonNegInt]),
+        gold: nonNegInt,
+      }),
+      openAfter: idSchema,
+      drops: z.tuple([posInt, posInt, posInt]),
+    }),
+
+    /**
      * Tour à étages : un combat par étage, composé par règle (`content/tower.json`). L'étage n a
      * des ennemis au niveau `level.start + (n − 1) × level.perFloor` (borné au niveau maximum : c'est
      * aussi le niveau visé), des PV et une ATK lus sur `curve` (points d'appui, en ligne droite
@@ -171,6 +192,49 @@ export const balanceSchema = z
         /** Coffre de chaque étage de boss, dans l'ordre. */
         bossChests: z.array(idSchema),
       }),
+    }),
+
+    /**
+     * Boss de la semaine : un boss existant (`bosses`, un par élément, rotation chaque lundi
+     * 00:00 UTC), seul, aux PV multipliés par `hpPct` : il ne tombe presque jamais, le combat
+     * s'arrête à `actionLimit` actions et c'est la somme des dégâts infligés qui compte.
+     * `attemptsPerDay` tentatives par jour UTC ; le meilleur score de la semaine par difficulté
+     * paie, une fois par semaine, chaque palier de `thresholds` atteint (récompense `rewards[k]`).
+     */
+    boss: z.strictObject({
+      /** Boss de chaque semaine, dans l'ordre de la rotation (identifiants d'ennemis boss). */
+      bosses: z.array(idSchema).min(1),
+      attemptsPerDay: posInt,
+      /** Actions au total (boss compris) avant la fin du combat. */
+      actionLimit: posInt,
+      difficulties: z
+        .array(
+          z.strictObject({
+            /** Niveau du boss, et niveau visé par les héros. */
+            level: posInt,
+            /** Ouverte quand le joueur a terminé un donjon de ce niveau au moins. */
+            unlockLevel: posInt,
+            hpPct: pos,
+            atkPct: pos,
+            /** Équipement visé (mesure de la simulation, affiché au joueur). */
+            gear: z.strictObject({ items: nonNegInt, upgrade: nonNegInt }),
+            /** Dégâts de chaque palier, croissants : un par entrée de `rewards`. */
+            thresholds: z.array(posInt).min(1),
+          }),
+        )
+        .min(1),
+      /** Récompense de chaque palier : poussière du palier qu'exige le niveau du boss, fragments, coffre. */
+      rewards: z
+        .array(
+          z.strictObject({
+            dust: nonNegInt,
+            fragments: nonNegInt,
+            chest: idSchema.nullable(),
+          }),
+        )
+        .min(1),
+      /** Coffre dont les poids servent à tirer les fragments (héros ciblé compris). */
+      fragmentChest: idSchema,
     }),
 
     economy: z.strictObject({
@@ -340,6 +404,26 @@ export const balanceSchema = z
         expertMin: z.number().min(0).max(1),
         tolerance: z.number().min(0).max(1),
       }),
+      /**
+       * Éveil : à niveau égal, un héros éveillé ne fait pas gagner plus de `maxGapPoints` points de
+       * donjons terminés (joueur moyen, en retard) à son équipe ; chaque palier d'un donjon
+       * d'essence réussit au moins `essenceExpertMin` pour l'expert au niveau visé.
+       */
+      awakening: z.strictObject({
+        maxGapPoints: nonNeg,
+        essenceExpertMin: z.number().min(0).max(1),
+      }),
+      /**
+       * Boss de la semaine : le premier palier de la première difficulté est atteint par au moins
+       * `firstReach` des combats du joueur moyen (niveau visé) ; le dernier palier de la dernière
+       * difficulté par au moins `lastReach` des combats de l'expert à l'équipement au maximum, et
+       * par au plus `bareReach` de ses combats sans objets.
+       */
+      boss: z.strictObject({
+        firstReach: z.number().min(0).max(1),
+        lastReach: z.number().min(0).max(1),
+        bareReach: z.number().min(0).max(1),
+      }),
     }),
   })
   .superRefine((b, ctx) => {
@@ -475,6 +559,35 @@ export const balanceSchema = z
       issue('rewards.bossChests : un coffre par étage de boss', ['rewards', 'bossChests']);
     for (const id of [...tower.rewards.bossChests, tower.rewards.fragmentChest]) {
       if (!chestIds.has(id)) issue(`coffre inconnu « ${id} »`, ['rewards']);
+    }
+    const boss = b.boss;
+    const bossIssue = (message: string, path: (string | number)[]): void => {
+      ctx.addIssue({ code: 'custom', message, path: ['boss', ...path] });
+    };
+    boss.difficulties.forEach((d, i) => {
+      if (d.thresholds.length !== boss.rewards.length)
+        bossIssue('thresholds : un palier par entrée de rewards', ['difficulties', i]);
+      if (!increasing(d.thresholds, (x) => x))
+        bossIssue('thresholds : dégâts strictement croissants', ['difficulties', i]);
+      if (
+        d.level > b.progression.maxLevel ||
+        d.gear.items > slots ||
+        d.gear.upgrade > maxUpgradeLevel
+      )
+        bossIssue('niveau ou équipement hors des bornes', ['difficulties', i]);
+    });
+    if (
+      !increasing(boss.difficulties, (d) => d.unlockLevel) ||
+      !boss.difficulties.every(
+        (d, i) => i === 0 || d.level >= (boss.difficulties[i - 1]?.level ?? 0),
+      )
+    )
+      bossIssue('difficulties : déblocage croissant, niveau jamais en baisse', ['difficulties']);
+    for (const id of [
+      ...boss.rewards.flatMap((r) => (r.chest === null ? [] : [r.chest])),
+      boss.fragmentChest,
+    ]) {
+      if (!chestIds.has(id)) bossIssue(`coffre inconnu « ${id} »`, ['rewards']);
     }
     const unlocks = b.progression.pageUnlockLevels;
     const ascending = unlocks.every((level, i) => i === 0 || level >= (unlocks[i - 1] ?? 0));

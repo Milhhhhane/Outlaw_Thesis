@@ -1174,6 +1174,52 @@ le décompte du bilan entre à l'étage suivant ; sans l'option, le bilan attend
 étage ne rapportant rien, le relancer seul n'aurait pas de sens). Raison : même règle que
 l'enchaînement des donjons, une navigation différée ; monter est une décision.
 
+## Boss de la semaine
+
+**Un boss existant, seul, multiplié** — Contexte : un boss quasi increvable façon Clan Boss.
+Choix : les trois boss de fin (`pyre_tyrant`, `tidal_hydra`, `grove_colossus`, un par élément),
+seuls, PV × `hpPct` (1 500 %), ATK × `atkPct` par difficulté ; leur script existant est le kit
+affiché. Raison : sprite, nom, sorts et script lisibles existent déjà ; un nouvel ennemi demandait
+du pixel art et un réglage à part pour un gain nul. Mesure : aucun boss tombé en 960 combats.
+
+**Le temps finit le combat** — Choix : `BattleRules.actionLimit` (50) propre au combat, limite
+`enemy_wins` ; le résultat n'est pas une victoire : l'écran affiche les dégâts à la place
+(`finish.heading`). Raison : la limite globale (100) aurait doublé la durée ; une règle de limite
+de plus aurait touché le PvP et son schéma réseau.
+
+**Dégâts lus dans le journal** — `damageDealt(journal)` : PV réellement perdus sous les coups
+(bouclier absorbé, excédent d'un coup fatal et soins du boss exclus). Raison : rejouable et
+indépendant de l'interface ; un soin du boss ne retire pas un score déjà fait.
+
+**3 tentatives par jour UTC, prises à l'entrée** — Raison : abandonner un mauvais départ ne doit
+pas rendre la tentative. Le meilleur score de la semaine par difficulté est gardé
+(`profile.boss`, remis à zéro par le moteur au lundi suivant).
+
+**Paliers payés tout de suite, une fois par semaine et par difficulté** — Écarté : un paiement en
+fin de semaine (il faut revenir pour comprendre ce qu'on a gagné) et un palier unique pour toutes
+les difficultés (règle du « différentiel » peu lisible). Conséquence : un joueur à la difficulté 4
+peut aussi encaisser les paliers des difficultés 1 à 3 ; l'économie est mesurée dans ce cas (borne
+haute, voir `docs/ECONOMY.md`).
+
+**Ouverture par le meilleur donjon terminé** — `unlockLevel` 8 / 17 / 22 / 30 (labyrinthe,
+flèche, couronne, trône). Raison : déjà lisible sur la carte, aucune nouvelle progression.
+
+**Accès depuis la tour** — Le menu du camp est plein à 844 × 390 et la barre du haut accueille
+déjà les quêtes (Hub.tsx est aussi modifié par le confort de farm) : le bouton est dans la barre
+de l'écran de la tour, dont l'aide du camp dit « Cinquante étages et le boss de la semaine ».
+
+**Écart au brief : l'équipement au maximum n'est pas mesurable seul** — Constat (simulation,
+expert, 96 combats) : passer de 2 objets au niveau 2 à 2 objets au niveau 3 ne change les dégâts
+que de 2 à 5 % ; la composition de l'équipe pèse ±30 %. Une règle « atteint au maximum, pas avec
+une amélioration de moins » est donc impossible à tenir. Choix (`targets.boss`) : le dernier palier
+de la difficulté 4 est atteint par ≥ 25 % des combats de l'expert équipé au maximum et par ≤ 10 %
+sans objets. À rouvrir si les objets gagnent un effet sur les dégâts.
+
+**Pas de grimoires dans les paliers** — Les grimoires (montée des sorts) sont arrivés dans main
+pendant ce chantier. Ils tombent déjà des coffres d'argent (1) que paie le palier 4 ; en ajouter
+directement aurait demandé de rejouer la borne économique avec leur puits. À reprendre si la
+montée des sorts manque de grimoires en fin de partie.
+
 ## Confort de farm (MaJ 1/7)
 
 **Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le
@@ -1185,3 +1231,46 @@ ce qu'il a gagné, comme les multi-combats des jeux du genre.
 **Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
 fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
 Raison : une seule source de vérité, testable sans écran.
+
+## Éveil des héros et sanctuaires d'essence
+
+**Sanctuaires hors du contenu des donjons** — Contexte : trois donjons d'essence, hors du chemin.
+Choix : un fichier à part (`content/essences.json`, `content.essenceDungeons`) plutôt que des
+entrées de `dungeons.json`. Raison : la carte, la courbe, les règles R2, le joueur modèle, les
+succès et le butin exclusif parcourent `content.dungeons` ; y glisser des donjons sans butin ni
+place sur le chemin aurait demandé une exception dans chacun. Les paliers réutilisent
+`balance.tiers` (niveau, PV et ATK) : `tierLevel` accepte tout ce qui a un niveau conseillé.
+
+**Accès par un bouton sous la carte, pas une 8ᵉ entrée du camp** — Raison : le brief ; le bouton
+tient dans la légende de la carte à 844 × 390 (vérifié en e2e), le menu du camp reste à 7 entrées.
+
+**Une qualité d'essence par palier, rien d'autre** — Choix : palier I → faibles, II → moyennes,
+III → supérieures (`drops` 3 / 3 / 2) ; ni XP, ni or, ni objet, ni coffre ; la première victoire
+d'un palier ouvre le suivant. Raison : un farm dédié qui ne concurrence pas les donjons ; le coût
+qui demande les trois qualités force à monter les paliers.
+
+**Coût : essences de l'élément et or, pas de poussière** — Contexte : « un peu de magie/poussière,
+à trancher ». Choix : 5 000 or. Raison : la poussière est déjà la monnaie d'arbitrage (niveaux et
+objets) ; l'or manque de puits (`docs/ECONOMY.md`). Condition : niveau 20 (pas d'étoile exigée :
+le niveau 20 demande déjà la première).
+
+**Effet : une formule commune, sur le terrain des objets** — Choix : `balance.awakening` porte
+`statPct` (PV, ATK, DEF, hors plafond des objets, borné à 10 par le schéma) et `mods`, des
+modifications de passif identiques à celles des objets (`scale` de `power`, `amount` et `percent`
+à +20 %), appliquées par la même fonction (`applyItems`) comme un objet de plus. Raison : aucune
+règle de moteur nouvelle, texte généré par `describeItem`, même effet lisible pour les 25 héros ;
+la règle « les objets ont le passif pour terrain » est respectée. Écarté : +1 utilisation par
+combat (`limit`) : rien pour la moitié des héros, énorme pour Phénix et Étendard.
+
+**Visible sans sprite neuf** — Choix : badge « Éveillé » sur la fiche, liseré et halo de la
+couleur de l'élément en CSS (`drop-shadow`) autour du sprite, sur la fiche et en combat, sans
+animation (rien à couper avec `[data-motion='off']`). Raison : le brief (pas de sprites lourds).
+
+**Règle de CI sur le pire héros, avec passe de confirmation** — Contexte : à 64 donjons par héros,
+le bruit du pire des 25 héros dépasse 10 points même pour un effet moyen de 3 points. Choix : un
+héros au-dessus de la cible est remesuré sur trois fois plus d'équipes et l'écart pris sur le tout
+(256 donjons). Raison : garder une règle « par héros » sans tripler le temps de `sim:check`.
+
+**Règles « tous éveillés » en CI, R1 sur 4 équipes** — Raison : R1 coûte surtout en duels ; sur
+les 12 équipes la mesure donnait 82 %, sur 4 elle donne 79 % (cible 70 %). R2 et « aucun héros
+indispensable » portent sur les 50 équipes.

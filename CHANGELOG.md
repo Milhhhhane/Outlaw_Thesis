@@ -12,6 +12,46 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
   plein quand le talent est pris ; le lien vers le rival d'un « ou » déjà choisi repasse en gris.
   Accolade sous les deux nœuds du « ou ». Test : un trait par prérequis, pour les 25 héros.
 
+## [Non publié] — 2026-10-28 — éveil des héros et sanctuaires d'essence
+
+### Ajouté
+
+- **Sanctuaires d'essence** (bouton « Sanctuaires » sous la carte) : trois donjons hors du chemin,
+  un par élément (`content/essences.json`), ennemis et boss existants de l'élément, trois combats,
+  paliers I à III de `balance.tiers`. Ouverts quand la Citadelle de cendre est terminée. Ils ne
+  donnent ni or, ni XP, ni objet : 3 essences faibles (palier I), 3 moyennes (II) ou 2 supérieures
+  (III) de leur élément.
+- **Éveil** (onglet « Éveil » de la fiche du héros) : une fois par héros, dès le niveau 20, contre
+  15 faibles, 10 moyennes et 6 supérieures de son élément et 5 000 or. Effet commun
+  (`balance.awakening`) : PV, ATK et DEF +4 % (hors plafond des objets) et passif +20 % (puissance,
+  tempo et points, pourcentages de stat), par les modifications de passif des objets ; texte
+  généré. Badge « Éveillé » sur la fiche, liseré de l'élément autour du sprite en combat.
+- Profil : `heroes[id].awakened`, `essences`, `essenceDungeons` (valeurs par défaut pour les
+  anciennes sauvegardes). Mode test : case « Éveillé » sur la fiche ; lien de build : champ `a`.
+- Simulation : écart d'un héros éveillé (au plus 9 points mesurés, cible ≤ 10), donjons d'essence
+  (expert ≥ 50 % à chaque palier), R1 / R2 / « aucun héros indispensable » avec tous les héros
+  éveillés, en CI ; `economy` mesure l'éveil (premier héros au 81ᵉ passage, équipe au 137ᵉ).
+
+## [Non publié] — 2026-10-28 — boss de la semaine
+
+### Ajouté
+
+- Boss de la semaine, ouvert depuis la tour (bouton « Boss de la semaine » de sa barre) : un boss
+  existant seul, aux PV × 15, en rotation feu → eau → nature chaque lundi 00:00 UTC (tyran du
+  bûcher, hydre des marées, colosse du bosquet). Le combat s'arrête à 50 actions ; ce sont les
+  dégâts infligés qui comptent (`damageDealt`, lu dans le journal du combat).
+- 4 difficultés (niveaux 10, 18, 25, 30) ouvertes par le meilleur donjon terminé (labyrinthe de
+  ronces, flèche engloutie, couronne verdoyante, trône creux), 3 tentatives par jour UTC (prises à
+  l'entrée), meilleur score de la semaine par difficulté.
+- 4 paliers de dégâts par difficulté, payés tout de suite et une fois par semaine : poussière
+  (3/4/5/6, palier du niveau du boss), 1 fragment, coffre de bronze puis d'argent.
+- Écran du boss (script du boss, difficultés, tentatives, meilleur score, paliers) et bilan du
+  combat (dégâts, nouveau record, paliers atteints, récompenses).
+- Simulation : `pnpm --filter @outlaw/sim boss` (dégâts par difficulté, expert et joueur moyen) ;
+  règles `targets.boss` et effet économique (≤ 10 %) vérifiés en CI (`tools/sim/test/boss.test.ts`).
+- Moteur : `BattleRules.actionLimit` (limite d'actions propre à un combat). Profil : `boss`
+  (absent des anciennes sauvegardes).
+
 ## [Non publié] — 2026-10-28 — montée des sorts
 
 ### Ajouté

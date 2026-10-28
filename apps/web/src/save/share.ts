@@ -15,6 +15,8 @@ interface Shared {
     l: number;
     t: readonly string[];
     i: readonly [string, number][];
+    /** 1 : héros éveillé (absent sinon, les anciens liens restent valides). */
+    a?: 1;
     /** Niveaux de sort (base, A, B, ultime) ; absent : tous au niveau 1 (anciens liens). */
     s?: readonly number[];
   }[];
@@ -40,6 +42,7 @@ export function encodeBuilds(builds: readonly HeroBuild[]): string {
       l: b.level,
       t: b.talents,
       i: b.items.map((i) => [i.id, i.upgrade]),
+      ...(b.awakened === true ? { a: 1 } : {}),
       ...(b.spells !== undefined && SPELL_SLOTS.some((slot) => b.spells?.[slot] !== 1)
         ? { s: SPELL_SLOTS.map((slot) => b.spells?.[slot] ?? 1) }
         : {}),
@@ -61,7 +64,7 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
     const builds: HeroBuild[] = [];
     for (const entry of b as unknown[]) {
       if (typeof entry !== 'object' || entry === null) return null;
-      const { h, l, t, i, s } = entry as Record<string, unknown>;
+      const { h, l, t, i, s, a } = entry as Record<string, unknown>;
       if (!isString(h) || !isInt(l) || !Array.isArray(t) || !Array.isArray(i)) return null;
       if (!t.every(isString)) return null;
       const items: HeroBuild['items'][number][] = [];
@@ -81,6 +84,7 @@ export function decodeBuilds(code: string, content: Content): HeroBuild[] | null
         talents: t,
         items,
         ...(spells === undefined ? {} : { spells }),
+        ...(a === 1 ? { awakened: true } : {}),
       };
       if (validateBuild(content, build).length > 0) return null;
       builds.push(build);

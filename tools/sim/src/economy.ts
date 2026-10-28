@@ -21,7 +21,19 @@
 import { loadContent, SPELL_SLOTS, type Content, type Profile } from '@outlaw/data';
 import {
   atStarGate,
+  awaken,
+  awakenCost,
+  completeEssence,
+  essenceTierReached,
+  essencesOpen,
+  tierCount,
+  bossDifficulties,
+  bossFight,
+  bossProgress,
+  bossUnlocked,
+  completeBoss,
   completeDungeon,
+  enterBoss,
   equip,
   levelDust,
   levelUpCost,
@@ -80,6 +92,8 @@ export interface Ledger {
   teamFragmentsLeft: number;
   /** Récompenses des quêtes et succès (avec `quests` seulement). */
   readonly quests: { gold: number; dust: number[]; chests: number; claims: number };
+  /** Paliers du boss de la semaine payés (avec `boss` seulement). */
+  readonly boss: { dust: number[]; chests: number; fragments: number; claims: number };
   readonly items: {
     drops: number;
     rares: number;
@@ -90,9 +104,22 @@ export interface Ledger {
   };
 }
 
+/** Éveil dans la partie modèle (avec `AwakeningModel` seulement). */
+export interface AwakeningMilestones {
+  /** Passage (donjons et donjons d'essence confondus) du premier héros éveillé. */
+  readonly first: number | null;
+  /** Passage où les quatre héros de l'équipe sont éveillés. */
+  readonly team: number | null;
+  /** Passages gagnants de donjons d'essence. */
+  readonly essenceRuns: number;
+  /** Passages d'essence jusqu'au premier héros éveillé. */
+  readonly essenceRunsFirst: number | null;
+}
+
 export interface EconomyRun {
   readonly runs: number;
   readonly milestones: Milestones;
+  readonly awakening: AwakeningMilestones;
   readonly ledger: Ledger;
   readonly profile: Profile;
 }
@@ -370,6 +397,7 @@ function emptyLedger(): Ledger {
     grimoires: 0,
     teamFragmentsLeft: 0,
     quests: { gold: 0, dust: [0, 0, 0], chests: 0, claims: 0 },
+    boss: { dust: [0, 0, 0], chests: 0, fragments: 0, claims: 0 },
     items: { drops: 0, rares: 0, upgrades: 0, maxed: 0, wornLevel: 0 },
   };
 }
@@ -389,6 +417,38 @@ export function winRun(
  */
 export interface QuestModel {
   readonly perDay: number;
+  /** Sans quêtes ni succès (pour mesurer le boss seul). */
+  readonly noQuests?: boolean;
+  /**
+   * Boss de la semaine : après chaque passage, chaque difficulté ouverte dont un palier reste à
+   * payer cette semaine est tentée (tentatives du jour permises) et rapporte **tous** ses paliers.
+   * Borne haute : un vrai joueur n'atteint pas toujours le dernier palier.
+   */
+  readonly boss?: boolean;
+}
+
+/** Tente le boss à chaque difficulté qui a encore un palier à payer ; note ce qu'il rapporte. */
+function bossAll(content: Content, profile: Profile, now: number, ledger: Ledger): Profile {
+  let current = profile;
+  for (let d = 1; d <= bossDifficulties(content); d++) {
+    const fight = bossFight(content, now, d);
+    if (fight === null || !bossUnlocked(content, current, d)) continue;
+    const claimed = bossProgress(content, current, now).claimed[d - 1] ?? 0;
+    if (claimed >= fight.thresholds.length) continue;
+    const entered = ok(enterBoss(content, current, d, now));
+    if (entered === null) break;
+    const done = ok(completeBoss(content, entered, d, fight.thresholds.at(-1) ?? 0, now));
+    if (done === null) break;
+    for (const paid of done.report.paid) {
+      ledger.boss.dust[paid.materials.tier - 1] =
+        (ledger.boss.dust[paid.materials.tier - 1] ?? 0) + paid.materials.amount;
+      ledger.boss.fragments += paid.fragments.length;
+      if (paid.chest !== null) ledger.boss.chests += 1;
+      ledger.boss.claims += 1;
+    }
+    current = done.profile;
+  }
+  return current;
 }
 
 const DAY_MS = 86_400_000;
@@ -421,14 +481,79 @@ function claimAll(content: Content, profile: Profile, now: number, ledger: Ledge
   return current;
 }
 
+/**
+ * Éveil dans la partie modèle : dès qu'un héros de l'équipe atteint le niveau de l'éveil (le plus
+ * haut d'abord) et que les donjons d'essence sont ouverts, le joueur y passe ses passages tant que
+ * des essences lui manquent, au plus haut palier ouvert à sa portée (niveau visé ≤ niveau du plus
+ * faible héros) dont la qualité manque encore ; il éveille dès qu'il peut payer.
+ */
+export interface AwakeningModel {
+  readonly on: true;
+}
+
+/** Le héros à éveiller : le plus haut de l'équipe, non éveillé, au niveau requis. */
+function awakenTarget(content: Content, profile: Profile): string | undefined {
+  const { minLevel } = content.balance.awakening;
+  return [...profile.team]
+    .filter((id) => {
+      const hero = profile.heroes[id];
+      return hero !== undefined && !hero.awakened && hero.level >= minLevel;
+    })
+    .sort((a, b) => (profile.heroes[b]?.level ?? 1) - (profile.heroes[a]?.level ?? 1))[0];
+}
+
+/** Le passage d'essence utile au héros à éveiller, ou null (rien à farmer à sa portée). */
+export function essencePick(
+  content: Content,
+  profile: Profile,
+): { dungeon: string; tier: number } | null {
+  if (!essencesOpen(content, profile)) return null;
+  const target = awakenTarget(content, profile);
+  const cost = target === undefined ? null : awakenCost(content, target);
+  const dungeon = content.essenceDungeons.find((d) => d.element === cost?.element);
+  if (cost === null || dungeon === undefined) return null;
+  const stock = profile.essences[cost.element];
+  const need = cost.essences.map((n, q) => n > (stock[q] ?? 0));
+  const level = teamLevel(profile);
+  const reached = Math.min(tierCount(content), essenceTierReached(profile, dungeon.id));
+  const reachable = (k: number): boolean => tierTargetLevel(content, dungeon, k) <= level;
+  for (let k = reached; k >= 1; k--)
+    if (need[k - 1] === true && reachable(k)) return { dungeon: dungeon.id, tier: k };
+  // Une qualité manque à un palier pas encore ouvert mais à la portée : passer le plus haut ouvert.
+  const higher = need.some((n, q) => n && q + 1 > reached && reachable(q + 1));
+  return higher && reachable(reached) ? { dungeon: dungeon.id, tier: reached } : null;
+}
+
 /** Joue la partie modèle jusqu'au dernier jalon ou à `maxRuns` passages gagnants. */
 export function simulateEconomy(
   content: Content,
   seed: number,
   maxRuns = 600,
   quests: QuestModel | null = null,
+  awakening: AwakeningModel | null = null,
 ): EconomyRun {
   let profile = newProfile(content, seed);
+  // Objet mutable : la fermeture `tryAwaken` le tient à jour.
+  const woke: {
+    first: number | null;
+    team: number | null;
+    essenceRuns: number;
+    essenceRunsFirst: number | null;
+  } = { first: null, team: null, essenceRuns: 0, essenceRunsFirst: null };
+  const tryAwaken = (): void => {
+    if (awakening === null) return;
+    for (const id of profile.team) {
+      const next = ok(awaken(content, profile, id));
+      if (next === null) continue;
+      profile = next;
+      if (woke.first === null) {
+        woke.first = runs;
+        woke.essenceRunsFirst = woke.essenceRuns;
+      }
+    }
+    if (woke.team === null && profile.team.every((id) => profile.heroes[id]?.awakened === true))
+      woke.team = runs;
+  };
   const ledger = emptyLedger();
   const firstClears: Record<string, number> = {};
   const { maxLevel, items: itemRules } = content.balance.progression;
@@ -444,9 +569,26 @@ export function simulateEconomy(
   let runs = 0;
   const allCleared = (): boolean =>
     content.dungeons.every((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0);
-  while (runs < maxRuns && (teamMaxLevel === null || collection === null || !allCleared())) {
+  while (
+    runs < maxRuns &&
+    (teamMaxLevel === null ||
+      collection === null ||
+      !allCleared() ||
+      (awakening !== null && woke.team === null))
+  ) {
     const now = quests === null ? 0 : START + Math.floor(runs / quests.perDay) * DAY_MS;
-    if (quests !== null) profile = rollQuests(content, profile, now);
+    const questsOn = quests !== null && quests.noQuests !== true;
+    if (questsOn) profile = rollQuests(content, profile, now);
+    const essence = awakening === null ? null : essencePick(content, profile);
+    if (essence !== null) {
+      const done = ok(completeEssence(content, profile, essence.dungeon, essence.tier));
+      if (done === null) break;
+      profile = done.profile;
+      runs += 1;
+      woke.essenceRuns += 1;
+      tryAwaken();
+      continue;
+    }
     const pick = pickRun(content, profile);
     const won = winRun(content, profile, pick);
     if (won === null) break;
@@ -465,12 +607,15 @@ export function simulateEconomy(
     ledger.grimoires += report.grimoires;
     if (content.itemById.get(report.item.item)?.rarity === 'rare') ledger.items.rares += 1;
 
-    if (quests !== null) profile = claimAll(content, profile, now, ledger);
+    if (questsOn) profile = claimAll(content, profile, now, ledger);
+    if (quests?.boss === true) profile = bossAll(content, profile, now, ledger);
     profile = openAll(content, profile, ledger);
     const stars = starAll(content, profile);
     profile = stars.profile;
     if (stars.starred && firstStar === null) firstStar = runs;
     profile = equipAll(content, profile);
+    // L'éveil passe avant les objets : sinon l'or partirait toujours en améliorations.
+    tryAwaken();
     profile = upgradeItems(content, profile, ledger);
     profile = levelTeam(content, profile, ledger);
     // Une étoile payée juste après un niveau : on retente une fois (le plafond vient de sauter).
@@ -482,7 +627,8 @@ export function simulateEconomy(
     }
     // Les quêtes faites par les dépenses de ce passage (niveaux, objets, coffres) : réclamées
     // maintenant, dépensées au passage suivant.
-    if (quests !== null) profile = claimAll(content, profile, now, ledger);
+    if (questsOn) profile = claimAll(content, profile, now, ledger);
+    tryAwaken();
 
     if (firstMaxItem === null && profile.items.some((o) => o.upgrade >= itemRules.maxUpgradeLevel))
       firstMaxItem = runs;
@@ -534,6 +680,7 @@ export function simulateEconomy(
       spellsTeam,
       firstClears,
     },
+    awakening: { ...woke },
     ledger,
     profile,
   };
@@ -583,6 +730,10 @@ export function summarizeEconomy(
   ledger.quests.chests = avg((l) => l.quests.chests);
   ledger.quests.claims = avg((l) => l.quests.claims);
   for (const tier of [0, 1, 2]) ledger.quests.dust[tier] = avg((l) => l.quests.dust[tier] ?? 0);
+  ledger.boss.chests = avg((l) => l.boss.chests);
+  ledger.boss.fragments = avg((l) => l.boss.fragments);
+  ledger.boss.claims = avg((l) => l.boss.claims);
+  for (const tier of [0, 1, 2]) ledger.boss.dust[tier] = avg((l) => l.boss.dust[tier] ?? 0);
   ledger.chests = avg((l) => l.chests);
   ledger.grimoires = avg((l) => l.grimoires);
   ledger.teamFragmentsLeft = avg((l) => l.teamFragmentsLeft);
@@ -608,6 +759,34 @@ export function summarizeEconomy(
     unreached: runs.filter(
       (r) => r.milestones.teamMaxLevel === null || r.milestones.collection === null,
     ).length,
+  };
+}
+
+/** Éveil dans la partie modèle, moyenné sur plusieurs graines (null : jamais atteint). */
+export function summarizeAwakening(
+  content: Content,
+  seeds: number,
+  maxRuns = 800,
+): {
+  first: number | null;
+  team: number | null;
+  essenceRuns: number;
+  essenceRunsFirst: number | null;
+  teamMaxLevel: number | null;
+} {
+  const runs = Array.from({ length: seeds }, (_, i) =>
+    simulateEconomy(content, i + 1, maxRuns, null, { on: true }),
+  );
+  const avg = (xs: readonly (number | null)[]): number | null => {
+    const values = xs.filter((x): x is number => x !== null);
+    return values.length === xs.length ? mean(values) : null;
+  };
+  return {
+    first: avg(runs.map((r) => r.awakening.first)),
+    team: avg(runs.map((r) => r.awakening.team)),
+    essenceRuns: mean(runs.map((r) => r.awakening.essenceRuns)),
+    essenceRunsFirst: avg(runs.map((r) => r.awakening.essenceRunsFirst)),
+    teamMaxLevel: avg(runs.map((r) => r.milestones.teamMaxLevel)),
   };
 }
 
@@ -723,6 +902,17 @@ function main(): void {
   console.log(
     `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
   );
+  const awake = summarizeAwakening(content, seeds);
+  const { awakening } = content.balance;
+  console.log(
+    `Éveil (niveau ${String(awakening.minLevel)}, ${awakening.cost.essences.join('/')} essences, ${String(awakening.cost.gold)} or ; passages d'essence comptés) :`,
+  );
+  console.log(
+    `  premier héros éveillé : ${f(awake.first)}, dont ${awake.essenceRunsFirst?.toFixed(1) ?? '—'} passages d'essence`,
+  );
+  console.log(
+    `  équipe de 4 éveillée  : ${f(awake.team)}, ${awake.essenceRuns.toFixed(1)} passages d'essence en tout ; équipe au niveau 30 : ${f(awake.teamMaxLevel)}`,
+  );
   printQuestEffect(
     content,
     summary,
@@ -730,6 +920,32 @@ function main(): void {
     option('--runs', 600),
     perDay > 0 ? [perDay] : [5, 10, 20],
   );
+  printBossEffect(content, summary, seeds, option('--runs', 600), perDay > 0 ? [perDay] : [5, 10]);
+}
+
+function printBossEffect(
+  content: Content,
+  base: EconomySummary,
+  seeds: number,
+  maxRuns: number,
+  rhythms: readonly number[],
+): void {
+  console.log(
+    'Boss de la semaine (tous les paliers chaque semaine, borne haute) : jalons et raccourcissement :',
+  );
+  for (const perDay of rhythms) {
+    const q = summarizeEconomy(content, seeds, maxRuns, { perDay, noQuests: true, boss: true });
+    const effect = questEffect(base, q);
+    const cells = (Object.keys(effect) as (keyof typeof effect)[]).map(
+      (key) =>
+        `${key} ${q.milestones[key]?.toFixed(1) ?? '—'} (${effect[key]?.toFixed(1) ?? '—'} %)`,
+    );
+    const l = q.ledger.boss;
+    console.log(`  ${String(perDay)} passages/jour : ${cells.join(', ')}`);
+    console.log(
+      `    paliers payés ${l.claims.toFixed(0)} : poussière ${l.dust.map((d) => d.toFixed(0)).join('/')} (donjons ${q.ledger.dust.earned.map((d) => d.toFixed(0)).join('/')}), fragments ${l.fragments.toFixed(0)} + coffres ${l.chests.toFixed(1)} (sur ${q.ledger.chests.toFixed(1)} ouverts, ${q.ledger.fragments.toFixed(0)} fragments)`,
+    );
+  }
 }
 
 /** Effet des quêtes et succès sur les jalons, pour quelques rythmes de jeu (passages gagnants par jour). */
