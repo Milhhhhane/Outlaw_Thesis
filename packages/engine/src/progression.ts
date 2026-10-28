@@ -38,7 +38,9 @@ export type Refusal =
   | 'tier_locked'
   | 'no_preset'
   | 'bad_name'
-  | 'preset_unavailable';
+  | 'preset_unavailable'
+  | 'unknown_floor'
+  | 'floor_locked';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -104,6 +106,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     chests: {},
     focus: null,
     presets: [],
+    tower: { cleared: 0 },
     testMode: false,
   };
 }

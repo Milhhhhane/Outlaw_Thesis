@@ -14,6 +14,8 @@ export interface Options {
   readonly runs: FarmRuns;
   /** Tri et filtres de la galerie des héros et du vivier de l'équipe. */
   readonly heroView: HeroView;
+  /** Tour : en mode Auto, une victoire enchaîne sur l'étage suivant (sinon retour à la tour). */
+  readonly towerClimb: boolean;
 }
 
 export const OPTIONS_KEY = 'outlaw-thesis/options';
@@ -23,6 +25,7 @@ const DEFAULTS: Options = {
   auto: false,
   runs: 1,
   heroView: DEFAULT_HERO_VIEW,
+  towerClimb: false,
 };
 
 const isRuns = (value: unknown): value is FarmRuns =>
@@ -54,6 +57,7 @@ function load(): Options {
       auto: typeof parsed.auto === 'boolean' ? parsed.auto : base.auto,
       runs: isRuns(parsed.runs) ? parsed.runs : base.runs,
       heroView: readHeroView(parsed.heroView),
+      towerClimb: typeof parsed.towerClimb === 'boolean' ? parsed.towerClimb : base.towerClimb,
     };
   } catch {
     return base;

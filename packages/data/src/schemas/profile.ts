@@ -90,6 +90,11 @@ export const profileSchema = z.strictObject({
    * anciennes sauvegardes : aucun emplacement rempli.
    */
   presets: z.array(teamPresetSchema.nullable()).max(PRESET_SLOTS).default([]),
+  /**
+   * Tour à étages : plus haut étage battu (0 : aucun). On tente l'étage suivant ou on rejoue un
+   * étage battu. Absent des anciennes sauvegardes.
+   */
+  tower: z.strictObject({ cleared: nonNegInt }).default({ cleared: 0 }),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });

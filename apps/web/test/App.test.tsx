@@ -60,6 +60,7 @@ describe('écran-titre et camp', () => {
       auto: false,
       runs: 1,
       heroView: { sort: 'rarity', element: null, role: null, rarity: null, owned: false },
+      towerClimb: false,
     });
     expect(document.documentElement.dataset.motion).toBe('off');
     await user.keyboard('{Escape}');

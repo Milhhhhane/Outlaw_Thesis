@@ -101,6 +101,11 @@
   ci-dessus « marier les raretés hautes avec des donjons plus durs ». Chiffres dans
   `docs/ECONOMY.md`.
 
+- Tour à étages — 50 étages générés par formule (un combat chacun, boss tous les 10 étages),
+  progression dans le profil, récompenses de première victoire, écran « Tour » au camp, Auto qui
+  peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro
+  ni de récompense de rejeu ; courbe à confirmer au test humain.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).
