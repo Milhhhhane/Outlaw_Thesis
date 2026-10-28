@@ -51,6 +51,8 @@ interface Props {
   readonly onExit: () => void;
   /** Titre affiché (par défaut « Combat »). */
   readonly title?: string;
+  /** Série de passages : « passage 2 sur 5 », sous le titre. */
+  readonly pass?: string;
   /** Décor du champ de bataille : identifiant du donjon. */
   readonly scene?: string;
   /**
@@ -199,7 +201,7 @@ interface ViewProps extends Props {
 }
 
 /** L'écran de combat lui-même, indifférent à l'origine des actions (local ou serveur). */
-export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewProps) {
+export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: ViewProps) {
   const { options, set: setOptions } = useOptions();
   const fast = options.speed !== 'normal';
   const toggleSpeed = (): void => {
@@ -398,7 +400,15 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
             setPaused(true);
           }}
         />
-        <h1 className="battle__title">{title ?? t('combat.title')}</h1>
+        <h1 className="battle__title">
+          {title ?? t('combat.title')}
+          {pass !== undefined && (
+            <>
+              {' '}
+              <span className="battle__pass">{pass}</span>
+            </>
+          )}
+        </h1>
         <InitiativeTrack state={state} />
         {pvp !== undefined && <TurnTimer deadline={busy || finished ? null : pvp.deadline} />}
         <Button

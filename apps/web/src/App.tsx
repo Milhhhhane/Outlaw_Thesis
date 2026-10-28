@@ -60,7 +60,14 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
     case 'credits':
       return <Credits />;
     case 'dungeon':
-      return <DungeonRun dungeonId={route.id} tier={route.tier ?? 1} onExit={hub} />;
+      return (
+        <DungeonRun
+          dungeonId={route.id}
+          tier={route.tier ?? 1}
+          runs={route.runs ?? 1}
+          onExit={hub}
+        />
+      );
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
     case 'pvp':

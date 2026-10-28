@@ -1,4 +1,6 @@
+import { FARM_RUNS, type FarmRuns } from '@outlaw/engine';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { DEFAULT_HERO_VIEW, readHeroView, type HeroView } from './heroList';
 
 /** Réglages de confort, propres à l'appareil (hors sauvegarde de partie). */
 export interface Options {
@@ -8,10 +10,23 @@ export interface Options {
   readonly animations: boolean;
   /** Combat automatique : le jeu joue les tours des héros. Retenu d'un combat à l'autre (donjon). */
   readonly auto: boolean;
+  /** Passages joués d'affilée en Auto, choisis sur l'écran d'équipe. */
+  readonly runs: FarmRuns;
+  /** Tri et filtres de la galerie des héros et du vivier de l'équipe. */
+  readonly heroView: HeroView;
 }
 
 export const OPTIONS_KEY = 'outlaw-thesis/options';
-const DEFAULTS: Options = { speed: 'normal', animations: true, auto: false };
+const DEFAULTS: Options = {
+  speed: 'normal',
+  animations: true,
+  auto: false,
+  runs: 1,
+  heroView: DEFAULT_HERO_VIEW,
+};
+
+const isRuns = (value: unknown): value is FarmRuns =>
+  (FARM_RUNS as readonly unknown[]).includes(value);
 
 function prefersReducedMotion(): boolean {
   return (
@@ -37,6 +52,8 @@ function load(): Options {
             : base.speed,
       animations: typeof parsed.animations === 'boolean' ? parsed.animations : base.animations,
       auto: typeof parsed.auto === 'boolean' ? parsed.auto : base.auto,
+      runs: isRuns(parsed.runs) ? parsed.runs : base.runs,
+      heroView: readHeroView(parsed.heroView),
     };
   } catch {
     return base;

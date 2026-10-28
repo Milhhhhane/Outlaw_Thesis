@@ -1,7 +1,10 @@
 import { canLevelUp, heroStars, summonCost, talentPoints } from '@outlaw/engine';
 import { HeroSprite } from '../art/HeroSprite';
 import { content } from '../combat/session';
+import { HeroFilters } from '../game/HeroFilters';
+import { heroList } from '../game/heroList';
 import { useGame } from '../game/nav';
+import { useOptions } from '../game/options';
 import { Rarity } from '../game/Rarity';
 import { Screen } from '../game/ui';
 import { names, t, tk } from '../i18n';
@@ -12,11 +15,14 @@ const fromDungeon = new Set(content.dungeons.flatMap((d) => d.unlocksHero ?? [])
 
 /**
  * Galerie des héros : les débloqués s'ouvrent sur leur fiche, les autres restent dans l'ombre (leur
- * rareté et leur coût d'invocation restent lisibles). La grille défile dans son cadre.
+ * rareté et leur coût d'invocation restent lisibles). La grille défile dans son cadre ; tri et
+ * filtres sont retenus sur l'appareil.
  */
 export function Heroes() {
   const { go } = useGame();
   const { profile } = useProfile();
+  const { options } = useOptions();
+  const shown = heroList(content, profile, options.heroView, names.hero);
   const owned = content.heroes.filter((h) => profile.unlocked.includes(h.id)).length;
   return (
     <Screen
@@ -26,11 +32,15 @@ export function Heroes() {
       }}
       className="heroes"
     >
-      <p className="hint heroes__count">
-        {t('heroes.count', { n: owned, total: content.heroes.length })}
-      </p>
+      <div className="heroes__tools">
+        <p className="hint heroes__count">
+          {t('heroes.count', { n: owned, total: content.heroes.length })}
+        </p>
+        <HeroFilters shown={shown.length} />
+      </div>
       <ul className="heroes__grid">
-        {content.heroes.map((def) => {
+        {shown.length === 0 && <li className="hint heroes__none">{t('filter.none')}</li>}
+        {shown.map((def) => {
           const hero = profile.heroes[def.id];
           const unlocked = profile.unlocked.includes(def.id) && hero !== undefined;
           const free = unlocked

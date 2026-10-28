@@ -768,7 +768,7 @@ button:disabled {
 /* ===== Équipe ===== */
 .team .screen__body {
   display: grid;
-  grid-template-rows: 172px minmax(0, 1fr) auto;
+  grid-template-rows: 172px auto minmax(0, 1fr) auto;
   gap: 6px;
 }
 

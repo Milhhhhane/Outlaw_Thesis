@@ -35,7 +35,10 @@ export type Refusal =
   | 'max_level'
   | 'star_gate'
   | 'not_enough_xp'
-  | 'tier_locked';
+  | 'tier_locked'
+  | 'no_preset'
+  | 'bad_name'
+  | 'preset_unavailable';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -100,6 +103,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     fragments: {},
     chests: {},
     focus: null,
+    presets: [],
     testMode: false,
   };
 }

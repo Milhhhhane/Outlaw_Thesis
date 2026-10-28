@@ -1,3 +1,4 @@
+import type { FarmRuns } from '@outlaw/engine';
 import { createContext, useContext } from 'react';
 
 /** Les écrans du jeu. */
@@ -11,7 +12,13 @@ export type Route =
   | { readonly name: 'workshop' }
   | { readonly name: 'chests' }
   | { readonly name: 'credits' }
-  | { readonly name: 'dungeon'; readonly id: string; readonly tier?: number }
+  /** `runs` : passages joués d'affilée en Auto (1 par défaut). */
+  | {
+      readonly name: 'dungeon';
+      readonly id: string;
+      readonly tier?: number;
+      readonly runs?: FarmRuns;
+    }
   | { readonly name: 'demo' }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
