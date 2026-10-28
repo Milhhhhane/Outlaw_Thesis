@@ -30,6 +30,7 @@
   "hero.levelUp.max": "Monter au maximum",
   "hero.levelUp.cost": "Niveau {level} : {xp} XP et {dust}",
   "hero.levelUp.ready": "Niveau prêt",
+  "hero.levelUp.missingDust": "XP suffisante, il manque de la {dust} : {have} sur {need}.",
   "hero.levelUp.hint": "L'XP se garde ; chaque niveau se paie en poussière du palier.",
   "reward.levelReady": "Niveau prêt !",
   "refusal.max_level": "Niveau maximum atteint.",
