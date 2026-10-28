@@ -7,6 +7,7 @@ import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
 import pvp from './pvp.fr.json';
 import tiers from './tiers.fr.json';
+import tower from './tower.fr.json';
 import names from './content.fr.json';
 
 /** Clés de texte : le français est la langue par défaut et la référence des clés. */
@@ -18,9 +19,10 @@ export type TextKey =
   | keyof typeof heroTexts
   | keyof typeof loot
   | keyof typeof pvp
-  | keyof typeof tiers;
+  | keyof typeof tiers
+  | keyof typeof tower;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json) et paliers (tiers.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
@@ -30,6 +32,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...loot,
   ...pvp,
   ...tiers,
+  ...tower,
 };
 
 type Params = Readonly<Record<string, string | number>>;

@@ -1,0 +1,42 @@
+{
+  "pools": {
+    "fire": {
+      "enemies": ["cinder_hound", "ash_acolyte"],
+      "atkPct": 100
+    },
+    "water": {
+      "enemies": ["brine_crab", "tide_caller"],
+      "atkPct": 125
+    },
+    "nature": {
+      "enemies": ["moss_brute", "thorn_witch"],
+      "atkPct": 90
+    }
+  },
+  "bosses": [
+    {
+      "enemies": ["cinder_hound", "ember_matron", "cinder_hound"],
+      "modifierOf": "ember_wastes"
+    },
+    {
+      "enemies": ["tide_caller", "abyss_warden", "brine_crab"],
+      "modifierOf": "drowned_halls",
+      "atkPct": 140
+    },
+    {
+      "enemies": ["thorn_witch", "elder_bramble", "moss_brute", "thorn_witch"],
+      "modifierOf": "thorn_maze",
+      "atkPct": 82
+    },
+    {
+      "enemies": ["pyre_tyrant", "tidal_hydra"],
+      "modifierOf": "sunken_spire",
+      "atkPct": 85
+    },
+    {
+      "enemies": ["grove_colossus", "pyre_tyrant"],
+      "modifierOf": "hollow_throne",
+      "atkPct": 80
+    }
+  ]
+}

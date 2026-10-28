@@ -132,6 +132,43 @@ export const balanceSchema = z
       rareWeightPerTier: nonNegInt,
     }),
 
+    /**
+     * Tour à étages : un combat par étage, composé par règle (`content/tower.json`). L'étage n a
+     * des ennemis au niveau `level.start + (n − 1) × level.perFloor` (borné au niveau maximum : c'est
+     * aussi le niveau visé), des PV et une ATK lus sur `curve` (points d'appui, en ligne droite
+     * entre deux), majorés aux étages de boss (`boss`, tous les `bossEvery` étages). Au-delà du
+     * niveau maximum, la difficulté suit l'équipement visé (`gear`), comme les paliers de donjon.
+     */
+    tower: z.strictObject({
+      floors: posInt,
+      bossEvery: posInt,
+      level: z.strictObject({ start: posInt, perFloor: nonNeg }),
+      /** Nombre d'ennemis d'un étage ordinaire, à partir de l'étage `from` (croissant). */
+      sizes: z
+        .array(z.strictObject({ from: posInt, count: z.number().int().min(1).max(MAX_SIDE) }))
+        .min(1),
+      /** À partir de cet étage, le dernier ennemi d'un étage ordinaire vient de l'élément suivant. */
+      mixFrom: posInt,
+      /** PV et ATK des ennemis (en %) aux étages d'appui ; jamais en baisse d'un appui au suivant. */
+      curve: z.array(z.strictObject({ floor: posInt, hpPct: pos, atkPct: pos })).min(2),
+      /** Étage de boss : PV et ATK de la courbe multipliés par ces pourcentages. */
+      boss: z.strictObject({ hpPct: pos, atkPct: pos }),
+      /** Équipement visé à partir de l'étage `from` : objets portés et leur amélioration. */
+      gear: z.array(z.strictObject({ from: posInt, items: nonNegInt, upgrade: nonNegInt })),
+      /** Récompenses de la première victoire d'un étage (rejouer ne rapporte rien). */
+      rewards: z.strictObject({
+        /** Poussière du palier qu'exige le niveau de l'étage (brute, fine, pure). */
+        dust: z.array(nonNegInt).length(3),
+        /** Poussière d'un étage de boss, en % de celle d'un étage ordinaire. */
+        bossDustPct: nonNeg,
+        /** Fragments tirés (poids du coffre `fragmentChest`, héros ciblé compris) par étage. */
+        fragments: nonNegInt,
+        fragmentChest: idSchema,
+        /** Coffre de chaque étage de boss, dans l'ordre. */
+        bossChests: z.array(idSchema),
+      }),
+    }),
+
     economy: z.strictObject({
       /** Part de l'XP, de l'or et de la poussière d'un donjon rejoué (farm) par rapport au premier passage. */
       replayRewardRate: z.number().min(0).max(1),
@@ -240,6 +277,14 @@ export const balanceSchema = z
         expertMin: z.number().min(0).max(1),
         tolerance: z.number().min(0).max(1),
       }),
+      /**
+       * Tour (expert au niveau et à l'équipement visés) : chaque étage réussit au moins
+       * `expertMin`, et aucun étage n'est plus facile que le précédent de plus de `tolerance`.
+       */
+      tower: z.strictObject({
+        expertMin: z.number().min(0).max(1),
+        tolerance: z.number().min(0).max(1),
+      }),
     }),
   })
   .superRefine((b, ctx) => {
@@ -298,6 +343,52 @@ export const balanceSchema = z
         message: 'chests.tiers : identifiants en double',
         path: ['chests', 'tiers'],
       });
+    }
+    const tower = b.tower;
+    const issue = (message: string, path: (string | number)[]): void => {
+      ctx.addIssue({ code: 'custom', message, path: ['tower', ...path] });
+    };
+    if (tower.floors % tower.bossEvery !== 0)
+      issue('floors doit être un multiple de bossEvery', ['floors']);
+    const increasing = <T>(list: readonly T[], key: (x: T) => number): boolean =>
+      list.every((x, i) => i === 0 || key(x) > key(list[i - 1] as T));
+    if (tower.sizes[0]?.from !== 1 || !increasing(tower.sizes, (s) => s.from))
+      issue('sizes : commence à l’étage 1, étages croissants', ['sizes']);
+    const curve = tower.curve;
+    const steady = curve.every(
+      (p, i) =>
+        i === 0 ||
+        (p.hpPct >= (curve[i - 1]?.hpPct ?? 0) && p.atkPct >= (curve[i - 1]?.atkPct ?? 0)),
+    );
+    if (
+      curve[0]?.floor !== 1 ||
+      curve.at(-1)?.floor !== tower.floors ||
+      !increasing(curve, (p) => p.floor) ||
+      !steady
+    )
+      issue('curve : de l’étage 1 au dernier, étages croissants, PV et ATK jamais en baisse', [
+        'curve',
+      ]);
+    const { slots, maxUpgradeLevel } = b.progression.items;
+    if (
+      !increasing(tower.gear, (g) => g.from) ||
+      tower.gear.some((g, i) => {
+        const prev = tower.gear[i - 1];
+        return (
+          g.items > slots ||
+          g.upgrade > maxUpgradeLevel ||
+          (prev !== undefined && (g.items < prev.items || g.upgrade < prev.upgrade))
+        );
+      })
+    )
+      issue('gear : étages croissants, équipement jamais en baisse, dans les bornes des objets', [
+        'gear',
+      ]);
+    const chestIds = new Set(b.chests.tiers.map((c) => c.id));
+    if (tower.rewards.bossChests.length !== tower.floors / tower.bossEvery)
+      issue('rewards.bossChests : un coffre par étage de boss', ['rewards', 'bossChests']);
+    for (const id of [...tower.rewards.bossChests, tower.rewards.fragmentChest]) {
+      if (!chestIds.has(id)) issue(`coffre inconnu « ${id} »`, ['rewards']);
     }
     const unlocks = b.progression.pageUnlockLevels;
     const ascending = unlocks.every((level, i) => i === 0 || level >= (unlocks[i - 1] ?? 0));
