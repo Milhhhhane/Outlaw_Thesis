@@ -98,7 +98,7 @@ Mouvement réduit : le journal est appliqué d'un coup.
 Animations (`combat/Stage.tsx`, `combat.css`) : la scène lit la vue rejouée et n'en tire que
 des classes et des variables CSS (`--dx`/`--dy` de la course, `--ox`/`--oy` du zoom de l'ultime,
 `--pace` = facteur de vitesse). Les effets d'une unité (impact, étincelles, chiffre) vivent dans
-une couche `.effects` au-dessus des acteurs ; bulle de bouclier et altérations dans l'acteur, pour
+une couche `.stage__effects` au-dessus des acteurs ; bulle de bouclier et altérations dans l'acteur, pour
 suivre sa course. Une animation se relance en alternant deux noms de keyframes (a/b), jamais par
 une `key` React sur un conteneur. Sprites d'effets : `tools/art/fx.py`. File, actions possibles et intentions viennent
 du moteur (`projectQueue`, `legalActions`, `enemyIntent`).
