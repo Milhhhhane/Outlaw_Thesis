@@ -92,6 +92,12 @@
   (`tools/art/looks.py`), palettes franches, armes mieux réparties ; aucune paire de héros n'a la
   même silhouette (vérifié par `export.py`). Gameplay inchangé.
 
+- Coffres revus — héros ciblé proportionnel à sa rareté (poids × 12 au lieu de 50 % fixes),
+  coffres distincts (poids de rareté propres, 4 / 7 / 14 fragments), chance de coffre selon la
+  difficulté du palier (l'or ne tombe que dans les passages durs). Répond au point ouvert
+  ci-dessus « marier les raretés hautes avec des donjons plus durs ». Chiffres dans
+  `docs/ECONOMY.md`.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

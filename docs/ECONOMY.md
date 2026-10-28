@@ -34,9 +34,10 @@ Un passage gagnant d'un donjon donne, au premier passage comme au rejeu (`replay
   maîtrise, en poids) ; le rare est garanti au premier passage et au 10ᵉ passage sans rare dans ce
   donjon. Un objet déjà possédé devient une **copie** ; un objet déjà au niveau maximum dissout
   la copie en poussière (3 pour un commun, 4 pour un rare, au palier du donjon).
-- **Coffre** : toujours au premier passage, une fois sur deux ensuite (`replayChestRate`). Il ne
-  contient que des **fragments** de héros (3, 5 ou 8), chacun tiré au hasard parmi les 6 héros,
-  sauf la part du héros ciblé (`focusRate` 50 %).
+- **Coffre** : une chance par passage, qui suit la difficulté (niveau des ennemis du palier,
+  `chests.dropLevels` 1 → 40) ; le premier passage d'un palier en garantit au moins un de bronze.
+  Il ne contient que des **fragments** de héros, tirés selon les poids de rareté **du coffre** ;
+  le héros ciblé pèse × `focusMultiplier` (12). Détail dans « Coffres » plus bas.
 
 ## Ce qui se dépense
 
@@ -192,3 +193,53 @@ Lecture :
    (8 par objet du palier 3), les paliers II et III l'accélèrent (+5 et +10 de poids) ; l'or et la
    poussière pure sont désormais dépensés à 90 % et 86 %.
 4. Les bornes de ces jalons sont vérifiées en CI (`tools/sim/test/economy.test.ts`).
+
+## Coffres (2026-10-28)
+
+Demande du propriétaire : un légendaire ciblé recevait 50 % des fragments comme un commun ; les
+trois coffres ne différaient que par leur nombre de fragments ; le coffre dépendait du donjon,
+pas de sa difficulté.
+
+| Coffre | Fragments | Poids commun / rare / épique / légendaire | Raretés tirées (%) | Chance au niv. 1 → 40 |
+| ------ | --------: | ----------------------------------------- | ------------------ | --------------------- |
+| Bronze |         4 | 12 / 4 / 1 / 0                            | 76 / 20 / 3 / 0    | 45 % → 25 %           |
+| Argent |         7 | 12 / 6 / 3 / 1                            | 65 / 26 / 8 / 1    | 5 % → 30 %            |
+| Or     |        14 | 6 / 8 / 8 / 5                             | 35 / 37 / 23 / 6   | 0 % → 15 %            |
+
+Chance d'un coffre (au moins) par passage : 50 % au premier donjon, 70 % au palier III du dernier.
+Le premier passage de chaque palier en garantit un (bronze si le tirage n'en donne pas).
+
+Héros ciblé (× 12), part de ses fragments par coffre (25 héros : 10 communs, 8 rares, 5 épiques,
+2 légendaires) :
+
+| Ciblé      | Bronze | Argent |   Or |
+| ---------- | -----: | -----: | ---: |
+| Commun     |   50 % |   45 % | 30 % |
+| Rare       |   24 % |   29 % | 37 % |
+| Épique     |    7 % |   17 % | 37 % |
+| Légendaire |    0 % |    6 % | 26 % |
+
+Avant : 50 % pour tous, dans tous les coffres. Passages (gagnants, rejeu) pour réunir
+l'invocation d'un héros ciblé, au taux moyen du palier :
+
+| Passage farmé         | Commun (10) | Rare (20) | Épique (40) | Légendaire (80) |
+| --------------------- | ----------: | --------: | ----------: | --------------: |
+| Landes de braise I    |           9 |        38 |         215 |           3 733 |
+| Citadelle de cendre I |           7 |        24 |          85 |             387 |
+| Trône creux I         |           5 |        15 |          43 |             157 |
+| Trône creux III       |           5 |        12 |          34 |             118 |
+
+Avant (or au rejeu une fois sur deux, 8 fragments, 50 % ciblés) : 40 passages du Trône pour un
+légendaire, 5 pour un commun. Un légendaire est maintenant un objectif de fin de partie
+(≈ 3 fois plus long), un commun ne change pas.
+
+Joueur modèle (20 graines), avant → après : premier objet au maximum 8,1 → 8,1 ; première étoile
+20,0 → 20,0 ; équipe de 4 équipée 46,0 → 44,0 ; équipe de 4 au niveau 30 110,3 → 113,8 ; objets
+au maximum 122,2 → 122,7 ; collection complète 247,1 → 251,3. Coffres ouverts 138 → 170,
+fragments 983 → 1 071. Les tailles 4 / 7 / 14 ont été choisies pour garder ces jalons : avec
+3 / 5 / 10, l'équipe au niveau 30 passait à 133,6 (moins de fragments pour l'équipe de communs,
+dont la part ciblée baisse dans l'or).
+
+Leviers : `focusMultiplier` (légendaires plus ou moins accessibles), `weights` de l'or (part des
+rares), `drop` (fréquence), `fragments` (rythme général, à recaler avec
+`pnpm --filter @outlaw/sim economy`).

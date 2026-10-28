@@ -66,7 +66,9 @@ describe('boucle donjon → récompense → investissement', () => {
       const looted = screen.getByRole('heading', { level: 2, name: /Objet obtenu/ }).textContent;
       // Première victoire : le coffre du donjon est toujours là.
       expect(
-        screen.getByText(t('reward.chest', { tier: tk('chest.tier.bronze') })),
+        screen.getByText(
+          new RegExp(['bronze', 'silver', 'gold'].map((c) => tk(`chest.tier.${c}`)).join('|')),
+        ),
       ).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: t('reward.continue') }));
       expect(

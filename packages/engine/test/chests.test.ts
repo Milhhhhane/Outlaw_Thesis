@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   atStarGate,
   chestCount,
+  chestOdds,
+  chestRarityRates,
   chestSize,
   completeDungeon,
   fragmentRates,
@@ -86,12 +88,13 @@ describe('ouverture d’un coffre', () => {
   it('donne la taille du palier en fragments et consomme le coffre', () => {
     const profile = withChests(base(), { bronze: 2, gold: 1 });
     expect(chestCount(profile)).toBe(3);
-    expect(chestSize(content, 'bronze')).toBe(3);
-    expect(chestSize(content, 'gold')).toBe(8);
+    expect(chestSize(content, 'bronze')).toBe(content.balance.chests.tiers[0]?.fragments);
+    const size = chestSize(content, 'gold') ?? 0;
+    expect(size).toBeGreaterThan(chestSize(content, 'bronze') ?? 0);
     const opened = value(openChest(content, profile, 'gold'));
     expect(opened.report.tier).toBe('gold');
-    expect(opened.report.fragments).toHaveLength(8);
-    expect(total(opened.profile.fragments)).toBe(8);
+    expect(opened.report.fragments).toHaveLength(size);
+    expect(total(opened.profile.fragments)).toBe(size);
     expect(opened.profile.chests).toEqual({ bronze: 2, gold: 0 });
     expect(opened.profile.seed).not.toBe(profile.seed);
     expect(profileSchema.parse(opened.profile)).toEqual(opened.profile);
@@ -115,65 +118,101 @@ describe('ouverture d’un coffre', () => {
     );
   });
 
-  it('sans héros ciblé : chaque héros sort selon le poids de sa rareté', () => {
-    let profile = withChests(base(), { gold: 1500 });
-    for (let i = 0; i < 1500; i++) profile = value(openChest(content, profile, 'gold')).profile;
-    const drawn = 1500 * 8;
-    const rates = fragmentRates(content, base());
+  it('sans héros ciblé : chaque héros sort au taux annoncé par le coffre', () => {
+    let profile = withChests(base(), { gold: 1200 });
+    for (let i = 0; i < 1200; i++) profile = value(openChest(content, profile, 'gold')).profile;
+    const drawn = 1200 * (chestSize(content, 'gold') ?? 0);
+    const rates = fragmentRates(content, base(), 'gold');
     expect(rates.reduce((sum, r) => sum + r.pct, 0)).toBeCloseTo(100, 6);
-    // Chaque héros sort, et à son taux annoncé (graine fixe, 12 000 fragments).
     for (const { hero, pct } of rates) {
       const share = (profile.fragments[hero] ?? 0) / drawn;
       expect(share, hero).toBeGreaterThan(0);
       expect(Math.abs(share - pct / 100), hero).toBeLessThan(Math.max(0.006, (pct / 100) * 0.2));
     }
-    // Par rareté : la part tirée suit la somme des poids, les légendaires restent rares.
-    const { tierWeights } = content.balance.chests;
-    const weightSum = content.heroes.reduce((sum, h) => sum + (tierWeights[h.tier - 1] ?? 0), 0);
+    // Par rareté : la part tirée suit chestRarityRates.
+    const byTier = chestRarityRates(content, 'gold');
     for (const tier of [1, 2, 3, 4]) {
-      const heroes = content.heroes.filter((h) => h.tier === tier);
-      const got = heroes.reduce((sum, h) => sum + (profile.fragments[h.id] ?? 0), 0) / drawn;
-      const want = (heroes.length * (tierWeights[tier - 1] ?? 0)) / weightSum;
-      expect(Math.abs(got - want), `rareté ${String(tier)}`).toBeLessThan(0.02);
+      const got =
+        content.heroes
+          .filter((h) => h.tier === tier)
+          .reduce((sum, h) => sum + (profile.fragments[h.id] ?? 0), 0) / drawn;
+      expect(Math.abs(got - (byTier[tier - 1] ?? 0) / 100), `rareté ${String(tier)}`).toBeLessThan(
+        0.02,
+      );
     }
-    const common = rates.find((r) => r.hero === 'pyra')!.pct;
-    const legendary = rates.find((r) => content.heroById.get(r.hero)?.tier === 4)!.pct;
-    expect(common / legendary).toBeCloseTo((tierWeights[0] ?? 0) / (tierWeights[3] ?? 1), 6);
   });
 
-  it('le poids d’un héros est celui de sa rareté', () => {
-    const { tierWeights } = content.balance.chests;
-    for (const hero of content.heroes) {
-      expect(heroWeight(content, hero.id)).toBe(tierWeights[hero.tier - 1]);
-    }
-    expect(heroWeight(content, 'fantome')).toBe(tierWeights[0]);
+  it('les coffres se distinguent : plus de fragments et plus de rares du bronze à l’or', () => {
+    const [bronze, silver, gold] = ['bronze', 'silver', 'gold'].map((id) => ({
+      size: chestSize(content, id) ?? 0,
+      rarity: chestRarityRates(content, id),
+    }));
+    expect(bronze!.size).toBeLessThan(silver!.size);
+    expect(silver!.size).toBeLessThan(gold!.size);
+    // Un bronze ne donne jamais de légendaire ; la part des épiques et légendaires monte.
+    expect(bronze!.rarity[3]).toBe(0);
+    const high = (r: number[]): number => (r[2] ?? 0) + (r[3] ?? 0);
+    expect(high(bronze!.rarity)).toBeLessThan(high(silver!.rarity));
+    expect(high(silver!.rarity)).toBeLessThan(high(gold!.rarity));
+    // Légendaires attendus par coffre : au moins cinq fois plus dans l'or que dans l'argent.
+    const legends = (c: typeof gold): number => ((c!.rarity[3] ?? 0) / 100) * c!.size;
+    expect(legends(gold)).toBeGreaterThan(5 * legends(silver));
   });
 
-  it('héros ciblé : sa part monte au taux annoncé, le reste suit les poids de rareté', () => {
-    const targeted = value(setFocus(content, withChests(base(), { gold: 400 }), 'ronce'));
-    let profile = targeted;
+  it('le poids d’un héros est celui de sa rareté dans ce coffre', () => {
+    for (const chest of content.balance.chests.tiers) {
+      for (const hero of content.heroes) {
+        expect(heroWeight(content, chest.id, hero.id)).toBe(chest.weights[hero.tier - 1]);
+      }
+      expect(heroWeight(content, chest.id, 'fantome')).toBe(chest.weights[0]);
+    }
+    expect(heroWeight(content, 'diamant', 'pyra')).toBe(0);
+  });
+
+  it('héros ciblé : son poids est multiplié, sa part monte en proportion de sa rareté', () => {
+    const { focusMultiplier } = content.balance.chests;
+    const legendary = content.heroes.find((h) => h.tier === 4)!.id;
+    const share = (hero: string, chest: string): number =>
+      fragmentRates(content, value(setFocus(content, base(), hero)), chest).find(
+        (r) => r.hero === hero,
+      )!.pct;
+    const free = (hero: string, chest: string): number =>
+      fragmentRates(content, base(), chest).find((r) => r.hero === hero)!.pct;
+    for (const chest of ['silver', 'gold']) {
+      // Ciblé : poids × multiplicateur, renormalisé.
+      const w = heroWeight(content, chest, legendary);
+      const totalFree = content.heroes.reduce(
+        (sum, h) => sum + heroWeight(content, chest, h.id),
+        0,
+      );
+      expect(share(legendary, chest)).toBeCloseTo(
+        ((w * focusMultiplier) / (totalFree + w * (focusMultiplier - 1))) * 100,
+        6,
+      );
+      expect(share(legendary, chest)).toBeGreaterThan(free(legendary, chest));
+      // Un commun ciblé sort bien plus souvent qu'un légendaire ciblé.
+      expect(share('ronce', chest)).toBeGreaterThan(share(legendary, chest));
+    }
+    // Plus de 50 % pour un légendaire ciblé, nulle part ; jamais de légendaire dans un bronze.
+    for (const chest of content.balance.chests.tiers) {
+      expect(share(legendary, chest.id)).toBeLessThan(50);
+    }
+    expect(share(legendary, 'bronze')).toBe(0);
+    // Le tirage suit l'annonce.
+    let profile = value(setFocus(content, withChests(base(), { gold: 400 }), 'ronce'));
     for (let i = 0; i < 400; i++) profile = value(openChest(content, profile, 'gold')).profile;
-    const rates = fragmentRates(content, targeted);
-    expect(rates.reduce((sum, r) => sum + r.pct, 0)).toBeCloseTo(100, 6);
-    const free = fragmentRates(content, base());
-    const ronce = rates.find((r) => r.hero === 'ronce')!.pct;
-    const other = rates.find((r) => r.hero === 'pyra')!.pct;
-    const { focusRate } = content.balance.chests;
-    // Ciblé : focusRate, plus sa part du reste ; les autres : leur part du reste.
-    const freeRonce = free.find((r) => r.hero === 'ronce')!.pct;
-    const freePyra = free.find((r) => r.hero === 'pyra')!.pct;
-    expect(ronce).toBeCloseTo(focusRate * 100 + (1 - focusRate) * freeRonce, 6);
-    expect(other).toBeCloseTo((1 - focusRate) * freePyra, 6);
-    const share = (profile.fragments.ronce ?? 0) / (400 * 8);
-    expect(share).toBeGreaterThan(ronce / 100 - 0.04);
-    expect(share).toBeLessThan(ronce / 100 + 0.04);
+    const got = (profile.fragments.ronce ?? 0) / (400 * (chestSize(content, 'gold') ?? 0));
+    expect(Math.abs(got - share('ronce', 'gold') / 100)).toBeLessThan(0.04);
   });
 
   it('un héros ciblé inconnu du contenu est ignoré au tirage et à l’affichage', () => {
     const stale = { ...withChests(base(), { bronze: 1 }), focus: 'fantome' };
-    const rates = fragmentRates(content, stale);
-    expect(rates).toEqual(fragmentRates(content, base()));
-    expect(total(value(openChest(content, stale, 'bronze')).profile.fragments)).toBe(3);
+    expect(fragmentRates(content, stale, 'bronze')).toEqual(
+      fragmentRates(content, base(), 'bronze'),
+    );
+    expect(total(value(openChest(content, stale, 'bronze')).profile.fragments)).toBe(
+      chestSize(content, 'bronze'),
+    );
   });
 
   it('cibler : un héros connu ou personne, rien d’autre', () => {
@@ -270,27 +309,50 @@ describe('étoiles', () => {
 });
 
 describe('coffres des donjons', () => {
-  it('le premier passage donne toujours le coffre du donjon', () => {
-    const first = value(completeDungeon(content, base(), 'ember_wastes'));
-    expect(first.report.chest).toBe('bronze');
-    expect(first.profile.chests).toEqual({ bronze: 1 });
-    const deep = value(completeDungeon(content, base(), 'verdant_crown'));
-    expect(deep.report.chest).toBe('gold');
+  it('le premier passage d’un palier donne toujours un coffre', () => {
+    for (const dungeon of content.dungeons) {
+      const first = value(completeDungeon(content, base(), dungeon.id));
+      expect(first.report.chest, dungeon.id).not.toBeNull();
+      expect(chestCount(first.profile)).toBe(1);
+    }
   });
 
-  it('un donjon rejoué redonne son coffre une fois sur deux environ', () => {
-    let profile = value(completeDungeon(content, base(), 'ember_wastes')).profile;
-    let chests = 0;
-    const runs = 600;
+  it('les chances de coffre suivent la difficulté : l’or ne tombe que dans les passages durs', () => {
+    const ember = content.dungeonById.get('ember_wastes')!;
+    const throne = content.dungeonById.get('hollow_throne')!;
+    const pct = (d: typeof ember, tier: number, chest: string): number =>
+      chestOdds(content, d, tier).find((o) => o.chest === chest)!.pct;
+    expect(pct(ember, 1, 'gold')).toBe(0);
+    expect(pct(throne, 3, 'gold')).toBeGreaterThan(pct(throne, 1, 'gold'));
+    expect(pct(throne, 1, 'gold')).toBeGreaterThan(pct(ember, 3, 'gold'));
+    expect(pct(throne, 3, 'silver')).toBeGreaterThan(pct(ember, 1, 'silver'));
+    // Plus dur, plus de coffres en tout.
+    const any = (d: typeof ember, tier: number): number =>
+      chestOdds(content, d, tier).reduce((sum, o) => sum + o.pct, 0);
+    expect(any(throne, 3)).toBeGreaterThan(any(ember, 1));
+    for (const d of content.dungeons)
+      for (let tier = 1; tier <= content.balance.tiers.count; tier++)
+        expect(any(d, tier)).toBeLessThanOrEqual(100);
+  });
+
+  it('un donjon rejoué donne ses coffres aux chances annoncées', () => {
+    const throne = content.dungeonById.get('hollow_throne')!;
+    let profile = value(completeDungeon(content, base(), 'hollow_throne')).profile;
+    const got: Record<string, number> = {};
+    let none = 0;
+    const runs = 1500;
     for (let i = 0; i < runs; i++) {
-      const done = value(completeDungeon(content, profile, 'ember_wastes'));
-      if (done.report.chest !== null) chests++;
+      const done = value(completeDungeon(content, profile, 'hollow_throne'));
+      if (done.report.chest === null) none++;
+      else got[done.report.chest] = (got[done.report.chest] ?? 0) + 1;
       profile = done.profile;
     }
-    const rate = content.balance.chests.replayChestRate;
-    expect(chests / runs).toBeGreaterThan(rate - 0.07);
-    expect(chests / runs).toBeLessThan(rate + 0.07);
-    expect(profile.chests.bronze).toBe(chests + 1);
+    let sum = 0;
+    for (const { chest, pct } of chestOdds(content, throne, 1)) {
+      sum += pct;
+      expect(Math.abs((got[chest] ?? 0) / runs - pct / 100), chest).toBeLessThan(0.04);
+    }
+    expect(Math.abs(none / runs - (100 - sum) / 100)).toBeLessThan(0.04);
   });
 
   it('ajouter le coffre ne change pas le butin du premier passage', () => {

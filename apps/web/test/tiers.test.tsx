@@ -45,11 +45,14 @@ describe('carte : paliers de donjon', () => {
     expect(
       screen.getByText(t('hub.dungeon.recommended', { level: tierLevel(content, ember, 2) })),
     ).toBeInTheDocument();
-    expect(screen.getByText(/or \+25 %/)).toBeInTheDocument();
+    expect(screen.getByText(/or \+25\s%/)).toBeInTheDocument();
 
     await user.click(one);
     expect(one).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByText(t('tier.base'))).toBeInTheDocument();
+    // Le texte du palier et les chances de coffre, qui suivent la difficulté du palier.
+    expect(screen.getByText(new RegExp(t('tier.base').replace('.', '\\.')))).toHaveTextContent(
+      /Coffre : .*bronze\s\d+\s%/,
+    );
     expect(
       screen.getByText(t('hub.dungeon.recommended', { level: ember.recommendedLevel })),
     ).toBeInTheDocument();

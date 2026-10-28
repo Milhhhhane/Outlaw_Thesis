@@ -1374,7 +1374,9 @@ button:disabled {
   align-content: start;
   gap: 3px;
   min-height: 0;
-  overflow: hidden;
+  /* Palier III d'un donjon de fin : le texte peut dépasser ; il défile au lieu d'être coupé. */
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .map__thumb {
@@ -1466,6 +1468,7 @@ button:disabled {
 .map__tier-text {
   flex-basis: 100%;
   color: var(--bone-muted);
+  font-size: 12px;
 }
 
 /* Palier atteint, affiché sur le pion d'un donjon terminé. */

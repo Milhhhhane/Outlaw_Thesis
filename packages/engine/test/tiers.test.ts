@@ -9,7 +9,6 @@ import {
   type Outcome,
 } from '../src/progression';
 import {
-  tierChest,
   tierCleared,
   tierCount,
   tierFrontier,
@@ -45,10 +44,6 @@ describe('paliers : formule', () => {
     );
     expect(tierRareWeight(content, 1)).toBe(0);
     expect(tierRareWeight(content, 2)).toBe(tiers.rareWeightPerTier);
-    expect(tierChest(content, ember, 1)).toBe('bronze');
-    expect(tierChest(content, ember, 2)).toBe('silver');
-    expect(tierChest(content, ember, 3)).toBe('gold');
-    expect(tierChest(content, throne, 3)).toBe('gold');
     expect(tierNumeral(2)).toBe('II');
     expect(tierNumeral(42)).toBe('42');
     // Le rare pèse plus lourd à chaque palier.
@@ -82,14 +77,10 @@ describe('paliers : progression', () => {
     expect(again.report).toMatchObject({ tier: 1, tierUnlocked: null, firstClear: false });
     expect(tierReached(content, again.profile, 'ember_wastes')).toBe(2);
 
-    // Le palier II : premier passage (rare et coffre garantis, coffre d'argent), ouvre le III.
+    // Le palier II : premier passage (rare et coffre garantis), ouvre le III.
     const second = value(completeDungeon(content, profile, 'ember_wastes', 2));
-    expect(second.report).toMatchObject({
-      tier: 2,
-      tierUnlocked: 3,
-      firstClear: true,
-      chest: 'silver',
-    });
+    expect(second.report).toMatchObject({ tier: 2, tierUnlocked: 3, firstClear: true });
+    expect(second.report.chest).not.toBeNull();
     expect(second.report.item.guaranteed).toBe(true);
     profile = second.profile;
     expect(profile.dungeons.ember_wastes?.tier).toBe(3);
