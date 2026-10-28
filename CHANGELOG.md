@@ -2,6 +2,16 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — arbre des talents : liens lisibles
+
+### Corrigé
+
+- Arbre des talents : chaque talent est relié à son prérequis par son propre trait (fini la barre
+  commune à une rangée, qui ne disait pas quel nœud débloque lequel). Trois états visibles : gris
+  clair tant que le parent n'est pas pris, pointillé de la couleur de l'élément quand il l'est,
+  plein quand le talent est pris ; le lien vers le rival d'un « ou » déjà choisi repasse en gris.
+  Accolade sous les deux nœuds du « ou ». Test : un trait par prérequis, pour les 25 héros.
+
 ## [Non publié] — 2026-10-28 — montée des sorts
 
 ### Ajouté
