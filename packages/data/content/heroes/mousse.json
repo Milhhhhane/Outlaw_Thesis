@@ -1,0 +1,483 @@
+{
+  "id": "mousse",
+  "element": "nature",
+  "role": "support",
+  "tier": 2,
+  "stats": {
+    "hp": 465,
+    "atk": 46,
+    "def": 27,
+    "vit": 98
+  },
+  "spells": [
+    {
+      "id": "mousse_poultice",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 115
+        },
+        {
+          "kind": "heal",
+          "target": "lowest_hp_ally",
+          "power": 15
+        }
+      ]
+    },
+    {
+      "id": "mousse_compress",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 130
+        },
+        {
+          "kind": "statMod",
+          "stat": "def",
+          "percent": 10,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "mousse_blanket",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 80,
+          "duration": 2
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "mousse_fireside",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 120
+        },
+        {
+          "kind": "shield",
+          "power": 50,
+          "duration": 2
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "mousse_care",
+    "triggers": [
+      {
+        "on": "damage_taken",
+        "subject": "ally",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "subject",
+            "power": 35
+          },
+          {
+            "kind": "shield",
+            "target": "subject",
+            "power": 15,
+            "duration": 1
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "mousse_page_herbs",
+      "nodes": [
+        {
+          "id": "mousse_herbs_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_pinch",
+          "requires": "mousse_herbs_core",
+          "group": "mousse_herbs_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_pot",
+          "requires": "mousse_herbs_core",
+          "group": "mousse_herbs_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -55
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_salve",
+          "requires": "mousse_herbs_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_steam",
+          "requires": "mousse_herbs_salve",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "heal",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_remedy",
+          "requires": "mousse_herbs_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_hurry",
+          "requires": "mousse_herbs_remedy",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "mousse_herbs_tonic",
+          "requires": "mousse_herbs_steam",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mousse_page_quilt",
+      "nodes": [
+        {
+          "id": "mousse_quilt_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_shawl",
+          "requires": "mousse_quilt_core",
+          "group": "mousse_quilt_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_wool",
+          "requires": "mousse_quilt_core",
+          "group": "mousse_quilt_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_wrap",
+          "requires": "mousse_quilt_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "shield",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_tuck",
+          "requires": "mousse_quilt_wrap",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "lowest_hp_ally",
+                "power": 20,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_eiderdown",
+          "requires": "mousse_quilt_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 80
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_patch",
+          "requires": "mousse_quilt_eiderdown",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_quilt_hearth",
+          "requires": "mousse_quilt_tuck",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mousse_page_vigil",
+      "nodes": [
+        {
+          "id": "mousse_vigil_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_stories",
+          "requires": "mousse_vigil_core",
+          "group": "mousse_vigil_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_embers",
+          "requires": "mousse_vigil_core",
+          "group": "mousse_vigil_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -25
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_kettle",
+          "requires": "mousse_vigil_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_lullaby",
+          "requires": "mousse_vigil_kettle",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "amount": -15
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_rocking",
+          "requires": "mousse_vigil_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_candle",
+          "requires": "mousse_vigil_rocking",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -20
+            }
+          ]
+        },
+        {
+          "id": "mousse_vigil_dawn",
+          "requires": "mousse_vigil_lullaby",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

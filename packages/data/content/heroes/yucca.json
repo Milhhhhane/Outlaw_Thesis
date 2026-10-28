@@ -1,0 +1,468 @@
+{
+  "id": "yucca",
+  "element": "nature",
+  "role": "damage",
+  "tier": 1,
+  "stats": {
+    "hp": 385,
+    "atk": 59,
+    "def": 19,
+    "vit": 106
+  },
+  "spells": [
+    {
+      "id": "yucca_spine",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "yucca_twin",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "damage",
+          "target": "lowest_hp_enemy",
+          "power": 50
+        }
+      ]
+    },
+    {
+      "id": "yucca_barrage",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 150
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": -15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "yucca_darts",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 135
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "yucca_ricochet",
+    "triggers": [
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "lowest_hp_enemy",
+            "power": 15
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "yucca_page_rebound",
+      "nodes": [
+        {
+          "id": "yucca_rebound_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_light",
+          "requires": "yucca_rebound_core",
+          "group": "yucca_rebound_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_triple",
+          "requires": "yucca_rebound_core",
+          "group": "yucca_rebound_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_glance",
+          "requires": "yucca_rebound_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_carom",
+          "requires": "yucca_rebound_glance",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_volley",
+          "requires": "yucca_rebound_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_scatter",
+          "requires": "yucca_rebound_volley",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
+            },
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -30
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_rebound_needle",
+          "requires": "yucca_rebound_carom",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 40
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "yucca_page_bitter",
+      "nodes": [
+        {
+          "id": "yucca_bitter_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_corrode",
+          "requires": "yucca_bitter_core",
+          "group": "yucca_bitter_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_sting",
+          "requires": "yucca_bitter_core",
+          "group": "yucca_bitter_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 30
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_itch",
+          "requires": "yucca_bitter_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -8,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_rash",
+          "requires": "yucca_bitter_itch",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_tag",
+          "requires": "yucca_bitter_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_deep",
+          "requires": "yucca_bitter_tag",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "yucca_bitter_agave",
+          "requires": "yucca_bitter_rash",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "yucca_page_cadence",
+      "nodes": [
+        {
+          "id": "yucca_cadence_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": -15
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_step",
+          "requires": "yucca_cadence_core",
+          "group": "yucca_cadence_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_lever",
+          "requires": "yucca_cadence_core",
+          "group": "yucca_cadence_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_trot",
+          "requires": "yucca_cadence_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -8
+              }
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_rain",
+          "requires": "yucca_cadence_trot",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_cartridge",
+          "requires": "yucca_cadence_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_reload",
+          "requires": "yucca_cadence_cartridge",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "yucca_cadence_gallop",
+          "requires": "yucca_cadence_rain",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -40
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -47,6 +47,20 @@
   --element: var(--nature);
 }
 
+/* Rareté des héros : commun (fer), rare (turquoise), épique (améthyste), légendaire (or). */
+.rarity-1 {
+  --rarity: #a99f90;
+}
+.rarity-2 {
+  --rarity: #6fcfd9;
+}
+.rarity-3 {
+  --rarity: #b77ae6;
+}
+.rarity-4 {
+  --rarity: #f0b43c;
+}
+
 *,
 *::before,
 *::after {

@@ -2,6 +2,7 @@
   "id": "ressac",
   "element": "water",
   "role": "damage",
+  "tier": 1,
   "stats": {
     "hp": 400,
     "atk": 58,

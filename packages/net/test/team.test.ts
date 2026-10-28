@@ -265,9 +265,16 @@ describe('refus de validateTeam', () => {
     const exact = check(base, { content: tiered, rules: rules(10) });
     expect(exact.ok && exact.tier).toBe(10);
     expect(check(base, { content: tiered, rules: rules(null) }).ok).toBe(true);
-    // Avec les héros actuels (tous de palier I), le budget minimum (teamSize) suffit.
+    // Ces quatre héros sont de palier I : le budget minimum (teamSize) suffit.
     expect(check(base, { rules: rules(TEAM) }).ok).toBe(true);
     expect(code(check(base, { rules: rules(TEAM - 1) }))).toBe('tier_budget_exceeded');
+    // Avec les paliers du contenu : les quatre héros les plus rares dépassent un budget serré.
+    const rarest = [...content.heroes].sort((x, y) => y.tier - x.tier).slice(0, TEAM);
+    const sum = rarest.reduce((total, h) => total + h.tier, 0);
+    expect(sum).toBeGreaterThan(TEAM);
+    const rare = teamRequest(rarest.map((h) => h.id));
+    expect(check(rare, { rules: rules(sum) }).ok).toBe(true);
+    expect(code(check(rare, { rules: rules(sum - 1) }))).toBe('tier_budget_exceeded');
   });
 
   it('couvre tous les codes annoncés', () => {
@@ -289,7 +296,8 @@ describe('palier des héros', () => {
   const hero = content.heroes[0]!;
 
   it('vaut 1 par défaut, de 1 à 4 sinon', () => {
-    expect(content.heroes.every((h) => h.tier === 1)).toBe(true);
+    // Le palier des héros est leur rareté (I à IV) : le contenu en a de chaque palier.
+    expect(new Set(content.heroes.map((h) => h.tier))).toEqual(new Set([1, 2, 3, 4]));
     expect(heroSchema.parse({ ...hero, tier: undefined }).tier).toBe(1);
     for (const tier of [1, 2, 3, 4]) expect(heroSchema.parse({ ...hero, tier }).tier).toBe(tier);
     for (const tier of [0, 5, 1.5, '2']) {

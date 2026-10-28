@@ -73,6 +73,27 @@ function indexById<T extends { id: string }>(
   return map;
 }
 
+/** Rareté maximale d'un héros de départ ou offert par un donjon (rare). */
+export const FREE_HERO_MAX_TIER = 2;
+
+/** Budget de stats d'une rareté : % d'indice de stats en plus par palier au-dessus de commun. */
+export const TIER_STAT_BUDGET_PCT = 2;
+
+/**
+ * Indice de stats d'un héros : somme de ses quatre stats rapportées chacune à la moyenne des
+ * héros de référence (4 pour un héros moyen). Sert à borner les stats par rareté.
+ */
+export function statIndex(reference: readonly Hero[]): (hero: Hero) => number {
+  const mean = (pick: (hero: Hero) => number): number =>
+    reference.reduce((sum, hero) => sum + pick(hero), 0) / reference.length;
+  const hp = mean((h) => h.stats.hp);
+  const atk = mean((h) => h.stats.atk);
+  const def = mean((h) => h.stats.def);
+  const vit = mean((h) => h.stats.vit);
+  return (hero) =>
+    hero.stats.hp / hp + hero.stats.atk / atk + hero.stats.def / def + hero.stats.vit / vit;
+}
+
 /** Valide le contenu brut (schémas Zod) puis ses références croisées. Lève ContentError au moindre problème. */
 export function parseContent(raw: RawContent): Content {
   const issues: string[] = [];
@@ -174,6 +195,35 @@ export function parseContent(raw: RawContent): Content {
     }
     if (dungeon.unlocksHero !== undefined && !heroById.has(dungeon.unlocksHero)) {
       issues.push(`${where} : héros débloqué inconnu « ${dungeon.unlocksHero} »`);
+    }
+  }
+
+  // Obtention : une équipe de départ, des héros offerts par les donjons (communs ou rares), les
+  // autres par invocation. Une rareté haute ne s'obtient jamais sans fragments.
+  const dungeonHeroes = new Set(dungeons.flatMap((d) => d.unlocksHero ?? []));
+  if (!heroes.some((hero) => hero.starter))
+    issues.push('héros : aucun héros de départ (« starter »)');
+  for (const hero of heroes) {
+    if (hero.starter && dungeonHeroes.has(hero.id))
+      issues.push(`héros « ${hero.id} » : de départ et débloqué par un donjon`);
+    if ((hero.starter || dungeonHeroes.has(hero.id)) && hero.tier > FREE_HERO_MAX_TIER)
+      issues.push(
+        `héros « ${hero.id} » : un héros de départ ou de donjon est commun ou rare (rareté ${String(hero.tier)})`,
+      );
+  }
+
+  // La rareté enrichit le kit, pas les stats : au plus TIER_STAT_BUDGET_PCT % par palier au-dessus
+  // du héros commun le mieux doté (indice : chaque stat rapportée à la moyenne des communs).
+  const commons = heroes.filter((hero) => hero.tier === 1);
+  if (commons.length > 0) {
+    const index = statIndex(commons);
+    const ceiling = Math.max(...commons.map((hero) => index(hero)));
+    for (const hero of heroes) {
+      const cap = ceiling * (1 + (TIER_STAT_BUDGET_PCT * (hero.tier - 1)) / 100);
+      if (index(hero) > cap + 1e-9)
+        issues.push(
+          `héros « ${hero.id} » : stats au-dessus du budget de sa rareté (${index(hero).toFixed(3)} > ${cap.toFixed(3)})`,
+        );
     }
   }
 

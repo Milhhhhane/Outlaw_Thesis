@@ -1,0 +1,503 @@
+{
+  "id": "genet",
+  "element": "nature",
+  "role": "control",
+  "tier": 2,
+  "stats": {
+    "hp": 430,
+    "atk": 51,
+    "def": 22,
+    "vit": 103
+  },
+  "spells": [
+    {
+      "id": "genet_lace",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 90
+        },
+        {
+          "kind": "tempo",
+          "amount": 6
+        }
+      ]
+    },
+    {
+      "id": "genet_jaw",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": 20
+        },
+        {
+          "kind": "status",
+          "status": "mark",
+          "duration": 2,
+          "power": 20
+        },
+        {
+          "kind": "damage",
+          "power": 40
+        }
+      ]
+    },
+    {
+      "id": "genet_pit",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 150
+        },
+        {
+          "kind": "tempo",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "id": "genet_drive",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "mark",
+          "duration": 2,
+          "power": 25
+        },
+        {
+          "kind": "tempo",
+          "amount": 30
+        },
+        {
+          "kind": "damage",
+          "power": 70
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "genet_traps",
+    "triggers": [
+      {
+        "on": "spell_cast",
+        "subject": "enemy",
+        "limit": {
+          "per": "combat",
+          "count": 3
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "subject",
+            "power": 35
+          },
+          {
+            "kind": "tempo",
+            "target": "subject",
+            "amount": 10
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "genet_page_snares",
+      "nodes": [
+        {
+          "id": "genet_snares_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_shallow",
+          "requires": "genet_snares_core",
+          "group": "genet_snares_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_spikes",
+          "requires": "genet_snares_core",
+          "group": "genet_snares_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "stun",
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_noose",
+          "requires": "genet_snares_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_line",
+          "requires": "genet_snares_noose",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_beaters",
+          "requires": "genet_snares_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_bog",
+          "requires": "genet_snares_beaters",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_snares_steel",
+          "requires": "genet_snares_line",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "damage",
+                "power": 50
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "genet_page_bait",
+      "nodes": [
+        {
+          "id": "genet_bait_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_trail",
+          "requires": "genet_bait_core",
+          "group": "genet_bait_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_scatter",
+          "requires": "genet_bait_core",
+          "group": "genet_bait_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_lure",
+          "requires": "genet_bait_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 1,
+                "power": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_musk",
+          "requires": "genet_bait_lure",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_carcass",
+          "requires": "genet_bait_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_stake",
+          "requires": "genet_bait_carcass",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "genet_bait_kill",
+          "requires": "genet_bait_musk",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 100
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "genet_page_pelts",
+      "nodes": [
+        {
+          "id": "genet_pelts_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_hide",
+          "requires": "genet_pelts_core",
+          "group": "genet_pelts_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_jerky",
+          "requires": "genet_pelts_core",
+          "group": "genet_pelts_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 50
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_cap",
+          "requires": "genet_pelts_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 20,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_tent",
+          "requires": "genet_pelts_cap",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "target": "all_allies",
+                "power": 40,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_lurk",
+          "requires": "genet_pelts_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_fire",
+          "requires": "genet_pelts_lurk",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "heal",
+                "target": "all_allies",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "genet_pelts_scent",
+          "requires": "genet_pelts_tent",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

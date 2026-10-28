@@ -8,13 +8,13 @@ import {
   tierTargetLevel,
   type HeroBuild,
 } from '@outlaw/engine';
-import { randomBuild } from './builds';
+import { randomBuild, pickTeam } from './builds';
 import { lookahead } from './policy';
 import { createRng, type Rng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
- * Paliers de donjon : pour chaque donjon et chaque palier, des équipes de `teamSize` héros tirées
+ * Paliers de donjon : pour chaque donjon et chaque palier, des équipes jouables de `teamSize` héros tirées
  * au hasard (builds aléatoires) au niveau visé par le palier (celui des ennemis, borné au niveau
  * maximum) et avec l'équipement visé (`tierGear` : aucun objet au palier I, deux objets bruts au
  * palier II, deux objets au niveau maximum au dernier palier), jouées par la politique experte.
@@ -69,7 +69,7 @@ export function tiers(content: Content, runs: number, seed: number): TiersReport
       const rng = createRng(seed + 131 * d + 17 * tier);
       const clears: BattleOutcome[] = [];
       for (let i = 0; i < runs; i++) {
-        const team = rng.shuffle(heroes).slice(0, content.balance.progression.teamSize);
+        const team = pickTeam(content, rng.shuffle(heroes), content.balance.progression.teamSize);
         const builds = team.map((hero) => ({
           ...randomBuild(content, hero, level, rng),
           items: randomItems(content, gear, rng),

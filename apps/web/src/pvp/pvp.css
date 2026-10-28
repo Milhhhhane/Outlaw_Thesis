@@ -250,8 +250,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 8px;
+  /* Jusqu'à 25 héros : la liste défile dans son cadre, l'écran reste fixe. */
+  max-height: 300px;
   margin: 0;
-  padding: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
   list-style: none;
 }
 

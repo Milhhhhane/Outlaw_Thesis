@@ -1,0 +1,495 @@
+{
+  "id": "soufre",
+  "element": "fire",
+  "role": "control",
+  "tier": 3,
+  "stats": {
+    "hp": 425,
+    "atk": 51,
+    "def": 22,
+    "vit": 104
+  },
+  "spells": [
+    {
+      "id": "soufre_anathema",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 70
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 1,
+          "power": 15
+        }
+      ]
+    },
+    {
+      "id": "soufre_candle",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 35
+        },
+        {
+          "kind": "tempo",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "id": "soufre_autodafe",
+      "slot": "b",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 25
+        },
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "soufre_doom",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 120
+        },
+        {
+          "kind": "tempo",
+          "amount": 20
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "soufre_damnation",
+    "triggers": [
+      {
+        "on": "status_applied",
+        "subject": "enemy",
+        "status": "burn",
+        "limit": {
+          "per": "turn",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "subject",
+            "stat": "vit",
+            "percent": -15,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "on": "damage_dealt",
+        "subject": "ally",
+        "targetHasStatus": "burn",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 10
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "soufre_page_curse",
+      "nodes": [
+        {
+          "id": "soufre_curse_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_slow",
+          "requires": "soufre_curse_core",
+          "group": "soufre_curse_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_tallow",
+          "requires": "soufre_curse_core",
+          "group": "soufre_curse_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_wick",
+          "requires": "soufre_curse_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_hellfire",
+          "requires": "soufre_curse_wick",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 35
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_brand",
+          "requires": "soufre_curse_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "damage",
+                "power": 50
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_censer",
+          "requires": "soufre_curse_brand",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 40
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "soufre_curse_reprobate",
+          "requires": "soufre_curse_hellfire",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soufre_page_ashes",
+      "nodes": [
+        {
+          "id": "soufre_ashes_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_penance",
+          "requires": "soufre_ashes_core",
+          "group": "soufre_ashes_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "amount": 8
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_procession",
+          "requires": "soufre_ashes_core",
+          "group": "soufre_ashes_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_knell",
+          "requires": "soufre_ashes_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 75
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_torpor",
+          "requires": "soufre_ashes_knell",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_taper",
+          "requires": "soufre_ashes_core",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_litany",
+          "requires": "soufre_ashes_taper",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "soufre_ashes_excommunion",
+          "requires": "soufre_ashes_torpor",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "status",
+                "status": "stun",
+                "duration": 1
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soufre_page_pyre",
+      "nodes": [
+        {
+          "id": "soufre_pyre_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_kindling",
+          "requires": "soufre_pyre_core",
+          "group": "soufre_pyre_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_stake",
+          "requires": "soufre_pyre_core",
+          "group": "soufre_pyre_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_blaze",
+          "requires": "soufre_pyre_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_brimstone",
+          "requires": "soufre_pyre_blaze",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_crowd",
+          "requires": "soufre_pyre_core",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_fervor",
+          "requires": "soufre_pyre_crowd",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -30
+              }
+            }
+          ]
+        },
+        {
+          "id": "soufre_pyre_apocalypse",
+          "requires": "soufre_pyre_brimstone",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

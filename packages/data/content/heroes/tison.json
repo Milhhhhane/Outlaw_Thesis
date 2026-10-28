@@ -1,0 +1,478 @@
+{
+  "id": "tison",
+  "element": "fire",
+  "role": "support",
+  "tier": 1,
+  "stats": {
+    "hp": 450,
+    "atk": 48,
+    "def": 25,
+    "vit": 102
+  },
+  "spells": [
+    {
+      "id": "tison_ladle",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 115
+        }
+      ]
+    },
+    {
+      "id": "tison_simmer",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": -30
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 20,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "tison_broth",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "heal",
+          "power": 70
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "tison_feast",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": -25
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 25,
+          "duration": 2
+        },
+        {
+          "kind": "heal",
+          "power": 40
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "tison_campfire",
+    "triggers": [
+      {
+        "on": "combat_start",
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "all_allies",
+            "amount": -15
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "tison_page_kitchen",
+      "nodes": [
+        {
+          "id": "tison_kitchen_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_round",
+          "requires": "tison_kitchen_core",
+          "group": "tison_kitchen_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_simmered",
+          "requires": "tison_kitchen_core",
+          "group": "tison_kitchen_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_stew",
+          "requires": "tison_kitchen_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_seconds",
+          "requires": "tison_kitchen_stew",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_pepper",
+          "requires": "tison_kitchen_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_chili",
+          "requires": "tison_kitchen_pepper",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "tison_kitchen_feast",
+          "requires": "tison_kitchen_seconds",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tison_page_embers",
+      "nodes": [
+        {
+          "id": "tison_embers_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_quick",
+          "requires": "tison_embers_core",
+          "group": "tison_embers_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_dinner",
+          "requires": "tison_embers_core",
+          "group": "tison_embers_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_stir",
+          "requires": "tison_embers_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_hurry",
+          "requires": "tison_embers_stir",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_tip",
+          "requires": "tison_embers_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_free",
+          "requires": "tison_embers_tip",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "tison_embers_dawn",
+          "requires": "tison_embers_hurry",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tison_page_supply",
+      "nodes": [
+        {
+          "id": "tison_supply_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_ration",
+          "requires": "tison_supply_core",
+          "group": "tison_supply_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_bowl",
+          "requires": "tison_supply_core",
+          "group": "tison_supply_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "ally"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 150
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_crumbs",
+          "requires": "tison_supply_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "heal",
+                "target": "lowest_hp_ally",
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_pantry",
+          "requires": "tison_supply_crumbs",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_soup",
+          "requires": "tison_supply_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "heal",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_cauldron",
+          "requires": "tison_supply_soup",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 80
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
+            }
+          ]
+        },
+        {
+          "id": "tison_supply_larder",
+          "requires": "tison_supply_pantry",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "power": 50,
+                "duration": 2
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

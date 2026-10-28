@@ -1,0 +1,525 @@
+{
+  "id": "houx",
+  "element": "nature",
+  "role": "control",
+  "tier": 1,
+  "stats": {
+    "hp": 440,
+    "atk": 49,
+    "def": 25,
+    "vit": 100
+  },
+  "spells": [
+    {
+      "id": "houx_sermon",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "houx_preach",
+      "slot": "a",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": -15,
+          "duration": 2
+        },
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "houx_crown",
+      "slot": "b",
+      "targeting": "self",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 120,
+          "duration": 2
+        },
+        {
+          "kind": "trigger",
+          "duration": 2,
+          "trigger": {
+            "on": "damage_taken",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "damage",
+                "target": "other",
+                "power": 50
+              },
+              {
+                "kind": "tempo",
+                "target": "other",
+                "amount": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "houx_sentence",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        },
+        {
+          "kind": "tempo",
+          "amount": 30
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "houx_holly",
+    "triggers": [
+      {
+        "on": "damage_taken",
+        "subject": "self",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "other",
+            "amount": 10
+          },
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 25
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "houx_page_briars",
+      "nodes": [
+        {
+          "id": "houx_briars_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_gift",
+          "requires": "houx_briars_core",
+          "group": "houx_briars_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "ally"
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_martyr",
+          "requires": "houx_briars_core",
+          "group": "houx_briars_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_admonish",
+          "requires": "houx_briars_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "amount": 10
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_scourge",
+          "requires": "houx_briars_admonish",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "damage",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_stigma",
+          "requires": "houx_briars_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_wrath",
+          "requires": "houx_briars_stigma",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
+            }
+          ]
+        },
+        {
+          "id": "houx_briars_hedge",
+          "requires": "houx_briars_scourge",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "trigger",
+                "target": "all_allies",
+                "duration": 2,
+                "trigger": {
+                  "on": "damage_taken",
+                  "subject": "self",
+                  "limit": {
+                    "per": "turn",
+                    "count": 1
+                  },
+                  "effects": [
+                    {
+                      "kind": "damage",
+                      "target": "other",
+                      "power": 25
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "houx_page_robe",
+      "nodes": [
+        {
+          "id": "houx_robe_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_vow",
+          "requires": "houx_robe_core",
+          "group": "houx_robe_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_balm",
+          "requires": "houx_robe_core",
+          "group": "houx_robe_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "heal",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_kneel",
+          "requires": "houx_robe_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_cloak",
+          "requires": "houx_robe_kneel",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 80,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_rosary",
+          "requires": "houx_robe_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 20,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_vigil",
+          "requires": "houx_robe_rosary",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "houx_robe_sanctuary",
+          "requires": "houx_robe_cloak",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "target": "all_allies",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "houx_page_pulpit",
+      "nodes": [
+        {
+          "id": "houx_pulpit_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_pause",
+          "requires": "houx_pulpit_core",
+          "group": "houx_pulpit_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_litany",
+          "requires": "houx_pulpit_core",
+          "group": "houx_pulpit_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_rebuke",
+          "requires": "houx_pulpit_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_anathema",
+          "requires": "houx_pulpit_rebuke",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_doubt",
+          "requires": "houx_pulpit_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_alms",
+          "requires": "houx_pulpit_doubt",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "houx_pulpit_verdict",
+          "requires": "houx_pulpit_anathema",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

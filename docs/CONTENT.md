@@ -52,10 +52,23 @@ porteur et ne déclenchent jamais d'autre déclencheur.
 
 ## Héros
 
-Six héros, deux par élément, chaque rôle deux fois : Pyra (feu/dégâts), Marée (eau/soutien),
-Ronce (nature/contrôle), Cendre (feu/contrôle), Ressac (eau/dégâts), Sève (nature/soutien). Les
-deux derniers (Ressac, Sève) se débloquent en terminant les donjons 4 et 6 ; les quatre autres
-forment l'équipe de départ (équipes de quatre : `balance.progression.teamSize`).
+25 héros, chaque couple élément × rôle au moins deux fois. Les six premiers (Pyra, Marée,
+Ronce, Cendre, Ressac, Sève) sont communs ; quatre forment l'équipe de départ (`"starter": true`),
+Ressac et Sève se débloquent en terminant les donjons 4 et 6. Les 19 autres s'obtiennent par
+invocation (fragments des coffres). Ordre d'affichage : `content/heroes/index.ts`.
+
+**Rareté** (`tier`, 1 à 4 : commun, rare, épique, légendaire ; 1 par défaut). Elle fixe le poids
+du héros dans le tirage des fragments (`balance.chests.tierWeights`) et son coût d'invocation
+(`chests.summonCosts`). Elle enrichit le kit (passif à deux déclencheurs, mécanique qui plie une
+règle pour les légendaires), pas les stats : le chargement refuse un héros dont l'indice de stats
+dépasse celui du commun le mieux doté de plus de `TIER_STAT_BUDGET_PCT` (2 %) par palier, et un
+héros de départ ou de donjon au-dessus de rare.
+
+Ajouter un héros : un fichier JSON (élément, rôle, rareté, stats, sorts, passif, trois pages de
+huit nœuds : racine, choix exclusif de deux, deux branches de deux, sommet), une ligne dans
+`content/heroes/index.ts`, ses textes dans `content.fr.json`, son sprite (`HEROES` et `WEAPONS`
+dans `tools/art/pack.py`, prise d'arme dans `apps/web/src/art/HeroSprite.tsx`), puis
+`pnpm --filter @outlaw/sim heroes` pour situer sa force et `pnpm sim` pour les règles.
 
 4 sorts (un par emplacement : `basic`, `a`, `b`, `ult`), un passif, 3 pages de 5 nœuds de
 talents. Un nœud porte 1 à 3 modifications de sort (`addEffect`, `scaleEffect`, `cost`, `gain`,

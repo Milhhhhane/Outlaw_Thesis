@@ -4,7 +4,7 @@ import { compilePlayerTeam, toBattleRules } from '@outlaw/net';
 import { randomBuild } from './builds';
 import { average, type Policy } from './policy';
 import { createRng } from './rng';
-import { teams } from './rules';
+import { sampleTeams } from './rules';
 import { runBattle } from './run';
 
 /**
@@ -31,10 +31,16 @@ export const DURATION_TARGET = { min: 30, max: 60 } as const;
 export const HERO_BAND = 0.1;
 
 export interface PvpOptions {
-  /** Jeux de builds de la série croisée : chacun joue toutes les paires ordonnées de compositions (15 × 14 à quatre héros parmi six). */
+  /** Jeux de builds de la série croisée : chacun joue toutes les paires ordonnées de compositions. */
   readonly samples: number;
-  /** Builds tirés au hasard par composition dans la série miroir (15 compositions de quatre héros parmi six). */
+  /** Builds tirés au hasard par composition dans la série miroir. */
   readonly mirrorSamples: number;
+  /**
+   * Compositions mesurées : toutes s'il y en a au plus autant, sinon un échantillon à graine fixe
+   * (`sampleTeams` de rules.ts : chaque héros dans à peu près autant d'équipes). 25 héros font
+   * 12 650 équipes de quatre, trop pour un rapport de quelques dizaines de secondes.
+   */
+  readonly teams: number;
   readonly seed: number;
   /** Niveau de tous les héros ; celui du plafond par défaut d'un salon. */
   readonly level: number;
@@ -110,7 +116,7 @@ interface Tally {
 }
 
 export function evaluatePvp(content: Content, options: PvpOptions): PvpReport {
-  const compositions = teams(content);
+  const compositions = sampleTeams(content, options.teams, options.seed);
   const tally = new Map<string, Tally>(
     content.heroes.map((hero) => [
       hero.id,
@@ -268,7 +274,7 @@ export function proposals(report: PvpReport): string[] {
 export function formatReport(report: PvpReport): string {
   const { mirror, cross } = report;
   const lines = [
-    `PVP : ${mirror.battles} combats miroirs (${report.options.mirrorSamples} par composition) et ${cross.battles} croisés (${report.options.samples} jeu(x) de builds), niveau ${report.options.level}, graine ${report.options.seed}`,
+    `PVP : ${mirror.battles} combats miroirs (${report.options.mirrorSamples} par composition) sur ${String(report.options.teams)} compositions au plus, et ${cross.battles} croisés (${report.options.samples} jeu(x) de builds), niveau ${report.options.level}, graine ${report.options.seed}`,
     '',
     `Miroir : premier joueur ${percent(mirror.firstPlayerRate)} (cible ${percent(FIRST_PLAYER_TARGET)} ± ${FIRST_PLAYER_TOLERANCE * 100} points), ${mirror.draws} égalité(s)`,
     `Durée (actions du moteur) : miroir ${mirror.avgActions.toFixed(1)} [${mirror.minActions} à ${mirror.maxActions}], croisé ${cross.avgActions.toFixed(1)}, ensemble ${report.avgActions.toFixed(1)}, soit environ ${(report.avgActions / 2).toFixed(1)} par joueur (cible ${DURATION_TARGET.min} à ${DURATION_TARGET.max})`,

@@ -1,9 +1,10 @@
 import { loadContent } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import { DURATION_TARGET, evaluatePvp, formatReport, proposals, type PvpReport } from '../src/pvp';
+import { sampleTeams } from '../src/rules';
 
 const content = loadContent();
-const small = { samples: 1, mirrorSamples: 2, seed: 1, level: 30 };
+const small = { samples: 1, mirrorSamples: 2, teams: 12, seed: 1, level: 30 };
 
 /** Combinaisons de k parmi n. */
 function choose(n: number, k: number): number {
@@ -16,20 +17,25 @@ describe('mesure du PVP', () => {
   const report = evaluatePvp(content, small);
 
   it('compte les combats attendus', () => {
-    const heroes = content.heroes.length;
     const size = content.balance.progression.teamSize;
-    // Compositions de `teamSize` héros parmi ceux du jeu : 15 pour quatre parmi six.
-    const compositions = choose(heroes, size);
     expect(size).toBe(4);
-    // Deux builds par composition en miroir.
-    expect(report.mirror.battles).toBe(compositions * 2);
-    // Toutes les paires ordonnées, un jeu de builds.
-    expect(report.cross.battles).toBe(compositions * (compositions - 1));
-    // Un héros est dans `withHero` compositions : avec chacune des autres, il n'est que d'un côté, deux sens.
-    const withHero = choose(heroes - 1, size - 1);
+    // Les compositions mesurées : un échantillon à graine fixe (25 héros font 12 650 équipes de quatre).
+    const compositions = sampleTeams(content, small.teams, small.seed);
+    expect(compositions).toHaveLength(Math.min(small.teams, choose(content.heroes.length, size)));
+    for (const team of compositions) expect(team).toHaveLength(size);
+    const n = compositions.length;
+    // Deux builds par composition en miroir ; toutes les paires ordonnées en croisé, un jeu de builds.
+    expect(report.mirror.battles).toBe(n * 2);
+    expect(report.cross.battles).toBe(n * (n - 1));
     for (const row of report.heroes) {
-      expect(row.battles).toBe(2 * withHero * (compositions - withHero));
-      expect(row.mirrorBattles).toBe(withHero * 2);
+      // Le héros compte dans les paires où il n'est que d'un côté, et dans les miroirs de ses équipes.
+      const withHero = compositions.filter((team) => team.includes(row.hero));
+      let alone = 0;
+      for (const x of compositions)
+        for (const y of compositions)
+          if (x !== y && x.includes(row.hero) !== y.includes(row.hero)) alone++;
+      expect(row.battles).toBe(alone);
+      expect(row.mirrorBattles).toBe(withHero.length * 2);
       expect(row.winRate).toBeGreaterThanOrEqual(0);
       expect(row.winRate).toBeLessThanOrEqual(1);
     }
@@ -48,7 +54,7 @@ describe('mesure du PVP', () => {
   it('est reproductible à graine égale', () => {
     expect(evaluatePvp(content, small)).toEqual(report);
     expect(evaluatePvp(content, { ...small, seed: 2 })).not.toEqual(report);
-    // Deux mesures de 15 × 2 miroirs et 15 × 14 croisés à quatre héros : plusieurs secondes sur une machine chargée.
+    // Deux mesures de 12 × 2 miroirs et 12 × 11 croisés à quatre héros : plusieurs secondes sur une machine chargée.
   }, 60_000);
 
   it('imprime un rapport qui précise que rien n’est appliqué', () => {

@@ -187,12 +187,17 @@ export const heroSchema = z
     id: idSchema,
     element: elementSchema,
     role: roleSchema,
-    /** Palier de puissance du héros, de I (1) à IV (4) : sert au budget de paliers des salons PvP. */
+    /**
+     * Rareté du héros, de commun (1) à légendaire (4) : pondère les coffres et le coût d'invocation
+     * (balance.json → chests), et sert au budget de paliers des salons PvP.
+     */
     tier: z.number().int().min(1).max(MAX_HERO_TIER).default(1),
     stats: baseStatsSchema,
     spells: z.array(spellSchema).length(SPELL_SLOTS.length),
     passive: passiveSchema,
     pages: z.array(talentPageSchema).length(PAGES_PER_HERO),
+    /** Héros de l'équipe de départ. Les autres s'obtiennent par un donjon (`unlocksHero`) ou par invocation. */
+    starter: z.boolean().default(false),
   })
   .superRefine((hero, ctx) => {
     const slots = new Set(hero.spells.map((s) => s.slot));

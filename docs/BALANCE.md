@@ -32,7 +32,8 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 ## Règles d'équilibre (cibles de la simulation)
 
-Mesurées par `pnpm sim` sur toutes les équipes possibles (15 : 4 héros parmi 6, voir Lot 13) ; `pnpm sim:check` (CI) échoue si l'une
+Mesurées par `pnpm sim` sur 50 équipes tirées avec une graine fixe parmi les 12 650 possibles (voir
+« 25 héros et rareté ») ; `pnpm sim:check` (CI) échoue si l'une
 d'elles n'est plus tenue. Définitions exactes dans `tools/sim/src/rules.ts` :
 
 - **R1** : pour chaque équipe et chaque niveau conseillé (où les talents permettent des builds
@@ -405,3 +406,104 @@ Ce que le réglage ne règle pas : la première étoile (20 passages, 10 fragmen
 37ᵉ passage en moyenne, 30 à 46 selon le tirage) ; `starCosts` et `replayChestRate` n'ont pas été
 touchés, faute de cible chiffrée dans le brief. L'or n'a toujours que les objets et le respec
 comme puits : une fois la collection finie, il s'accumule.
+
+## 25 héros et rareté
+
+### Simulation : un échantillon d'équipes
+
+25 héros font 12 650 équipes de quatre ; les règles les jouaient toutes (15 avec six héros). Les
+duels de R1 font 84 % du temps de calcul (mesuré : 30,5 s de duels pour 3,7 s de classement R2 et
+2,2 s de joueur moyen sur 4 équipes × 10 donjons). Choix (`tools/sim/src/rules.ts`) :
+
+- **50 équipes** (`TEAM_SAMPLE`), tirées par tours avec la graine de la simulation : à chaque tour
+  les héros sont mélangés puis groupés en équipes, donc chaque héros figure dans 8 équipes (±1).
+  R2 et « aucun héros indispensable » portent sur les 50.
+- **R1 sur les 12 premières** (`R1_TEAMS`) : deux tours de mélange, chaque héros y figure.
+- **Équipes jouables** : au plus deux héros du même rôle (`pickTeam`, aussi pour le rythme). Avec
+  six héros (deux par rôle), toute équipe l'était ; avec 25, trois soutiens sans personne pour
+  frapper finissaient à la limite d'actions et faussaient les durées.
+- Temps : `pnpm sim:check` ≈ 70 s de calcul (52 s avant), 80 s à 240 s de temps réel selon la charge
+  de la machine.
+
+### Force des héros
+
+`pnpm --filter @outlaw/sim heroes 16` : pour chaque héros, 16 équipes qui le contiennent par
+donjon (trois coéquipiers au hasard), part de donjons finis avec 3 niveaux de retard par le joueur
+moyen (la mesure de « aucun héros indispensable »), durée des boss et combats trop courts
+(expert). Marge d'environ ±4 points (160 essais par héros).
+
+| Rareté     | Héros (part finie en retard)                                                                      | Moyenne |
+| ---------- | ------------------------------------------------------------------------------------------------- | ------: |
+| Commun     | Pyra 44, Tison 44, Écume 43, Yucca 43, Cendre 42, Ressac 39, Houx 39, Ronce 38, Sève 31, Marée 24 |    39 % |
+| Rare       | Genêt 48, Forge 46, Chardon 46, Mousse 44, Brume 41, Sillage 40, Mousson 34, Lanterne 33          |    42 % |
+| Épique     | Torrent 48, Soufre 43, Étendard 39, Éden 36, Séquoia 35                                           |    40 % |
+| Légendaire | Sablier 51, Phénix 48                                                                             |    50 % |
+
+- Les 19 nouveaux vont de 33 à 51 %, les six premiers de 24 à 44 % : aucun nouveau n'est sous
+  Sève ni au-dessus de Pyra de plus de 7 points. Les légendaires sont devant (kits plus riches,
+  stats dans le budget de la rareté), mais pas indispensables : **écart 7 points** dans
+  `pnpm sim:check` (cible ≤ 10), contre 26 avec six héros. Règle tenue pour la première fois
+  depuis le lot 7 : avec 25 héros, retirer un héros laisse assez d'équipes. Marée reste la plus
+  faible (inchangée, hors périmètre).
+- Meilleure équipe échantillonnée contenant chaque héros : de 37 % (Pyra) à 69 % (Phénix) ; avec
+  8 équipes par héros, c'est surtout un garde-fou contre un héros inutilisable.
+- R1 86 %, R2 82 % (pire donjon), expert 90 %, joueur moyen 63 % au niveau conseillé.
+- Réglage : sept passes. Les premiers jets de Sablier, Torrent, Phénix et Forge passaient 52 à
+  61 % (trop de tempo gratuit : reprises de tour, retards à l'entrée) ; les soutiens neufs
+  allongeaient les boss (attaques de base relevées à 105–115 %, bonus d'ATK sur leurs
+  compétences) ; Mousson et les sorts B rendus « tous les ennemis » vidaient des salles en 5
+  actions (bonus de DEF de l'ultime retiré, zone à −55 %) ; Lanterne démarrait avec un point de
+  plus et lançait un ultime au premier tour (retiré).
+
+### Cibles de rythme ajustées (à arbitrer par le propriétaire)
+
+Les donjons n'ont pas été retouchés (chantier des paliers en parallèle). Trois cibles ne tenaient
+plus, pour des raisons de mesure plus que de héros :
+
+- **Plancher du tout premier combat 9 → 7 actions.** Au niveau 1, sur 400 équipes de quatre tirées
+  parmi les 25, Pyra (27 combats sous 9 actions), Ressac (25), Torrent (23) et Mousson (23) sont les
+  plus rapides : deux héros d'origine y descendent aussi à 7. Le 9 tenait parce que les 15 équipes
+  possibles ne réunissaient jamais assez de dégâts d'eau contre les molosses de feu. Il est
+  désormais sous le plancher général (8) ; c'est une salle de prise en main.
+- **Boss 21–30 → 21–32 actions.** Dédale de ronces 30,3 et Couronne verdoyante 31,0 : les équipes à
+  deux soutiens et deux contrôleurs (8,6 % des équipes jouables, 6,7 % avec six héros) y passent
+  50 à 70 actions et tirent la moyenne.
+- **Tolérance de la courbe 12 → 15 points.** Carrefour brisé 67 % après Couronne verdoyante 52 %
+  (joueur moyen) : à 48 équipes la marge d'erreur est d'environ ±7 points par donjon.
+
+Ces trois cibles se règlent mieux par les donjons (`autotune`, `tunecurve`) : à refaire après la
+fusion des paliers de donjon, en revenant si possible à 9 / 30 / 12.
+
+### Coffres et rareté
+
+Valeurs de `balance.json` → `chests`. Répartition : 10 communs, 8 rares, 5 épiques, 2 légendaires.
+
+| Rareté     | Poids |     Part d'un fragment au hasard | Invocation | Fragments pour un héros ciblé | Sans ciblage |
+| ---------- | ----: | -------------------------------: | ---------: | ----------------------------: | -----------: |
+| Commun     |    12 |   6,5 % par héros (65 % en tout) |         10 |                            19 |          154 |
+| Rare       |     6 |   3,2 % par héros (26 % en tout) |         20 |                            39 |          617 |
+| Épique     |     3 |  1,6 % par héros (8,1 % en tout) |         40 |                            79 |        2 467 |
+| Légendaire |     1 | 0,54 % par héros (1,1 % en tout) |         80 |                           159 |       14 800 |
+
+- Calcul : part d'un héros = poids ÷ 185 (somme des poids) ; ciblé, 50 % + la moitié de sa part.
+- Les 61 fragments des premières victoires paient un commun et un rare ciblés, ou les deux étoiles
+  d'un héros (30). Un légendaire ciblé demande environ 20 coffres d'or, soit 40 rejeux des
+  donjons 6 à 10 : c'est l'objectif long terme. Sans ciblage, un légendaire précis est hors de
+  portée : le ciblage est la voie, la rareté le prix.
+- Les étoiles coûtent pareil quelle que soit la rareté : une fois invoqué, un héros n'est pas plus
+  cher à monter.
+- À vérifier au test humain : si un légendaire paraît trop loin, baisser `summonCosts[3]` avant de
+  toucher aux poids (qui ne jouent presque plus quand on cible).
+- Effet sur l'économie (`pnpm --filter @outlaw/sim economy`, après fusion des paliers) : les
+  fragments tirés au hasard se répartissent sur 25 héros au lieu de 6, les étoiles de l'équipe
+  viennent donc surtout de la part ciblée. Équipe de 4 équipée 38,5 → 46,0 passages gagnants,
+  équipe au niveau 30 101,6 → 110,3, objets au maximum 116,0 → 122,2 ; premier objet (8,1) et
+  première étoile (20,0) inchangés. Dans les bornes de `economy.test.ts` ; si le propriétaire
+  trouve la fin trop longue, monter `focusRate` (0,5) avant de toucher aux coûts d'étoile.
+
+### Après fusion des paliers de donjon
+
+La mesure des paliers (`tools/sim/src/tiers.ts`) tire elle aussi des équipes jouables
+(`pickTeam`). Résultat : toutes les règles tenues (R1 86 %, R2 82 %, écart 7 points, rythme, paliers
+de 50 à 100 % pour l'expert) ; sans `pickTeam`, le palier II des Salines blêmes passait 12 points
+au-dessus du palier I.

@@ -10,8 +10,9 @@ import {
 
 /**
  * Coffres et fragments. Un coffre ne donne que des fragments de héros, tirés avec la graine du
- * profil (même profil, même tirage). Des fragments invoquent un héros, ou paient l'étoile qui lève
- * le plafond de niveau. Fonctions pures : (profil, demande) → nouveau profil ou refus motivé.
+ * profil (même profil, même tirage) et pondérés par la rareté des héros. Des fragments invoquent un
+ * héros (coût selon sa rareté), ou paient l'étoile qui lève le plafond de niveau. Fonctions pures :
+ * (profil, demande) → nouveau profil ou refus motivé.
  */
 
 const ok = <T>(value: T): Outcome<T> => ({ ok: true, value });
@@ -33,17 +34,50 @@ export function chestSize(content: Content, tier: string): number | null {
   return content.balance.chests.tiers.find((t) => t.id === tier)?.fragments ?? null;
 }
 
+/** Poids d'un héros dans le tirage d'un fragment : celui de sa rareté (balance.json → chests). */
+export function heroWeight(content: Content, heroId: string): number {
+  const tier = content.heroById.get(heroId)?.tier ?? 1;
+  return content.balance.chests.tierWeights[tier - 1] ?? 0;
+}
+
+/** Fragments pour invoquer un héros : le coût de sa rareté. */
+export function summonCost(content: Content, heroId: string): number {
+  const tier = content.heroById.get(heroId)?.tier ?? 1;
+  const { summonCosts } = content.balance.chests;
+  return summonCosts[tier - 1] ?? summonCosts[0] ?? 0;
+}
+
+/** Héros ciblé valide du profil, ou null. */
+function focusOf(content: Content, profile: Profile): string | null {
+  return profile.focus !== null && content.heroById.has(profile.focus) ? profile.focus : null;
+}
+
+/**
+ * Héros tiré par un nombre de [0, 1) : chaque héros occupe une part de l'intervalle proportionnelle
+ * à son poids de rareté, dans l'ordre du contenu.
+ */
+function weightedHero(content: Content, value: number): string {
+  const weights = content.heroes.map((h) => heroWeight(content, h.id));
+  const total = weights.reduce((sum, w) => sum + w, 0);
+  let cursor = value * total;
+  for (let i = 0; i < content.heroes.length; i++) {
+    cursor -= weights[i] ?? 0;
+    if (cursor < 0) return content.heroes[i]?.id ?? '';
+  }
+  return content.heroes.at(-1)?.id ?? '';
+}
+
 /**
  * Chance, en %, qu'un fragment tombe sur chaque héros, avec le héros ciblé du profil. Affiché au
- * joueur : le tirage et l'affichage partagent ce calcul.
+ * joueur : le tirage et l'affichage partagent ce calcul (poids de rareté, part du héros ciblé).
  */
 export function fragmentRates(content: Content, profile: Profile): { hero: string; pct: number }[] {
-  const heroes = content.heroes.map((h) => h.id);
-  const target = profile.focus !== null && heroes.includes(profile.focus) ? profile.focus : null;
+  const target = focusOf(content, profile);
   const focus = target === null ? 0 : content.balance.chests.focusRate;
-  return heroes.map((hero) => ({
+  const total = content.heroes.reduce((sum, h) => sum + heroWeight(content, h.id), 0);
+  return content.heroes.map(({ id: hero }) => ({
     hero,
-    pct: ((hero === target ? focus : 0) + (1 - focus) / heroes.length) * 100,
+    pct: ((hero === target ? focus : 0) + ((1 - focus) * heroWeight(content, hero)) / total) * 100,
   }));
 }
 
@@ -55,8 +89,7 @@ export function openChest(
 ): Outcome<{ profile: Profile; report: ChestReport }> {
   const size = chestSize(content, tier);
   if (size === null || (profile.chests[tier] ?? 0) < 1) return refuse('no_chest');
-  const heroes = content.heroes.map((h) => h.id);
-  const target = profile.focus !== null && heroes.includes(profile.focus) ? profile.focus : null;
+  const target = focusOf(content, profile);
   const { focusRate } = content.balance.chests;
 
   let seed = profile.seed;
@@ -68,9 +101,7 @@ export function openChest(
     const any = nextRandom(aim.seed);
     seed = any.seed;
     const hero =
-      target !== null && aim.value < focusRate
-        ? target
-        : (heroes[Math.floor(any.value * heroes.length)] ?? heroes[0] ?? '');
+      target !== null && aim.value < focusRate ? target : weightedHero(content, any.value);
     drawn.push(hero);
     fragments[hero] = (fragments[hero] ?? 0) + 1;
   }
@@ -91,16 +122,16 @@ export function setFocus(content: Content, profile: Profile, heroId: string | nu
   return ok({ ...profile, focus: heroId });
 }
 
-/** Invoque un héros que le joueur ne possède pas encore, contre ses fragments. */
+/** Invoque un héros que le joueur ne possède pas encore, contre ses fragments (coût de sa rareté). */
 export function summonHero(content: Content, profile: Profile, heroId: string): Outcome {
   if (!content.heroById.has(heroId)) return refuse('unknown_hero');
   if (profile.unlocked.includes(heroId)) return refuse('already_unlocked');
-  const { summonCost } = content.balance.chests;
+  const cost = summonCost(content, heroId);
   const owned = profile.fragments[heroId] ?? 0;
-  if (owned < summonCost) return refuse('not_enough_fragments');
+  if (owned < cost) return refuse('not_enough_fragments');
   return ok({
     ...profile,
-    fragments: { ...profile.fragments, [heroId]: owned - summonCost },
+    fragments: { ...profile.fragments, [heroId]: owned - cost },
     unlocked: [...profile.unlocked, heroId],
     heroes: { ...profile.heroes, [heroId]: freshHero(1, content) },
   });

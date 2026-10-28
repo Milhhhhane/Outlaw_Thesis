@@ -1,0 +1,496 @@
+{
+  "id": "etendard",
+  "element": "fire",
+  "role": "support",
+  "tier": 3,
+  "stats": {
+    "hp": 455,
+    "atk": 47,
+    "def": 26,
+    "vit": 101
+  },
+  "spells": [
+    {
+      "id": "etendard_drum",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "etendard_bugle",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": -30
+        },
+        {
+          "kind": "shield",
+          "power": 60,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "etendard_charge",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 25,
+          "duration": 2
+        },
+        {
+          "kind": "tempo",
+          "amount": -10
+        }
+      ]
+    },
+    {
+      "id": "etendard_cavalry",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "tempo",
+          "amount": -40
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 20,
+          "duration": 3
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "etendard_banner",
+    "triggers": [
+      {
+        "on": "turn_start",
+        "subject": "ally",
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "subject",
+            "stat": "atk",
+            "percent": 10,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "on": "unit_down",
+        "subject": "ally",
+        "limit": {
+          "per": "combat",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "tempo",
+            "target": "all_allies",
+            "amount": -30
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "etendard_page_pole",
+      "nodes": [
+        {
+          "id": "etendard_pole_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_long",
+          "requires": "etendard_pole_core",
+          "group": "etendard_pole_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_quick",
+          "requires": "etendard_pole_core",
+          "group": "etendard_pole_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -30
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_salute",
+          "requires": "etendard_pole_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_glory",
+          "requires": "etendard_pole_salute",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_square",
+          "requires": "etendard_pole_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_guard",
+          "requires": "etendard_pole_square",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_pole_colors",
+          "requires": "etendard_pole_glory",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "heal",
+                "power": 50
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "etendard_page_roll",
+      "nodes": [
+        {
+          "id": "etendard_roll_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_reveille",
+          "requires": "etendard_roll_core",
+          "group": "etendard_roll_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_march",
+          "requires": "etendard_roll_core",
+          "group": "etendard_roll_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_gallop",
+          "requires": "etendard_roll_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_bugle",
+          "requires": "etendard_roll_gallop",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_tattoo",
+          "requires": "etendard_roll_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_double",
+          "requires": "etendard_roll_tattoo",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "etendard_roll_parade",
+          "requires": "etendard_roll_bugle",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "etendard_page_honors",
+      "nodes": [
+        {
+          "id": "etendard_honors_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_medal",
+          "requires": "etendard_honors_core",
+          "group": "etendard_honors_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_rank",
+          "requires": "etendard_honors_core",
+          "group": "etendard_honors_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 30
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_orders",
+          "requires": "etendard_honors_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_spoils",
+          "requires": "etendard_honors_orders",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 2
+              }
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_field",
+          "requires": "etendard_honors_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "heal",
+                "target": "lowest_hp_ally",
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_canteen",
+          "requires": "etendard_honors_field",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "heal",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "etendard_honors_ribbon",
+          "requires": "etendard_honors_spoils",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@
  * pnpm sim:pvp --samples 4 --mirror-samples 60 --seed 1
  *                                      → jeux de builds croisés, builds miroirs par composition, graine
  * pnpm sim:pvp --level 20              → niveau des héros (30 par défaut)
+ * pnpm sim:pvp --teams 24              → compositions mesurées (échantillon à graine fixe au-delà)
  *
  * Aucun fichier n'est écrit et rien n'est appliqué : c'est un rapport, pas un test de régression.
  */
@@ -20,6 +21,7 @@ const content = loadContent();
 const started = performance.now();
 const report = evaluatePvp(content, {
   samples: option('--samples', 4),
+  teams: option('--teams', 24),
   mirrorSamples: option('--mirror-samples', 60),
   seed: option('--seed', 1),
   level: option('--level', content.balance.progression.maxLevel),

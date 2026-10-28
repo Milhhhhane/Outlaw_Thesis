@@ -52,8 +52,9 @@ Réglées par l'hôte avant le combat (`set_rules`), valeurs par défaut entre p
 | `tierBudget`  | aucun (défaut), ou de `teamSize` à `teamSize` × 4 (4 à 16) : somme des paliers |
 | `turnSeconds` | 20, 30, 45 ou 60 (30) : temps accordé à chaque action                          |
 
-Paliers : un héros a un `tier` de 1 à 4 (I à IV, champ ajouté à `heroSchema`, défaut 1). Les six
-héros actuels sont tous de palier I, donc un budget de 3 (le minimum) les autorise tous.
+Paliers : un héros a un `tier` de 1 à 4 (I à IV, `heroSchema`, défaut 1). C'est aussi sa rareté
+(commun à légendaire, PR des 25 héros) : 10 héros de palier I, 8 de II, 5 de III, 2 de IV. Le budget
+minimum (4) n'autorise que quatre héros de palier I.
 
 Règles du moteur déduites (`toBattleRules`) : `firstSide` = le camp désigné par le tirage au sort
 (premier combat) ou l'autre camp (revanche) ; `limit: 'hp_ratio'`.
@@ -205,7 +206,10 @@ hasard dans le moteur).
 
 Rapport seulement : rien n'est appliqué, `baseline.csv` et `pnpm sim:check` ne changent pas.
 
-- **Série miroir** : la même composition (15 possibles : quatre héros parmi six) des deux côtés, mêmes builds tirés au
+- **Compositions** : avec 25 héros, il y a 12 650 équipes de quatre ; le rapport en mesure un
+  échantillon à graine fixe (`--teams`, 24 par défaut, `sampleTeams` de `tools/sim/src/rules.ts` :
+  chaque héros dans à peu près autant d'équipes).
+- **Série miroir** : la même composition des deux côtés, mêmes builds tirés au
   hasard, niveau 30, sans objet, politique « joueur moyen » de `tools/sim/src/policy.ts` pour
   chaque camp (graines distinctes). La seule différence est la priorité : taux de victoire du premier
   joueur, cible 50 % ± 3 points.
@@ -215,40 +219,33 @@ Rapport seulement : rien n'est appliqué, `baseline.csv` et `pnpm sim:check` ne 
 - **Durée** : actions du moteur (tour de chaque unité, toutes unités confondues), cible 30 à 60.
 
 Options : `--samples` (jeux de builds croisés, 4 par défaut), `--mirror-samples` (60 par
-composition), `--seed` (1), `--level` (30). Durée : une dizaine de secondes par défaut.
+composition), `--teams` (24), `--seed` (1), `--level` (30). Durée : une quarantaine de secondes par
+défaut.
 
-Résultats après le passage à quatre héros et le grind (graine 1, 4 jeux de builds, 900 miroirs et
-840 croisés ; entre parenthèses graine 2, 8 jeux, 120 miroirs par composition, 1 800 miroirs et
-1 680 croisés). La première livraison, à trois héros, est rappelée en dernière colonne (graine 1).
+Résultats avec 25 héros et des équipes de quatre (graine 1, 24 compositions, 4 jeux de builds,
+1 440 miroirs et 2 208 croisés). À six héros, avant les 25 (graine 1) : premier joueur 54,7 %,
+81,1 actions ; à trois héros : 52,3 %, 77,2 actions.
 
-| Mesure                                  | Quatre contre quatre                   | À trois (graine 1)       | Cible                 |
-| --------------------------------------- | -------------------------------------- | ------------------------ | --------------------- |
-| Victoires du premier joueur (miroir)    | 54,7 % (50,5 %)                        | 52,3 %                   | 50 % ± 3              |
-| Durée moyenne (actions du moteur)       | 81,1 (81,0), soit 40,5 par joueur      | 77,2                     | 30 à 60               |
-| Combats arrêtés par la limite d'actions | miroir 44 % (42 %), croisé 31 % (34 %) | miroir 38 %, croisé 29 % | -                     |
-| pyra                                    | 42,5 % (43,9 %)                        | 39,8 %                   | 50 % ± 10 (indicatif) |
-| maree                                   | 39,5 % (39,9 %)                        | 38,8 %                   | idem                  |
-| ronce                                   | 43,3 % (41,8 %)                        | 45,6 %                   | idem                  |
-| cendre                                  | 64,0 % (56,1 %)                        | 71,3 %                   | idem                  |
-| ressac                                  | 60,5 % (55,1 %)                        | 54,7 %                   | idem                  |
-| seve                                    | 50,2 % (63,2 %)                        | 49,9 %                   | idem                  |
+| Mesure                                  | Valeur                                                  | Cible                 |
+| --------------------------------------- | ------------------------------------------------------- | --------------------- |
+| Victoires du premier joueur (miroir)    | 50,2 %                                                  | 50 % ± 3              |
+| Durée moyenne (actions du moteur)       | 81,9, soit 40,9 par joueur                              | 30 à 60               |
+| Combats arrêtés par la limite d'actions | miroir 50 %, croisé 39 %                                | -                     |
+| Héros (croisé)                          | de 26 % (`sequoia`) à 80 % (`mousse`) ; 13 hors 50 ± 10 | 50 % ± 10 (indicatif) |
 
 Lecture et propositions (non appliquées) :
 
-1. **Priorité** : 54,7 % à la graine 1 (hors de la bande de 3 points), 50,5 % à la graine 2 sur deux
-   fois plus de combats. L'écart entre les deux exécutions est du même ordre que la bande : rien de
-   sûr, à remesurer avec plus d'échantillons avant de compenser le second joueur.
-2. **Durée** : 81 actions du moteur, hors cible si elle se compte en actions du moteur ; environ 40 par
+1. **Priorité** : dans la cible. Rien à faire.
+2. **Durée** : 82 actions du moteur, hors cible si elle se compte en actions du moteur ; environ 41 par
    joueur, dans la cible si elle se compte par joueur (convention de `docs/BALANCE.md` pour le PvE :
-   « actions de joueur »). À trancher. Quatre héros par camp allongent un peu les combats et plus de
-   4 miroirs sur 10 finissent à la limite d'actions, donc au ratio de PV. Essai fait à trois héros
-   (rien d'écrit) : `defenseScale` de 100 à 300 ne ramène pas sous 60 et toucherait le PvE. Pistes :
-   une règle de combat PvP en plus dans `BattleRules` (par exemple un pourcentage de dégâts), ou
-   raccourcir la limite d'actions en PvP ; les causes (soins, boucliers, PV de niveau 30) n'ont pas
-   été isolées.
-3. **Héros** : `pyra`, `maree` et `ronce` restent sous 45 %, `cendre`, `ressac` et `seve` au-dessus de
-   55 % selon la graine. Avec quatre héros parmi six, deux équipes partagent toujours au moins deux
-   héros, ce qui rend le taux par héros plus bruité qu'à trois. Les héros relèvent d'un autre chantier.
+   « actions de joueur »). À trancher. La moitié des miroirs finit à la limite d'actions, donc au
+   ratio de PV. Essai fait à trois héros (rien d'écrit) : `defenseScale` de 100 à 300 ne ramène pas
+   sous 60 et toucherait le PvE. Pistes : une règle de combat PvP en plus dans `BattleRules` (par
+   exemple un pourcentage de dégâts), ou raccourcir la limite d'actions en PvP.
+3. **Héros** : l'écart est large (`mousse`, `cendre`, `eden`, `sillage` au-dessus de 68 % ; `sequoia`,
+   `etendard`, `genet` sous 34 %), sur 352 à 760 combats par héros : un échantillon, pas un classement.
+   Le budget de paliers est l'outil du salon pour cadrer ; l'équilibrage des héros relève de leur
+   chantier. Le détail par héros s'obtient avec `pnpm sim:pvp`.
 
 Précautions : politique « joueur moyen » (un humain fera mieux ou autrement), pas d'objet, niveau 30,
 builds au hasard : c'est un thermomètre pour comparer avant et après un changement, pas une vérité.

@@ -39,3 +39,24 @@ export function randomBuild(content: Content, heroId: string, level: number, rng
   }
   return { hero: heroId, level, talents: [...taken], items: [] };
 }
+
+/**
+ * Équipes « jouables » de la simulation : au plus `MAX_PER_ROLE` héros du même rôle. Avec les six
+ * premiers héros (deux par rôle), toute équipe de quatre l'était ; avec 25 héros, une équipe de
+ * trois soutiens sans personne pour frapper fausserait les durées et les taux de réussite.
+ */
+export const MAX_PER_ROLE = 2;
+
+/** Les premiers héros de `order` qui forment une équipe jouable de `size` héros. */
+export function pickTeam(content: Content, order: readonly string[], size: number): string[] {
+  const team: string[] = [];
+  const roles = new Map<string, number>();
+  for (const id of order) {
+    if (team.length === size) break;
+    const role = content.heroById.get(id)?.role ?? '';
+    if ((roles.get(role) ?? 0) >= MAX_PER_ROLE) continue;
+    roles.set(role, (roles.get(role) ?? 0) + 1);
+    team.push(id);
+  }
+  return team;
+}

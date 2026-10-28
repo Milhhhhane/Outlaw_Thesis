@@ -3,6 +3,7 @@ export const MAX_SIDE = 4;
 
 import { z } from 'zod';
 import { idSchema } from './common';
+import { MAX_HERO_TIER } from './heroes';
 
 const pos = z.number().positive();
 const nonNeg = z.number().min(0);
@@ -157,12 +158,17 @@ export const balanceSchema = z
     }),
 
     /**
-     * Coffres et fragments de héros. Un coffre ne donne que des fragments ; `summonCost` fragments
+     * Coffres et fragments de héros. Un coffre ne donne que des fragments ; `summonCosts` fragments
      * invoquent un héros, et chaque palier de niveau se paie en fragments (`starCosts`).
      */
     chests: z.strictObject({
-      /** Fragments d'un héros pour l'invoquer. */
-      summonCost: posInt,
+      /** Fragments d'un héros pour l'invoquer, selon sa rareté (commun, rare, épique, légendaire). */
+      summonCosts: z.array(posInt).length(MAX_HERO_TIER),
+      /**
+       * Poids d'un héros de chaque rareté dans le tirage d'un fragment (hors part du héros ciblé) :
+       * un héros commun de poids 12 sort douze fois plus souvent qu'un légendaire de poids 1.
+       */
+      tierWeights: z.array(posInt).length(MAX_HERO_TIER),
       /** Fragments pour passer l'étoile 1, 2, 3… (une entrée par palier jusqu'au niveau maximum). */
       starCosts: z.array(posInt),
       /** Part des fragments d'un coffre qui va au héros ciblé par le joueur (le reste est au hasard). */
