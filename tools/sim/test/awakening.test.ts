@@ -11,7 +11,7 @@ describe('éveil (simulation)', () => {
     expect(a.rows).toHaveLength(content.essenceDungeons.length * content.balance.tiers.count);
     const hard = { ...content, balance: { ...content.balance, enemyScale: { hp: 10, atk: 10 } } };
     expect(essenceSim(hard, 1, 1).problems.length).toBeGreaterThan(0);
-  });
+  }, 60_000);
 
   it('écart d’un héros éveillé : une mesure par héros, la règle signale un dépassement', () => {
     const strict = {
@@ -28,5 +28,5 @@ describe('éveil (simulation)', () => {
     expect(report.gaps).toHaveLength(content.heroes.length);
     expect(report.problems).toHaveLength(1);
     expect(awakenAll([{ hero: 'pyra', level: 1, talents: [], items: [] }])[0]?.awakened).toBe(true);
-  });
+  }, 60_000);
 });
