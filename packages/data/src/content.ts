@@ -264,7 +264,8 @@ export function parseContent(raw: RawContent): Content {
   const quests = parseQuests(raw.quests, balance, issues);
   const tower = resolveTower(raw.tower, balance, enemyById, dungeonById, issues);
   const essenceDungeons = parseEssences(raw.essences, enemyById, dungeonById, issues);
-  if (!dungeonById.has(balance.awakening.openAfter))
+  // Sans donjon d'essence (contenus de test), l'éveil n'a rien à ouvrir.
+  if (essenceDungeons.length > 0 && !dungeonById.has(balance.awakening.openAfter))
     issues.push(`éveil : donjon inconnu « ${balance.awakening.openAfter} » (openAfter)`);
 
   if (issues.length > 0) throw new ContentError(issues);
