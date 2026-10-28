@@ -1,0 +1,502 @@
+{
+  "id": "phenix",
+  "element": "fire",
+  "role": "damage",
+  "tier": 4,
+  "stats": {
+    "hp": 390,
+    "atk": 60,
+    "def": 19,
+    "vit": 107
+  },
+  "spells": [
+    {
+      "id": "phenix_feather",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 95
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 1,
+          "power": 15
+        }
+      ]
+    },
+    {
+      "id": "phenix_skim",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 80
+        },
+        {
+          "kind": "tempo",
+          "target": "self",
+          "amount": -25
+        }
+      ]
+    },
+    {
+      "id": "phenix_wing",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 155
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 40
+        }
+      ]
+    },
+    {
+      "id": "phenix_rise",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 130
+        },
+        {
+          "kind": "status",
+          "status": "burn",
+          "duration": 2,
+          "power": 30
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "phenix_rebirth",
+    "triggers": [
+      {
+        "on": "unit_down",
+        "subject": "enemy",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "self",
+            "stat": "atk",
+            "percent": 10,
+            "duration": 3
+          },
+          {
+            "kind": "tempo",
+            "target": "self",
+            "amount": -15
+          }
+        ]
+      },
+      {
+        "on": "unit_down",
+        "subject": "ally",
+        "limit": {
+          "per": "combat",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "statMod",
+            "target": "self",
+            "stat": "atk",
+            "percent": 30,
+            "duration": 3
+          },
+          {
+            "kind": "tempo",
+            "target": "self",
+            "amount": -50
+          },
+          {
+            "kind": "heal",
+            "target": "all_allies",
+            "power": 30
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "phenix_page_ember",
+      "nodes": [
+        {
+          "id": "phenix_ember_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_linger",
+          "requires": "phenix_ember_core",
+          "group": "phenix_ember_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_spark",
+          "requires": "phenix_ember_core",
+          "group": "phenix_ember_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_blaze",
+          "requires": "phenix_ember_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_trail",
+          "requires": "phenix_ember_blaze",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "status",
+                "status": "burn",
+                "duration": 2,
+                "power": 30
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_fan",
+          "requires": "phenix_ember_core",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "b",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -55
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_dive",
+          "requires": "phenix_ember_fan",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "phenix_ember_eternal",
+          "requires": "phenix_ember_trail",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phenix_page_flight",
+      "nodes": [
+        {
+          "id": "phenix_flight_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_swoop",
+          "requires": "phenix_flight_core",
+          "group": "phenix_flight_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_glide",
+          "requires": "phenix_flight_core",
+          "group": "phenix_flight_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_updraft",
+          "requires": "phenix_flight_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": -15
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_soar",
+          "requires": "phenix_flight_updraft",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -8
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_zenith",
+          "requires": "phenix_flight_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_comet",
+          "requires": "phenix_flight_zenith",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -40
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_flight_aerial",
+          "requires": "phenix_flight_soar",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -25
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "phenix_page_ashes",
+      "nodes": [
+        {
+          "id": "phenix_ashes_core",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 20
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_warmth",
+          "requires": "phenix_ashes_core",
+          "group": "phenix_ashes_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "heal",
+                "target": "all_allies",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_kindle",
+          "requires": "phenix_ashes_core",
+          "group": "phenix_ashes_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_nest",
+          "requires": "phenix_ashes_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_flare",
+          "requires": "phenix_ashes_nest",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_molt",
+          "requires": "phenix_ashes_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "shield",
+                "target": "self",
+                "power": 60,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_pyre",
+          "requires": "phenix_ashes_molt",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 25
+            }
+          ]
+        },
+        {
+          "id": "phenix_ashes_sunrise",
+          "requires": "phenix_ashes_flare",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_allies",
+                "amount": -20
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

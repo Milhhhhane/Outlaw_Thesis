@@ -71,6 +71,12 @@
   récompenses, qui relance le même donjon ; tout clic ou touche rend la main. Vitesse
   « instantanée » supprimée (×1, ×2). Tests : `apps/web/test/countdown.test.tsx`, e2e à 1280×720
   et 844×390.
+- 25 héros et rareté — 19 héros ajoutés (10 communs, 8 rares, 5 épiques, 2 légendaires en
+  tout), obtenus par invocation ; coffres pondérés et invocation payée selon la rareté ; rareté
+  affichée partout. « Aucun héros indispensable » tenue pour la première fois depuis le lot 7
+  (écart 7 points, cible ≤ 10). Cibles de rythme ajustées (voir BALANCE.md), à revoir avec les
+  paliers de donjon. Ouvert : marier les raretés hautes avec des donjons plus durs.
+
 - Animations de combat — attaque de base au contact, impacts par élément, ultimes (bandes,
   zoom sur le lanceur, flash à l'impact), soins et bulles de bouclier, altérations persistantes
   (brûlure, marque, étourdissement), mort par dissolution. Tout en CSS et sprites générés, piloté

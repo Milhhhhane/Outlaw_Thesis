@@ -1,5 +1,5 @@
 import { loadContent } from '@outlaw/data';
-import { newProfile } from '@outlaw/engine';
+import { newProfile, summonCost } from '@outlaw/engine';
 import { expect, test, type Page } from '@playwright/test';
 
 /** Combats à ×2 et premiers pas déjà lus, pour aller droit au but. */
@@ -182,7 +182,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   test.skip(portrait(page), 'portrait');
   const content = loadContent();
   const base = newProfile(content, 5, 0);
-  const cost = content.balance.chests.summonCost;
+  const cost = summonCost(content, 'ressac');
   const profile = {
     ...base,
     chests: { bronze: 1, gold: 1 },
@@ -389,5 +389,61 @@ test('carte : les paliers d’un donjon se choisissent et tiennent à l’écran
   );
   await inView(page, '.track');
   await inView(page, '.actions');
+  await noScroll(page);
+});
+
+test('25 héros : galerie, équipe et coffres tiennent, la rareté se voit', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  await start(page);
+  // Le mode test débloque tous les héros : le pire cas pour la galerie, le vivier et les coffres.
+  await page.getByRole('button', { name: 'Mode test' }).click();
+  await noScroll(page);
+  await expect(page.locator('.roster__card')).toHaveCount(25);
+  await expect(page.locator('.roster__card.rarity-4')).toHaveCount(2);
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: /^Héros/ }).click();
+  await noScroll(page);
+  const cards = page.locator('.hero-card');
+  await expect(cards).toHaveCount(25);
+  // La grille défile dans son cadre : la dernière carte (légendaire) s'atteint et s'ouvre.
+  const last = cards.last();
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toHaveClass(/rarity-4/);
+  await expect(last.getByText('Légendaire')).toHaveCount(1);
+  await noScroll(page);
+  await last.click();
+  await expect(page.locator('.sheet__id.rarity-4 .rarity__name')).toHaveText('Légendaire');
+  await inView(page, '.sheet__id .rarity');
+  await noScroll(page);
+});
+
+test('25 héros : la liste des fragments tient et montre chaque rareté', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  const content = loadContent();
+  const legendary = content.heroes.find((h) => h.tier === 4)?.id ?? 'pyra';
+  const profile = {
+    ...newProfile(content, 5, 0),
+    fragments: { [legendary]: summonCost(content, legendary) },
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Coffres/ }).click();
+  await noScroll(page);
+  await expect(page.locator('.frag-row')).toHaveCount(25);
+  // Le légendaire, en bas de liste, s'atteint en faisant défiler la liste et s'invoque à son prix.
+  const row = page.locator('.frag-row.rarity-4').first();
+  await row.scrollIntoViewIfNeeded();
+  await inView(page, '.frag-row.rarity-4 .rarity__mark');
+  await row.getByRole('button', { name: 'Invoquer' }).click();
+  await expect(row.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
   await noScroll(page);
 });

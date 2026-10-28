@@ -698,6 +698,61 @@ relance, comme pour le bouton « Rejouer » et l'entrée par la carte : à branc
 où `costPerDungeon` devient positif. Raison : une relance qui consomme ce que l'entrée manuelle
 ne consomme pas serait incohérente. Le mode test (rien à gagner) ne relance pas non plus.
 
+## 25 héros et rareté
+
+**Rareté : le champ `tier` des salons PvP** — Contexte : le propriétaire veut une rareté ; la
+branche PvP a déjà écrit `tier` (1 à 4, défaut 1) sur le héros. Choix : exactement la même forme
+(`MAX_HERO_TIER`, même place dans le schéma), lue comme rareté : commun (I), rare (II), épique
+(III), légendaire (IV). Raison : une seule notion de palier, aucune fusion conflictuelle ; une
+sauvegarde ne contient pas la rareté (c'est du contenu), rien à migrer.
+
+**Répartition 10 / 8 / 5 / 2** — Choix : les six héros d'origine sont communs (ils servent de
+référence de puissance et deux d'entre eux sont offerts par des donjons) ; parmi les 19 nouveaux,
+4 communs, 8 rares, 5 épiques, 2 légendaires, de sorte que chaque couple élément × rôle existe au
+moins deux fois (les trois manquants — feu/soutien, eau/contrôle, nature/dégâts — en ont trois).
+Le chargement refuse un héros de départ ou de donjon au-dessus de rare. Concepts, noms et thèses
+repris du premier jet de roster du propriétaire (30 fiches en 4 tiers), dans la limite des
+19 places ; Rosée, Étoupe, Verglas, Mirage, Sauge, Solstice, Havre, Orée, Abysse et Canopée
+restent pour plus tard.
+
+**Ce que la rareté change** — Contexte : plus rare doit vouloir dire plus désirable, sans écraser.
+Choix : (1) poids du héros dans le tirage d'un fragment (`chests.tierWeights` 12 / 6 / 3 / 1),
+toujours deux nombres par fragment et la même suite de graine ; le héros ciblé garde sa part fixe ;
+(2) coût d'invocation (`chests.summonCosts` 10 / 20 / 40 / 80), étoiles au même prix pour tous ;
+(3) kits plus riches (passif à deux déclencheurs dès rare, une règle pliée pour les légendaires :
+Sablier retarde tout le camp adverse à l'entrée, Phénix se nourrit des chutes) et un budget de
+stats borné à 2 % d'indice par palier (`TIER_STAT_BUDGET_PCT`, vérifié au chargement). Raison : le
+ciblage reste la voie vers un héros précis, la rareté en fixe le prix ; la simulation vérifie
+qu'aucun héros, même légendaire, ne devient indispensable.
+
+**Héros de départ explicites** — Contexte : les héros de départ étaient « ceux qu'aucun donjon ne
+débloque » ; les 19 nouveaux l'auraient tous été. Choix : `starter: true` sur les quatre héros de
+départ (défaut faux, champ placé hors de la zone touchée par le PvP). Raison : trois voies
+d'obtention lisibles dans le contenu — départ, donjon (`unlocksHero`), invocation.
+
+**Talents et passif** — Contexte : le fantasme du propriétaire veut des talents qui modifient les
+sorts et le passif. Les objets ont le passif pour terrain, les talents les sorts (tranché, ne pas
+rouvrir). Choix : aucun nouveau mécanisme ; les talents agissent sur le passif à travers ses
+déclencheurs (une brûlure ou une marque ajoutée nourrit Forge, Soufre, Chardon ; un
+étourdissement nourrit Sablier ; la Couronne d'épines de Houx pose un déclencheur). Raison : même
+sensation de build qui transforme le passif, sans ouvrir une combinatoire talents × objets.
+
+**Simulation sur un échantillon** — Contexte : 12 650 équipes de quatre. Choix : 50 équipes tirées
+par tours de mélange (chaque héros dans 8), R1 sur les 12 premières ; équipes « jouables » (au plus
+deux héros du même rôle) pour les règles, le rythme et les paliers de donjon. Raison : `pnpm sim:check` reste autour de
+70 s de calcul ; avec six héros, toute équipe respectait déjà cette limite, la mesure garde son sens.
+
+**Cibles de rythme ajustées, donjons intacts** — Contexte : les donjons sont retouchés en parallèle
+par le chantier des paliers. Choix : plancher du premier combat 9 → 7, boss 21–30 → 21–32,
+tolérance de la courbe 12 → 15 points, chiffres dans `docs/BALANCE.md`. Raison : les écarts
+venaient de la mesure (Pyra et Ressac descendent eux aussi à 7 actions au premier combat dès
+qu'ils ont d'autres coéquipiers) et se règlent par les donjons ; à arbitrer par le propriétaire et
+à refaire avec `autotune` et `tunecurve` après la fusion des paliers.
+
+**Galerie à quatre colonnes qui défile** — Choix : cartes plus compactes (sprite ×1,5, thèse sur
+trois lignes), grille qui défile dans son cadre ; le vivier de l'équipe et la liste des fragments
+défilaient déjà. Raison : 25 cartes lisibles à 844 × 390 sans pagination à inventer.
+
 ## Animations de combat
 
 **Tout part de la vue rejouée** — Contexte : rendre le combat plus vivant sans logique de jeu

@@ -1,0 +1,469 @@
+{
+  "id": "chardon",
+  "element": "nature",
+  "role": "damage",
+  "tier": 2,
+  "stats": {
+    "hp": 390,
+    "atk": 59,
+    "def": 19,
+    "vit": 105
+  },
+  "spells": [
+    {
+      "id": "chardon_warning",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "chardon_bounty",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "status",
+          "status": "mark",
+          "duration": 2,
+          "power": 25
+        },
+        {
+          "kind": "damage",
+          "power": 30
+        }
+      ]
+    },
+    {
+      "id": "chardon_thornshot",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 180
+        }
+      ]
+    },
+    {
+      "id": "chardon_reward",
+      "slot": "ult",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 300
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "chardon_hunt",
+    "triggers": [
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "targetHasStatus": "mark",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 20
+          }
+        ]
+      },
+      {
+        "on": "unit_down",
+        "subject": "enemy",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "teamPoints",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "chardon_page_poster",
+      "nodes": [
+        {
+          "id": "chardon_poster_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "power",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_wanted",
+          "requires": "chardon_poster_core",
+          "group": "chardon_poster_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "status",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_posse",
+          "requires": "chardon_poster_core",
+          "group": "chardon_poster_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_chalk",
+          "requires": "chardon_poster_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 1,
+                "power": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_ledger",
+          "requires": "chardon_poster_chalk",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_tip",
+          "requires": "chardon_poster_core",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "a",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -60
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_trail",
+          "requires": "chardon_poster_tip",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -15
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_poster_dossier",
+          "requires": "chardon_poster_ledger",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chardon_page_rifle",
+      "nodes": [
+        {
+          "id": "chardon_rifle_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_lever",
+          "requires": "chardon_rifle_core",
+          "group": "chardon_rifle_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_hollow",
+          "requires": "chardon_rifle_core",
+          "group": "chardon_rifle_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -25,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_scope",
+          "requires": "chardon_rifle_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_patience",
+          "requires": "chardon_rifle_scope",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": 30
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_powder",
+          "requires": "chardon_rifle_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_cock",
+          "requires": "chardon_rifle_powder",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_rifle_payday",
+          "requires": "chardon_rifle_patience",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chardon_page_chase",
+      "nodes": [
+        {
+          "id": "chardon_chase_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "basic",
+              "delta": -15
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_snap",
+          "requires": "chardon_chase_core",
+          "group": "chardon_chase_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_spur",
+          "requires": "chardon_chase_core",
+          "group": "chardon_chase_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -25
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_canter",
+          "requires": "chardon_chase_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -8
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_ride",
+          "requires": "chardon_chase_canter",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_cartridge",
+          "requires": "chardon_chase_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_cornered",
+          "requires": "chardon_chase_cartridge",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "chardon_chase_manhunt",
+          "requires": "chardon_chase_ride",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -50
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

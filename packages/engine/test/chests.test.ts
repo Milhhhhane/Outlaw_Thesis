@@ -7,6 +7,7 @@ import {
   completeDungeon,
   fragmentRates,
   heroStars,
+  heroWeight,
   levelCap,
   newProfile,
   openChest,
@@ -17,6 +18,7 @@ import {
   starsForLevel,
   starUp,
   levelUpMax,
+  summonCost,
   summonHero,
   xpToNext,
   type Outcome,
@@ -113,28 +115,55 @@ describe('ouverture d’un coffre', () => {
     );
   });
 
-  it('sans héros ciblé : tous les héros sortent, à peu près à parts égales', () => {
-    let profile = withChests(base(), { gold: 400 });
-    for (let i = 0; i < 400; i++) profile = value(openChest(content, profile, 'gold')).profile;
-    const heroes = content.heroes.map((h) => h.id);
-    const expected = (400 * 8) / heroes.length;
-    for (const id of heroes) {
-      expect(profile.fragments[id]).toBeGreaterThan(expected * 0.85);
-      expect(profile.fragments[id]).toBeLessThan(expected * 1.15);
+  it('sans héros ciblé : chaque héros sort selon le poids de sa rareté', () => {
+    let profile = withChests(base(), { gold: 1500 });
+    for (let i = 0; i < 1500; i++) profile = value(openChest(content, profile, 'gold')).profile;
+    const drawn = 1500 * 8;
+    const rates = fragmentRates(content, base());
+    expect(rates.reduce((sum, r) => sum + r.pct, 0)).toBeCloseTo(100, 6);
+    // Chaque héros sort, et à son taux annoncé (graine fixe, 12 000 fragments).
+    for (const { hero, pct } of rates) {
+      const share = (profile.fragments[hero] ?? 0) / drawn;
+      expect(share, hero).toBeGreaterThan(0);
+      expect(Math.abs(share - pct / 100), hero).toBeLessThan(Math.max(0.006, (pct / 100) * 0.2));
     }
+    // Par rareté : la part tirée suit la somme des poids, les légendaires restent rares.
+    const { tierWeights } = content.balance.chests;
+    const weightSum = content.heroes.reduce((sum, h) => sum + (tierWeights[h.tier - 1] ?? 0), 0);
+    for (const tier of [1, 2, 3, 4]) {
+      const heroes = content.heroes.filter((h) => h.tier === tier);
+      const got = heroes.reduce((sum, h) => sum + (profile.fragments[h.id] ?? 0), 0) / drawn;
+      const want = (heroes.length * (tierWeights[tier - 1] ?? 0)) / weightSum;
+      expect(Math.abs(got - want), `rareté ${String(tier)}`).toBeLessThan(0.02);
+    }
+    const common = rates.find((r) => r.hero === 'pyra')!.pct;
+    const legendary = rates.find((r) => content.heroById.get(r.hero)?.tier === 4)!.pct;
+    expect(common / legendary).toBeCloseTo((tierWeights[0] ?? 0) / (tierWeights[3] ?? 1), 6);
   });
 
-  it('héros ciblé : sa part monte au taux annoncé, le reste est au hasard', () => {
+  it('le poids d’un héros est celui de sa rareté', () => {
+    const { tierWeights } = content.balance.chests;
+    for (const hero of content.heroes) {
+      expect(heroWeight(content, hero.id)).toBe(tierWeights[hero.tier - 1]);
+    }
+    expect(heroWeight(content, 'fantome')).toBe(tierWeights[0]);
+  });
+
+  it('héros ciblé : sa part monte au taux annoncé, le reste suit les poids de rareté', () => {
     const targeted = value(setFocus(content, withChests(base(), { gold: 400 }), 'ronce'));
     let profile = targeted;
     for (let i = 0; i < 400; i++) profile = value(openChest(content, profile, 'gold')).profile;
     const rates = fragmentRates(content, targeted);
     expect(rates.reduce((sum, r) => sum + r.pct, 0)).toBeCloseTo(100, 6);
+    const free = fragmentRates(content, base());
     const ronce = rates.find((r) => r.hero === 'ronce')!.pct;
     const other = rates.find((r) => r.hero === 'pyra')!.pct;
-    // 50 % ciblés + 50 % / 6 héros = 58,33 % ; les autres 8,33 %.
-    expect(ronce).toBeCloseTo(58.333, 2);
-    expect(other).toBeCloseTo(8.333, 2);
+    const { focusRate } = content.balance.chests;
+    // Ciblé : focusRate, plus sa part du reste ; les autres : leur part du reste.
+    const freeRonce = free.find((r) => r.hero === 'ronce')!.pct;
+    const freePyra = free.find((r) => r.hero === 'pyra')!.pct;
+    expect(ronce).toBeCloseTo(focusRate * 100 + (1 - focusRate) * freeRonce, 6);
+    expect(other).toBeCloseTo((1 - focusRate) * freePyra, 6);
     const share = (profile.fragments.ronce ?? 0) / (400 * 8);
     expect(share).toBeGreaterThan(ronce / 100 - 0.04);
     expect(share).toBeLessThan(ronce / 100 + 0.04);
@@ -143,7 +172,7 @@ describe('ouverture d’un coffre', () => {
   it('un héros ciblé inconnu du contenu est ignoré au tirage et à l’affichage', () => {
     const stale = { ...withChests(base(), { bronze: 1 }), focus: 'fantome' };
     const rates = fragmentRates(content, stale);
-    expect(new Set(rates.map((r) => r.pct)).size).toBe(1);
+    expect(rates).toEqual(fragmentRates(content, base()));
     expect(total(value(openChest(content, stale, 'bronze')).profile.fragments)).toBe(3);
   });
 
@@ -155,7 +184,31 @@ describe('ouverture d’un coffre', () => {
 });
 
 describe('invocation', () => {
-  it('10 fragments invoquent un héros au niveau 1, étoile 0, sans toucher à l’équipe', () => {
+  it('le coût d’invocation est celui de la rareté du héros', () => {
+    const { summonCosts } = content.balance.chests;
+    for (const hero of content.heroes) {
+      expect(summonCost(content, hero.id)).toBe(summonCosts[hero.tier - 1]);
+    }
+    // Plus la rareté est haute, plus l'invocation coûte.
+    expect([...summonCosts].sort((a, b) => a - b)).toEqual(summonCosts);
+    expect(new Set(summonCosts).size).toBe(summonCosts.length);
+  });
+
+  it('un héros légendaire s’invoque à son prix, pas à celui d’un commun', () => {
+    const legendary = content.heroes.find((h) => h.tier === 4)!.id;
+    const price = summonCost(content, legendary);
+    expect(price).toBeGreaterThan(summonCost(content, 'ressac'));
+    const short = withFragments(base(), { [legendary]: price - 1 });
+    expect(reason(summonHero(content, short, legendary))).toBe('not_enough_fragments');
+    const paid = value(
+      summonHero(content, withFragments(base(), { [legendary]: price }), legendary),
+    );
+    expect(paid.unlocked).toContain(legendary);
+    expect(paid.fragments[legendary]).toBe(0);
+    expect(paid.heroes[legendary]).toMatchObject({ level: 1, stars: 0 });
+  });
+
+  it('10 fragments invoquent un héros commun au niveau 1, étoile 0, sans toucher à l’équipe', () => {
     const profile = withFragments(base(), { ressac: 12 });
     const summoned = value(summonHero(content, profile, 'ressac'));
     expect(summoned.unlocked).toContain('ressac');

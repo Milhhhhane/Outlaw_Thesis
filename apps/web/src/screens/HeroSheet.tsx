@@ -26,6 +26,7 @@ import { useState } from 'react';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
+import { Rarity } from '../game/Rarity';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
 import { dustName, names, t, tk } from '../i18n';
@@ -510,7 +511,8 @@ export function HeroSheet({
   return (
     <Screen title={names.hero(heroId)} onBack={onBack} className={`sheet element-${def.element}`}>
       <div className="sheet__layout">
-        <aside className="sheet__id">
+        <aside className={`sheet__id rarity-${String(def.tier)}`}>
+          <Rarity tier={def.tier} />
           <PixelSprite name="pedestal" className="pedestal" />
           <span className="sheet__sprite">
             <HeroSprite name={heroId} idle />

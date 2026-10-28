@@ -890,6 +890,11 @@ button:disabled {
   border-image-source: var(--frame-gold);
 }
 
+.roster__pick,
+.team__slot {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rarity, transparent) 60%, transparent);
+}
+
 .roster__portrait {
   display: flex;
   align-items: flex-end;
@@ -1033,25 +1038,40 @@ button:disabled {
 }
 
 /* ===== Galerie des héros ===== */
+.heroes .screen__body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 4px;
+}
+
+.heroes__count {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Quatre colonnes de cartes de hauteur fixe ; la grille défile dans son cadre (25 héros). */
 .heroes__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  height: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 132px;
+  gap: 8px;
+  min-height: 0;
   margin: 0;
-  padding: 0;
+  padding: 0 4px 0 0;
+  overflow-y: auto;
   list-style: none;
 }
 
 .hero-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 96px 1fr;
+  grid-template-columns: 72px minmax(0, 1fr);
   grid-template-rows: auto auto 1fr auto;
-  column-gap: 8px;
+  column-gap: 6px;
   align-items: start;
   width: 100%;
   height: 100%;
-  padding: 0 4px;
+  padding: 0 2px;
   border: 16px solid transparent;
   border-image: var(--wood) 8 fill / 16px / 0 stretch;
   background:
@@ -1073,8 +1093,8 @@ button:disabled {
 .hero-card__sprite {
   grid-row: 1 / -1;
   align-self: center;
-  width: 96px;
-  height: 96px;
+  width: 72px;
+  height: 84px;
 }
 
 .hero-card__sprite {
@@ -1085,8 +1105,20 @@ button:disabled {
 
 .hero-card__sprite > .pixel,
 .hero-card__sprite > .hero-sprite {
-  transform: scale(2);
+  transform: scale(1.5);
   transform-origin: 50% 100%;
+}
+
+/* Repère de rareté : un liseré intérieur de la couleur du palier, plus marqué aux paliers hauts. */
+.hero-card[class*='rarity-'] {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rarity) 70%, transparent);
+}
+
+.hero-card.rarity-3,
+.hero-card.rarity-4 {
+  box-shadow:
+    inset 0 0 0 2px var(--rarity),
+    inset 0 0 14px color-mix(in srgb, var(--rarity) 45%, transparent);
 }
 
 .hero-card--locked .hero-card__sprite {
@@ -1094,17 +1126,50 @@ button:disabled {
 }
 
 .hero-card__name {
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
 }
 
 .hero-card__meta {
   color: var(--gold);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .hero-card__thesis {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--bone-muted);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* ===== Rareté ===== */
+.rarity {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--pixel);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.rarity__mark {
+  min-width: 18px;
+  padding: 2px 3px;
+  border: 1px solid #07050a;
+  background: var(--rarity);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+}
+
+.rarity__name {
+  color: var(--rarity);
 }
 
 .hero-card__badge {
@@ -1630,6 +1695,18 @@ button:disabled {
   border: 16px solid transparent;
   border-image: var(--wood) 8 fill / 16px / 0 stretch;
   image-rendering: pixelated;
+}
+
+/* Rareté en coin, sans prendre de hauteur à la colonne. */
+.sheet__id > .rarity {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  z-index: 1;
+}
+
+.sheet__id[class*='rarity-'] {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--rarity) 55%, transparent);
 }
 
 .sheet__id .pedestal {

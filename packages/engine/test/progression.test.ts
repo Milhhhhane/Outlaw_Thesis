@@ -58,6 +58,32 @@ describe('profil', () => {
     expect(profile.focus).toBeNull();
   });
 
+  it('les héros de coffre ne sont pas offerts : ni au départ, ni par un donjon', () => {
+    const profile = newProfile(content, 7, 1000);
+    const fromDungeons = content.dungeons.flatMap((d) => d.unlocksHero ?? []);
+    const summonOnly = content.heroes.filter((h) => !h.starter && !fromDungeons.includes(h.id));
+    expect(summonOnly.length).toBeGreaterThan(0);
+    for (const hero of summonOnly) {
+      expect(profile.unlocked).not.toContain(hero.id);
+      expect(profile.heroes[hero.id]).toBeUndefined();
+    }
+    // Départ et donjons : communs ou rares seulement.
+    for (const id of [...starterHeroes(content), ...fromDungeons]) {
+      expect(content.heroById.get(id)!.tier).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('une sauvegarde d’avant les raretés reste valide, sans rien débloquer', () => {
+    // Profil enregistré avec les six héros d'origine : le format n'a pas changé (rareté = contenu).
+    const old = {
+      ...newProfile(content, 3, 0),
+      unlocked: ['pyra', 'maree', 'ronce', 'cendre', 'ressac'],
+    };
+    const parsed = profileSchema.parse(JSON.parse(JSON.stringify(old)));
+    expect(parsed.unlocked).toEqual(old.unlocked);
+    expect(parsed.unlocked.every((id) => content.heroById.has(id))).toBe(true);
+  });
+
   it('une sauvegarde d’avant les coffres reste lisible, sans perdre ses niveaux', () => {
     const profile = newProfile(content, 7, 1000);
     const old = JSON.parse(JSON.stringify(profile)) as Record<string, unknown>;

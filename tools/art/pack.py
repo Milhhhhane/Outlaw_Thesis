@@ -27,6 +27,26 @@ HEROES = {
     'ressac': ('lizard_m', 120, 1.1, 1.0),      # vert → bleu-vert
     'ronce': ('elf_f', 0, 1.0, 0.95),           # tunique verte
     'seve': ('elf_m', 20, 0.9, 1.05),           # vert jaune
+    # Les 19 héros suivants partagent ces huit bases : teinte, arme et couleur d'arme les distinguent.
+    'tison': ('lizard_f', 235, 1.0, 1.0),       # écailles orange braise
+    'ecume': ('elf_m', 110, 1.0, 1.0),          # ciré bleu
+    'yucca': ('knight_f', 305, 1.0, 1.0),       # armure vert cactus
+    'houx': ('wizzard_m', 230, 0.5, 0.6),       # soutane vert noir
+    'forge': ('knight_m', 215, 1.5, 0.7),       # fer rouge
+    'lanterne': ('wizzard_f', 175, 1.0, 1.15),   # robe ambre
+    'mousson': ('lizard_f', 60, 1.1, 1.0),      # écailles bleues
+    'brume': ('wizzard_f', 330, 0.35, 1.15),    # voile gris pâle
+    'sillage': ('elf_f', 100, 0.8, 1.0),        # varech sarcelle
+    'chardon': ('lizard_m', 200, 1.0, 1.0),     # violet chardon
+    'mousse': ('elf_m', 10, 0.6, 0.85),         # mousse terne
+    'genet': ('lizard_f', 270, 1.1, 1.0),       # jaune genêt
+    'etendard': ('knight_f', 190, 1.9, 1.0),    # rouge régiment
+    'soufre': ('wizzard_m', 175, 1.0, 0.95),    # jaune soufre
+    'torrent': ('knight_m', 50, 1.0, 1.05),     # acier bleu
+    'sequoia': ('knight_m', 280, 0.9, 0.7),    # écorce brune
+    'eden': ('wizzard_f', 230, 1.1, 1.0),       # robe de feuilles
+    'phenix': ('elf_f', 290, 1.4, 1.0),         # plumage cramoisi
+    'sablier': ('wizzard_m', 20, 0.8, 0.9),     # indigo d'horloger
 }
 ENEMIES = {
     'cinder_hound': ('imp', 0, 1.1, 1.0),
@@ -124,6 +144,25 @@ WEAPONS = {
     'ressac': ('weapon_duel_sword', 150, 1.0, 1.0),
     'ronce': ('weapon_spear', 60, 1.0, 0.9),
     'seve': ('weapon_green_magic_staff', 0, 1.0, 1.0),
+    'tison': ('weapon_hammer', 20, 1.0, 1.0),
+    'ecume': ('weapon_spear', 180, 0.8, 1.0),
+    'yucca': ('weapon_spear', 80, 1.0, 1.0),
+    'houx': ('weapon_mace', 90, 0.7, 0.8),
+    'forge': ('weapon_big_hammer', 0, 1.0, 1.0),
+    'lanterne': ('weapon_red_magic_staff', 40, 1.0, 1.1),
+    'mousson': ('weapon_spear', 200, 1.0, 1.0),
+    'brume': ('weapon_green_magic_staff', 150, 0.5, 1.1),
+    'sillage': ('weapon_baton_with_spikes', 150, 1.0, 1.0),
+    'chardon': ('weapon_katana', 0, 1.0, 1.0),
+    'mousse': ('weapon_green_magic_staff', 30, 0.7, 0.9),
+    'genet': ('weapon_axe', 0, 1.0, 1.0),
+    'etendard': ('weapon_spear', 0, 1.2, 1.0),
+    'soufre': ('weapon_red_magic_staff', 60, 1.0, 1.0),
+    'torrent': ('weapon_saw_sword', 180, 1.0, 1.0),
+    'sequoia': ('weapon_axe', 30, 0.8, 0.8),
+    'eden': ('weapon_green_magic_staff', 330, 1.0, 1.0),
+    'phenix': ('weapon_golden_sword', 340, 1.1, 1.0),
+    'sablier': ('weapon_lavish_sword', 0, 1.0, 1.0),
 }
 
 

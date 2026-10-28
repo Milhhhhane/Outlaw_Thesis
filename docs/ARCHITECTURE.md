@@ -112,7 +112,8 @@ modification passe par une fonction pure du moteur (`takeTalent`, `respec`, `equ
 après chaque changement.
 
 Les coffres sont dans `packages/engine/src/chests.ts` (`openChest`, `summonHero`, `starUp`,
-`setFocus`) : mêmes fonctions pures, tirage avec la graine du profil. Le plafond de niveau par étoile
+`setFocus`, `summonCost`, `heroWeight`) : mêmes fonctions pures, tirage avec la graine du profil,
+pondéré par la rareté des héros. Le plafond de niveau par étoile
 est dans `progression.ts` (`levelCap`, `heroStars`, `atStarGate`) ; l'écran est
 `apps/web/src/screens/Chests.tsx`.
 

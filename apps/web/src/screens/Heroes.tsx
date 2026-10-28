@@ -1,15 +1,23 @@
-import { canLevelUp, heroStars, talentPoints } from '@outlaw/engine';
+import { canLevelUp, heroStars, summonCost, talentPoints } from '@outlaw/engine';
 import { HeroSprite } from '../art/HeroSprite';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
+import { Rarity } from '../game/Rarity';
 import { Screen } from '../game/ui';
 import { names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 
-/** Galerie des héros : les débloqués s'ouvrent sur leur fiche, les autres restent dans l'ombre. */
+/** Héros offerts par un donjon : leur fiche verrouillée le dit. */
+const fromDungeon = new Set(content.dungeons.flatMap((d) => d.unlocksHero ?? []));
+
+/**
+ * Galerie des héros : les débloqués s'ouvrent sur leur fiche, les autres restent dans l'ombre (leur
+ * rareté et leur coût d'invocation restent lisibles). La grille défile dans son cadre.
+ */
 export function Heroes() {
   const { go } = useGame();
   const { profile } = useProfile();
+  const owned = content.heroes.filter((h) => profile.unlocked.includes(h.id)).length;
   return (
     <Screen
       title={t('heroes.title')}
@@ -18,6 +26,9 @@ export function Heroes() {
       }}
       className="heroes"
     >
+      <p className="hint heroes__count">
+        {t('heroes.count', { n: owned, total: content.heroes.length })}
+      </p>
       <ul className="heroes__grid">
         {content.heroes.map((def) => {
           const hero = profile.heroes[def.id];
@@ -32,6 +43,7 @@ export function Heroes() {
                 className={[
                   'hero-card',
                   `element-${def.element}`,
+                  `rarity-${String(def.tier)}`,
                   unlocked ? '' : 'hero-card--locked',
                 ].join(' ')}
                 disabled={!unlocked}
@@ -42,7 +54,10 @@ export function Heroes() {
                 <span className="hero-card__sprite">
                   <HeroSprite name={def.id} idle={unlocked} />
                 </span>
-                <span className="hero-card__name">{unlocked ? names.hero(def.id) : '???'}</span>
+                <span className="hero-card__name">
+                  {unlocked ? names.hero(def.id) : '???'}
+                  <Rarity tier={def.tier} short />
+                </span>
                 {unlocked ? (
                   <>
                     <span className="hero-card__meta">
@@ -60,7 +75,9 @@ export function Heroes() {
                   </>
                 ) : (
                   <span className="hero-card__thesis">
-                    {t('heroes.locked', { n: content.balance.chests.summonCost })}
+                    {fromDungeon.has(def.id)
+                      ? t('heroes.locked', { n: summonCost(content, def.id) })
+                      : t('heroes.locked.summon', { n: summonCost(content, def.id) })}
                   </span>
                 )}
               </button>

@@ -42,12 +42,9 @@ export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason:
 const ok = <T>(value: T): Outcome<T> => ({ ok: true, value });
 const refuse = <T>(reason: Refusal): Outcome<T> => ({ ok: false, reason });
 
-/** Héros disponibles dès le début : ceux qu'aucun donjon ne débloque. */
+/** Héros disponibles dès le début : ceux marqués « starter » (les autres viennent des donjons ou des coffres). */
 export function starterHeroes(content: Content): string[] {
-  const unlockable = new Set(
-    content.dungeons.map((d) => d.unlocksHero).filter((id) => id !== undefined),
-  );
-  return content.heroes.map((h) => h.id).filter((id) => !unlockable.has(id));
+  return content.heroes.filter((h) => h.starter).map((h) => h.id);
 }
 
 /** Palier (étoile) que implique un niveau : le niveau 10 est encore à l'étoile 0, le 11 à l'étoile 1. */

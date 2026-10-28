@@ -1,0 +1,465 @@
+{
+  "id": "brume",
+  "element": "water",
+  "role": "support",
+  "tier": 2,
+  "stats": {
+    "hp": 460,
+    "atk": 46,
+    "def": 27,
+    "vit": 99
+  },
+  "spells": [
+    {
+      "id": "brume_wisp",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 115
+        }
+      ]
+    },
+    {
+      "id": "brume_screen",
+      "slot": "a",
+      "targeting": "ally",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 150,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "brume_fog",
+      "slot": "b",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 60,
+          "duration": 2
+        },
+        {
+          "kind": "statMod",
+          "stat": "atk",
+          "percent": 15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "brume_shroud",
+      "slot": "ult",
+      "targeting": "all_allies",
+      "effects": [
+        {
+          "kind": "shield",
+          "power": 110,
+          "duration": 2
+        },
+        {
+          "kind": "tempo",
+          "amount": -15
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "brume_mist",
+    "triggers": [
+      {
+        "on": "turn_start",
+        "subject": "ally",
+        "effects": [
+          {
+            "kind": "shield",
+            "target": "subject",
+            "power": 30,
+            "duration": 1
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "brume_page_veil",
+      "nodes": [
+        {
+          "id": "brume_veil_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_cloud",
+          "requires": "brume_veil_core",
+          "group": "brume_veil_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -50
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_layers",
+          "requires": "brume_veil_core",
+          "group": "brume_veil_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_thick",
+          "requires": "brume_veil_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 50
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_haze",
+          "requires": "brume_veil_thick",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -20
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_trick",
+          "requires": "brume_veil_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "shield",
+                "target": "lowest_hp_ally",
+                "power": 25,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_cocoon",
+          "requires": "brume_veil_trick",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 40
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "brume_veil_mirage",
+          "requires": "brume_veil_haze",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "heal",
+                "power": 50
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brume_page_curtain",
+      "nodes": [
+        {
+          "id": "brume_curtain_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_encore",
+          "requires": "brume_curtain_core",
+          "group": "brume_curtain_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_applause",
+          "requires": "brume_curtain_core",
+          "group": "brume_curtain_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_mask",
+          "requires": "brume_curtain_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_act",
+          "requires": "brume_curtain_mask",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": 20,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_feint",
+          "requires": "brume_curtain_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_prop",
+          "requires": "brume_curtain_feint",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "heal",
+                "power": 40
+              }
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "brume_curtain_finale",
+          "requires": "brume_curtain_act",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": 10,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brume_page_wings",
+      "nodes": [
+        {
+          "id": "brume_wings_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "amount": -20
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_cue",
+          "requires": "brume_wings_core",
+          "group": "brume_wings_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": -25
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_scene",
+          "requires": "brume_wings_core",
+          "group": "brume_wings_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_vanish",
+          "requires": "brume_wings_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_blackout",
+          "requires": "brume_wings_vanish",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -40
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_prompt",
+          "requires": "brume_wings_core",
+          "mods": [
+            {
+              "type": "gain",
+              "delta": 1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "basic",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_exit",
+          "requires": "brume_wings_prompt",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -10
+              }
+            }
+          ]
+        },
+        {
+          "id": "brume_wings_bow",
+          "requires": "brume_wings_blackout",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "teamPoints",
+                "amount": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

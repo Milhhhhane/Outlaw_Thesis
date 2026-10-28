@@ -47,7 +47,7 @@ Un passage gagnant d'un donjon donne, au premier passage comme au rejeu (`replay
 | Niveaux 8 → 22          | 31 825 XP et 133 fine (532 pour quatre)                                                                                                        |
 | Niveaux 22 → 30         | 41 331 XP et 96 pure (384 pour quatre)                                                                                                         |
 | Étoile                  | 10 fragments du héros au niveau 10, 20 au niveau 20 (`starCosts`) ; sans elle, le niveau est plafonné                                          |
-| Invocation              | 10 fragments d'un héros non possédé (`summonCost`)                                                                                             |
+| Invocation              | 10, 20, 40 ou 80 fragments d'un héros non possédé selon sa rareté (`summonCosts`)                                                              |
 | Améliorer un objet      | niveau 1 : 1 copie, 100 or, 5 poussière ; niveau 2 : 2 copies, 300 or, 8 ; niveau 3 : 3 copies, 800 or, 12 — poussière du palier de son donjon |
 | Objet au maximum        | 6 copies, 1 200 or, 25 poussière                                                                                                               |
 | Équipe équipée au max   | 8 objets : 48 copies, 9 600 or, 200 poussière                                                                                                  |

@@ -1,0 +1,8 @@
+{
+  "rarity.1": "Commun",
+  "rarity.2": "Rare",
+  "rarity.3": "Épique",
+  "rarity.4": "Légendaire",
+  "heroes.locked.summon": "Invocation : {n} fragments",
+  "heroes.count": "{n} héros sur {total}"
+}

@@ -2,6 +2,35 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — 19 héros de plus, rareté
+
+### Ajouté
+
+- 19 héros (25 au total) sur le modèle des six premiers : élément, rôle, 4 sorts, un passif,
+  3 pages de 8 talents avec thèses et choix exclusifs. Tous les couples élément × rôle existent
+  (feu, eau, nature × dégâts, soutien, contrôle) : Tison, Écume, Yucca, Houx (communs) ; Forge,
+  Lanterne, Mousson, Brume, Sillage, Chardon, Mousse, Genêt (rares) ; Étendard, Soufre, Torrent,
+  Séquoia, Éden (épiques) ; Phénix et Sablier (légendaires). Ils s'obtiennent par invocation.
+- Rareté des héros (`tier`, I à IV : commun, rare, épique, légendaire) : pastille et liseré de
+  couleur dans la galerie, sur la fiche, dans l'équipe et sur l'écran des coffres. Les six héros
+  d'origine sont communs.
+- Coffres pondérés par rareté (`chests.tierWeights` : 12 / 6 / 3 / 1) et coût d'invocation par
+  rareté (`chests.summonCosts` : 10 / 20 / 40 / 80 fragments). Tirage toujours déterministe.
+- Sprites des nouveaux héros : bases du pack 0x72 recolorées, armes distinctes.
+- `pnpm --filter @outlaw/sim heroes` : force de chaque héros (donjons finis en retard, durée des
+  boss, combats trop courts), en lecture seule.
+
+### Modifié
+
+- La galerie des héros passe à quatre colonnes et défile dans son cadre ; le vivier de l'équipe
+  et la liste des fragments défilaient déjà.
+- Simulation : les règles portent sur 50 équipes tirées (graine fixe, au plus deux héros du même
+  rôle), R1 sur les 12 premières ; le rythme tire aussi des équipes jouables.
+- Cibles de rythme : plancher du tout premier combat 7 actions (9), boss 21 à 32 (21 à 30),
+  tolérance de la courbe 15 points (12) ; voir `docs/BALANCE.md`.
+- Nœuds « Torrent » (Marée) et « Sillage » (Ressac) renommés « Flux » et « Remorque » : ce sont
+  désormais des noms de héros.
+
 ## [Non publié] — 2026-10-28 — animations de combat
 
 ### Ajouté

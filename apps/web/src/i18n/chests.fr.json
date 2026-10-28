@@ -11,7 +11,7 @@
   "chests.owned": "{n} en réserve",
   "chests.open": "Ouvrir",
   "chests.empty": "Aucun coffre pour l'instant. Terminer un donjon pour la première fois en donne toujours un ; le rejouer en redonne un une fois sur deux environ.",
-  "chests.rules": "Un coffre ne contient que des fragments de héros. {summon} fragments d'un héros l'invoquent. Tous les {levels} niveaux, il faut payer en fragments l'étoile suivante pour continuer.",
+  "chests.rules": "Un coffre ne contient que des fragments de héros, plus souvent ceux des héros communs. Invoquer un héros coûte {summon} fragments selon sa rareté (commun, rare, épique, légendaire). Tous les {levels} niveaux, il faut payer en fragments l'étoile suivante pour continuer.",
   "chests.target.title": "Héros ciblé",
   "chests.target.hint": "{pct} % des fragments de chaque coffre vont au héros ciblé, le reste est tiré au hasard parmi tous les héros.",
   "chests.target.none": "Aucun héros ciblé : tout est tiré au hasard.",

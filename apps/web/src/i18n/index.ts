@@ -3,6 +3,7 @@ import account from './account.fr.json';
 import auto from './auto.fr.json';
 import chests from './chests.fr.json';
 import fr from './fr.json';
+import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
 import tiers from './tiers.fr.json';
 import names from './content.fr.json';
@@ -13,15 +14,17 @@ export type TextKey =
   | keyof typeof account
   | keyof typeof auto
   | keyof typeof chests
+  | keyof typeof heroTexts
   | keyof typeof loot
   | keyof typeof tiers;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), butin (loot.fr.json) et paliers (tiers.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json) et paliers (tiers.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
   ...auto,
   ...chests,
+  ...heroTexts,
   ...loot,
   ...tiers,
 };

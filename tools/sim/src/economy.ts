@@ -554,7 +554,7 @@ export function printTables(content: Content): void {
     );
   }
   console.log(
-    `  étoiles : ${chests.starCosts.join(' puis ')} fragments ; invocation : ${String(chests.summonCost)} fragments ; respec : ${String(progression.respec.goldPerHeroLevel)} or × niveau après le premier`,
+    `  étoiles : ${chests.starCosts.join(' puis ')} fragments ; invocation : ${chests.summonCosts.join(' / ')} fragments selon la rareté ; respec : ${String(progression.respec.goldPerHeroLevel)} or × niveau après le premier`,
   );
   console.log(
     `  rare : poids ${String(economy.loot.weights.rare)} contre ${String(economy.loot.weights.common)} (+${String(economy.loot.mastery.rareWeightPerRank)} par rang de maîtrise), garanti au ${String(economy.loot.rarePity)}ᵉ passage sans rare ; dissolution ${String(economy.loot.salvage.common)}/${String(economy.loot.salvage.rare)} poussière`,

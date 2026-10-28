@@ -1,0 +1,470 @@
+{
+  "id": "mousson",
+  "element": "water",
+  "role": "damage",
+  "tier": 2,
+  "stats": {
+    "hp": 400,
+    "atk": 57,
+    "def": 20,
+    "vit": 104
+  },
+  "spells": [
+    {
+      "id": "mousson_javelin",
+      "slot": "basic",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 100
+        }
+      ]
+    },
+    {
+      "id": "mousson_flash",
+      "slot": "a",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 90
+        },
+        {
+          "kind": "statMod",
+          "stat": "def",
+          "percent": -10,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "mousson_lunge",
+      "slot": "b",
+      "targeting": "enemy",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 160
+        },
+        {
+          "kind": "statMod",
+          "stat": "def",
+          "percent": -15,
+          "duration": 2
+        }
+      ]
+    },
+    {
+      "id": "mousson_hail",
+      "slot": "ult",
+      "targeting": "all_enemies",
+      "effects": [
+        {
+          "kind": "damage",
+          "power": 110
+        }
+      ]
+    }
+  ],
+  "passive": {
+    "id": "mousson_breach",
+    "triggers": [
+      {
+        "on": "damage_dealt",
+        "subject": "self",
+        "limit": {
+          "per": "turn",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "damage",
+            "target": "other",
+            "power": 15
+          },
+          {
+            "kind": "statMod",
+            "target": "other",
+            "stat": "def",
+            "percent": -8,
+            "duration": 2
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "mousson_page_point",
+      "nodes": [
+        {
+          "id": "mousson_point_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_light",
+          "requires": "mousson_point_core",
+          "group": "mousson_point_choice",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": -1
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_quick",
+          "requires": "mousson_point_core",
+          "group": "mousson_point_choice",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_thrust",
+          "requires": "mousson_point_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 40
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_dart",
+          "requires": "mousson_point_thrust",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "a",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -15
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_mark",
+          "requires": "mousson_point_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_pierce",
+          "requires": "mousson_point_mark",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 30
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "mousson_point_impale",
+          "requires": "mousson_point_dart",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "status",
+                "status": "mark",
+                "duration": 2,
+                "power": 25
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mousson_page_gap",
+      "nodes": [
+        {
+          "id": "mousson_gap_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 60
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_shatter",
+          "requires": "mousson_gap_core",
+          "group": "mousson_gap_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "percent",
+              "mulPct": 100
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_lasting",
+          "requires": "mousson_gap_core",
+          "group": "mousson_gap_choice",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "statMod",
+              "field": "duration",
+              "add": 1
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_graze",
+          "requires": "mousson_gap_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -8,
+                "duration": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_flood",
+          "requires": "mousson_gap_graze",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "def",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_hamstring",
+          "requires": "mousson_gap_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "statMod",
+                "stat": "vit",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_twist",
+          "requires": "mousson_gap_hamstring",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "b",
+              "delta": 15
+            }
+          ]
+        },
+        {
+          "id": "mousson_gap_disarm",
+          "requires": "mousson_gap_flood",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "statMod",
+                "stat": "atk",
+                "percent": -15,
+                "duration": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mousson_page_shower",
+      "nodes": [
+        {
+          "id": "mousson_shower_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": 15
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_sweep",
+          "requires": "mousson_shower_core",
+          "group": "mousson_shower_choice",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_enemies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -55
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_wave",
+          "requires": "mousson_shower_core",
+          "group": "mousson_shower_choice",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_spray",
+          "requires": "mousson_shower_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "damage",
+                "target": "lowest_hp_enemy",
+                "power": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_monsoon",
+          "requires": "mousson_shower_spray",
+          "mods": [
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": -1
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "damage",
+              "field": "power",
+              "mulPct": -15
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_squall",
+          "requires": "mousson_shower_core",
+          "mods": [
+            {
+              "type": "delay",
+              "slot": "ult",
+              "delta": -30
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_drench",
+          "requires": "mousson_shower_squall",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "amount": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "mousson_shower_storm",
+          "requires": "mousson_shower_monsoon",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -30
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

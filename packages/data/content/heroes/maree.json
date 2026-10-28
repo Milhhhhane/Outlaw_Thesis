@@ -2,6 +2,8 @@
   "id": "maree",
   "element": "water",
   "role": "support",
+  "tier": 1,
+  "starter": true,
   "stats": {
     "hp": 470,
     "atk": 46,
