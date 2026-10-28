@@ -641,6 +641,10 @@ qu'avancer. Réglable sans code.
 **Le palier le plus haut ouvert est choisi d'office sur la carte** — Raison : c'est celui qu'on
 vient d'ouvrir ; le I reste à un clic pour farmer tranquille. Le mode test ouvre tous les paliers.
 
+**Auto relance le même palier** — Choix : la relance automatique de l'écran de récompenses
+(`enterDungeon` avec le palier) rejoue le palier qui vient d'être joué, jamais celui qu'il vient
+d'ouvrir. Raison : le joueur a choisi ce palier pour farmer ; monter d'un cran est une décision.
+
 **Ports des tests de bout en bout surchargeables** — Contexte : plusieurs copies du dépôt
 tournent en parallèle sur la même machine. Choix : `E2E_PORT` et `E2E_API_PORT` (4174 et 8788
 par défaut). Raison : rien ne change en CI.
@@ -663,3 +667,33 @@ peut, sans arbitrer.
 quelques donjons » et « du vrai grind » sans chiffre. Choix : premier objet au maximum en moins
 de 15 passages gagnants (8 mesurés), collection complète entre 200 et 300 (244). Raison : choix de
 l'assistant, à confirmer au test humain ; les bornes du test se déplacent avec un chiffre.
+
+## Enchaînement automatique
+
+**Plus de vitesse « instantanée »** — Contexte : trois vitesses (×1, ×2, instantané) pour un
+seul bouton en combat, et l'instantané rendait le résultat illisible (le combat se jouait d'un
+coup). Choix : ×1 et ×2 seulement, un réglage enregistré « instant » retombe sur ×2. Raison : avec
+Auto et l'enchaînement, le rythme vient du mode, pas d'une vitesse qui saute l'affichage. Les
+tests de l'interface ne s'appuient plus dessus : ils neutralisent la durée des événements
+(`eventDuration`, dans `apps/web/test/setup.ts`) et gardent les autres délais à ×2.
+
+**Le décompte est une navigation, pas une règle** — Contexte : Auto s'arrêtait à chaque écran de
+résultat ; farmer coûtait deux clics par salle. Choix : en mode Auto, une victoire affiche un
+décompte de 5 secondes (`apps/web/src/game/Countdown.tsx`) puis déclenche le bouton de fin
+existant ; l'écran de récompenses fait de même avec son bouton « Rejouer » (`onReplay`). Le moteur
+n'est pas touché : `completeDungeon`, `replayRewardRate` et `replayChestRate` gardent leurs règles.
+Raison : l'enchaînement n'est qu'un clic différé ; aucune logique de jeu dans React.
+
+**Tout clic ou toute touche rend la main** — Choix : les événements `pointerdown` et `keydown`
+sont écoutés en capture sur la fenêtre ; sauf sur « Continuer maintenant », ils arrêtent le
+décompte pour de bon (il ne repart pas sur cet écran) et Auto reste coché. Raison : le joueur qui
+touche à quelque chose veut lire ou décider ; le mode reste réglé pour la salle suivante. La pause
+(Échap ou l'engrenage) interrompt donc aussi, et le décompte ne court pas tant qu'elle est ouverte.
+Mouvement réduit : l'animation du chiffre suit la règle globale `[data-motion='off']`.
+
+**Défaite et énergie** — Choix : aucun décompte après une défaite (l'écran de fin de donjon
+attend le joueur) ; sur l'écran de récompenses, pas de relance si `enterDungeon` refuse l'entrée
+(énergie insuffisante, coût 0 pour l'instant). L'entrée elle-même n'est pas consommée par la
+relance, comme pour le bouton « Rejouer » et l'entrée par la carte : à brancher ensemble le jour
+où `costPerDungeon` devient positif. Raison : une relance qui consomme ce que l'entrée manuelle
+ne consomme pas serait incohérente. Le mode test (rien à gagner) ne relance pas non plus.

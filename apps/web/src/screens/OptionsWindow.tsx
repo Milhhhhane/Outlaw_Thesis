@@ -109,7 +109,7 @@ export function OptionsWindow({ onClose }: { readonly onClose: () => void }) {
         <Choice<Options['speed']>
           label={t('options.speed')}
           value={options.speed}
-          choices={(['normal', 'fast', 'instant'] as const).map((v) => ({
+          choices={(['normal', 'fast'] as const).map((v) => ({
             value: v,
             label: tk(`options.speed.${v}`),
           }))}

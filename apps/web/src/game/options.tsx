@@ -2,8 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 /** Réglages de confort, propres à l'appareil (hors sauvegarde de partie). */
 export interface Options {
-  /** Vitesse du rejeu des combats. */
-  readonly speed: 'normal' | 'fast' | 'instant';
+  /** Vitesse du rejeu des combats : ×1 ou ×2. */
+  readonly speed: 'normal' | 'fast';
   /** Animations de l'interface (fondus, rebonds, sprites au repos). */
   readonly animations: boolean;
   /** Combat automatique : le jeu joue les tours des héros. Retenu d'un combat à l'autre (donjon). */
@@ -26,11 +26,15 @@ function load(): Options {
   try {
     const raw = window.localStorage.getItem(OPTIONS_KEY);
     if (raw === null) return base;
-    const parsed = JSON.parse(raw) as Partial<Options>;
+    const parsed = JSON.parse(raw) as Partial<Record<keyof Options, unknown>>;
     return {
-      speed: ['normal', 'fast', 'instant'].includes(parsed.speed ?? '')
-        ? (parsed.speed as Options['speed'])
-        : base.speed,
+      // L'ancienne vitesse « instantanée » retombe sur ×2.
+      speed:
+        parsed.speed === 'normal' || parsed.speed === 'fast'
+          ? parsed.speed
+          : parsed.speed === 'instant'
+            ? 'fast'
+            : base.speed,
       animations: typeof parsed.animations === 'boolean' ? parsed.animations : base.animations,
       auto: typeof parsed.auto === 'boolean' ? parsed.auto : base.auto,
     };
@@ -41,7 +45,7 @@ function load(): Options {
 
 /** Multiplicateur appliqué à la durée des événements de combat. */
 export function speedFactor(speed: Options['speed']): number {
-  return speed === 'normal' ? 1 : speed === 'fast' ? 0.5 : 0;
+  return speed === 'normal' ? 1 : 0.5;
 }
 
 interface OptionsApi {

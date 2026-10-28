@@ -4,6 +4,7 @@ import { backgroundUrl } from '../art';
 import { PixelSprite } from '../art/Pixel';
 import { Portrait } from '../combat/InitiativeTrack';
 import { content } from '../combat/session';
+import { Countdown } from '../game/Countdown';
 import { useEscape } from '../game/keys';
 import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
@@ -50,11 +51,14 @@ export function Rewards({
   report,
   onContinue,
   onReplay,
+  autoReplay = false,
 }: {
   readonly report: DungeonReport;
   readonly onContinue: () => void;
   /** Relance le même donjon (farm). */
   readonly onReplay: () => void;
+  /** Mode Auto : relance seule après un décompte, que tout clic ou touche interrompt. */
+  readonly autoReplay?: boolean;
 }) {
   const { go } = useGame();
   const heading = useRef<HTMLHeadingElement>(null);
@@ -179,6 +183,11 @@ export function Rewards({
         <Button size="large" variant={report.firstClear ? 'primary' : 'quiet'} onClick={onContinue}>
           {t('reward.continue')}
         </Button>
+        <Countdown
+          enabled={autoReplay}
+          text={(s) => t('combat.auto.replay', { s })}
+          onDone={onReplay}
+        />
       </div>
     </main>
   );

@@ -23,6 +23,21 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Poussière brute des deux premiers donjons doublée (4 → 8). Premier objet au maximum en 8
   passages gagnants (avant : 29) ; collection complète en 244.
 
+## [Non publié] — 2026-10-28 — enchaînement automatique
+
+### Ajouté
+
+- Mode Auto : une salle gagnée ouvre la suivante après un décompte de 5 secondes (chiffre qui
+  descend, bouton « Continuer maintenant », annonce aux lecteurs d'écran), et l'écran de
+  récompenses relance le même donjon avec la même équipe de la même façon. Tout clic ou toute
+  touche interrompt le décompte sans décocher Auto ; une défaite arrête l'enchaînement ; pas de
+  relance si le moteur refuse l'entrée (énergie).
+
+### Supprimé
+
+- La vitesse « Instantanée » des combats : il reste ×1 et ×2. Un réglage enregistré en
+  « instantané » retombe sur ×2.
+
 ## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
 
 ### Modifié
