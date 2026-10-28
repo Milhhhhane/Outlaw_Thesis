@@ -1498,3 +1498,21 @@
 :root[data-motion='off'] .stage__hurt {
   display: none;
 }
+
+/* Héros éveillé : liseré et halo de son élément autour du sprite (aucun sprite de plus). */
+.awakened--fire {
+  --aura: var(--fire);
+}
+
+.awakened--water {
+  --aura: var(--water);
+}
+
+.awakened--nature {
+  --aura: var(--nature);
+}
+
+.actor--awakened .hero-sprite {
+  filter: drop-shadow(1px 0 0 var(--aura)) drop-shadow(-1px 0 0 var(--aura))
+    drop-shadow(0 0 3px var(--aura));
+}

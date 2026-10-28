@@ -23,6 +23,8 @@ export interface UnitView {
   readonly statuses: readonly StatusView[];
   /** Total des modifications de stat en cours, en %. */
   readonly mods: Readonly<Record<string, number>>;
+  /** Héros éveillé : aura à l'écran. */
+  readonly awakened?: boolean;
 }
 
 export interface Flash {
@@ -89,6 +91,7 @@ export function viewFromState(state: BattleState): BattleView {
       alive: unit.alive,
       statuses: unit.statuses.map((s) => ({ kind: s.kind, turns: s.turns })),
       mods: modsOf(unit),
+      ...(unit.def.awakened === true ? { awakened: true } : {}),
     })),
     points: { ...state.points },
     flashes: [],

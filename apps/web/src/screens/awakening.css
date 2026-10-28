@@ -1,0 +1,134 @@
+/* Sanctuaires d'essence et éveil (canevas 960 x 540 : les listes défilent dans leur cadre). */
+
+.essences__layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 12px;
+  height: 100%;
+}
+
+.essences__column,
+.essences__panel {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.essences__panel {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+}
+
+.essences__list,
+.essences__stock,
+.essences__enemies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.essences__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 6px 8px;
+  border: 2px solid var(--element);
+  background: var(--panel-dark, rgb(0 0 0 / 30%));
+  color: var(--bone);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.essences__item--on {
+  background: color-mix(in srgb, var(--element) 35%, transparent);
+}
+
+.essences__stock {
+  color: var(--bone-muted);
+  font-size: 12px;
+}
+
+.essences__stock li {
+  border-left: 3px solid var(--element);
+  margin: 0 0 3px;
+  padding-left: 6px;
+}
+
+.essences__sub {
+  margin: 6px 0 2px;
+  font-size: 14px;
+}
+
+.essences__info {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.essences__info p {
+  margin: 4px 0;
+}
+
+.essences__enemies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.essences__enemies li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.essences__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.essences__team {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.essences__locked {
+  margin: 0;
+  color: var(--bone-muted);
+}
+
+/* Fiche du héros : bloc d'éveil et badge. */
+.sheet__awakening {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0;
+  padding: 6px;
+  border: 1px solid var(--element);
+}
+
+.sheet__awakening p {
+  margin: 0;
+}
+
+.awakened-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--element);
+  color: var(--bone);
+  background: color-mix(in srgb, var(--element) 40%, transparent);
+  font-size: 12px;
+}
+
+.sheet__sprite--awakened .hero-sprite {
+  filter: drop-shadow(1px 0 0 var(--element)) drop-shadow(-1px 0 0 var(--element))
+    drop-shadow(0 -1px 0 var(--element)) drop-shadow(0 0 3px var(--element));
+}

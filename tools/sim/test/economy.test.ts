@@ -1,7 +1,14 @@
 import { loadContent } from '@outlaw/data';
 import { tierReached, tierTargetLevel } from '@outlaw/engine';
 import { describe, expect, it } from 'vitest';
-import { pickRun, questEffect, simulateEconomy, summarizeEconomy } from '../src/economy';
+import {
+  essencePick,
+  pickRun,
+  questEffect,
+  simulateEconomy,
+  summarizeAwakening,
+  summarizeEconomy,
+} from '../src/economy';
 
 const content = loadContent();
 
@@ -87,5 +94,20 @@ describe('économie : joueur modèle', () => {
         expect(shortening ?? 0).toBeLessThanOrEqual(15);
       }
     }
+  });
+
+  // Cible de l'éveil (docs/BALANCE.md, « Éveil ») : un héros vers le milieu de partie, l'équipe en
+  // fin de progression, passages d'essence compris.
+  it('éveil : premier héros vers le milieu de partie, équipe en fin de partie (5 graines)', () => {
+    const a = summarizeAwakening(content, 5);
+    expect(a.first).not.toBeNull();
+    expect(a.team).not.toBeNull();
+    expect(a.first ?? 0).toBeGreaterThanOrEqual(60);
+    expect(a.first ?? 0).toBeLessThanOrEqual(100);
+    expect(a.team ?? 0).toBeGreaterThanOrEqual(110);
+    expect(a.team ?? 0).toBeLessThanOrEqual(170);
+    expect(a.essenceRunsFirst ?? 0).toBeLessThanOrEqual(20);
+    // Rien à farmer tant que les donjons d'essence sont fermés.
+    expect(essencePick(content, simulateEconomy(content, 1, 10).profile)).toBeNull();
   });
 });

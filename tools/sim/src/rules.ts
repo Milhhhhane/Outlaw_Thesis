@@ -74,6 +74,17 @@ export function sampleTeams(content: Content, count: number, seed: number): stri
   return result;
 }
 
+/** Transformation des builds tirés (par exemple : tous les héros éveillés). */
+export type Dress = (builds: HeroBuild[]) => HeroBuild[];
+const asDrawn: Dress = (builds) => builds;
+
+/** Options des règles : builds transformés, nombre d'équipes de R1, préfixe des lignes. */
+export interface RulesOptions {
+  readonly dress?: Dress;
+  readonly r1Teams?: number;
+  readonly prefix?: string;
+}
+
 interface Ranked {
   readonly builds: HeroBuild[];
   readonly won: number;
@@ -88,11 +99,12 @@ function rank(
   level: number,
   samples: number,
   seed: number,
+  dress: Dress = asDrawn,
 ): Ranked[] {
   const rng = createRng(seed);
   const ranked: Ranked[] = [];
   for (let i = 0; i < samples; i++) {
-    const builds = team.map((hero) => randomBuild(content, hero, level, rng));
+    const builds = dress(team.map((hero) => randomBuild(content, hero, level, rng)));
     const run = runDungeon(content, dungeon.id, builds, lookahead);
     ranked.push({
       builds,
@@ -125,9 +137,10 @@ function duelExtremes(
   level: number,
   samples: number,
   seed: number,
+  dress: Dress = asDrawn,
 ) {
   const rng = createRng(seed);
-  const draw = (): HeroBuild[] => team.map((hero) => randomBuild(content, hero, level, rng));
+  const draw = (): HeroBuild[] => dress(team.map((hero) => randomBuild(content, hero, level, rng)));
   const reference = Array.from({ length: REFERENCE }, draw);
   const scored = Array.from({ length: samples }, () => {
     const builds = draw();
@@ -163,8 +176,16 @@ const outcome = (won: boolean): BattleOutcome => ({
   actions: 0,
 });
 
-export function evaluateRules(content: Content, samples: number, seed: number): RulesReport {
+export function evaluateRules(
+  content: Content,
+  samples: number,
+  seed: number,
+  options: RulesOptions = {},
+): RulesReport {
   const { targets } = content.balance;
+  const dress = options.dress ?? asDrawn;
+  const r1Teams = options.r1Teams ?? R1_TEAMS;
+  const prefix = options.prefix ?? '';
   const all = sampleTeams(content, TEAM_SAMPLE, seed);
   const duels: BattleOutcome[] = [];
   const r1Rows: ScenarioRow[] = [];
@@ -183,17 +204,27 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       // R1 : meilleur et pire build jugés au duel, contre un groupe de référence qu'ils ne
       // rencontrent qu'une fois classés ; puis ils s'affrontent dans les deux sens.
       const pair =
-        t < R1_TEAMS ? duelExtremes(content, team, level, samples, seed + 3000 * d + t) : null;
+        t < r1Teams
+          ? duelExtremes(content, team, level, samples, seed + 3000 * d + t, dress)
+          : null;
       if (pair !== null) {
         local.push(outcome(duel(content, pair.best, pair.worst)));
         local.push(outcome(!duel(content, pair.worst, pair.best)));
       }
       if (behind >= 1) {
-        const late = rank(content, dungeon, team, behind, samples, seed + 1000 * d + t + 500)[0];
+        const late = rank(
+          content,
+          dungeon,
+          team,
+          behind,
+          samples,
+          seed + 1000 * d + t + 500,
+          dress,
+        )[0];
         r2.push(outcome(late?.cleared === true));
         const rng = createRng(seed + 5000 * d + t);
         for (let k = 0; k < TEAM_SAMPLES; k++) {
-          const builds = team.map((hero) => randomBuild(content, hero, behind, rng));
+          const builds = dress(team.map((hero) => randomBuild(content, hero, behind, rng)));
           const run = runDungeon(
             content,
             dungeon.id,
@@ -205,12 +236,12 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
         }
       }
     });
-    if (r2.length > 0) r2Rows.push(summarize(`r2_${dungeon.id}`, r2));
-    if (local.length > 0) r1Rows.push(summarize(`r1_${dungeon.id}`, local));
+    if (r2.length > 0) r2Rows.push(summarize(`${prefix}r2_${dungeon.id}`, r2));
+    if (local.length > 0) r1Rows.push(summarize(`${prefix}r1_${dungeon.id}`, local));
     duels.push(...local);
   });
 
-  const r1Row = summarize('r1_best_vs_worst_duels', duels);
+  const r1Row = summarize(`${prefix}r1_best_vs_worst_duels`, duels);
   const scores = [...clears.entries()].map(([key, n]) => ({
     team: key.split('+'),
     rate: n / (tests.get(key) ?? 1),
@@ -233,8 +264,8 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       hero: hero.id,
       without,
       within,
-      row: asRow(`best_team_without_${hero.id}`, without),
-      withRow: asRow(`best_team_with_${hero.id}`, within),
+      row: asRow(`${prefix}best_team_without_${hero.id}`, without),
+      withRow: asRow(`${prefix}best_team_with_${hero.id}`, within),
     };
   });
   const worstGap = heroRows.reduce(
@@ -249,7 +280,7 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       r1Row,
       ...r1Rows,
       ...r2Rows,
-      asRow('best_team', best),
+      asRow(`${prefix}best_team`, best),
       ...heroRows.map((h) => h.row),
       ...heroRows.map((h) => h.withRow),
     ],

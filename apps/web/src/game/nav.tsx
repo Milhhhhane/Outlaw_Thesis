@@ -17,6 +17,9 @@ export type Route =
   /** Tour à étages : la colonne des étages (étage choisi), puis le combat d'un étage. */
   | { readonly name: 'tower'; readonly floor?: number }
   | { readonly name: 'tower_run'; readonly floor: number }
+  /** Sanctuaires d'essence (depuis la carte), puis le passage d'un sanctuaire à un palier. */
+  | { readonly name: 'essences'; readonly dungeon?: string }
+  | { readonly name: 'essence_run'; readonly id: string; readonly tier: number }
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
   | { readonly name: 'pvp_room'; readonly code: string };

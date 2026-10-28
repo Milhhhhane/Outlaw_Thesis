@@ -2,6 +2,7 @@ import type { ZodType } from 'zod';
 import { balanceSchema, type Balance } from './schemas/balance';
 import { dungeonSchema, type Dungeon, type DungeonModifier } from './schemas/dungeons';
 import { enemySchema, type Enemy } from './schemas/enemies';
+import { essencesContentSchema, type EssenceDungeon } from './schemas/essences';
 import { heroSchema, type Hero } from './schemas/heroes';
 import { itemSchema, type Item } from './schemas/items';
 import { questsContentSchema, type QuestsContent } from './schemas/quests';
@@ -16,6 +17,8 @@ export interface RawContent {
   /** Quêtes et succès (`content/quests.json`) ; absent : aucune quête. */
   quests?: unknown;
   tower: unknown;
+  /** Donjons d'essence (`content/essences.json`) ; absent : aucun. */
+  essences?: unknown;
 }
 
 /** Tour à étages résolue : les modificateurs des étages de boss sont ceux des donjons cités. */
@@ -37,6 +40,8 @@ export interface Content {
   items: readonly Item[];
   dungeons: readonly Dungeon[];
   tower: Tower;
+  /** Donjons d'essence (un par élément), hors du chemin de la carte. */
+  essenceDungeons: readonly EssenceDungeon[];
   heroById: ReadonlyMap<string, Hero>;
   enemyById: ReadonlyMap<string, Enemy>;
   itemById: ReadonlyMap<string, Item>;
@@ -258,6 +263,9 @@ export function parseContent(raw: RawContent): Content {
 
   const quests = parseQuests(raw.quests, balance, issues);
   const tower = resolveTower(raw.tower, balance, enemyById, dungeonById, issues);
+  const essenceDungeons = parseEssences(raw.essences, enemyById, dungeonById, issues);
+  if (!dungeonById.has(balance.awakening.openAfter))
+    issues.push(`éveil : donjon inconnu « ${balance.awakening.openAfter} » (openAfter)`);
 
   if (issues.length > 0) throw new ContentError(issues);
 
@@ -268,6 +276,7 @@ export function parseContent(raw: RawContent): Content {
     items,
     dungeons,
     tower,
+    essenceDungeons,
     heroById,
     enemyById,
     itemById,
@@ -341,4 +350,38 @@ function resolveTower(
     return { ...floor, modifier: dungeon?.modifier };
   });
   return { pools, bosses: resolved };
+}
+
+/** Donjons d'essence : schéma, un par élément, ennemis existants de l'élément, boss au dernier combat. */
+function parseEssences(
+  raw: unknown,
+  enemyById: ReadonlyMap<string, Enemy>,
+  dungeonById: ReadonlyMap<string, Dungeon>,
+  issues: string[],
+): EssenceDungeon[] {
+  if (raw === undefined) return [];
+  const parsed = essencesContentSchema.safeParse(raw);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues)
+      issues.push(`essences : ${issue.path.join('.') || '(racine)'} : ${issue.message}`);
+    return [];
+  }
+  const { dungeons } = parsed.data;
+  if (new Set(dungeons.map((d) => d.element)).size !== dungeons.length)
+    issues.push('essences : un donjon par élément');
+  for (const d of dungeons) {
+    if (dungeonById.has(d.id)) issues.push(`essences : « ${d.id} » est déjà un donjon`);
+    if (!dungeonById.has(d.scene)) issues.push(`essences : décor inconnu « ${d.scene} »`);
+    d.encounters.forEach((encounter, i) => {
+      for (const id of encounter.enemies) {
+        const enemy = enemyById.get(id);
+        if (enemy === undefined) issues.push(`essences : ennemi inconnu « ${id} »`);
+        else if (enemy.element !== d.element)
+          issues.push(`essences : « ${id} » n’est pas de l’élément de « ${d.id} »`);
+        else if (enemy.boss && i < d.encounters.length - 1)
+          issues.push(`essences : boss « ${id} » avant le dernier combat de « ${d.id} »`);
+      }
+    });
+  }
+  return dungeons;
 }

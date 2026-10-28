@@ -1,0 +1,37 @@
+{
+  "dungeons": [
+    {
+      "id": "essence_fire",
+      "element": "fire",
+      "recommendedLevel": 10,
+      "scene": "cinder_citadel",
+      "encounters": [
+        { "enemies": ["cinder_hound", "ash_acolyte", "cinder_hound"] },
+        { "enemies": ["ash_acolyte", "cinder_hound", "ash_acolyte", "cinder_hound"] },
+        { "enemies": ["pyre_tyrant", "ash_acolyte"] }
+      ]
+    },
+    {
+      "id": "essence_water",
+      "element": "water",
+      "recommendedLevel": 10,
+      "scene": "sunken_spire",
+      "encounters": [
+        { "enemies": ["brine_crab", "tide_caller", "brine_crab"], "atkPct": 140 },
+        { "enemies": ["tide_caller", "brine_crab", "tide_caller", "brine_crab"], "atkPct": 140 },
+        { "enemies": ["tidal_hydra", "tide_caller"], "atkPct": 140 }
+      ]
+    },
+    {
+      "id": "essence_nature",
+      "element": "nature",
+      "recommendedLevel": 10,
+      "scene": "verdant_crown",
+      "encounters": [
+        { "enemies": ["moss_brute", "thorn_witch", "moss_brute"], "atkPct": 90 },
+        { "enemies": ["thorn_witch", "moss_brute", "thorn_witch", "moss_brute"], "atkPct": 90 },
+        { "enemies": ["grove_colossus", "thorn_witch"], "atkPct": 90 }
+      ]
+    }
+  ]
+}

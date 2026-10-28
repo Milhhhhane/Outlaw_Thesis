@@ -64,6 +64,8 @@ export interface UnitDef {
   readonly controller: Controller;
   /** Script d'actions des unités « script » ; il tourne en boucle. */
   readonly script: readonly ScriptStep[];
+  /** Héros éveillé (aura à l'écran) ; absent sinon. */
+  readonly awakened?: true;
 }
 
 /** Ce qui se passe quand la limite d'actions est atteinte. */

@@ -1,6 +1,7 @@
 import { MAP_SIZE, type Dungeon } from '@outlaw/data';
 import {
   dungeonOpen,
+  essencesOpen,
   lootRates,
   masteryNext,
   masteryRank,
@@ -208,22 +209,36 @@ export function MapScreen({
               })}
             </ol>
           </div>
-          <p className="map__legend" aria-hidden="true">
-            <span className="map__key map__key--open">1</span> {t('map.next')}
-            <span className="map__key map__key--cleared">
-              <Icon name="check" />
-            </span>{' '}
-            {t('map.cleared')}
-            <span className="map__key map__key--locked">
-              <Icon name="lock" />
-            </span>{' '}
-            {t('map.locked')}
-            <span className="map__team">
-              {profile.team.map((id) => (
-                <Portrait key={id} kind={id} size={32} />
-              ))}
-            </span>
-          </p>
+          <div className="map__foot">
+            <p className="map__legend" aria-hidden="true">
+              <span className="map__key map__key--open">1</span> {t('map.next')}
+              <span className="map__key map__key--cleared">
+                <Icon name="check" />
+              </span>{' '}
+              {t('map.cleared')}
+              <span className="map__key map__key--locked">
+                <Icon name="lock" />
+              </span>{' '}
+              {t('map.locked')}
+              <span className="map__team">
+                {profile.team.map((id) => (
+                  <Portrait key={id} kind={id} size={32} />
+                ))}
+              </span>
+            </p>
+            <Button
+              size="small"
+              variant="quiet"
+              className="map__essences"
+              title={t('essence.open.hint')}
+              onClick={() => {
+                go({ name: 'essences' });
+              }}
+            >
+              <Icon name={essencesOpen(content, profile) ? 'trigger' : 'lock'} />{' '}
+              {t('essence.open')}
+            </Button>
+          </div>
         </div>
 
         {dungeon !== undefined && (

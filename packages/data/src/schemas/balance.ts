@@ -4,6 +4,7 @@ export const MAX_SIDE = 4;
 import { z } from 'zod';
 import { idSchema } from './common';
 import { MAX_HERO_TIER } from './heroes';
+import { passiveModSchema } from './items';
 import { questRewardSchema } from './quests';
 
 const pos = z.number().positive();
@@ -131,6 +132,26 @@ export const balanceSchema = z
       enemyPctPerTier: z.strictObject({ hp: nonNeg, atk: nonNeg }),
       rewardPctPerTier: z.strictObject({ xp: nonNeg, gold: nonNeg, materials: nonNeg }),
       rareWeightPerTier: nonNegInt,
+    }),
+
+    /**
+     * Éveil des héros (une fois par héros) et donjons d'essence. L'éveil se paie en essences de
+     * l'élément du héros (`cost.essences` : faible, moyenne, supérieure) et en or, à partir du
+     * niveau `minLevel`. Il donne, par une formule commune à tous les héros : `statPct` % de PV,
+     * d'ATK et de DEF (hors plafond des objets, donc borné ici) et les modifications de passif
+     * `mods` (mêmes mécanismes que les objets). Les donjons d'essence s'ouvrent quand `openAfter`
+     * est terminé ; au palier k, un passage gagnant donne `drops[k − 1]` essences de qualité k.
+     */
+    awakening: z.strictObject({
+      minLevel: posInt,
+      statPct: z.number().min(0).max(10),
+      mods: z.array(passiveModSchema).min(1).max(4),
+      cost: z.strictObject({
+        essences: z.tuple([nonNegInt, nonNegInt, nonNegInt]),
+        gold: nonNegInt,
+      }),
+      openAfter: idSchema,
+      drops: z.tuple([posInt, posInt, posInt]),
     }),
 
     /**
@@ -306,6 +327,15 @@ export const balanceSchema = z
       tower: z.strictObject({
         expertMin: z.number().min(0).max(1),
         tolerance: z.number().min(0).max(1),
+      }),
+      /**
+       * Éveil : à niveau égal, un héros éveillé ne fait pas gagner plus de `maxGapPoints` points de
+       * donjons terminés (joueur moyen, en retard) à son équipe ; chaque palier d'un donjon
+       * d'essence réussit au moins `essenceExpertMin` pour l'expert au niveau visé.
+       */
+      awakening: z.strictObject({
+        maxGapPoints: nonNeg,
+        essenceExpertMin: z.number().min(0).max(1),
       }),
     }),
   })
