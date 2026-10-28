@@ -1,5 +1,18 @@
 import { MAP_SIZE, type Dungeon } from '@outlaw/data';
-import { dungeonOpen, lootRates, masteryNext, masteryRank } from '@outlaw/engine';
+import {
+  dungeonOpen,
+  lootRates,
+  masteryNext,
+  masteryRank,
+  tierChest,
+  tierCleared,
+  tierCount,
+  tierLevel,
+  tierNumeral,
+  tierOpen,
+  tierReached,
+  tierTargetLevel,
+} from '@outlaw/engine';
 import { useState } from 'react';
 import { backgroundUrl } from '../art';
 import { PixelSprite } from '../art/Pixel';
@@ -38,7 +51,13 @@ const boardOf = (chapter: number): string =>
  * un donjon n'exige ni retouche de la carte ni code. Un chapitre = une carte ; les chapitres
  * s'affichent en onglets dès qu'il y en a plusieurs.
  */
-export function MapScreen({ initial }: { readonly initial?: string }) {
+export function MapScreen({
+  initial,
+  initialTier,
+}: {
+  readonly initial?: string;
+  readonly initialTier?: number;
+}) {
   const { go } = useGame();
   const { profile } = useProfile();
   const status = (id: string): 'locked' | 'cleared' | 'open' =>
@@ -50,6 +69,18 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
   const next = content.dungeons.find((d) => status(d.id) === 'open')?.id;
   const [selected, setSelected] = useState(initial ?? next ?? content.dungeons[0]?.id ?? '');
   const dungeon = content.dungeonById.get(selected);
+  // Palier choisi par donjon : le plus haut ouvert par défaut (celui qu'on vient d'ouvrir).
+  const [tiers, setTiers] = useState<Readonly<Record<string, number>>>(
+    initialTier === undefined ? {} : { [selected]: initialTier },
+  );
+  const tier =
+    dungeon === undefined
+      ? 1
+      : Math.min(
+          tiers[dungeon.id] ?? tierReached(content, profile, dungeon.id),
+          profile.testMode ? tierCount(content) : tierReached(content, profile, dungeon.id),
+        );
+  const { tiers: tierRules } = content.balance;
   const chapters = [...new Set(content.dungeons.map((d) => d.map.chapter))].sort((a, b) => a - b);
   const [chapter, setChapter] = useState(dungeon?.map.chapter ?? 1);
   const shown = content.dungeons.filter((d) => d.map.chapter === chapter);
@@ -167,6 +198,11 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
                     <span className="map__label" aria-hidden="true">
                       {names.dungeon(d.id)}
                     </span>
+                    {state === 'cleared' && tierReached(content, profile, d.id) > 1 && (
+                      <span className="map__tier-badge" aria-hidden="true">
+                        {tierNumeral(tierReached(content, profile, d.id))}
+                      </span>
+                    )}
                   </li>
                 );
               })}
@@ -199,14 +235,66 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
             <div className="map__info">
               <h2 className="detail__title">{names.dungeon(dungeon.id)}</h2>
               <p className="map__level">
-                {t('hub.dungeon.recommended', { level: dungeon.recommendedLevel })}
+                {t('hub.dungeon.recommended', {
+                  level: tierTargetLevel(content, dungeon, tier),
+                })}
                 {teamLevel > 0 && (
-                  <span className={teamLevel >= dungeon.recommendedLevel ? 'ok' : 'warn'}>
+                  <span
+                    className={teamLevel >= tierTargetLevel(content, dungeon, tier) ? 'ok' : 'warn'}
+                  >
                     {' '}
                     · {t('map.teamLevel', { level: teamLevel })}
                   </span>
                 )}
               </p>
+              {status(dungeon.id) !== 'locked' && (
+                <div className="map__tiers" role="group" aria-label={t('tier.choose')}>
+                  <span className="hint">{t('tier.choose')} :</span>
+                  {Array.from({ length: tierCount(content) }, (_, i) => i + 1).map((k) => {
+                    const open = tierOpen(content, profile, dungeon.id, k);
+                    const done = tierCleared(profile, dungeon.id, k);
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        className={[
+                          'map__tier',
+                          k === tier ? 'map__tier--on' : '',
+                          done ? 'map__tier--done' : '',
+                        ].join(' ')}
+                        aria-pressed={k === tier}
+                        disabled={!open}
+                        title={open ? undefined : t('tier.locked')}
+                        aria-label={t('tier.state', {
+                          name: t('tier.name', { tier: tierNumeral(k) }),
+                          state: !open
+                            ? t('map.locked')
+                            : done
+                              ? t('tier.cleared')
+                              : t('tier.open'),
+                        })}
+                        onClick={() => {
+                          setTiers((all) => ({ ...all, [dungeon.id]: k }));
+                        }}
+                      >
+                        {open ? tierNumeral(k) : <Icon name="lock" />}
+                      </button>
+                    );
+                  })}
+                  <span className="map__tier-text">
+                    {tier === 1
+                      ? t('tier.base')
+                      : t('tier.effects', {
+                          level: tierLevel(content, dungeon, tier),
+                          pct: Math.round((tier - 1) * tierRules.enemyPctPerTier.atk),
+                          gold: Math.round((tier - 1) * tierRules.rewardPctPerTier.gold),
+                          dust: Math.round((tier - 1) * tierRules.rewardPctPerTier.materials),
+                          rare: (tier - 1) * tierRules.rareWeightPerTier,
+                          chest: tk(`chest.tier.${tierChest(content, dungeon, tier)}`),
+                        })}
+                  </span>
+                </div>
+              )}
               <p className="map__text">{names.dungeonText(dungeon.id)}</p>
               <p className="map__modifier">
                 <strong>{names.passive(dungeon.modifier.id)}</strong>{' '}
@@ -227,6 +315,7 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
                   content,
                   dungeon,
                   masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0),
+                  tier,
                 ).map((rate, i) => (
                   <span
                     key={rate.item}
@@ -239,7 +328,7 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
                     {t('map.itemRate', { item: names.item(rate.item), pct: Math.round(rate.pct) })}
                   </span>
                 ))}
-                {status(dungeon.id) !== 'cleared' &&
+                {!tierCleared(profile, dungeon.id, tier) &&
                   content.balance.economy.loot.firstClearRare && (
                     <span className="hint"> · {t('map.firstRare')}</span>
                   )}
@@ -271,7 +360,7 @@ export function MapScreen({ initial }: { readonly initial?: string }) {
                 size="large"
                 className="map__go"
                 onClick={() => {
-                  go({ name: 'team', dungeon: dungeon.id });
+                  go({ name: 'team', dungeon: dungeon.id, tier });
                 }}
               >
                 {t('map.prepare')} ▶

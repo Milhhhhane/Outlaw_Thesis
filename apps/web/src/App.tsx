@@ -36,9 +36,9 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
     case 'hub':
       return <Hub />;
     case 'map':
-      return <MapScreen initial={route.dungeon} />;
+      return <MapScreen initial={route.dungeon} initialTier={route.tier} />;
     case 'team':
-      return <Team dungeon={route.dungeon} />;
+      return <Team dungeon={route.dungeon} tier={route.tier} />;
     case 'heroes':
       return <Heroes />;
     case 'hero':
@@ -57,7 +57,7 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
     case 'credits':
       return <Credits />;
     case 'dungeon':
-      return <DungeonRun dungeonId={route.id} onExit={hub} />;
+      return <DungeonRun dungeonId={route.id} tier={route.tier ?? 1} onExit={hub} />;
     case 'demo':
       return <CombatScreen setup={demo} onExit={hub} />;
   }

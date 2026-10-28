@@ -14,7 +14,8 @@
     "auto": "tsx src/auto.ts",
     "tunecurve": "tsx src/tunecurve.ts",
     "farm": "tsx src/farm.ts",
-    "heroes": "tsx src/heroes.ts"
+    "heroes": "tsx src/heroes.ts",
+    "economy": "tsx src/economy.ts"
   },
   "dependencies": {
     "@outlaw/data": "workspace:*",

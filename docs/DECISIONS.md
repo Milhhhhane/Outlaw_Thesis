@@ -603,6 +603,71 @@ le total entre 70 et 110. Cibles retenues : 6, 8, 10, 12, 14, 16 passages jusqu'
 7 à 8 par donjon final (chiffres dans `docs/BALANCE.md`). Raison : les cibles sont dans le dépôt
 et vérifiées en CI ; retoucher une récompense sans casser le rythme se voit tout de suite.
 
+## Paliers de donjon et économie
+
+**Une formule, pas des valeurs par donjon** — Contexte : les paliers (I, II, III) montent le
+niveau des ennemis et le butin. Choix : tout est dans `balance.tiers` (niveaux par palier,
+pourcentage de PV et d'ATK, pourcentage de récompenses, poids de rare, cran de coffre) ; rien
+dans `dungeons.json`. Raison : dix donjons × trois paliers à la main divergeraient ; un nombre
+global se règle et se mesure en une fois.
+
+**Les niveaux seuls ne durcissent pas : un pourcentage par palier** — Constat : la croissance
+des monstres est plate (+54 % de PV sur 29 niveaux) et le moteur borne leur niveau à 30 ; mesuré,
++5 niveaux par palier laissait les paliers II et III des derniers donjons identiques au I, et
+ceux du début plus faciles (les héros gagnent plus par niveau). Choix : `enemyPctPerTier`
+(+20 % de PV et d'ATK par palier) en plus des niveaux. Raison : sans lui, un palier n'est qu'un
+multiplicateur de butin.
+
+**Le niveau visé d'un palier inclut l'équipement** — Contexte : la simulation joue sans objet,
+et deux objets bruts rendent un palier II à +20 % plus facile qu'un palier I nu. Choix : le
+palier I se mesure sans objet (comme le reste de la simulation), le II avec deux objets bruts, le
+dernier avec deux objets au maximum (`tierGear`) ; règles : expert ≥ 50 % à chaque palier et
+jamais plus de 12 points plus facile que le palier précédent (`targets.tiers`). Raison : les
+paliers sont la raison de crafter ; les mesurer nus aurait forcé des multiplicateurs trop doux.
+Retenu : +20 %/+20 % (écarté : +25 % : Trône creux III à 44 % ; +15 % : palier II plus facile
+que le I sur quatre donjons). Mesures dans `docs/BALANCE.md`.
+
+**`dungeons[id].tier` : le palier atteint, I par défaut** — Choix : le profil garde le plus
+haut palier ouvert ; terminer le palier k pour la première fois passe à k + 1, y compris au-delà
+du dernier (tous terminés), ce qui permet de savoir exactement quels premiers passages restent.
+Une ancienne sauvegarde (champ absent) dont le donjon est terminé compte comme palier I terminé :
+le palier II s'ouvre sans migration. Raison : un seul champ, pas de version de sauvegarde.
+
+**XP inchangée par le palier** — Choix : `rewardPctPerTier.xp` à 0 ; or et poussière +25 % par
+palier, rare +5 de poids, coffre d'un cran. Raison : le brief demande or, poussière, rares et
+coffre ; l'XP qui monte avec le palier ferait farmer le premier donjon au niveau 11 plutôt
+qu'avancer. Réglable sans code.
+
+**Le palier le plus haut ouvert est choisi d'office sur la carte** — Raison : c'est celui qu'on
+vient d'ouvrir ; le I reste à un clic pour farmer tranquille. Le mode test ouvre tous les paliers.
+
+**Auto relance le même palier** — Choix : la relance automatique de l'écran de récompenses
+(`enterDungeon` avec le palier) rejoue le palier qui vient d'être joué, jamais celui qu'il vient
+d'ouvrir. Raison : le joueur a choisi ce palier pour farmer ; monter d'un cran est une décision.
+
+**Ports des tests de bout en bout surchargeables** — Contexte : plusieurs copies du dépôt
+tournent en parallèle sur la même machine. Choix : `E2E_PORT` et `E2E_API_PORT` (4174 et 8788
+par défaut). Raison : rien ne change en CI.
+
+**Le coût d'un objet dépend du palier de poussière de son donjon** — Contexte : les trois paliers
+d'amélioration (1/2/3 copies, 100/300/800 or, 5/8/12 poussière) coûtaient la même chose pour un
+objet du premier donjon et du dernier ; le premier objet au maximum arrivait au 29ᵉ passage et
+l'or ne servait presque pas (4,6 %). Choix : `tierCostPct` (copies, or, poussière, en % par
+palier de poussière) multiplie `upgradeCosts` ; un objet du palier 1 coûte 4 copies, du palier 3
+8 copies, 22 000 or et 160 pures. Raison : une seule table d'étapes, une seule courbe par palier,
+le début rapide et la fin longue se règlent séparément. Chiffres dans `docs/BALANCE.md`.
+
+**Le réglage de l'économie est borné en CI** — Choix : `tools/sim/test/economy.test.ts` borne les
+six jalons du joueur modèle et exige que l'or et la poussière pure soient dépensés aux trois
+quarts. Raison : comme le test `farm`, une récompense retouchée qui casse le rythme se voit tout
+de suite. Le joueur modèle est un ordre de grandeur, pas un joueur : il dépense tout dès qu'il
+peut, sans arbitrer.
+
+**Cibles du réglage interprétées** — Contexte : le brief demande « premier objet amélioré en
+quelques donjons » et « du vrai grind » sans chiffre. Choix : premier objet au maximum en moins
+de 15 passages gagnants (8 mesurés), collection complète entre 200 et 300 (244). Raison : choix de
+l'assistant, à confirmer au test humain ; les bornes du test se déplacent avec un chiffre.
+
 ## Enchaînement automatique
 
 **Plus de vitesse « instantanée »** — Contexte : trois vitesses (×1, ×2, instantané) pour un
@@ -674,7 +739,7 @@ sensation de build qui transforme le passif, sans ouvrir une combinatoire talent
 
 **Simulation sur un échantillon** — Contexte : 12 650 équipes de quatre. Choix : 50 équipes tirées
 par tours de mélange (chaque héros dans 8), R1 sur les 12 premières ; équipes « jouables » (au plus
-deux héros du même rôle) pour les règles et le rythme. Raison : `pnpm sim:check` reste autour de
+deux héros du même rôle) pour les règles, le rythme et les paliers de donjon. Raison : `pnpm sim:check` reste autour de
 70 s de calcul ; avec six héros, toute équipe respectait déjà cette limite, la mesure garde son sens.
 
 **Cibles de rythme ajustées, donjons intacts** — Contexte : les donjons sont retouchés en parallèle

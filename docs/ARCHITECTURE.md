@@ -120,6 +120,12 @@ lui-même est dans `completeDungeon` (`progression.ts`). Un objet vient d'un seu
 (`content.itemOrigin`) et le profil garde un exemplaire par objet avec ses `copies` ; l'atelier est
 `apps/web/src/screens/Workshop.tsx` (collection) et la carte affiche taux, maîtrise et pitié.
 
+Les paliers de donjon sont dans `packages/engine/src/tiers.ts` (`tierLevel`, `tierEncounterPct`,
+`tierRewardFactor`, `tierChest`, `tierReached`, `tierOpen`) : `completeDungeon` et `enterDungeon`
+prennent le palier, la carte le choisit et le passe à l'équipe puis à `DungeonRun`. La simulation
+les mesure dans `tools/sim/src/tiers.ts` ; l'économie hors combat (jalons, bilan) dans
+`tools/sim/src/economy.ts` (`pnpm --filter @outlaw/sim economy`, voir `docs/ECONOMY.md`).
+
 Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
 moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
 active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.

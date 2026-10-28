@@ -12,6 +12,7 @@ import { dungeonRows } from './dungeons';
 import { pacing } from './pacing';
 import { evaluateRules } from './rules';
 import { randomBattles, sprint0Scenarios } from './scenarios';
+import { tiers } from './tiers';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const baselinePath = join(root, 'baseline.csv');
@@ -29,12 +30,14 @@ const content = loadContent();
 const started = performance.now();
 const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
 const pace = pacing(content, option('--pace-runs', 48), option('--seed', 1));
+const tier = tiers(content, option('--tier-runs', 48), option('--seed', 1));
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
   ...dungeonRows(content, option('--runs', 40), option('--seed', 1)),
   ...rules.rows,
   ...pace.rows,
+  ...tier.rows,
 ]);
 const { targets } = content.balance;
 const verdicts: string[] = [
@@ -49,10 +52,17 @@ verdicts.push(
 verdicts.push(
   `Rythme et difficulté ${pace.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert ${(pace.expertRate * 100).toFixed(0)} %, joueur moyen ${(pace.averageRate * 100).toFixed(0)} % au niveau conseillé`,
   ...pace.problems.map((p) => `  - ${p}`),
+  `Paliers ${tier.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert par donjon et palier ${Object.entries(
+    tier.rates,
+  )
+    .map(([id, rates]) => `${id} ${rates.map((r) => (r * 100).toFixed(0)).join('/')}`)
+    .join(', ')}`,
+  ...tier.problems.map((p) => `  - ${p}`),
 );
 // « Aucun héros indispensable » est mesuré et affiché mais ne bloque pas : l'écart vient des
 // héros eux-mêmes, que ce lot ne doit pas toucher (voir docs/BALANCE.md).
-const rulesOk = rules.r1.ok && rules.r2.ok && pace.problems.length === 0;
+const rulesOk =
+  rules.r1.ok && rules.r2.ok && pace.problems.length === 0 && tier.problems.length === 0;
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {

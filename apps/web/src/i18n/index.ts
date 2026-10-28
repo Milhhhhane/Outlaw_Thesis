@@ -1,9 +1,11 @@
+import { tierNumeral } from '@outlaw/engine';
 import account from './account.fr.json';
 import auto from './auto.fr.json';
 import chests from './chests.fr.json';
 import fr from './fr.json';
 import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
+import tiers from './tiers.fr.json';
 import names from './content.fr.json';
 
 /** Clés de texte : le français est la langue par défaut et la référence des clés. */
@@ -13,9 +15,10 @@ export type TextKey =
   | keyof typeof auto
   | keyof typeof chests
   | keyof typeof heroTexts
-  | keyof typeof loot;
+  | keyof typeof loot
+  | keyof typeof tiers;
 
-/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), butin (loot.fr.json) et héros (heroes.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), combat auto (auto.fr.json), coffres (chests.fr.json), héros (heroes.fr.json), butin (loot.fr.json) et paliers (tiers.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
@@ -23,6 +26,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...chests,
   ...heroTexts,
   ...loot,
+  ...tiers,
 };
 
 type Params = Readonly<Record<string, string | number>>;
@@ -75,6 +79,12 @@ export const names_ = {
   all: { heroes, spells, passives, pages, nodes, enemies, items, dungeons },
 };
 export { names_ as names };
+
+/** Nom d'un donjon avec son palier : « Landes de braise II » (le palier I n'est pas écrit). */
+export function dungeonTitle(id: string, tier = 1): string {
+  const name = names_.dungeon(id);
+  return tier > 1 ? t('tier.short', { dungeon: name, tier: tierNumeral(tier) }) : name;
+}
 
 /** Nom de la poussière d'un palier (1 à 3) : « poussière fine ». */
 export function dustName(tier: number): string {

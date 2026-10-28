@@ -89,9 +89,9 @@ describe('atelier : collection, copies, amélioration', () => {
 
   it('sans assez de copies, l’amélioration est refusée et rien n’est dépensé', async () => {
     const user = userEvent.setup();
-    const profile = owning([{ uid: 1, item: 'ember_charm', upgrade: 1, copies: 1 }]);
+    const profile = owning([{ uid: 1, item: 'thorn_ring', upgrade: 1, copies: 1 }]);
     render(<App version="test" initial={profile} start={{ name: 'workshop' }} />);
-    // Le niveau 2 demande plus d’une copie.
+    // Le niveau 2 d'un objet de poussière fine demande plus d’une copie.
     await user.click(screen.getByRole('button', { name: t('hero.upgrade') }));
     expect(screen.getByRole('alert')).toHaveTextContent(t('refusal.not_enough_copies'));
     expect(saved().gold).toBe(500);
@@ -135,7 +135,7 @@ describe('carte des donjons', () => {
   it('annonce l’objet exclusif du donjon, sa maîtrise et la garantie', () => {
     const profile: Profile = {
       ...owning([]),
-      dungeons: { ember_wastes: { clears: 6, dry: 0 } },
+      dungeons: { ember_wastes: { clears: 6, dry: 0, tier: 1 } },
     };
     render(
       <App version="test" initial={profile} start={{ name: 'map', dungeon: 'ember_wastes' }} />,
@@ -155,6 +155,8 @@ describe('carte des donjons', () => {
 function report(patch: Partial<DungeonReport> = {}): DungeonReport {
   return {
     dungeon: 'ember_wastes',
+    tier: 1,
+    tierUnlocked: null,
     firstClear: false,
     xp: { pyra: { gained: 40, ready: false } },
     gold: 60,

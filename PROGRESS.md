@@ -63,6 +63,10 @@
 - Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
   recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
   en CI). Or non recalibré.
+- Paliers de donjon et économie (PR C/D) — I, II, III par donjon (formule dans `balance.tiers`,
+  mesure en CI), choix sur la carte ; audit de l'économie (`docs/ECONOMY.md`, calculateur
+  `economy`) puis réglage : premier objet au maximum en 8 passages, coûts d'objets par palier de
+  poussière, collection complète en 244 passages, bornes en CI. Étoiles non réglées.
 - Enchaînement automatique — en mode Auto, décompte de 5 s entre les salles et sur l'écran de
   récompenses, qui relance le même donjon ; tout clic ou touche rend la main. Vitesse
   « instantanée » supprimée (×1, ×2). Tests : `apps/web/test/countdown.test.tsx`, e2e à 1280×720
