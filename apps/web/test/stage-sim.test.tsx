@@ -242,3 +242,20 @@ describe('altérations', () => {
     expect(actor()?.querySelector('.actor__status--mark')).not.toBeNull();
   });
 });
+
+describe('mort', () => {
+  it('une unité tombée part en cendres de son élément', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const unit = state.units[0];
+    if (unit === undefined) throw new Error('une unité attendue');
+    const view = applyEvent(viewFromState(state), { type: 'unit_down', unit: unit.def.id }, 1);
+    expect(view.flashes.at(-1)?.fx).toBe(`motes_${unit.def.element}`);
+    const { container } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    expect(container.querySelector(`[data-unit="${unit.def.id}"]`)?.className).toContain(
+      'actor--down',
+    );
+    expect(container.querySelector('.actor__fx--motes')).not.toBeNull();
+  });
+});

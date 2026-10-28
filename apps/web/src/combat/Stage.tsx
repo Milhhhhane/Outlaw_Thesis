@@ -233,13 +233,13 @@ function Effects({ unit, flash }: { readonly unit: UnitView; readonly flash: Fla
       {fx !== undefined && flash.fx !== null && (
         <span
           key={`fx${flash.key}`}
-          className={`actor__fx actor__fx--${flash.fx}`}
+          className={`actor__fx actor__fx--${flash.fx.startsWith('motes_') ? 'motes' : flash.fx}`}
           style={{
             left: info.w / 2 - fx.w / 2,
-            // Aux pieds (poussière), posé au sol (soin), sinon centré sur le corps.
+            // Aux pieds (poussière), posé au sol (soin, cendres), sinon centré sur le corps.
             top: flash.feet
               ? info.bottom - fx.h + 4
-              : flash.fx === 'heal'
+              : flash.fx === 'heal' || flash.fx.startsWith('motes_')
                 ? info.bottom - fx.h + 6
                 : (info.top + info.bottom) / 2 - fx.h / 2,
           }}

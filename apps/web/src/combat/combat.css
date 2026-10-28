@@ -408,32 +408,58 @@
 }
 
 .actor--down .actor__body {
-  filter: grayscale(1) brightness(0.45);
-  opacity: 0.55;
+  opacity: 0;
   transform: translateY(3px) rotate(calc(var(--dir) * -78deg));
   transform-origin: 50% 100%;
-  animation: actor-fall 0.5s steps(6, end);
+  animation: actor-fall calc(1.1s * var(--pace, 1)) steps(16, end);
 }
 
-/* Chute : sursaut, bascule en arrière, rebond au sol. */
+.actor--down .actor__shadow {
+  opacity: 0;
+  transition: opacity calc(0.8s * var(--pace, 1)) steps(4, end) calc(0.4s * var(--pace, 1));
+}
+
+/* Chute puis dissolution : sursaut, bascule en arrière, rebond au sol, puis le corps s'éclaire
+   et s'efface par bandes pendant que ses cendres montent (sprite motes_<élément>). L'unité
+   disparaît : la place vide et le repère « Hors combat » disent qu'elle est tombée. */
 @keyframes actor-fall {
   0% {
     filter: brightness(3) saturate(0);
     opacity: 1;
+    clip-path: inset(0 0 0 0);
     transform: translateY(-6px) rotate(calc(var(--dir) * -10deg));
   }
-  45% {
+  20% {
     filter: grayscale(0.5);
     opacity: 1;
     transform: translateY(2px) rotate(calc(var(--dir) * -82deg));
   }
-  65% {
+  30% {
     transform: translateY(-1px) rotate(calc(var(--dir) * -74deg));
   }
-  100% {
-    opacity: 0.55;
+  40% {
+    filter: grayscale(0.6) brightness(0.7);
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
     transform: translateY(3px) rotate(calc(var(--dir) * -78deg));
   }
+  55% {
+    filter: brightness(1.8) sepia(1) saturate(2);
+    clip-path: inset(15% 0 0 0);
+  }
+  100% {
+    filter: brightness(2.5) sepia(1) saturate(3);
+    opacity: 0;
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(3px) rotate(calc(var(--dir) * -78deg));
+  }
+}
+
+/* Les cendres attendent que le corps soit à terre. */
+.actor__fx--motes .fx-play {
+  animation-duration: calc(0.8s * var(--pace, 1));
+  animation-delay: calc(0.4s * var(--pace, 1));
+  animation-fill-mode: both;
 }
 
 .actor--active .actor__body {

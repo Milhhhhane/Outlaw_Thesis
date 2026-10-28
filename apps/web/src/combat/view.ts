@@ -261,8 +261,7 @@ function applyOne(view: BattleView, event: BattleEvent, key: number): BattleView
         event.unit,
         '',
         'status',
-        'dust',
-        { feet: true },
+        `motes_${elementOf(view, event.unit)}`,
       );
     default:
       return view;

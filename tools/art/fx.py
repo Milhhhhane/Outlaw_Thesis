@@ -476,6 +476,31 @@ def dust(frame, seed=3):
     return im
 
 
+def motes(ramp, frame, seed=5):
+    """Dissolution 32 × 40 : le corps couché part en cendres lumineuses qui montent et s'éteignent."""
+    im = canvas(32, 40)
+    rnd = random.Random(seed)
+    for i in range(44):
+        x0 = 4 + rnd.random() * 24          # le long du corps couché
+        y0 = 36 - rnd.random() * 6
+        speed = 0.6 + rnd.random() * 0.8
+        sway = math.sin(i * 1.7 + frame * 0.9) * (1 + frame)
+        y = y0 - frame * 7 * speed - (i % 3)
+        x = x0 + sway
+        if frame == 0 and i % 3 == 2 or y < 1:  # les cendres partent par vagues
+            continue
+        tone = max(1, 4 - frame // 2 - (i % 2))
+        put(im, x, y, ramp[tone])
+        if frame < 3 and i % 3 == 0:
+            put(im, x + 1, y, ramp[tone])
+            put(im, x, y + 1, ramp[max(0, tone - 1)])
+    if frame == 0:  # bouffée au sol
+        for x in range(4, 28):
+            if (x * 7) % 3:
+                put(im, x, 37 + (x % 2), ramp[2])
+    return im
+
+
 def impact(ramp, frame, seed):
     """Gros impact 48 × 48 pour les coups lourds : éclat large et éclats longs."""
     im = canvas(48, 48)
@@ -509,6 +534,7 @@ def all_fx():
         out[f'aura_{el}'] = [aura(ramp, f) for f in range(2)]
         out[f'slash_{el}'] = [slash(ramp, f) for f in range(4)]
         out[f'impact_{el}'] = [hit(ramp, f, 23, 48) for f in range(4)]
+        out[f'motes_{el}'] = [motes(ramp, f) for f in range(4)]
     out['dust'] = [dust(f) for f in range(4)]
     out['heal'] = [heal_fx(f) for f in range(4)]
     out['bubble_s'] = [bubble(36, 44, f) for f in range(2)]
