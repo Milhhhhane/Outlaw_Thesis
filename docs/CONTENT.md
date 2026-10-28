@@ -147,6 +147,16 @@ Tout identifiant de contenu a son nom dans `apps/web/src/i18n/content.fr.json` (
 nom et thèse ; donjons : nom et phrase d'ambiance). Un test échoue s'il en manque un. Les
 descriptions (sorts, passifs, talents, objets) sont générées depuis les briques : ne pas les écrire.
 
+## Tour à étages
+
+`content/tower.json` : `pools` (groupe ordinaire de chaque élément : ennemis sans boss, dans
+l'ordre où ils alternent, et `hpPct` / `atkPct` de correction) et `bosses` (un par tranche de
+`bossEvery` étages, dans l'ordre : ennemis dont au moins un boss, `modifierOf` = identifiant d'un
+donjon dont le modificateur s'applique, `hpPct` / `atkPct`). Les chiffres (nombre d'étages,
+niveau, courbe, taille des groupes, équipement visé, récompenses) sont dans `balance.tower`.
+Après un changement : `pnpm --filter @outlaw/sim tower`, puis `pnpm sim --update` si la baseline
+change.
+
 ## Ajouter un donjon
 
 1. Ennemis et boss dans `content/enemies.json` (un boss : `"boss": true`, seulement au 3e combat).

@@ -147,6 +147,15 @@ L'enchaînement des salles et la relance du donjon en mode Auto sont une navigat
 l'interface (`apps/web/src/game/Countdown.tsx`, utilisé par `combat/CombatScreen.tsx` et
 `screens/Rewards.tsx`) : le décompte déclenche le bouton de fin existant, rien de plus.
 
+La tour à étages est dans `packages/engine/src/tower.ts` (`towerFloor`, `towerPct`, `towerGear`,
+`towerReward`, `towerOpen`, `enterTower`, `completeTower`) : chaque étage est calculé depuis
+`balance.tower` et `content.tower` (`packages/data/content/tower.json`, schéma
+`schemas/tower.ts`, résolu dans `content.ts`) ; le profil garde `tower.cleared`. Les fragments
+sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écrans :
+`apps/web/src/screens/Tower.tsx` (colonne des étages et fiche) et `TowerRun.tsx` (combat et
+bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
+en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
+
 ### Passer à quatre héros
 
 Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille

@@ -2,6 +2,30 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — tour à étages
+
+### Ajouté
+
+- **La Tour** (entrée au camp) : 50 étages, un combat chacun, générés par formule
+  (`balance.tower`) et composés par règle (`content/tower.json`) : rotation feu → eau → nature,
+  groupes de 2 puis 3 puis 4 ennemis existants, niveau 1 → 30, PV et ATK en % sur une courbe qui
+  ne baisse jamais, un boss existant tous les 10 étages avec le modificateur d'un donjon ; au-delà
+  du niveau 30, la difficulté suit l'équipement visé (2 objets bruts à l'étage 31, au maximum au 46).
+- Progression : plus haut étage battu dans le profil (`tower.cleared`, 0 pour une ancienne
+  sauvegarde) ; on tente l'étage suivant ou on rejoue un étage battu. Première victoire : poussière
+  du palier de l'étage, 1 fragment tiré comme dans un coffre de bronze, coffre aux étages de boss
+  (bronze, argent, argent, or, or). Rejouer ne rapporte rien.
+- Écran « Tour » : colonne des 50 étages qui défile dans son cadre, fiche de l'étage (ennemis
+  annoncés, modificateur, équipement visé, récompense), bouton Combattre ; bilan d'étage avec
+  « Étage suivant ». Option « Auto : monter à l'étage suivant » : en mode Auto, le décompte
+  enchaîne sur l'étage suivant.
+- Simulation : `tower_<étage>_expert` dans `pnpm sim` (32 équipes par étage) et règles en CI
+  (`targets.tower`) ; `pnpm --filter @outlaw/sim tower` détaille la tour étage par étage.
+
+### Modifié
+
+- Camp : entrées un peu plus compactes pour loger la septième (Tour).
+
 ## [Non publié] — 2026-10-28 — coffres revus
 
 ### Modifié

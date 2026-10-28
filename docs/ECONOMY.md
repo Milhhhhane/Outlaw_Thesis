@@ -243,3 +243,25 @@ dont la part ciblée baisse dans l'or).
 Leviers : `focusMultiplier` (légendaires plus ou moins accessibles), `weights` de l'or (part des
 rares), `drop` (fréquence), `fragments` (rythme général, à recaler avec
 `pnpm --filter @outlaw/sim economy`).
+
+## Tour à étages (2026-10-28)
+
+Récompense de **première victoire** seulement (rejouer un étage ne rapporte rien) ; formule dans
+`balance.tower.rewards`, total calculé par `pnpm --filter @outlaw/sim tower` :
+
+| Étages  | Poussière (boss × 3) | Fragments | Coffre                   |
+| ------- | -------------------- | --------- | ------------------------ |
+| 1 à 7   | 4 brutes             | 1         | —                        |
+| 8 à 21  | 5 fines              | 1         | bronze (10), argent (20) |
+| 22 à 50 | 4 pures              | 1         | argent (30), or (40, 50) |
+
+- Total des 50 étages : 28 brutes, 90 fines, 140 pures, 50 fragments tirés (poids du coffre de
+  bronze, héros ciblé compris) et 5 coffres (bronze, 2 argent, 2 or : 46 fragments).
+- Comparé au bilan du joueur modèle jusqu'à la collection (`economy` : 336 brutes, 1 376 fines,
+  2 307 pures, 973 fragments) : 8 %, 7 %, 6 % et 10 %. La tour est un bonus ponctuel ; le
+  calculateur `economy` ne la joue pas, ses jalons et les bornes `farm` / `economy` sont donc
+  inchangés.
+- Brute volontairement basse (4) : les étages 1 à 7 se gagnent dès le premier jour à 100 % ; à 6,
+  ils auraient payé 75 % des niveaux 1 à 7 de l'équipe (56 brutes) avant le moindre donjon.
+- Or et XP : rien. L'XP reste le rythme des donjons (le niveau se paie en XP et en poussière) ;
+  l'or n'a déjà pas assez de puits.
