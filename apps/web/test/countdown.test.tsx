@@ -18,6 +18,9 @@ vi.mock('@outlaw/engine', async (importOriginal) => {
       energy.ok
         ? engine.enterDungeon(...args)
         : { ok: false as const, reason: 'no_energy' as const },
+    // La série demande aussi l'entrée au moteur (`seriesNext` appelle `enterDungeon` en interne).
+    seriesNext: (...args: Parameters<typeof engine.seriesNext>) =>
+      energy.ok ? engine.seriesNext(...args) : ('no_energy' as const),
   };
 });
 
