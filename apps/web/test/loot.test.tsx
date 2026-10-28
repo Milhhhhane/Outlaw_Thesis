@@ -172,6 +172,7 @@ function report(patch: Partial<DungeonReport> = {}): DungeonReport {
     mastery: { rank: 0, rankUp: false, clears: 3, next: 5 },
     unlockedHero: null,
     chest: null,
+    grimoires: 0,
     ...patch,
   };
 }

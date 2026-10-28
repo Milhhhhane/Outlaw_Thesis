@@ -68,9 +68,12 @@
   `economy`) puis réglage : premier objet au maximum en 8 passages, coûts d'objets par palier de
   poussière, collection complète en 244 passages, bornes en CI. Étoiles non réglées.
 - Enchaînement automatique — en mode Auto, décompte de 5 s entre les salles et sur l'écran de
-  récompenses, qui relance le même donjon ; tout clic ou touche rend la main. Vitesse
+  récompenses, qui enchaîne le passage suivant d'une série (voir « Confort de farm ») ; tout clic ou touche rend la main. Vitesse
   « instantanée » supprimée (×1, ×2). Tests : `apps/web/test/countdown.test.tsx`, e2e à 1280×720
   et 844×390.
+- Confort de farm (MaJ 1/7) — séries de 1, 3, 5, 10 ou ∞ passages en Auto, bilan de série, trois
+  équipes enregistrées, tri et filtres des héros, badges « à faire » au camp. Tests :
+  `packages/engine/test/farm.test.ts`, `apps/web/test/farm.test.tsx`, e2e série de trois.
 - 25 héros et rareté — 19 héros ajoutés (10 communs, 8 rares, 5 épiques, 2 légendaires en
   tout), obtenus par invocation ; coffres pondérés et invocation payée selon la rareté ; rareté
   affichée partout. « Aucun héros indispensable » tenue pour la première fois depuis le lot 7
@@ -97,6 +100,12 @@
   difficulté du palier (l'or ne tombe que dans les passages durs). Répond au point ouvert
   ci-dessus « marier les raretés hautes avec des donjons plus durs ». Chiffres dans
   `docs/ECONOMY.md`.
+- Montée des sorts — chaque sort monte du niveau 1 à 5 (+2,5 % de puissance par niveau, −10 de
+  délai à l'ultime au niveau 5), payé en grimoires (paliers II/III, coffres d'argent et d'or) et
+  en fragments du héros ; onglet « Grimoire » de la fiche. Écart sorts au maximum : +13,8 points
+  de donjons terminés en retard (cible ≤ 20) ; R1, R2 et « aucun héros indispensable » tenues
+  sorts au maximum. Ouvert : les quêtes (autre chantier) pourront aussi donner des grimoires ;
+  le PvP reste au niveau 1 (à trancher par le propriétaire).
 
 - Quêtes et succès — 5 quêtes du jour et 5 de la semaine tirées selon la date UTC et la graine
   du profil, bonus du jour (coffre de bronze), 20 succès par paliers ; progression comptée par le

@@ -3,6 +3,17 @@ import { MAX_SIDE } from './balance';
 import { idSchema } from './common';
 import { emptyQuestState, questStateSchema } from './quests';
 
+/** Niveau de chaque sort d'un héros (1 = sans montée). */
+export const spellLevelsSchema = z.strictObject({
+  basic: z.number().int().min(1),
+  a: z.number().int().min(1),
+  b: z.number().int().min(1),
+  ult: z.number().int().min(1),
+});
+export type SpellLevels = z.infer<typeof spellLevelsSchema>;
+/** Tous les sorts au niveau 1 : valeur des anciennes sauvegardes et d'un héros neuf. */
+export const BASE_SPELL_LEVELS: SpellLevels = Object.freeze({ basic: 1, a: 1, b: 1, ult: 1 });
+
 const nonNegInt = z.number().int().min(0);
 const posInt = z.number().int().min(1);
 
@@ -21,6 +32,8 @@ export const heroProgressSchema = z.strictObject({
    * le plus grand de cette valeur et de celle que le niveau implique (`heroStars`).
    */
   stars: nonNegInt.default(0),
+  /** Niveau de chaque sort (montée des sorts). Absent des anciennes sauvegardes : tous au niveau 1. */
+  spells: spellLevelsSchema.default(BASE_SPELL_LEVELS),
 });
 export type HeroProgress = z.infer<typeof heroProgressSchema>;
 
@@ -32,6 +45,17 @@ export const ownedItemSchema = z.strictObject({
   copies: nonNegInt.default(0),
 });
 export type OwnedItem = z.infer<typeof ownedItemSchema>;
+
+/** Équipes enregistrées : nombre d'emplacements et longueur maximale d'un nom. */
+export const PRESET_SLOTS = 3;
+export const PRESET_NAME_MAX = 20;
+
+/** Une équipe enregistrée : un nom choisi par le joueur et ses héros, dans l'ordre. */
+export const teamPresetSchema = z.strictObject({
+  name: z.string().min(1).max(PRESET_NAME_MAX),
+  team: z.array(idSchema).min(1).max(MAX_SIDE),
+});
+export type TeamPreset = z.infer<typeof teamPresetSchema>;
 
 export const PROFILE_VERSION = 1;
 
@@ -73,8 +97,15 @@ export const profileSchema = z.strictObject({
   fragments: z.record(idSchema, nonNegInt).default({}),
   /** Coffres fermés par palier. Absent des anciennes sauvegardes. */
   chests: z.record(idSchema, nonNegInt).default({}),
+  /** Grimoires (montée des sorts, commune à tous les héros). Absent des anciennes sauvegardes. */
+  grimoires: nonNegInt.default(0),
   /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
   focus: idSchema.nullable().default(null),
+  /**
+   * Équipes enregistrées, une par emplacement (index = emplacement, null = vide). Absent des
+   * anciennes sauvegardes : aucun emplacement rempli.
+   */
+  presets: z.array(teamPresetSchema.nullable()).max(PRESET_SLOTS).default([]),
   /**
    * Compteurs à vie (donjons gagnés, niveaux payés, coffres ouverts…), tenus par le moteur ; les
    * quêtes comptent leur différence depuis le début de la période. Absent des anciennes sauvegardes.

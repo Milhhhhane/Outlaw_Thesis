@@ -36,6 +36,17 @@ async function inView(page: Page, selector: string): Promise<void> {
   expect(box.y + box.height).toBeLessThanOrEqual(vp.height + 1);
 }
 
+/** Le vivier de l'équipe ne défile pas : toutes ses cartes, bouton « Fiche » compris, sont visibles. */
+async function rosterFits(page: Page): Promise<void> {
+  await expect(page.locator('.roster__card')).toHaveCount(4);
+  const m = await page.evaluate(() => {
+    const el = document.querySelector('.team__roster');
+    return el === null ? null : { sh: el.scrollHeight, ch: el.clientHeight };
+  });
+  expect(m).not.toBeNull();
+  expect(m?.sh ?? 0).toBeLessThanOrEqual((m?.ch ?? 0) + 1);
+}
+
 const portrait = (page: Page): boolean =>
   (page.viewportSize()?.height ?? 0) > (page.viewportSize()?.width ?? 0);
 
@@ -67,6 +78,17 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
     }
     await page.keyboard.press('Escape');
   }
+  // Équipe avant un donjon (équipes enregistrées, tri, passages) : le vivier des quatre héros de
+  // départ tient en entier dans son cadre, bouton « Fiche » compris.
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await noScroll(page);
+  await rosterFits(page);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Équipe/ }).click();
+  await rosterFits(page);
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Options' }).click();
   await noScroll(page);
   await page.keyboard.press('Escape');
@@ -283,7 +305,9 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
 });
 
-test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance', async ({ page }) => {
+test('mode Auto : les salles s’enchaînent seules, puis le passage suivant de la série', async ({
+  page,
+}) => {
   test.skip(portrait(page), 'portrait');
   test.skip(
     (page.viewportSize()?.width ?? 0) !== 1280 && (page.viewportSize()?.width ?? 0) !== 844,
@@ -310,6 +334,8 @@ test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance',
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('button', { name: /^Donjons/ }).click();
   await page.getByRole('button', { name: /Préparer/ }).click();
+  // Une série de trois passages : les récompenses relancent le donjon.
+  await page.getByRole('button', { name: "3 passage(s) d'affilée" }).click();
   await page.getByRole('button', { name: /^Partir/ }).click();
   const auto = page.getByRole('button', { name: 'Auto', exact: true });
   await expect(auto).toHaveAttribute('aria-pressed', 'true');
@@ -329,12 +355,13 @@ test('mode Auto : les salles s’enchaînent seules, puis le donjon se relance',
     await noScroll(page);
   }
   await expect(page.locator('.end--rewards')).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('.countdown')).toContainText(/Nouveau passage dans [1-5] s/);
+  await expect(page.locator('.countdown')).toContainText(/Passage 2 dans [1-5] s/);
   await inView(page, '.countdown');
   await inView(page, '.end__go');
   await noScroll(page);
   // Relance du même donjon avec la même équipe, Auto toujours coché.
   await expect(heading).toContainText('combat 1 sur 3', { timeout: 10_000 });
+  await expect(heading).toContainText('passage 2 sur 3');
   await expect(auto).toHaveAttribute('aria-pressed', 'true');
   // Le joueur reprend la main d'une touche : le décompte disparaît, le résultat reste.
   await expect(page.locator('.outcome')).toBeVisible({ timeout: 60_000 });
@@ -409,13 +436,27 @@ test('25 héros : galerie, équipe et coffres tiennent, la rareté se voit', asy
   await noScroll(page);
   const cards = page.locator('.hero-card');
   await expect(cards).toHaveCount(25);
-  // La grille défile dans son cadre : la dernière carte (légendaire) s'atteint et s'ouvre.
+  // Tri par rareté par défaut : les légendaires en tête, les communs au bout de la grille, qui
+  // défile dans son cadre.
+  await expect(cards.first()).toHaveClass(/rarity-4/);
   const last = cards.last();
   await last.scrollIntoViewIfNeeded();
-  await expect(last).toHaveClass(/rarity-4/);
-  await expect(last.getByText('Légendaire')).toHaveCount(1);
+  await expect(last).toHaveClass(/rarity-1/);
   await noScroll(page);
-  await last.click();
+  // Filtre de rareté : seulement les légendaires, qui s'ouvrent.
+  await page.getByRole('button', { name: 'Filtres' }).click();
+  await inView(page, '.window');
+  await noScroll(page);
+  await page
+    .getByRole('group', { name: 'Rareté' })
+    .getByRole('button', { name: 'Légendaire' })
+    .click();
+  await page.keyboard.press('Escape');
+  await expect(cards).toHaveCount(2);
+  const legendary = cards.first();
+  await expect(legendary.getByText('Légendaire')).toHaveCount(1);
+  await noScroll(page);
+  await legendary.click();
   await expect(page.locator('.sheet__id.rarity-4 .rarity__name')).toHaveText('Légendaire');
   await inView(page, '.sheet__id .rarity');
   await noScroll(page);
@@ -448,5 +489,128 @@ test('25 héros : la liste des fragments tient et montre chaque rareté', async 
   await inView(page, '.frag-row.rarity-4 .rarity__mark');
   await row.getByRole('button', { name: 'Invoquer' }).click();
   await expect(row.getByRole('button', { name: 'Invoquer' })).toHaveCount(0);
+  await noScroll(page);
+});
+
+test('série de trois passages en Auto : rejeu, puis bilan qui tient à l’écran', async ({
+  page,
+}) => {
+  test.skip(portrait(page), 'portrait');
+  test.skip(
+    (page.viewportSize()?.width ?? 0) !== 1280 && (page.viewportSize()?.width ?? 0) !== 844,
+    'ordinateur et téléphone',
+  );
+  test.setTimeout(300_000);
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  const profile = {
+    ...base,
+    heroes: Object.fromEntries(
+      Object.entries(base.heroes).map(([id, hero]) => [id, { ...hero, level: 30, xp: 0 }]),
+    ),
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /Préparer/ }).click();
+  await page.getByRole('button', { name: "3 passage(s) d'affilée" }).click();
+  await inView(page, '.team__runs');
+  await inView(page, '.presets');
+  await noScroll(page);
+  await page.getByRole('button', { name: /^Partir/ }).click();
+  // La série coche Auto d'elle-même.
+  await expect(page.getByRole('button', { name: 'Auto', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const heading = page.getByRole('heading', { level: 1 });
+  const now = page.getByRole('button', { name: 'Continuer maintenant' });
+  for (let pass = 1; pass <= 3; pass++) {
+    for (let room = 1; room <= 3; room++) {
+      await expect(heading).toContainText(`combat ${room} sur 3`, { timeout: 15_000 });
+      await expect(heading).toContainText(`passage ${pass} sur 3`);
+      await inView(page, '.battle__title');
+      await expect(page.locator('.outcome')).toContainText('Victoire', { timeout: 60_000 });
+      await now.click();
+    }
+    await expect(page.locator('.end--rewards')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('.end__text')).toContainText(`passage ${pass} sur 3`);
+    await expect(page.locator('.countdown')).toContainText(
+      pass < 3 ? `Passage ${pass + 1} dans` : 'Bilan dans',
+    );
+    await inView(page, '.end__go');
+    await noScroll(page);
+    await now.click();
+  }
+  await expect(heading).toContainText('Bilan : Landes de braise');
+  await expect(page.getByText('Série terminée.')).toBeVisible();
+  await expect(page.locator('.recap-card')).toHaveCount(7);
+  await expect(page.getByText('Gagnés : 3')).toBeVisible();
+  await page.waitForTimeout(1500); // fin de l'animation d'entrée des cartes
+  await inView(page, '.recap-cards');
+  await inView(page, '.end__go');
+  await noScroll(page);
+  const clipped = await page.evaluate(
+    () =>
+      Array.from(document.querySelectorAll('.recap-card')).filter(
+        (card) =>
+          card.scrollHeight > card.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1,
+      ).length,
+  );
+  expect(clipped).toBe(0);
+  await page.getByRole('button', { name: 'Retour au camp' }).click();
+  await expect(page.getByRole('heading', { name: 'Le camp' })).toBeVisible();
+  // Le coffre gagné est signalé sur l'entrée des coffres.
+  await expect(page.getByRole('button', { name: /^Coffres/ })).toContainText('Coffres à ouvrir');
+  await noScroll(page);
+});
+
+test('badges du camp : chaque icône se détache de son badge', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  // Niveau 4 : des points de talent à placer ; un coffre fermé.
+  const profile = {
+    ...base,
+    heroes: Object.fromEntries(
+      Object.entries(base.heroes).map(([id, hero]) => [id, { ...hero, level: 4 }]),
+    ),
+    chests: { bronze: 1 },
+  };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  const heroes = page.getByRole('button', { name: /^Héros/ });
+  await expect(heroes).toContainText('Points de talent à placer : 8');
+  await expect(page.getByRole('button', { name: /^Coffres/ })).toContainText(
+    'Coffres à ouvrir : 1',
+  );
+  const colors = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.hub__badge')).map((badge) => ({
+      badge: getComputedStyle(badge).backgroundColor,
+      icon: (() => {
+        const icon = badge.querySelector('.icon');
+        return icon === null ? null : getComputedStyle(icon).backgroundColor;
+      })(),
+    })),
+  );
+  const withIcon = colors.filter((c) => c.icon !== null);
+  expect(withIcon.length).toBeGreaterThan(0);
+  for (const c of withIcon) expect(c.icon).not.toBe(c.badge);
   await noScroll(page);
 });

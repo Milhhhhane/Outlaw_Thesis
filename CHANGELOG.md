@@ -14,6 +14,28 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Page de confidentialité et `docs/ACCOUNTS.md` : ce que l'administrateur voit.
   `docs/DEPLOY.md` : créer le secret (compte d'abord, secret ensuite).
 
+## [Non publié] — 2026-10-28 — montée des sorts
+
+### Ajouté
+
+- Chaque sort d'un héros (base, A, B, ultime) monte du niveau 1 à 5 : +2,5 % de puissance des
+  dégâts, soins et boucliers par niveau (+10 % au niveau 5) ; au niveau 5, l'ultime gagne
+  −10 de délai. Une formule dans `balance.json` (`spellLevels`), compilée par le moteur.
+- Grimoires, nouvelle ressource commune à tous les héros : 1 par passage de palier II, 2 au
+  palier III, 1 par coffre d'argent, 3 par coffre d'or. Un niveau de sort coûte des grimoires et
+  des fragments du héros (1+2+3+5 grimoires et 2+3+5+8 fragments par sort).
+- Onglet « Grimoire » de la fiche : niveau, gain, bonus du dernier niveau, aperçu du niveau
+  suivant, coût et bouton ; mode test : niveaux réglables et « tous au maximum ». Niveau et gain
+  affichés sur les cartes de sort ; grimoires sur l'écran de récompenses et à l'ouverture d'un
+  coffre. Le lien de build garde les niveaux de sort.
+- Simulation : `pnpm --filter @outlaw/sim skillups [--rules]` (écart « sorts au maximum » contre
+  « niveau 1 », règles rejouées sorts au maximum), test borné en CI, grimoires dans `economy`.
+
+### Inchangé
+
+- Sauvegardes : anciens profils valides (sorts au niveau 1, 0 grimoire) ; `baseline.csv` et
+  jalons du joueur modèle identiques ; le PvP garde les sorts au niveau 1.
+
 ## [Non publié] — 2026-10-28 — quêtes et succès
 
 ### Ajouté
@@ -53,6 +75,23 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 ### Modifié
 
 - Camp : entrées un peu plus compactes pour loger la septième (Tour).
+
+## [Non publié] — 2026-10-28 — confort de farm (MaJ 1/7)
+
+### Ajouté
+
+- Séries : sur l'écran d'équipe, 1, 3, 5, 10 ou ∞ passages joués d'affilée en Auto, « passage k
+  sur N » en combat, arrêt sur défaite, manque d'énergie ou action du joueur.
+- Bilan de série : passages gagnés et perdus, or, poussière par palier, coffres, objets (nouveaux,
+  copies, dissous), niveaux prêts, maîtrise et paliers.
+- Trois équipes enregistrées (nommées), chargées en un clic ; refus clair si un héros manque.
+- Tri (rareté, niveau, élément, rôle, nom) et filtres (élément, rôle, rareté, possédés) de la
+  galerie et du vivier, retenus sur l'appareil.
+- Badges « à faire » au camp : niveaux payables, talents, étoiles, objets améliorables, coffres.
+
+### Modifié
+
+- À 1 passage, Auto ne relance plus le donjon après les récompenses : choisir ∞ pour farmer sans fin.
 
 ## [Non publié] — 2026-10-28 — barre d'XP de la fiche
 

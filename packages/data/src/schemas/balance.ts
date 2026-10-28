@@ -11,6 +11,9 @@ const nonNeg = z.number().min(0);
 const posInt = z.number().int().min(1);
 const nonNegInt = z.number().int().min(0);
 
+/** Bonus du dernier niveau d'un sort : coût en points et délai, en baisse (ou 0). */
+const capstoneSchema = z.strictObject({ cost: z.number().int().max(0), delay: z.number().max(0) });
+
 const growthSchema = z.strictObject({ hp: nonNeg, atk: nonNeg, def: nonNeg });
 
 /**
@@ -232,6 +235,31 @@ export const balanceSchema = z
     }),
 
     /**
+     * Niveaux de sort (montée des sorts) : chaque sort d'un héros va du niveau 1 à `max`. Une
+     * formule pour tous les héros : chaque niveau au-delà du premier ajoute `powerPctPerLevel` % à
+     * la puissance des briques de dégâts, de soin et de bouclier du sort ; le dernier niveau ajoute
+     * `capstone[emplacement]` (coût en points, délai). Chaque niveau se paie en grimoires
+     * (ressource commune à tous les héros) et en fragments du héros (`costs[niveau − 1]`, vers le
+     * niveau suivant). Les grimoires tombent des coffres (`grimoires.chests`, par identifiant de
+     * coffre) et des passages de donjon selon le palier (`grimoires.tiers`, palier I, II, III…).
+     */
+    spellLevels: z.strictObject({
+      max: z.number().int().min(1),
+      powerPctPerLevel: nonNeg,
+      capstone: z.strictObject({
+        basic: capstoneSchema,
+        a: capstoneSchema,
+        b: capstoneSchema,
+        ult: capstoneSchema,
+      }),
+      costs: z.array(z.strictObject({ grimoires: nonNegInt, fragments: nonNegInt })),
+      grimoires: z.strictObject({
+        chests: z.record(idSchema, nonNegInt),
+        tiers: z.array(nonNegInt).min(1),
+      }),
+    }),
+
+    /**
      * Quêtes du jour, de la semaine et succès (contenu : `content/quests.json`). Une récompense
      * vaut `passagePct` % de l'or et de la poussière d'un passage du donjon le plus avancé terminé,
      * plus un coffre facultatif (justification : docs/BALANCE.md, « Quêtes et succès »).
@@ -268,6 +296,11 @@ export const balanceSchema = z
       r2LevelGap: nonNegInt,
       /** Aucun héros indispensable : écart maximal, en points de taux de victoire. */
       dispensableMaxGapPoints: nonNeg,
+      /**
+       * Montée des sorts : à niveau de héros égal, tous les sorts au maximum ne terminent pas plus
+       * de ce nombre de points de donjons en plus (en retard, joueur moyen) qu'au niveau 1.
+       */
+      spellLevelsMaxGapPoints: nonNeg,
       /** Rythme : actions de joueur par combat (politique experte, niveau conseillé). */
       pacing: z.strictObject({
         normal: z.tuple([pos, pos]),
@@ -380,6 +413,22 @@ export const balanceSchema = z
         message: 'chests.tiers : identifiants en double',
         path: ['chests', 'tiers'],
       });
+    }
+    if (b.spellLevels.costs.length !== b.spellLevels.max - 1) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'spellLevels.costs doit avoir une entrée par niveau au-delà du premier',
+        path: ['spellLevels', 'costs'],
+      });
+    }
+    for (const id of Object.keys(b.spellLevels.grimoires.chests)) {
+      if (!tierIds.includes(id)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `spellLevels.grimoires.chests : coffre inconnu « ${id} »`,
+          path: ['spellLevels', 'grimoires', 'chests', id],
+        });
+      }
     }
     const tower = b.tower;
     const issue = (message: string, path: (string | number)[]): void => {

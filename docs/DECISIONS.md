@@ -1021,6 +1021,56 @@ règle pour tous les donjons et paliers (un donjon ajouté n'a rien à déclarer
 des donjons et `chestStepPerTier` disparaissent ; les sauvegardes ne stockent ni l'un ni l'autre.
 Tailles 4 / 7 / 14 choisies pour garder les jalons du joueur modèle (`docs/ECONOMY.md`).
 
+## Montée des sorts
+
+**Une formule, pas des valeurs par héros** — Contexte : 25 héros × 4 sorts × 4 niveaux à la main
+divergeraient et casseraient l'équilibre héros par héros. Choix : `balance.spellLevels` —
+`powerPctPerLevel` (2,5 %) par niveau au-delà du premier sur la puissance des briques de dégâts,
+de soin et de bouclier, et un bonus du dernier niveau par emplacement (`capstone`). Le moteur
+l'applique après les talents (une brique ajoutée par un talent monte aussi). Raison : un seul
+nombre à régler et à mesurer, et une description générée qui ne peut pas mentir.
+
+**Le bonus du dernier niveau ne touche que l'ultime (−10 de délai)** — Mesuré (25 équipes,
+`spellGap`) : coût de l'ultime −1 seul = +10 points de donjons en retard, délais −10 de A et B
+seuls = +11, puissance +16 % seule = +25 ; tout cumulé (premier jet) +36 points. Choix : un
+seul emplacement, par règle (l'ultime, le sort qu'on attend), et un délai plutôt qu'un coût
+(4 → 3 points d'équipe change le rythme de la réserve partagée pour toute l'équipe). Raison :
+rester sous la cible de +20 points avec un gain visible à chaque niveau.
+
+**Grimoires génériques, pas par élément** — Contexte : le brief laisse le choix. Choix : une
+seule ressource pour tous les héros ; ce qui rend l'investissement propre au héros, ce sont ses
+fragments. Raison : le profil a déjà six monnaies (or, trois poussières, fragments, copies) ;
+trois grimoires d'élément forceraient à farmer un donjon pour un héros sans lien avec son
+élément (les donjons mélangent les éléments), et une équipe mixte se bloquerait sur le plus
+rare. Le grimoire décide « quel héros », les fragments disent « celui-là, pas un autre ».
+
+**Sources : paliers II/III et coffres d'argent et d'or** — Choix : 0/1/2 grimoires par passage
+selon le palier (`grimoires.tiers`), 0/1/3 par coffre bronze/argent/or (`grimoires.chests`),
+fixes (aucun tirage : la graine du butin ne bouge pas). Raison : les paliers et les coffres
+riches récompensent déjà la difficulté ; le palier I des premiers donjons ne donne rien, la
+montée des sorts reste un objectif de milieu et fin de partie. Les quêtes (autre chantier)
+pourront s'y ajouter sans code moteur.
+
+**Pas de migration** — Choix : `spells` (tous au niveau 1) et `grimoires` (0) ont une valeur par
+défaut ; `PROFILE_VERSION` reste 1. Raison : même règle que les étoiles et les fragments.
+
+**Le PvP garde les sorts au niveau 1** — Contexte : `packages/net` compose ses builds lui-même,
+sans `spells`. Choix : inchangé. Raison : le duel en salon compare des équipes et des talents ;
+y laisser entrer le grind (sorts au maximum : 62 % de victoires en duel miroir contre la même
+équipe au niveau 1) serait une décision de design à part. À trancher par le propriétaire.
+
+**Lien de build : niveaux de sort en option** — Choix : champ `s` (quatre niveaux) écrit
+seulement si un sort dépasse 1 ; un ancien lien reste valide, un lien sans montée reste
+identique. Raison : simple, aucune version de format.
+
+**Écart mesuré en points de donjons terminés** — Contexte : « ≤ ~20 % de victoires en plus à
+niveau égal ». Choix : points de pourcentage de donjons terminés avec 3 niveaux de retard par le
+joueur moyen (la mesure de « aucun héros indispensable », non saturée), borné par
+`targets.spellLevelsMaxGapPoints` (20) et vérifié en CI sur un échantillon. Raison : un taux
+relatif sur une base de 33 % amplifie le bruit ; au niveau conseillé l'écart relatif est de
++14 % (63 % → 72 %), en retard +42 % (33 % → 47 %). Si le propriétaire voulait 20 % relatifs en
+retard, il faudrait ≈ +1 % par niveau : à arbitrer.
+
 ## Quêtes du jour, de la semaine et succès
 
 **La progression vient de compteurs à vie tenus par le moteur** — Contexte : les quêtes doivent
@@ -1144,3 +1194,15 @@ sauvegarde validée par le schéma, `null` si elle est absente ou invalide.
 **Coût accepté** — Le premier appel admin d'un isolate charge le contenu (`loadContent`, environ
 92 ms à froid mesurés sous Node) : au-delà des 10 ms du plan gratuit, comme le scrypt de la
 connexion déjà toléré ; un seul utilisateur, de temps en temps. Mesures dans `docs/ACCOUNTS.md`.
+
+## Confort de farm (MaJ 1/7)
+
+**Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le
+même donjon sans fin dès qu'Auto était coché ; les séries rendent le nombre de passages explicite.
+Choix : un passage = pas de relance ; 3, 5, 10 ou ∞ = série jouée en Auto, close par un bilan ; une
+défaite termine la série et mène au bilan. Raison : le joueur décide de combien il farme et voit
+ce qu'il a gagné, comme les multi-combats des jeux du genre.
+
+**Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
+fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
+Raison : une seule source de vérité, testable sans écran.

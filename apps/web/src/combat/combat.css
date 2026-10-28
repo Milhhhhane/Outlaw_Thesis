@@ -45,6 +45,13 @@
   color: var(--bone);
 }
 
+/* Série de passages : sur sa propre ligne, plus petite, sous le titre. */
+.battle__pass {
+  display: block;
+  color: var(--gold);
+  font-size: 12px;
+}
+
 /* File d'initiative */
 .track {
   flex: 1;

@@ -140,6 +140,13 @@ prennent le palier, la carte le choisit et le passe à l'équipe puis à `Dungeo
 les mesure dans `tools/sim/src/tiers.ts` ; l'économie hors combat (jalons, bilan) dans
 `tools/sim/src/economy.ts` (`pnpm --filter @outlaw/sim economy`, voir `docs/ECONOMY.md`).
 
+La montée des sorts est dans `packages/engine/src/skillups.ts` (`spellUp`, `spellUpCost`,
+`spellMaxCost`, `setSpellLevel` en mode test) ; les niveaux (`heroes[id].spells` du profil,
+`HeroBuild.spells`) sont compilés dans les sorts par `compileHero` (`spellPowerPct` et bonus du
+dernier niveau, après les talents). Les grimoires sont crédités par `completeDungeon` (palier) et
+`openChest` (coffre). L'onglet est `apps/web/src/screens/SpellLevels.tsx` ; la mesure,
+`tools/sim/src/skillups.ts` (`pnpm --filter @outlaw/sim skillups`).
+
 Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
 moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
 active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.
@@ -165,6 +172,16 @@ sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écran
 `apps/web/src/screens/Tower.tsx` (colonne des étages et fiche) et `TowerRun.tsx` (combat et
 bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
 en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
+
+Le confort de farm est dans `packages/engine/src/farm.ts` : équipes enregistrées (`savePreset`,
+`loadPreset`, `presetMissing`, champ `presets` du profil, absent des anciennes sauvegardes),
+choses à faire au camp (`campTodo`, `heroTodo`, `canUpgradeItem` : badges de `screens/Hub.tsx`),
+séries de passages (`farmTarget`, `seriesNext`) et leur bilan (`summarizeSeries`, qui additionne
+les `DungeonReport`). L'écran d'équipe choisit le nombre de passages (option `runs`, passé à la
+route `dungeon`) ; `DungeonRun` garde les rapports, `Rewards` enchaîne le passage suivant et
+`screens/Recap.tsx` affiche le bilan. Le tri et les filtres de la galerie et du vivier
+(`game/heroList.ts`, `game/HeroFilters.tsx`) ne sont que de l'ordre d'affichage, retenu dans les
+options de l'appareil (`heroView`).
 
 ### Passer à quatre héros
 
