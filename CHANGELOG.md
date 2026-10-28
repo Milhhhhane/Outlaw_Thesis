@@ -2,6 +2,16 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — arbre des talents lisible
+
+### Corrigé
+
+- Onglet Talents : la liste des effets d'un talent sélectionné recouvrait son titre, le compteur
+  de points et ses prérequis ; le « ou » des choix exclusifs était caché sous les nœuds. Même
+  défaut corrigé sur les listes d'effets de l'onglet Objets et de l'Atelier.
+- Test e2e `talents.spec.ts` : 25 héros, chaque nœud des 3 pages, aucun texte qui en chevauche un
+  autre, coupé ou caché.
+
 ## [Non publié] — 2026-10-28 — 19 héros de plus, rareté
 
 ### Ajouté
