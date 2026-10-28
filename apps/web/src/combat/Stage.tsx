@@ -80,6 +80,7 @@ function Sparks({
 
 /** Course d'une attaque de base : déplacement (pixels natifs) jusqu'au contact de la cible. */
 export interface Dash {
+  /** Rang du sort (parité → nom d'animation a/b). */
   readonly key: number;
   readonly dx: number;
   readonly dy: number;
@@ -98,7 +99,7 @@ export function dashOf(view: BattleView, unit: UnitView): Dash | undefined {
   const from = placeOf(unit);
   const to = placeOf(target);
   const dir = unit.side === 'player' ? 1 : -1;
-  return { key: cast.key, dx: to.x - dir * DASH_GAP - from.x, dy: to.y - from.y, z: to.y + 1 };
+  return { key: cast.seq, dx: to.x - dir * DASH_GAP - from.x, dy: to.y - from.y, z: to.y + 1 };
 }
 
 function Actor(props: {
@@ -108,6 +109,8 @@ function Actor(props: {
   readonly targetable: boolean;
   readonly flash: Flash | undefined;
   readonly dash: Dash | undefined;
+  /** Lanceur de l'ultime en cours : passe devant et reste éclairé quand le reste s'assombrit. */
+  readonly caster: boolean;
 }) {
   const { unit, flash, dash } = props;
   const info = sprite(unit.kind);
@@ -123,7 +126,7 @@ function Actor(props: {
     width: info.w,
     height: info.h,
     // Pendant sa course, l'attaquant passe devant sa cible ; il reprend sa profondeur au tour suivant.
-    zIndex: dash !== undefined && props.acting ? Math.max(y, dash.z) : y,
+    zIndex: props.caster ? 300 : dash !== undefined && props.acting ? Math.max(y, dash.z) : y,
     '--dir': unit.side === 'player' ? 1 : -1,
     '--delay': `${-(unit.slot * 0.37 + (unit.side === 'enemy' ? 0.2 : 0))}s`,
     '--dx': dash === undefined ? '0px' : `${dash.dx}px`,
@@ -135,6 +138,7 @@ function Actor(props: {
     `actor--${unit.side}`,
     props.active ? 'actor--active' : '',
     props.acting ? 'actor--acting' : '',
+    props.caster ? 'actor--caster' : '',
     dash === undefined ? '' : `actor--dash actor--dash-${dash.key % 2 === 0 ? 'a' : 'b'}`,
     props.targetable ? 'actor--targetable' : '',
     unit.alive ? '' : 'actor--down',
@@ -275,9 +279,23 @@ export function Stage({
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
   const shake = view.shake;
-  const ult = view.cast?.ult === true ? view.cast.key : null;
+  const cast = view.cast;
+  const ult = cast?.ult === true ? cast.seq : null;
+  const caster = ult === null ? undefined : view.units.find((u) => u.id === cast?.unit);
+  // Le zoom de l'ultime vise le lanceur, en tirant vers le centre pour garder les cibles à l'écran.
+  const focus = caster === undefined ? { x: STAGE_W / 2, y: GROUND_Y } : placeOf(caster);
+  const stageStyle = {
+    '--pace': pace,
+    '--ox': `${((focus.x + STAGE_W / 2) / 2) * STAGE_SCALE}px`,
+    '--oy': `${(focus.y - 24 - STAGE_OFFSET) * STAGE_SCALE}px`,
+  } as CSSProperties;
+  const ab = (n: number): string => (n % 2 === 0 ? 'a' : 'b');
   return (
-    <div className="stage" aria-hidden="true" style={{ '--pace': pace } as CSSProperties}>
+    <div
+      className={ult === null ? 'stage' : `stage stage--ult${ab(ult)}`}
+      aria-hidden="true"
+      style={stageStyle}
+    >
       {/* Secousse et zoom : jamais de clé React ici, sinon tous les acteurs seraient recréés à
           chaque coup et l'animation de chute des unités à terre rejouerait. Le nom de
           l'animation alterne (a/b) pour relancer la secousse sans remonter le conteneur. */}
@@ -288,13 +306,7 @@ export function Stage({
             : `stage__shake stage__shake--${shake.power}${shake.key % 2 === 0 ? 'a' : 'b'}`
         }
       >
-        <div
-          className={
-            ult === null
-              ? 'stage__zoom'
-              : `stage__zoom stage__zoom--ult${ult % 2 === 0 ? 'a' : 'b'}`
-          }
-        >
+        <div className={ult === null ? 'stage__zoom' : `stage__zoom stage__zoom--ult${ab(ult)}`}>
           <div
             className="stage__world"
             style={{
@@ -313,6 +325,7 @@ export function Stage({
                 targetable={targets.has(unit.id)}
                 flash={latest.get(unit.id)}
                 dash={dashOf(view, unit)}
+                caster={cast?.unit === unit.id && cast.ult}
               />
             ))}
             <Bolts view={view} />
@@ -327,6 +340,7 @@ export function Stage({
       </div>
       {view.hurt !== null && <span key={`hurt${view.hurt}`} className="stage__hurt" />}
       {ult !== null && <span key={`flash${ult}`} className="stage__ult" />}
+      {view.ultHit !== null && <span key={`uh${view.ultHit}`} className="stage__ult-hit" />}
     </div>
   );
 }

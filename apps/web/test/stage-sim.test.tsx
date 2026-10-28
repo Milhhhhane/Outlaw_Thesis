@@ -113,3 +113,45 @@ describe('course de l’attaque de base', () => {
     );
   });
 });
+
+describe('ultime', () => {
+  it('le flash d’impact part au premier effet de l’ultime, pas pour un autre sort', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    expect(a).toBeDefined();
+    expect(b).toBeDefined();
+    if (a === undefined || b === undefined) return;
+    let view: BattleView = viewFromState(state);
+    const tempo = {
+      type: 'tempo',
+      source: a.def.id,
+      target: b.def.id,
+      delta: -10,
+      nextTime: 0,
+    } as const;
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: a.def.id, spell: 'x', slot: 'a', targets: [] },
+      1,
+    );
+    view = applyEvent(view, tempo, 2);
+    expect(view.ultHit).toBeNull();
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: a.def.id, spell: 'u', slot: 'ult', targets: [] },
+      3,
+    );
+    view = applyEvent(view, tempo, 4);
+    view = applyEvent(view, tempo, 5);
+    // Seul le premier effet compte : un flash par ultime.
+    expect(view.ultHit).toBe(4);
+    const { container } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    expect(container.querySelector('.stage__ult-hit')).not.toBeNull();
+    expect(container.querySelector('.stage--ulta')).not.toBeNull();
+    expect(container.querySelector(`[data-unit="${a.def.id}"]`)?.className).toContain(
+      'actor--caster',
+    );
+  });
+});

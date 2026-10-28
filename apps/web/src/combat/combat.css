@@ -9,6 +9,7 @@
 .stage {
   position: absolute;
   inset: 0;
+  z-index: 0; /* ses flashs et bandes restent sous l'interface (repères, en-tête, barre) */
   overflow: hidden;
 }
 
@@ -662,57 +663,218 @@
   }
 }
 
-/* Ultime : zoom bref vers le centre et flash blanc. */
+/* Ultime : le temps s'arrête. Bandes noires, décor et figurants dans l'ombre, zoom sur le
+   lanceur (origine --ox/--oy), puis flash blanc et grosse secousse au premier impact.
+   Durées × --pace ; deux noms (a/b) pour rejouer sans remonter la scène. */
 .stage__zoom--ulta,
 .stage__zoom--ultb {
-  transform-origin: 50% 60%;
+  transform-origin: var(--ox, 50%) var(--oy, 60%);
 }
 
 .stage__zoom--ulta {
-  animation: zoom-ult-a 0.6s steps(6, end);
+  animation: zoom-ult-a calc(1s * var(--pace, 1)) steps(10, end);
 }
 
 .stage__zoom--ultb {
-  animation: zoom-ult-b 0.6s steps(6, end);
-}
-
-@keyframes zoom-ult-b {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.06);
-  }
-  70% {
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
-  }
+  animation: zoom-ult-b calc(1s * var(--pace, 1)) steps(10, end);
 }
 
 @keyframes zoom-ult-a {
   0% {
     transform: scale(1);
   }
-  30% {
-    transform: scale(1.06);
+  12% {
+    transform: scale(1.16);
   }
-  70% {
-    transform: scale(1.06);
+  65% {
+    transform: scale(1.16);
   }
   100% {
     transform: scale(1);
   }
 }
 
-.stage__ult {
+@keyframes zoom-ult-b {
+  0% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.16);
+  }
+  65% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Un voile sombre au-dessus du décor et des figurants, sous le lanceur (z 300) et les effets :
+   aucun filtre par acteur, le voile seul fait l'ombre. */
+.stage__world::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: #07050a;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.stage__zoom--ulta .stage__world::after {
+  animation: ult-dim-a calc(1s * var(--pace, 1)) steps(6, end);
+}
+
+.stage__zoom--ultb .stage__world::after {
+  animation: ult-dim-b calc(1s * var(--pace, 1)) steps(6, end);
+}
+
+/* Le lanceur s'éclaire. */
+.stage__zoom--ulta .actor--caster {
+  animation: ult-glow-a calc(1s * var(--pace, 1)) steps(6, end);
+}
+
+.stage__zoom--ultb .actor--caster {
+  animation: ult-glow-b calc(1s * var(--pace, 1)) steps(6, end);
+}
+
+@keyframes ult-dim-a {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  55% {
+    opacity: 0.6;
+  }
+  75% {
+    opacity: 0;
+  }
+}
+
+@keyframes ult-dim-b {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  55% {
+    opacity: 0.6;
+  }
+  75% {
+    opacity: 0;
+  }
+}
+
+@keyframes ult-glow-a {
+  0% {
+    filter: none;
+  }
+  10% {
+    filter: brightness(1.6) drop-shadow(0 0 3px #fff6d8) drop-shadow(0 0 6px #fbe58a);
+  }
+  60% {
+    filter: brightness(1.2) drop-shadow(0 0 3px #fbe58a);
+  }
+  80% {
+    filter: none;
+  }
+}
+
+@keyframes ult-glow-b {
+  0% {
+    filter: none;
+  }
+  10% {
+    filter: brightness(1.6) drop-shadow(0 0 3px #fff6d8) drop-shadow(0 0 6px #fbe58a);
+  }
+  60% {
+    filter: brightness(1.2) drop-shadow(0 0 3px #fbe58a);
+  }
+  80% {
+    filter: none;
+  }
+}
+
+/* Bandes noires en haut et en bas de la scène. */
+.stage::before,
+.stage::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 490;
+  height: 0;
+  background: #07050a;
+  pointer-events: none;
+}
+
+.stage::before {
+  top: 0;
+}
+
+.stage::after {
+  bottom: 0;
+}
+
+.stage--ulta::before,
+.stage--ulta::after {
+  animation: ult-bars-a calc(1s * var(--pace, 1)) steps(5, end);
+}
+
+.stage--ultb::before,
+.stage--ultb::after {
+  animation: ult-bars-b calc(1s * var(--pace, 1)) steps(5, end);
+}
+
+@keyframes ult-bars-a {
+  0% {
+    height: 0;
+  }
+  10% {
+    height: 36px;
+  }
+  70% {
+    height: 36px;
+  }
+  100% {
+    height: 0;
+  }
+}
+
+@keyframes ult-bars-b {
+  0% {
+    height: 0;
+  }
+  10% {
+    height: 36px;
+  }
+  70% {
+    height: 36px;
+  }
+  100% {
+    height: 0;
+  }
+}
+
+/* Flash blanc : bref au lancer, franc au premier impact. */
+.stage__ult,
+.stage__ult-hit {
   position: absolute;
   inset: 0;
   z-index: 500;
   background: #fff6d8;
   pointer-events: none;
-  animation: ult-flash 0.36s steps(4, end) forwards;
+}
+
+.stage__ult {
+  animation: ult-flash calc(0.2s * var(--pace, 1)) steps(2, end) forwards;
+}
+
+.stage__ult-hit {
+  animation: ult-flash calc(0.26s * var(--pace, 1)) steps(3, end) forwards;
 }
 
 @keyframes ult-flash {
@@ -1225,6 +1387,7 @@
 :root[data-motion='off'] .stage__slash,
 :root[data-motion='off'] .sparks,
 :root[data-motion='off'] .stage__ult,
+:root[data-motion='off'] .stage__ult-hit,
 :root[data-motion='off'] .stage__hurt {
   display: none;
 }

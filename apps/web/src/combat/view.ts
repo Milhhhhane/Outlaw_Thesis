@@ -42,6 +42,8 @@ export interface Flash {
 /** Sort en cours d'animation : le lanceur, ses cibles et son élément. */
 export interface CastView {
   readonly key: number;
+  /** Rang du sort dans le combat : sa parité alterne les noms d'animation (a/b) d'un sort au suivant. */
+  readonly seq: number;
   readonly unit: string;
   readonly targets: readonly string[];
   readonly element: string;
@@ -62,6 +64,8 @@ export interface BattleView {
   readonly shake: { readonly key: number; readonly power: number } | null;
   /** Dernier coup reçu par un héros (voile rouge) : clé de l'événement. */
   readonly hurt: number | null;
+  /** Premier coup d'un ultime qui touche (flash blanc et grosse secousse) : clé de l'événement. */
+  readonly ultHit: number | null;
 }
 
 function modsOf(unit: UnitState): Record<string, number> {
@@ -92,6 +96,7 @@ export function viewFromState(state: BattleState): BattleView {
     cast: null,
     shake: null,
     hurt: null,
+    ultHit: null,
   };
 }
 
@@ -120,6 +125,21 @@ const STATUS_FX: Readonly<Record<string, string>> = { burn: 'burn', stun: 'stun'
 
 /** Applique un événement du journal à la vue. `key` : position de l'événement, pour les animations. */
 export function applyEvent(view: BattleView, event: BattleEvent, key: number): BattleView {
+  const next = applyOne(view, event, key);
+  // Premier effet d'un ultime (coup, soin, bouclier, altération, tempo…) : le flash d'écran part
+  // à l'impact, pas au lancer. Les ultimes sans dégâts ont aussi le leur.
+  const cast = view.cast;
+  const strikes =
+    'source' in event &&
+    cast !== null &&
+    cast.ult &&
+    cast.unit === event.source &&
+    event.type !== 'trigger_fired' &&
+    (view.ultHit === null || view.ultHit < cast.key);
+  return strikes ? { ...next, ultHit: key } : next;
+}
+
+function applyOne(view: BattleView, event: BattleEvent, key: number): BattleView {
   switch (event.type) {
     case 'turn_start':
       return { ...view, acting: event.unit };
@@ -132,6 +152,7 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         acting: event.unit,
         cast: {
           key,
+          seq: (view.cast?.seq ?? 0) + 1,
           unit: event.unit,
           targets: event.targets,
           element: caster?.element ?? 'fire',
@@ -154,9 +175,13 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
       const element = event.cause === 'burn' ? 'fire' : elementOf(view, event.source);
       const target = view.units.find((u) => u.id === event.target);
       const dealt = event.amount - event.absorbed;
+      // Coup d'un ultime : toujours lourd.
+      const fromUlt =
+        event.cause === 'spell' && view.cast?.ult === true && view.cast.unit === event.source;
       const heavy =
-        event.cause !== 'burn' &&
-        (event.killed || (target !== undefined && dealt >= target.maxHp * 0.3));
+        fromUlt ||
+        (event.cause !== 'burn' &&
+          (event.killed || (target !== undefined && dealt >= target.maxHp * 0.3)));
       const shaken = {
         ...next,
         shake: event.cause === 'burn' ? next.shake : { key, power: heavy ? 2 : 1 },
