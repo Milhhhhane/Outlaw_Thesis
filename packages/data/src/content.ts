@@ -4,6 +4,7 @@ import { dungeonSchema, type Dungeon } from './schemas/dungeons';
 import { enemySchema, type Enemy } from './schemas/enemies';
 import { heroSchema, type Hero } from './schemas/heroes';
 import { itemSchema, type Item } from './schemas/items';
+import { questsContentSchema, type QuestsContent } from './schemas/quests';
 
 export interface RawContent {
   balance: unknown;
@@ -11,6 +12,8 @@ export interface RawContent {
   enemies: readonly unknown[];
   items: readonly unknown[];
   dungeons: readonly unknown[];
+  /** Quêtes et succès (`content/quests.json`) ; absent : aucune quête. */
+  quests?: unknown;
 }
 
 /** Contenu validé et indexé, prêt à être utilisé par le moteur, la simulation et l'interface. */
@@ -26,6 +29,8 @@ export interface Content {
   dungeonById: ReadonlyMap<string, Dungeon>;
   /** Donjon qui donne chaque objet : le butin est exclusif, un objet n'a qu'une origine. */
   itemOrigin: ReadonlyMap<string, string>;
+  /** Quêtes du jour, de la semaine et succès. */
+  quests: QuestsContent;
 }
 
 export class ContentError extends Error {
@@ -237,6 +242,8 @@ export function parseContent(raw: RawContent): Content {
     }
   }
 
+  const quests = parseQuests(raw.quests, balance, issues);
+
   if (issues.length > 0) throw new ContentError(issues);
 
   return {
@@ -250,5 +257,32 @@ export function parseContent(raw: RawContent): Content {
     itemById,
     dungeonById,
     itemOrigin,
+    quests,
   };
+}
+
+const NO_QUESTS: QuestsContent = { daily: [], weekly: [], achievements: [] };
+
+/** Quêtes et succès : schéma, identifiants uniques, assez de quêtes pour chaque tirage. */
+function parseQuests(raw: unknown, balance: Balance, issues: string[]): QuestsContent {
+  if (raw === undefined) return NO_QUESTS;
+  const result = questsContentSchema.safeParse(raw);
+  if (!result.success) {
+    for (const issue of result.error.issues)
+      issues.push(`quêtes : ${issue.path.join('.') || '(racine)'} : ${issue.message}`);
+    return NO_QUESTS;
+  }
+  const quests = result.data;
+  const ids = [...quests.daily, ...quests.weekly, ...quests.achievements].map((q) => q.id);
+  for (const [i, id] of ids.entries())
+    if (ids.indexOf(id) !== i) issues.push(`quêtes : identifiant en double « ${id} »`);
+  for (const kind of ['daily', 'weekly'] as const) {
+    // Dès la première partie, le tirage doit pouvoir remplir toutes les quêtes de la période.
+    const open = quests[kind].filter((q) => q.minWins === 0).length;
+    if (open < balance.quests[kind].count)
+      issues.push(
+        `quêtes : ${kind} n'a que ${String(open)} quête(s) sans condition pour ${String(balance.quests[kind].count)} tirées`,
+      );
+  }
+  return quests;
 }

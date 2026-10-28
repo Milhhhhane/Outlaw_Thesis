@@ -1,6 +1,7 @@
-import { PROFILE_VERSION, type Content, type HeroProgress, type Profile } from '@outlaw/data';
+import { emptyQuestState, PROFILE_VERSION, type Content, type HeroProgress, type Profile } from '@outlaw/data';
 import { validateBuild, type HeroBuild } from './compile';
 import { lootTable, masteryMaterialsFactor, masteryNext, masteryRank, ownedItem } from './loot';
+import { countAction } from './counters';
 import { salvageOf } from './items';
 import { rollChest, tierFrontier, tierOpen, tierRewardFactor } from './tiers';
 
@@ -35,7 +36,10 @@ export type Refusal =
   | 'max_level'
   | 'star_gate'
   | 'not_enough_xp'
-  | 'tier_locked';
+  | 'tier_locked'
+  | 'unknown_quest'
+  | 'quest_not_done'
+  | 'already_claimed';
 
 export type Outcome<T = Profile> = { ok: true; value: T } | { ok: false; reason: Refusal };
 
@@ -100,6 +104,8 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     fragments: {},
     chests: {},
     focus: null,
+    stats: {},
+    quests: emptyQuestState(),
     testMode: false,
   };
 }
@@ -169,6 +175,7 @@ export function levelUp(content: Content, profile: Profile, heroId: string): Out
     ...profile,
     materials,
     heroes: { ...profile.heroes, [heroId]: { ...hero, level, xp } },
+    stats: countAction(profile.stats, { levels: 1 }),
   });
 }
 
@@ -501,6 +508,11 @@ export function completeDungeon(
       chest === null
         ? profile.chests
         : { ...profile.chests, [chest]: (profile.chests[chest] ?? 0) + 1 },
+    stats: countAction(profile.stats, {
+      wins: 1,
+      wins_tier2: Number(tier >= 2),
+      wins_tier3: Number(tier >= 3),
+    }),
   };
   return ok({
     profile: next,

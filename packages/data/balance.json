@@ -121,6 +121,19 @@
       { "id": "gold", "fragments": 14, "weights": [6, 8, 8, 5], "drop": [0, 15] }
     ]
   },
+  "quests": {
+    "daily": {
+      "count": 5,
+      "reward": { "passagePct": 20 },
+      "bonus": { "passagePct": 0, "chest": "bronze" }
+    },
+    "weekly": { "count": 5, "reward": { "passagePct": 60 } },
+    "achievements": {
+      "small": { "passagePct": 100, "chest": "bronze" },
+      "medium": { "passagePct": 200, "chest": "silver" },
+      "large": { "passagePct": 400, "chest": "gold" }
+    }
+  },
   "energy": {
     "costPerDungeon": 0,
     "cap": 100,

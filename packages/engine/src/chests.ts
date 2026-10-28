@@ -1,4 +1,5 @@
 import type { Content, HeroProgress, Profile } from '@outlaw/data';
+import { countAction } from './counters';
 import {
   atStarGate,
   freshHero,
@@ -132,6 +133,7 @@ export function openChest(
       seed,
       fragments,
       chests: { ...profile.chests, [tier]: (profile.chests[tier] ?? 0) - 1 },
+      stats: countAction(profile.stats, { chests: 1 }),
     },
     report: { tier, fragments: drawn },
   });
@@ -155,6 +157,7 @@ export function summonHero(content: Content, profile: Profile, heroId: string): 
     fragments: { ...profile.fragments, [heroId]: owned - cost },
     unlocked: [...profile.unlocked, heroId],
     heroes: { ...profile.heroes, [heroId]: freshHero(1, content) },
+    stats: countAction(profile.stats, { summons: 1 }),
   });
 }
 
@@ -180,5 +183,6 @@ export function starUp(content: Content, profile: Profile, heroId: string): Outc
     ...profile,
     fragments: { ...profile.fragments, [heroId]: owned - cost },
     heroes: { ...profile.heroes, [heroId]: raised },
+    stats: countAction(profile.stats, { stars: 1 }),
   });
 }

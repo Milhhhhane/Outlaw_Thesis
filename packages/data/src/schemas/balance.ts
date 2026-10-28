@@ -4,6 +4,7 @@ export const MAX_SIDE = 4;
 import { z } from 'zod';
 import { idSchema } from './common';
 import { MAX_HERO_TIER } from './heroes';
+import { questRewardSchema } from './quests';
 
 const pos = z.number().positive();
 const nonNeg = z.number().min(0);
@@ -193,6 +194,27 @@ export const balanceSchema = z
         .min(1),
     }),
 
+    /**
+     * Quêtes du jour, de la semaine et succès (contenu : `content/quests.json`). Une récompense
+     * vaut `passagePct` % de l'or et de la poussière d'un passage du donjon le plus avancé terminé,
+     * plus un coffre facultatif (justification : docs/BALANCE.md, « Quêtes et succès »).
+     */
+    quests: z.strictObject({
+      daily: z.strictObject({
+        count: posInt,
+        reward: questRewardSchema,
+        /** Toutes les quêtes du jour réclamées. */
+        bonus: questRewardSchema,
+      }),
+      weekly: z.strictObject({ count: posInt, reward: questRewardSchema }),
+      /** Classes de récompense des succès. */
+      achievements: z.strictObject({
+        small: questRewardSchema,
+        medium: questRewardSchema,
+        large: questRewardSchema,
+      }),
+    }),
+
     /** L'énergie existe dès le MVP avec un coût de 0 : levier de monétisation sans gacha, plus tard. */
     energy: z.strictObject({
       costPerDungeon: nonNegInt,
@@ -292,6 +314,21 @@ export const balanceSchema = z
       }
     });
     const tierIds = b.chests.tiers.map((tier) => tier.id);
+    const rewards = [
+      ['daily', 'reward', b.quests.daily.reward],
+      ['daily', 'bonus', b.quests.daily.bonus],
+      ['weekly', 'reward', b.quests.weekly.reward],
+      ...Object.entries(b.quests.achievements).map(([k, r]) => ['achievements', k, r] as const),
+    ] as const;
+    for (const [group, key, reward] of rewards) {
+      if (reward.chest !== null && !tierIds.includes(reward.chest)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `quests : coffre inconnu « ${reward.chest} »`,
+          path: ['quests', group, key, 'chest'],
+        });
+      }
+    }
     if (new Set(tierIds).size !== tierIds.length) {
       ctx.addIssue({
         code: 'custom',

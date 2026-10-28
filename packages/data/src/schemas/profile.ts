@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MAX_SIDE } from './balance';
 import { idSchema } from './common';
+import { emptyQuestState, questStateSchema } from './quests';
 
 const nonNegInt = z.number().int().min(0);
 const posInt = z.number().int().min(1);
@@ -74,6 +75,13 @@ export const profileSchema = z.strictObject({
   chests: z.record(idSchema, nonNegInt).default({}),
   /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
   focus: idSchema.nullable().default(null),
+  /**
+   * Compteurs à vie (donjons gagnés, niveaux payés, coffres ouverts…), tenus par le moteur ; les
+   * quêtes comptent leur différence depuis le début de la période. Absent des anciennes sauvegardes.
+   */
+  stats: z.record(idSchema, nonNegInt).default({}),
+  /** Quêtes du jour, de la semaine et succès réclamés. Absent des anciennes sauvegardes. */
+  quests: questStateSchema.default(emptyQuestState),
   /** Mode test : respec gratuit, tout débloqué (sprint 4). */
   testMode: z.boolean(),
 });
