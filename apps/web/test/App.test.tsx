@@ -57,6 +57,7 @@ describe('écran-titre et camp', () => {
     expect(JSON.parse(window.localStorage.getItem('outlaw-thesis/options') ?? '{}')).toEqual({
       speed: 'fast',
       animations: false,
+      auto: false,
     });
     expect(document.documentElement.dataset.motion).toBe('off');
     await user.keyboard('{Escape}');

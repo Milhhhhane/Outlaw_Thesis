@@ -37,11 +37,13 @@
     "shieldCapPctMaxHp": 60
   },
   "enemyScale": {
-    "hp": 0.55,
+    "hp": 0.58,
     "atk": 1.85
   },
   "progression": {
     "maxLevel": 30,
+    "teamSize": 4,
+    "levelsPerStar": 10,
     "growth": {
       "hero": {
         "hp": 0.72,
@@ -54,12 +56,17 @@
         "def": 0.42
       }
     },
-    "talentPointLevels": [3, 6, 9, 12, 15, 18, 21, 24, 27, 30],
-    "pageUnlockLevels": [1, 10, 20],
+    "talentPointLevels": [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28],
+    "pageUnlockLevels": [1, 1, 1],
     "restXpRate": 0.5,
     "xp": {
       "base": 40,
       "exponent": 1.5
+    },
+    "levelUp": {
+      "tierFrom": [1, 8, 22],
+      "dust": [2, 3, 5],
+      "dustPerLevel": [0, 1, 2]
     },
     "respec": {
       "firstFreePerHero": true,
@@ -71,33 +78,45 @@
       "upgradeScalePct": 15,
       "statCapPct": 8,
       "upgradeCosts": [
-        {
-          "gold": 100,
-          "materials": {
-            "tier": 1,
-            "amount": 5
-          }
-        },
-        {
-          "gold": 300,
-          "materials": {
-            "tier": 2,
-            "amount": 5
-          }
-        },
-        {
-          "gold": 800,
-          "materials": {
-            "tier": 3,
-            "amount": 5
-          }
-        }
+        { "copies": 1, "gold": 100, "materials": 5 },
+        { "copies": 2, "gold": 300, "materials": 8 },
+        { "copies": 3, "gold": 800, "materials": 12 }
       ]
     }
   },
   "economy": {
-    "rareGuaranteeAfter": 5,
-    "replayRewardRate": 1
+    "replayRewardRate": 1,
+    "loot": {
+      "weights": { "common": 85, "rare": 15 },
+      "firstClearRare": true,
+      "rarePity": 10,
+      "mastery": {
+        "clears": [5, 15, 40, 100],
+        "rareWeightPerRank": 4,
+        "materialsPctPerRank": 10
+      },
+      "salvage": { "common": 3, "rare": 4 }
+    }
+  },
+  "chests": {
+    "summonCost": 10,
+    "starCosts": [10, 20],
+    "focusRate": 0.5,
+    "replayChestRate": 0.5,
+    "tiers": [
+      {
+        "id": "bronze",
+        "fragments": 3
+      },
+      {
+        "id": "silver",
+        "fragments": 5
+      },
+      {
+        "id": "gold",
+        "fragments": 8
+      }
+    ]
   },
   "energy": {
     "costPerDungeon": 0,
@@ -112,12 +131,17 @@
     "pacing": {
       "normal": [12, 24],
       "boss": [21, 30],
-      "floor": 12,
+      "floor": 8,
       "firstFightFloor": 9,
       "firstDungeonMax": 60,
       "dungeonMax": 72
     },
-    "expertWinRate": [0.75, 0.9],
-    "averageWinRate": [0.4, 0.6]
+    "expertWinRate": [0.75, 0.95],
+    "averageWinRate": [0.4, 0.65],
+    "averageCurve": {
+      "first": 0.85,
+      "last": 0.3,
+      "tolerance": 0.12
+    }
   }
 }

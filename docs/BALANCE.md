@@ -32,13 +32,13 @@ A = 1, B = 2, ultime = 4. Délais : base 100, A 100, B 120, ultime 150.
 
 ## Règles d'équilibre (cibles de la simulation)
 
-Mesurées par `pnpm sim` sur les 20 équipes possibles ; `pnpm sim:check` (CI) échoue si l'une
+Mesurées par `pnpm sim` sur toutes les équipes possibles (15 : 4 héros parmi 6, voir Lot 13) ; `pnpm sim:check` (CI) échoue si l'une
 d'elles n'est plus tenue. Définitions exactes dans `tools/sim/src/rules.ts` :
 
 - **R1** : pour chaque équipe et chaque niveau conseillé (où les talents permettent des builds
   différents), 6 builds tirés au hasard sont classés par leurs duels contre 4 builds de référence ;
   le meilleur et le pire s'affrontent ensuite, dans les deux sens.
-- **R2** : pour chaque donjon, part des 20 équipes dont le meilleur des 6 builds termine le donjon
+- **R2** : pour chaque donjon, part des équipes dont le meilleur des 6 builds termine le donjon
   avec 3 niveaux de retard.
 - **Aucun héros indispensable** : score d'une équipe = donjons terminés au niveau conseillé et
   avec 3 niveaux de retard (13 essais) ; la meilleure équipe sans chaque héros est comparée à la
@@ -144,3 +144,173 @@ hasard, politique d'anticipation. Constat : au niveau conseillé, 68 à 100 % ; 
 0 % dès le deuxième donjon (mur au 2e combat). R2 n'est donc pas tenue : à régler au sprint 5
 (croissance des stats, puis ennemis). Une politique gloutonne perd même 9 niveaux au-dessus :
 elle achète des sorts utilitaires sans infliger de dégâts et atteint la limite d'actions.
+
+## Lot 10 — arbres de talents plus riches
+
+Chaque page passe de 5 à 8 nœuds (24 par héros) et les trois spécialisations sont ouvertes dès le
+niveau 1 ; les points montent de 10 à 14 (un tous les deux niveaux, du niveau 2 au 28). Un build
+laisse donc 10 nœuds de côté : le choix est réel. Les trois nouveaux nœuds d'une page sont des
+compromis (puissance contre coût ou délai, zone contre puissance, cadence contre dégâts) et un
+sommet au bout de la branche profonde.
+
+Effet mesuré : avec plus de nœuds, les meilleurs builds tuaient plus vite (plancher d'actions
+enfreint sur quatre combats, expert à 92 %). Réglage : PV des monstres × 0,58 (au lieu de 0,55),
+`hpPct` retouchés par `autotune` puis à la main, et le premier combat du Carrefour brisé troque la
+sorcière des ronces (trop fragile face aux builds explosifs : son combat oscillait entre 10 et
+25 actions selon un seuil) contre la brute de mousse. Résultat : expert 87 %, joueur moyen 42 %,
+R1 90 %, R2 85 %, tous les combats dans leurs bornes. « Aucun héros indispensable » reste
+non tenue (17 points, non bloquant, cause côté héros comme avant).
+
+## Lot 11 — courbe de difficulté et trois donjons de plus
+
+Constat : le premier donjon était le plus dur pour un joueur moyen (25 % de réussite au niveau
+conseillé, contre 50 à 62 % plus loin) : PV à 131–146 %, modificateur +10 % ATK, équipe sans
+talent. Nouveau levier `atkPct` par combat (dégâts des ennemis, sans toucher à la durée) et règle
+de courbe dans la simulation (`targets.averageCurve` : premier donjon ≥ 70 %, jamais plus de 12
+points plus facile que le précédent, jamais sous 30 %). Rythme mesuré sur 48 équipes en CI
+(16 avant : trop bruité pour une courbe), plancher de durée 10 actions.
+
+| Donjon            | Niv. | Expert | Moyen | atkPct |
+| ----------------- | ---: | -----: | ----: | -----: |
+| Landes de braise  |    1 |  100 % |  90 % |     72 |
+| Salles englouties |    4 |  100 % |  75 % |     92 |
+| Dédale de ronces  |    8 |   92 % |  65 % |    100 |
+| Citadelle         |   12 |   98 % |  54 % |     86 |
+| Flèche engloutie  |   17 |   92 % |  40 % |    100 |
+| Couronne          |   22 |   75 % |  40 % |    107 |
+| Carrefour brisé   |   27 |   81 % |  38 % |    130 |
+| Salines blêmes    |   28 |   73 % |  33 % |    160 |
+| Col d'obsidienne  |   29 |   58 % |  38 % |    115 |
+| Trône creux       |   30 |   63 % |  42 % |    140 |
+
+Trois donjons de fin de progression (niveaux 28 à 30, après le Carrefour brisé) : Salines blêmes
+(DEF −10 % à chaque tour, deux boss), Col d'obsidienne (brûlure à chaque coup reçu, tyran et
+matrone ensemble), Trône creux (−1 point de réserve à l'entrée, colosse et gardien). La fin de
+courbe est plate (33–42 %) : les derniers donjons sont durs mais pas plus que le Carrefour, parce
+qu'au-delà l'expert décroche avant le joueur moyen. Outils : `pnpm --filter @outlaw/sim curve`
+(lecture) et `tunecurve` (écrit `atkPct`).
+
+## Coffres et fragments
+
+Valeurs de `balance.json`, partie `chests`. Espérances calculées à la main (6 héros), pas mesurées
+sur des joueurs : ni la simulation ni `sim:check` ne modélisent les coffres (elle fixe les niveaux).
+
+| Palier | Fragments | Donjons | Avec héros ciblé (50 %)               | Sans ciblage    |
+| ------ | --------- | ------- | ------------------------------------- | --------------- |
+| Bronze | 3         | 1, 2    | 1,75 par coffre : 5,7 coffres pour 10 | 0,50 par coffre |
+| Argent | 5         | 3, 4, 5 | 2,92 par coffre : 3,4 coffres pour 10 | 0,83 par coffre |
+| Or     | 8         | 6 à 10  | 4,67 par coffre : 2,1 coffres pour 10 | 1,33 par coffre |
+
+- Premières victoires : 61 fragments au total sur les dix donjons (2 × 3 + 3 × 5 + 5 × 8).
+- Rejeu : un coffre une fois sur deux, soit 11 rejeux de bronze, 7 d'argent ou 4 d'or en moyenne
+  pour 10 fragments sur le héros ciblé.
+- Niveaux conseillés : 1, 4, 8, 12, 17, 22, 27, 28, 29, 30. Le donjon 4 (niveau 12) demande la première étoile
+  (plafond 10 → 20) et le donjon 6 (niveau 22) la seconde (20 → 30), soit 30 fragments par héros
+  de l'équipe pour aller au bout. À vérifier au test humain : si c'est trop lent, baisser
+  `starCosts` ou monter `replayChestRate` avant de toucher aux niveaux.
+
+## Combat automatique
+
+Mesure : `pnpm --filter @outlaw/sim auto [équipes]` (`tools/sim/src/auto.ts`, lecture seule). Même
+protocole que le rythme : équipes de 3 héros aléatoires au niveau conseillé, donjon réussi si les
+trois combats sont gagnés ; 300 équipes par donjon, soit une marge d'environ ±5 points par ligne.
+
+| Donjon          | Expert | Joueur moyen simulé | Auto |
+| --------------- | ------ | ------------------- | ---- |
+| ember_wastes    | 100 %  | 91 %                | 85 % |
+| drowned_halls   | 100 %  | 74 %                | 76 % |
+| thorn_maze      | 91 %   | 62 %                | 73 % |
+| cinder_citadel  | 93 %   | 49 %                | 65 % |
+| sunken_spire    | 88 %   | 47 %                | 71 % |
+| verdant_crown   | 79 %   | 42 %                | 59 % |
+| broken_crossing | 83 %   | 46 %                | 49 % |
+| salt_flats      | 78 %   | 35 %                | 28 % |
+| obsidian_pass   | 61 %   | 32 %                | 39 % |
+| hollow_throne   | 78 %   | 36 %                | 38 % |
+| **Moyenne**     | 85 %   | 51 %                | 58 % |
+
+- Auto fait un peu mieux que le joueur moyen simulé (une décision sur quatre au hasard) dans les
+  donjons du début et du milieu, autant dans les trois derniers, et reste 27 points sous l'expert.
+  Il n'enchaîne donc pas de façon fiable les donjons difficiles : c'est voulu.
+- Le « joueur moyen » est un modèle, pas un humain : l'écart avec un vrai joueur se jugera au test
+  humain (`docs/PLAYTEST.md`). Si Auto s'avère meilleur que les joueurs, baisser `WOUNDED` ou
+  retirer la règle « sort le plus cher d'abord » dans `auto.ts` avant de toucher aux donjons.
+- Ces chiffres valent pour des équipes de 3 ; à refaire dès que les équipes passent à 4
+  (`TEAM_SIZE` dans `auto.ts` de la simulation).
+
+## Lot 13 — équipes de quatre
+
+`balance.progression.teamSize` = 4 : quatre emplacements côté joueur, quatre ennemis au plus par
+combat (`MAX_SIDE` dans `@outlaw/data`). Cendre rejoint l'équipe de départ (Ressac et Sève se
+débloquent toujours aux donjons 4 et 6). Un quatrième héros ajoute une attaque de base par tour,
+donc un point de réserve de plus : la réserve (3 / 6 / +1) n'a pas bougé, le surplus se dépense en
+ultimes plus fréquents, ce que la courbe absorbe.
+
+Réglage : plus d'ennemis plutôt que des ennemis qui frappent deux fois plus fort. Les salles
+passent à 3–4 ennemis (2 / 2 / 1 au premier donjon, qui reste une prise en main), puis `autotune`
+(PV, durée) et `tunecurve` (ATK, difficulté) ont reconvergé. Deux corrections aux outils : ils
+lisaient `dungeons.json` sans les valeurs par défaut des schémas (le modificateur de donjon
+n'était pas appliqué pendant la mesure, d'où des mesures fausses de ±30 points sur certains
+donjons), et `tunecurve` ne durcit plus jamais le premier donjon au-dessus de sa cible.
+`pacing.floor` passe de 10 à 8 : à quatre, une salle expert peut tomber en deux tours.
+
+Courbe mesurée (48 équipes, joueur moyen au niveau conseillé) : 100 / 75 / 71 / 65 / 63 / 54 /
+58 / 42 / 38 / 31 % ; expert 87 % en moyenne. Au premier donjon, quatre attaques de base sans
+aucun sort suffisent à n'importe quel niveau (vérifié) ; au deuxième, il faut utiliser ses sorts
+en dessous du niveau 10.
+
+Limite connue : « aucun héros indispensable » n'est pas tenue (26 points ; déjà 19 avant ce lot).
+À quatre parmi six, retirer un héros ne laisse que 5 équipes : la règle mesure surtout la
+dépendance aux deux soutiens. À revoir quand il y aura plus de héros.
+
+## Butin, copies et maîtrise
+
+Valeurs de `balance.json` → `economy.loot` et `progression.items.upgradeCosts`. Espérances
+**calculées**, pas mesurées sur des joueurs ; la simulation ne modélise pas les objets.
+
+- Un passage donne un seul objet : commun 85, rare 15 + 4 par rang de maîtrise (poids). Rare
+  garanti au premier passage et au plus tard au 10ᵉ passage sans rare dans le donjon.
+- Passages gagnants entre deux rares (pitié comprise) : 5,35 au rang 0, 4,27 au rang 2, 3,57 au
+  rang 4. Pendant ce temps le donjon donne en moyenne 27 communs pour 6 utiles : le surplus se dissout en poussière, ce qui finance les améliorations.
+- Coût d'un objet jusqu'au niveau 3 : 6 copies (1 + 2 + 3), 1 200 or et 25 poussières du palier.
+- Le rare est le goulot : 6 copies = environ 32 passages gagnants au rang 0, 21 au rang 4. À
+  58 % de réussite d'Auto (voir plus haut) : environ 55 et 37 tentatives.
+- Collection complète (20 objets au niveau 3) : environ 320 passages gagnants (10 donjons × 32) ;
+  les communs arrivent d'eux-mêmes pendant la chasse aux rares. C'est la cible « long terme » ;
+  au rang maximum de maîtrise (100 victoires par donjon) elle serait d'un tiers plus courte.
+- Une copie dissoute rend 3 (commun) ou 4 (rare) poussières du palier de l'objet : moins qu'une
+  amélioration ne coûte, pour que dissoudre ne soit jamais la voie rapide.
+- À vérifier au test humain : si 32 passages pour un rare paraissent trop longs, monter
+  `rareWeightPerRank` ou baisser `rarePity` avant de toucher aux coûts.
+
+## Rythme du farm (niveaux)
+
+`pnpm --filter @outlaw/sim farm [--auto 58]` : passages gagnants entre un donjon et le suivant
+pour une équipe de quatre qui farme le dernier donjon ouvert, limités par l'XP (par héros) ou par
+la poussière (partagée). Calcul exact depuis `balance.json` et `dungeons.json` ; objets, copies et
+maîtrise (+10 % de poussière par rang) ne sont pas comptés, le vrai rythme est donc un peu plus
+long sur les objets et un peu plus court sur la poussière.
+
+| Donjon farmé    | Niveaux | Passages (XP / poussière) | Tentatives à 58 % |
+| --------------- | ------- | ------------------------- | ----------------- |
+| ember_wastes    | 1 → 4   | 6 (6,0 / 6,0)             | 10                |
+| drowned_halls   | 4 → 8   | 8 (8,1 / 8,0)             | 14                |
+| thorn_maze      | 8 → 12  | 10 (10,0 / 10,3)          | 18                |
+| cinder_citadel  | 12 → 17 | 12 (12,0 / 12,0)          | 21                |
+| sunken_spire    | 17 → 22 | 14 (13,8 / 14,0)          | 24                |
+| verdant_crown   | 22 → 27 | 16 (15,7 / 15,0)          | 27                |
+| broken_crossing | 27 → 28 | 7,5 (3,3 / 7,5)           | 13                |
+| salt_flats      | 28 → 29 | 7,6 (3,1 / 7,6)           | 13                |
+| obsidian_pass   | 29 → 30 | 7,6 (3,0 / 7,6)           | 13                |
+| **Total**       |         | **89**                    | **153**           |
+
+- Avant ce lot : 4 à 5 passages entre deux donjons, moins d'un en fin de jeu. Le test de la
+  simulation (`tools/sim/test/farm.test.ts`) borne chaque pas entre 5 et 18 et le total entre 70
+  et 110 : une récompense retouchée hors de ces bornes casse la CI.
+- XP et poussière sont réglées pour se croiser (même nombre de passages) jusqu'au donjon 7 ; en
+  fin de jeu c'est la poussière qui gouverne, l'XP est abondante : c'est voulu, le joueur arbitre
+  entre niveaux et objets avec la même poussière pure.
+- Or : non recalibré (≈ 50 000 or sur le parcours pour 24 000 d'améliorations d'objets au total) ;
+  à resserrer si le test humain montre qu'il ne compte pas.
+- À vérifier au test humain : si 150 tentatives pour finir paraissent trop, baisser
+  `levelUp.dustPerLevel` avant de toucher aux récompenses des donjons.

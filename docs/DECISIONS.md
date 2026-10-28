@@ -519,3 +519,220 @@ assets libres crédités ; un rendu professionnel sûr contre un chantier de des
 coûteux et incertain. Limite assumée : les personnages sont au double des pixels du décor
 (mélange de densités courant dans le genre) et le thème glisse du western vers le donjon
 fantastique ; le titre et les textes de jeu restent inchangés.
+
+## Lot 10 — talents
+
+**Trois spécialisations ouvertes dès le départ** — Contexte : les pages 2 et 3 s'ouvraient aux
+niveaux 10 et 20, le joueur n'avait pas de choix avant longtemps. Choix : `pageUnlockLevels`
+à [1, 1, 1] ; le mécanisme reste (le schéma accepte des niveaux non décroissants) pour pouvoir
+le réactiver. Raison : demande du propriétaire ; le choix de spécialisation devient le premier
+acte du jeu.
+
+**8 nœuds par page, 14 points** — Contexte : 5 nœuds et 10 points laissaient peu de choix. Choix :
+pages de 5 à 9 nœuds (schéma), trois nœuds ajoutés par page par `tools/content/enrich_talents.py`
+(core → quatre branches → deux approfondissements → un sommet), 14 points. Raison : un build
+prend 14 nœuds sur 24, deux sommets au plus ; les nouveaux nœuds sont des compromis pour limiter
+l'inflation de puissance. La règle « moins de points que de nœuds » est vérifiée par héros.
+
+**Disposition des arbres par profondeur** — Choix : rangées calculées depuis les prérequis
+(profondeur 0 à 3), nœuds centrés, 32 px. Raison : la mise en page précédente supposait
+exactement cinq nœuds.
+
+## Lot 11 — difficulté
+
+**Deux leviers par combat : PV et ATK** — Contexte : `hpPct` règle la durée ; baisser les PV
+pour faciliter raccourcit les combats sous le plancher. Choix : `atkPct` (dégâts des ennemis)
+comme levier de difficulté, `hpPct` réservé au rythme. Raison : la difficulté ressentie, c'est
+ce qu'on encaisse, pas combien de tours on tape.
+
+**Courbe vérifiée, pas seulement une moyenne** — Contexte : la moyenne « joueur moyen 40–60 % »
+était tenue alors que le premier donjon était le plus dur. Choix : règle de courbe par donjon
+(premier ≥ 70 %, jamais plus de 12 points plus facile que le précédent, jamais sous 30 %) et
+48 équipes par mesure en CI. Raison : une courbe se juge donjon par donjon ; à 16 équipes le
+bruit dépassait la tolérance.
+
+**Nouveaux donjons après le dernier** — Choix : trois donjons aux niveaux 28–30 en bout de
+chaîne, ennemis existants, décors dérivés des existants par rotation de teinte. Raison : pas de
+nouveau contenu moteur ni de nouveaux sprites, la progression actuelle reste intacte pour les
+sauvegardes.
+
+## Lot 12 — carte et butin
+
+**La carte est une donnée, pas une image** — Contexte : ajouter un donjon demandait de modifier
+`map_nodes.json`, de repeindre l'image de la carte et de reprendre l'écran. Choix : chaque donjon
+porte `map` (`x`, `y`, `landmark`, `chapter`) ; l'image ne contient que le terrain ; l'écran
+dessine repères, chemin et pions depuis `dungeons.json`, dans l'ordre du fichier. Raison : un
+donjon de plus = une entrée JSON ; le chargeur refuse deux repères à moins de 24 px.
+
+**Chapitres plutôt qu'une carte infinie** — Choix : `chapter` par donjon et une image par
+chapitre, onglets seulement s'il y en a plusieurs. Raison : la carte native fait 320 × 180 ;
+au-delà d'une douzaine de donjons les noms se chevauchent, un chapitre repart sur une carte vide.
+
+**Butin : une liste, des poids par rareté** — Contexte : chaque donjon portait ses poids, à
+réinventer à chaque ajout, et les tables restaient à deux ou trois objets. Choix : `loot` est une
+liste d'identifiants ; `economy.loot.weights` donne un poids par rareté pour tout le jeu. Raison :
+une seule décision d'équilibrage (commun 75 / rare 25) au lieu d'une par donjon ; une table se
+lit en un coup d'œil.
+
+**Premier passage rare, doublons démontés** — Choix : `firstClearRare` (le premier passage
+récompense toujours d'un rare du donjon) et `duplicateLimit` + `salvage` (au-delà de trois
+exemplaires, le doublon devient des matériaux). Raison : la première victoire doit marquer ; sans
+limite, l'inventaire se remplit d'objets identiques que personne n'équipe. Le tirage reste
+déterministe (graine du profil) : même profil, même butin.
+
+## Coffres, fragments et étoiles
+
+**Un coffre ne donne que des fragments de héros** — Contexte : le joueur voulait un système de
+coffres sans achat où tout passe par les héros. Choix : trois paliers (bronze 3, argent 5, or 8
+fragments), chaque fragment tombe sur un héros ; 10 fragments invoquent un héros, un héros déjà
+possédé qui reçoit des fragments les garde pour ses étoiles. Raison : une seule monnaie de héros,
+lisible, et aucune récompense qui contourne les donjons. Tout est dans `balance.json`
+(`chests`) : paliers, coûts, taux.
+
+**Plafond de niveau par étoile** — Contexte : « tous les 10 niveaux, il faut dépenser des
+fragments pour l'étoile suivante ». Choix : plafond = (étoiles + 1) × `levelsPerStar` (10), niveau
+maximum du jeu inchangé (30 pour l'instant, 100 prévu). Au plafond, l'XP gagnée est gardée jusqu'à
+un niveau de réserve au plus ; l'étoile n'est payable qu'au plafond (dépenser avant n'avancerait à
+rien). Coûts : 10 puis 20 fragments. Raison : un seuil net que le joueur voit venir, sans XP
+perdue ni dépense inutile.
+
+**Anciennes sauvegardes sans migration** — Contexte : le serveur valide les sauvegardes avec le
+même schéma ; changer `PROFILE_VERSION` aurait cassé les clients déjà ouverts. Choix : champs
+ajoutés avec valeur par défaut (`stars`, `fragments`, `chests`, `focus`), version 1 conservée ;
+les étoiles sont `max(étoiles enregistrées, ceil(niveau / 10) − 1)` : un héros déjà niveau 25
+garde ses niveaux, avec deux étoiles offertes. Raison : aucune partie perdue ni bloquée.
+
+**Coffre garanti à la première victoire, une fois sur deux ensuite** — Contexte : le butin est le
+seul hasard du jeu et doit rester reproductible. Choix : la première victoire d'un donjon donne
+toujours le coffre du donjon ; un rejeu le donne avec `replayChestRate` (0,5), tiré avec la graine
+du profil après le butin (le butin de première victoire ne change donc pas). Raison : farmer reste
+utile sans fixer le rythme à zéro ou à « toujours ».
+
+**Héros ciblé — ajout de l'assistant, à confirmer par le propriétaire** — Contexte : avec 6 héros
+(30 prévus), des fragments purement aléatoires rendent un héros précis très long à monter : environ
+60 fragments reçus pour 10 sur un héros donné. Choix : un héros ciblé reçoit `focusRate` (50 %) des
+fragments de chaque coffre, le reste est tiré au hasard parmi tous les héros ; aucun héros ciblé =
+pur hasard. Raison : garder la surprise du tirage sans punir le joueur qui veut finir son héros.
+Réglable ou supprimable (`focusRate: 0`) sans code.
+
+**Les donjons débloquent toujours leurs héros** — Contexte : le brief décrit l'invocation par
+fragments, le jeu avait déjà des héros offerts par donjon. Choix : conservés ; l'invocation par
+fragments est une seconde voie, pas la seule. À revoir quand les 30 héros arriveront (le champ
+`tier` des héros, absent de cette branche, pourra pondérer les tirages par rareté).
+
+**Tirage identique pour le même profil** — Choix : deux nombres tirés par fragment, toujours (visée
+du héros ciblé, puis héros au hasard), pour que cibler ou non ne change pas la suite de la graine.
+Pas de « pitié » (garantie après n coffres) pour l'instant : à ajouter si le test humain montre
+des séries trop longues.
+
+## Combat automatique
+
+**Règle simple, pas une anticipation** — Contexte : le joueur veut un bouton qui fait le combat à
+sa place (rejeu, farm). Choix : `autoAction` (`packages/engine/src/auto.ts`) applique une règle
+lisible : le sort le plus cher que la réserve permet, l'attaque de base sinon ; un soin seulement
+si un allié est à 70 % de PV ou moins, un bouclier seulement si une cible n'en a pas, une
+amélioration seulement si elle n'est pas déjà active ; cible : l'ennemi aux PV les plus bas, ou
+l'allié le plus blessé. Pure et déterministe (même état, même action). Raison : une anticipation
+d'un coup (comme l'expert de la simulation) réduirait à néant l'intérêt de jouer à la main ; la
+règle reste volontairement en dessous (mesures dans `docs/BALANCE.md`).
+
+**Le mode est un réglage de l'appareil, retenu d'un combat à l'autre** — Choix : `auto` dans les
+options (`outlaw-thesis/options`, faux par défaut), bouton « Auto » dans l'en-tête du combat à côté
+de la vitesse, touche A. Il reste actif sur les trois salles d'un donjon mais ne passe pas seul à
+l'écran suivant : le joueur lit le résultat et clique. La pause (Échap) suspend Auto ; la vitesse
+(×1, ×2, instantané) s'applique aussi aux décisions d'Auto (400 ms à vitesse normale). Pendant Auto
+les sorts sont verrouillés et les touches 1 à 4 sans effet : pour reprendre la main, rappuyer sur
+Auto.
+
+**Aucune hypothèse sur la taille des équipes** — Choix : `autoAction` ne lit que les actions
+légales et les unités vivantes ; un test l'exécute avec quatre héros contre trois ennemis. Les
+équipes de 4 héros demandées pour la suite restent à faire côté moteur et interface (liste dans
+`docs/ARCHITECTURE.md`, « Passer à quatre héros »).
+
+## Lot 13 — équipes de quatre
+
+**La taille d'équipe est une donnée d'équilibrage** — Choix : `balance.progression.teamSize`
+(4) lu par le moteur, la simulation et l'écran d'équipe ; `MAX_SIDE` (4) borne les emplacements
+de la scène et des rencontres. Raison : passer de trois à quatre a touché une constante en dur à
+sept endroits ; la prochaine fois, c'est un nombre dans `balance.json`.
+
+**Plus d'ennemis, pas des ennemis deux fois plus forts** — Contexte : à quatre, le réglage
+automatique compensait d'abord en doublant l'ATK des ennemis (178 % au deuxième donjon), et une
+équipe de niveau 30 pouvait perdre contre des ennemis de niveau 4 en jouant mal. Choix : des
+salles de 3–4 ennemis, puis reconvergence. Raison : la difficulté par le nombre reste lisible et
+la croissance plate des stats (+72 % PV, +54 % ATK sur 29 niveaux) ne doit pas être annulée par
+des multiplicateurs.
+
+**Le premier donjon ne se durcit jamais** — Choix : `tunecurve` laisse le premier donjon au-dessus
+de sa cible (85 %) ; quatre attaques de base doivent suffire. Raison : la prise en main ne se
+règle pas par un taux de réussite moyen.
+
+## Lot 14 — lisibilité
+
+**Deux polices, deux rôles** — Contexte : tout était en Pixelify Sans, illisible à 12–13 px une
+fois mis à l'échelle. Choix : Atkinson Hyperlegible (OFL, dessinée pour la lisibilité) pour le
+texte courant, la police pixel gardée pour les titres, boutons et chiffres. Raison : l'identité
+pixel tient aux gros éléments ; une description se lit, elle ne se regarde pas. Écarté : les
+polices système (métriques différentes selon l'appareil, donc mises en page non reproductibles
+en test).
+
+**Un lexique au survol plutôt que des descriptions plus longues** — Choix : les descriptions
+restent générées et courtes ; les mots de règle deviennent des termes (boutons en ligne) dont
+l'explication s'affiche dans une bulle unique posée dans l'écran logique. Raison : une phrase
+complète par effet ne tiendrait pas dans les cartes ; le joueur qui connaît le terme n'est pas
+ralenti, celui qui ne le connaît pas a la règle exacte (formules de `docs/BALANCE.md`), sans
+« title » natif (lent, absent au toucher).
+
+## Butin exclusif, copies et maîtrise
+
+**Chaque donjon a son butin, et rien que le sien** — Contexte : le joueur veut du grind et que
+chaque donjon ait son loot unique ; avec des listes partagées, farmer un objet n'avait pas de lieu.
+Choix : un objet vient d'un seul donjon, et un donjon donne exactement un commun et un rare.
+`packages/data/src/content.ts` le vérifie au chargement et construit `content.itemOrigin`
+(objet → donjon) ; un objet sans donjon est refusé. 20 objets pour 10 donjons : 8 objets ajoutés
+(`items.json`) pour que chaque donjon ait la paire. Raison : « où farmer ceci ? » a une seule
+réponse, la carte et l'atelier l'affichent.
+
+**Les doublons sont des copies, pas des exemplaires** — Choix : un objet déjà possédé donne une
+copie (`copies` + 1 sur l'exemplaire) ; améliorer coûte des copies (1, 2, 3), de l'or et de la
+poussière du palier du donjon d'origine. Un objet au niveau maximum dissout la copie en poussière
+(`salvage`). `mergeItems` ramène à un exemplaire par objet les sauvegardes qui en avaient
+plusieurs (le plus amélioré gagne, les autres deviennent des copies, un objet porté n'est jamais
+retiré) ; il est idempotent et appliqué au chargement. Conséquence assumée : en partie normale, un
+objet n'est porté que par un héros à la fois ; le mode test garde plusieurs exemplaires séparés
+(liens de build).
+
+**Rare garanti par donjon, pas par profil** — Choix : un compteur `dry` par donjon
+(`profile.dungeons[id].dry`) ; le passage `rarePity` (10) sans rare en donne un. L'ancien
+compteur global `sinceRare` n'est plus lu. Raison : avec un butin par donjon, une garantie globale
+ne protège personne du donjon qu'il farme.
+
+**Maîtrise du donjon** — Choix : un rang par palier de victoires (5, 15, 40, 100), chaque rang
+ajoute 4 de poids au rare et 10 % de poussière. Raison : récompenser la répétition sans rien
+débloquer d'indispensable ; chiffres dans `balance.json` → `economy.loot.mastery`, effets annoncés
+sur la carte.
+
+**Rejouer** — Choix : bouton sur l'écran de récompenses, qui relance le même donjon avec la même
+équipe. C'est le complément d'Auto : un passage coûte deux clics.
+
+**Rien de la poussière niveau héros dans cette PR** — La monnaie interne reste `materials`
+(tuple de trois paliers), affichée « poussière brute / fine / pure ». Le coût en poussière des
+niveaux de héros et le recalibrage de l'XP et de l'or sont la PR suivante.
+
+## Monter de niveau se paie
+
+**L'XP se met en banque, le niveau s'achète** — Contexte : avec Auto et Rejouer, l'XP tombait
+sans effort et le joueur passait les donjons sans rien décider. Choix : `addXp` n'augmente plus le
+niveau ; `levelUp` paie le niveau suivant avec l'XP du niveau **et** de la poussière du palier
+(brute jusqu'au niveau 7, fine de 8 à 21, pure dès 22 ; `progression.levelUp`), la quantité
+croissant dans le palier (+1 par niveau en fine, +2 en pure). « Monter au maximum » enchaîne.
+Raison : un seul compteur partagé (la poussière) relie niveaux et objets, donc un vrai choix de
+dépense ; les paliers forcent à farmer le bon chapitre. Les sauvegardes gardent leurs niveaux ;
+l'étoile ne monte plus le niveau toute seule, elle débloque seulement la montée.
+
+**Récompenses recalibrées sur un calculateur, pas à l'œil** — Choix : `pnpm --filter @outlaw/sim
+farm` calcule, par paire de donjons, les passages gagnants qu'exigent l'XP (par héros) et la
+poussière (pour l'équipe de quatre), et le test de la simulation borne chaque pas entre 5 et 18 et
+le total entre 70 et 110. Cibles retenues : 6, 8, 10, 12, 14, 16 passages jusqu'au donjon 7, puis
+7 à 8 par donjon final (chiffres dans `docs/BALANCE.md`). Raison : les cibles sont dans le dépôt
+et vérifiées en CI ; retoucher une récompense sans casser le rythme se voit tout de suite.

@@ -2,7 +2,7 @@ import type { ZodType } from 'zod';
 import { balanceSchema, type Balance } from './schemas/balance';
 import { dungeonSchema, type Dungeon } from './schemas/dungeons';
 import { enemySchema, type Enemy } from './schemas/enemies';
-import { NODES_PER_PAGE, PAGES_PER_HERO, heroSchema, type Hero } from './schemas/heroes';
+import { heroSchema, type Hero } from './schemas/heroes';
 import { itemSchema, type Item } from './schemas/items';
 
 export interface RawContent {
@@ -24,6 +24,8 @@ export interface Content {
   enemyById: ReadonlyMap<string, Enemy>;
   itemById: ReadonlyMap<string, Item>;
   dungeonById: ReadonlyMap<string, Dungeon>;
+  /** Donjon qui donne chaque objet : le butin est exclusif, un objet n'a qu'une origine. */
+  itemOrigin: ReadonlyMap<string, string>;
 }
 
 export class ContentError extends Error {
@@ -115,10 +117,15 @@ export function parseContent(raw: RawContent): Content {
     if (enemy.passive) claim(enemy.passive.id, `l’ennemi ${enemy.id}`);
   }
 
-  if (balance.progression.talentPointLevels.length >= NODES_PER_PAGE * PAGES_PER_HERO) {
-    issues.push(
-      'balance : il doit y avoir moins de points de talent que de nœuds (sinon plus de build)',
-    );
+  // Un héros doit toujours laisser des nœuds de côté : sinon il n'y a plus de build à choisir.
+  const points = balance.progression.talentPointLevels.length;
+  for (const hero of heroes) {
+    const nodes = hero.pages.reduce((n, page) => n + page.nodes.length, 0);
+    if (points >= nodes) {
+      issues.push(
+        `balance : ${hero.id} n'a que ${String(nodes)} nœuds pour ${String(points)} points de talent (il en faut moins de points que de nœuds, sinon plus de build)`,
+      );
+    }
   }
 
   for (const item of items) {
@@ -129,6 +136,7 @@ export function parseContent(raw: RawContent): Content {
     }
   }
 
+  const itemOrigin = new Map<string, string>();
   for (const dungeon of dungeons) {
     const where = `donjon « ${dungeon.id} »`;
     if (dungeon.recommendedLevel > balance.progression.maxLevel) {
@@ -144,14 +152,41 @@ export function parseContent(raw: RawContent): Content {
       if (!isLast && hasBoss) issues.push(`${where} : seul le dernier combat contient un boss`);
     });
     let hasRare = false;
+    let hasCommon = false;
     for (const entry of dungeon.loot) {
-      const item = itemById.get(entry.item);
-      if (!item) issues.push(`${where} : objet de butin inconnu « ${entry.item} »`);
+      const item = itemById.get(entry);
+      if (!item) issues.push(`${where} : objet de butin inconnu « ${entry} »`);
       else if (item.rarity === 'rare') hasRare = true;
+      else hasCommon = true;
+      // Butin exclusif : chaque objet vient d'un seul donjon, c'est ce qui rend le farm ciblé.
+      const origin = itemOrigin.get(entry);
+      if (origin !== undefined && origin !== dungeon.id)
+        issues.push(`${where} : l'objet « ${entry} » est déjà le butin de « ${origin} »`);
+      itemOrigin.set(entry, itemOrigin.get(entry) ?? dungeon.id);
     }
+    if (new Set(dungeon.loot).size !== dungeon.loot.length)
+      issues.push(`${where} : objet de butin en double`);
     if (!hasRare) issues.push(`${where} : la table de butin doit contenir au moins un objet rare`);
+    if (!hasCommon)
+      issues.push(`${where} : la table de butin doit contenir au moins un objet commun`);
+    if (!balance.chests.tiers.some((tier) => tier.id === dungeon.chest)) {
+      issues.push(`${where} : palier de coffre inconnu « ${dungeon.chest} »`);
+    }
     if (dungeon.unlocksHero !== undefined && !heroById.has(dungeon.unlocksHero)) {
       issues.push(`${where} : héros débloqué inconnu « ${dungeon.unlocksHero} »`);
+    }
+  }
+
+  for (const item of items) {
+    if (!itemOrigin.has(item.id))
+      issues.push(`objet « ${item.id} » : aucun donjon ne le donne (butin exclusif obligatoire)`);
+  }
+
+  for (const a of dungeons) {
+    for (const b of dungeons) {
+      if (a.id >= b.id || a.map.chapter !== b.map.chapter) continue;
+      if (Math.hypot(a.map.x - b.map.x, a.map.y - b.map.y) < 24)
+        issues.push(`carte : « ${a.id} » et « ${b.id} » sont trop proches (moins de 24 px)`);
     }
   }
 
@@ -167,5 +202,6 @@ export function parseContent(raw: RawContent): Content {
     enemyById,
     itemById,
     dungeonById,
+    itemOrigin,
   };
 }

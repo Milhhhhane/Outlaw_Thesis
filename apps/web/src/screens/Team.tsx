@@ -1,5 +1,6 @@
 import { dungeonOpen, heroBuild, setLevel, setTeam } from '@outlaw/engine';
 import { useState } from 'react';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -8,9 +9,9 @@ import { names, t, tk } from '../i18n';
 import { shareUrl } from '../save/share';
 import { useProfile } from '../state/profile';
 
-const MAX_TEAM = 3;
+const MAX_TEAM = content.balance.progression.teamSize;
 
-/** Composition : trois emplacements, les héros débloqués en dessous. */
+/** Composition : `teamSize` emplacements, les héros débloqués en dessous. */
 export function Team({ dungeon }: { readonly dungeon?: string }) {
   const { go } = useGame();
   const { profile, apply } = useProfile();
@@ -23,7 +24,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
     const team = profile.team.includes(id)
       ? profile.team.filter((h) => h !== id)
       : [...profile.team, id];
-    apply(setTeam(profile, team));
+    apply(setTeam(content, profile, team));
   };
   const full = profile.team.length >= MAX_TEAM;
   const link = test
@@ -67,7 +68,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
             >
               <PixelSprite name="pedestal" className="pedestal" />
               <span className="team__sprite">
-                <PixelSprite name={id} idle />
+                <HeroSprite name={id} idle />
               </span>
               <span className="team__name">{names.hero(id)}</span>
               <span className="team__meta">
@@ -114,7 +115,7 @@ export function Team({ dungeon }: { readonly dungeon?: string }) {
                   }}
                 >
                   <span className="roster__portrait">
-                    <PixelSprite name={id} />
+                    <HeroSprite name={id} />
                   </span>
                   <span className="roster__name">{names.hero(id)}</span>
                   <span className="roster__level">{t('hub.level', { level: hero.level })}</span>

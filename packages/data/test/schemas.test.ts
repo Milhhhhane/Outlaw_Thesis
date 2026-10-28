@@ -8,6 +8,7 @@ import {
   enemySchema,
   heroSchema,
   itemSchema,
+  MAX_SIDE,
   loadContent,
   parseContent,
   talentPageSchema,
@@ -67,6 +68,23 @@ describe('balance.json', () => {
   it('refuse un niveau de point de talent au-dessus du niveau maximum', () => {
     const bad = clone(balanceJson);
     bad.progression.talentPointLevels = [3, 99];
+    expect(balanceSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it('exige un coût d’étoile par palier de niveau (maxLevel 30, 10 niveaux par étoile : 2)', () => {
+    const bad = clone(balanceJson);
+    bad.chests.starCosts = [10];
+    expect(balanceSchema.safeParse(bad).success).toBe(false);
+    const raised = clone(balanceJson);
+    raised.progression.maxLevel = 100;
+    expect(balanceSchema.safeParse(raised).success).toBe(false);
+    raised.chests.starCosts = Array.from({ length: 9 }, (_, i) => 10 * (i + 1));
+    expect(balanceSchema.safeParse(raised).success).toBe(true);
+  });
+
+  it('refuse deux paliers de coffre de même identifiant', () => {
+    const bad = clone(balanceJson);
+    bad.chests.tiers.push({ id: 'bronze', fragments: 1 });
     expect(balanceSchema.safeParse(bad).success).toBe(false);
   });
 });
@@ -311,9 +329,9 @@ describe('ennemis, objets, donjons', () => {
     expect(dungeonSchema.safeParse(bad).success).toBe(false);
   });
 
-  it('limitent un combat à 3 ennemis', () => {
+  it('limitent un combat à MAX_SIDE ennemis', () => {
     const bad = clone(dungeonFixture);
-    bad.encounters[0]!.enemies = ['a', 'b', 'c', 'd'];
+    bad.encounters[0]!.enemies = Array.from({ length: MAX_SIDE + 1 }, (_, i) => `e${String(i)}`);
     expect(dungeonSchema.safeParse(bad).success).toBe(false);
   });
 });
@@ -356,20 +374,23 @@ describe('parseContent : références croisées', () => {
 
   it('exige un objet rare dans chaque table de butin', () => {
     expectIssue((raw) => {
-      (raw.dungeons[0] as typeof dungeonFixture).loot = [
-        { item: 'test_charm', weight: 1 },
-        { item: 'test_charm', weight: 2 },
-      ];
+      (raw.dungeons[0] as typeof dungeonFixture).loot = ['test_charm', 'test_charm'];
     }, 'au moins un objet rare');
   });
 
   it('refuse un objet de butin inconnu et un héros débloqué inconnu', () => {
     expectIssue((raw) => {
-      (raw.dungeons[0] as typeof dungeonFixture).loot[0]!.item = 'fantome';
+      (raw.dungeons[0] as typeof dungeonFixture).loot = ['fantome', 'test_relic'];
     }, 'objet de butin inconnu');
     expectIssue((raw) => {
       (raw.dungeons[0] as Record<string, unknown>).unlocksHero = 'fantome';
     }, 'héros débloqué inconnu');
+  });
+
+  it('refuse un palier de coffre inconnu', () => {
+    expectIssue((raw) => {
+      (raw.dungeons[0] as typeof dungeonFixture).chest = 'diamant';
+    }, 'palier de coffre inconnu');
   });
 
   it('refuse un niveau recommandé au-dessus du niveau maximum', () => {
@@ -400,10 +421,10 @@ describe('parseContent : références croisées', () => {
   it('exige moins de points de talent que de nœuds', () => {
     expectIssue((raw) => {
       (raw.balance as typeof balanceJson).progression.talentPointLevels = Array.from(
-        { length: 15 },
+        { length: 20 },
         (_, i) => i + 1,
       );
-    }, 'moins de points de talent');
+    }, 'moins de points que de nœuds');
   });
 
   it('remonte les erreurs de schéma avec le chemin fautif', () => {

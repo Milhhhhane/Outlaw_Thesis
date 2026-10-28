@@ -26,7 +26,7 @@ export const teamHeroSchema = z.strictObject({
   hero: shortIdSchema,
   /** Emplacement dans la ligne, de gauche à droite : les trois équipes doivent couvrir 0, 1 et 2. */
   slot: z.number().int().min(0).max(99),
-  talents: z.array(shortIdSchema).max(NODES_PER_PAGE * PAGES_PER_HERO),
+  talents: z.array(shortIdSchema).max(NODES_PER_PAGE.max * PAGES_PER_HERO),
   items: z.array(z.number().int().min(0)).max(4),
 });
 

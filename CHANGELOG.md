@@ -2,6 +2,146 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
+
+### Modifié
+
+- L'XP se met en banque ; chaque niveau se paie en XP et en poussière du palier (brute jusqu'au
+  niveau 7, fine de 8 à 21, pure dès 22, quantité croissante). Boutons « Niveau suivant » et
+  « Monter au maximum » sur la fiche, badge « Niveau prêt » dans la galerie et sur la carte de
+  récompense. Les sauvegardes gardent leurs niveaux.
+- XP et poussière des donjons recalibrées pour le farm automatique : 6 à 16 passages gagnants
+  entre deux donjons, 7 à 8 par donjon final, 89 au total (avant : 4 à 5, puis moins d'un).
+- `pnpm --filter @outlaw/sim farm` : calculateur de rythme ; bornes vérifiées en CI.
+
+## [Non publié] — 2026-10-27 — grind : butin unique, copies, maîtrise
+
+### Ajouté
+
+- Chaque donjon a son butin exclusif : un objet commun et un rare qu'on ne trouve nulle part
+  ailleurs (8 objets ajoutés, 20 au total). L'atelier devient une collection : objets trouvés ou
+  à trouver, avec le donjon où les farmer.
+- Copies : un objet déjà possédé donne une copie ; l'améliorer coûte des copies (1, 2, 3), de
+  l'or et de la poussière du palier du donjon d'origine. Les copies en trop se dissolvent en
+  poussière ; un objet au maximum dissout directement.
+- Maîtrise de donjon (rangs à 5, 15, 40 et 100 victoires) : plus de chances de rare et de
+  poussière ; rare garanti au premier passage et au plus tard au 10ᵉ passage sans rare.
+- Bouton « Rejouer » sur l'écran de récompenses.
+- Poussière affichée en trois paliers : brute, fine, pure.
+
+### Modifié
+
+- Les sauvegardes existantes restent valides : les exemplaires en double d'un même objet sont
+  fusionnés en copies au chargement (le plus amélioré est gardé, un objet porté n'est jamais retiré).
+- Coût d'amélioration d'un objet : copies + or + poussière (avant : or + matériaux).
+
+## [lot-14] — 2026-10-27 — texte lisible et lexique
+
+### Ajouté
+
+- Lexique survolable : dans les descriptions de sorts, talents, objets, passifs et modificateurs
+  de donjon, chaque terme de règle (Avance, Retarde, Délai, Coût, Brûlure, Marque, Étourdi,
+  Bouclier, ATK, DEF, VIT, PV, durées, éléments) explique ce qu'il fait au survol, au clavier
+  (Tab) et au toucher. Textes dans `glossary.*`, motifs dans `game/Glossed.tsx`.
+
+### Modifié
+
+- Texte courant en Atkinson Hyperlegible (OFL) : descriptions, aides, journal, cartes ; la
+  police pixel reste pour les titres, les boutons et les chiffres. +42 Ko de polices.
+- Barre d'initiative : à huit unités, portrait et délai seulement, le nom au survol et pour
+  l'unité qui joue.
+
+### Supprimé
+
+- Le bouton « Passer l'animation » du combat ; Espace garde le raccourci.
+- Le test de bout en bout des récompenses joue en Auto (le clic naïf perdait parfois à quatre).
+
+## [lot-13] — 2026-10-27 — équipes de quatre
+
+### Modifié
+
+- Quatre héros par équipe (`balance.progression.teamSize`), quatre ennemis au plus par combat ;
+  Cendre fait partie de l'équipe de départ. Scène en deux rangs en quinconce, quatre
+  emplacements sur l'écran d'équipe, lien de partage à quatre builds.
+- Donjons rééquilibrés pour quatre : salles de 3–4 ennemis, PV et ATK reconvergés par les outils ;
+  courbe 100 / 75 / 71 / 65 / 63 / 54 / 58 / 42 / 38 / 31 %. `pacing.floor` 10 → 8.
+
+### Corrigé
+
+- `autotune` et `tunecurve` mesuraient sans les valeurs par défaut des schémas (modificateurs de
+  donjon ignorés) ; `autotune` effaçait `atkPct` quand les PV retombaient à 100 % ; `tunecurve`
+  ne durcit plus le premier donjon au-dessus de sa cible.
+
+## [Non publié] — 2026-10-27 — combat automatique
+
+### Ajouté
+
+- Bouton « Auto » (touche A) dans le combat : le jeu joue les tours des héros avec une règle
+  simple (sort le plus cher utile, cible la plus faible). Retenu d'un combat à l'autre, suspendu
+  par la pause, à la vitesse choisie ; ne passe pas seul à l'écran suivant.
+- `pnpm --filter @outlaw/sim auto` : taux de réussite d'Auto face à l'expert et au joueur moyen
+  (`docs/BALANCE.md`).
+
+## [Non publié] — 2026-10-27 — coffres et fragments
+
+### Ajouté
+
+- Coffres de bronze, d'argent et d'or (pixel art recoloré depuis le pack 0x72) : donnés à la
+  première victoire d'un donjon, puis une fois sur deux au rejeu.
+- Fragments de héros : 10 invoquent un héros ; un héros ciblé reçoit la moitié des fragments.
+- Étoiles : le niveau d'un héros est plafonné tous les 10 niveaux jusqu'à ce qu'on paie l'étoile
+  suivante en fragments (10, puis 20). Écran « Coffres », entrée dans le camp avec compteur,
+  carte de récompense, plafond et bouton d'étoile sur la fiche du héros.
+
+### Modifié
+
+- Les sauvegardes existantes restent valides : les étoiles sont déduites du niveau.
+
+## [lot-12] — 2026-10-27 — carte pilotée par les données, butin revu
+
+### Ajouté
+
+- Butin : rare garanti au premier passage d'un donjon ; au-delà de trois exemplaires d'un objet,
+  le doublon est démonté en matériaux (annoncé sur l'écran de récompenses).
+- Carte : chapitres (une image par chapitre, onglets si plusieurs), chemin complet en pointillés,
+  étape suivante animée ; noms affichés pour l'étape en cours, la sélection et au survol.
+- `docs/CONTENT.md` : liste de contrôle « Ajouter un donjon » en six points.
+
+### Modifié
+
+- Un donjon porte sa place sur la carte (`map` : `x`, `y`, `landmark`, `chapter`) et son butin
+  comme simple liste d'objets ; les poids viennent de `balance.json` (`economy.loot.weights`,
+  commun 75 / rare 25). L'image de la carte ne contient plus ni repères ni chemin.
+- Repères de carte dans l'atlas (`landmark_<nom>`), peints par l'écran et non plus par l'image ;
+  `tools/art/map_nodes.json` supprimé.
+- `scene` facultatif par donjon pour emprunter un décor de combat.
+- Le panneau du donjon affiche toute la table de butin, rares en doré.
+
+## [lot-11] — 2026-10-27 — début plus facile, courbe de difficulté, trois donjons
+
+### Ajouté
+
+- Trois donjons de fin de progression : Salines blêmes (28), Col d'obsidienne (29), Trône creux
+  (30), avec modificateurs, décors, repères sur la carte et butin.
+- Levier `atkPct` par combat de donjon ; règle de courbe de difficulté vérifiée par
+  `pnpm sim:check` ; outils `curve` et `tunecurve`.
+
+### Modifié
+
+- Début plus facile : joueur moyen 90 % au premier donjon (25 % avant), puis 75, 65, 54, 40 %…
+  Détails et table dans `docs/BALANCE.md`.
+
+## [lot-10] — 2026-10-27 — arbres de talents plus riches
+
+### Modifié
+
+- Trois spécialisations ouvertes dès le niveau 1 ; 8 nœuds par page (24 par héros) au lieu de 5,
+  14 points de talent au lieu de 10 (un tous les deux niveaux). Nouveaux nœuds : compromis
+  (puissance contre coût ou délai, zone contre puissance) et un sommet par page.
+- Équilibrage : PV des monstres × 0,58, `hpPct` retouchés, premier combat du Carrefour brisé
+  recomposé ; expert 87 %, joueur moyen 42 %, R1 90 %, R2 85 % (`docs/BALANCE.md`).
+- Arbres dessinés par profondeur de prérequis (quatre rangées).
+
 ## [lot-9] — 2026-10-27 — grosse amélioration graphique
 
 ### Modifié
@@ -17,6 +157,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 
 ### Ajouté
 
+- Chaque héros tient son arme (bâtons, épées, lance du même pack CC0), qui balaie à l'attaque ;
+  douze icônes d'objets distinctes (charme, pendentif, anneau, lentille, fiole, éperons, bague,
+  jeton, plume, sceau, engrenage, éclat) à la place de l'anneau unique.
 - Menus habillés (`tools/art/ui.py`) : fond de nuit derrière les écrans, cadres bois cloutés
   (9 tranches), planche d'en-tête, corde, cuir, socles sous les héros, icônes de statistiques.
 - Combat : arcs de frappe, étincelles, gros impacts sur les coups lourds (≥ 30 % des PV ou

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { backgroundUrl, GROUND_Y, sprite } from '../art';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite, PixelText } from '../art/Pixel';
 import type { BattleView, Flash, UnitView } from './view';
 
@@ -10,11 +11,15 @@ export const STAGE_H = 180;
 export const STAGE_SCALE = 3;
 export const STAGE_OFFSET = 20;
 
-/** Pieds de chaque emplacement côté héros (l'ennemi est le miroir). */
+/**
+ * Pieds de chaque emplacement côté héros (l'ennemi est le miroir) : deux rangs en quinconce,
+ * les emplacements pairs devant, les impairs derrière et plus haut.
+ */
 const SLOTS: readonly { readonly x: number; readonly y: number }[] = [
-  { x: 116, y: GROUND_Y + 14 },
-  { x: 74, y: GROUND_Y + 6 },
-  { x: 40, y: GROUND_Y + 22 },
+  { x: 130, y: GROUND_Y + 20 },
+  { x: 98, y: GROUND_Y + 2 },
+  { x: 64, y: GROUND_Y + 22 },
+  { x: 30, y: GROUND_Y + 4 },
 ];
 
 export function placeOf(unit: Pick<UnitView, 'side' | 'slot'>): { x: number; y: number } {
@@ -111,7 +116,11 @@ function Actor(props: {
           key={hit}
           className={hit > 0 ? (heavy ? 'actor__hit actor__hit--heavy' : 'actor__hit') : ''}
         >
-          <PixelSprite name={unit.kind} idle={unit.alive} />
+          {unit.side === 'player' ? (
+            <HeroSprite name={unit.kind} idle={unit.alive} />
+          ) : (
+            <PixelSprite name={unit.kind} idle={unit.alive} />
+          )}
         </span>
       </span>
       {flash?.fx != null && (

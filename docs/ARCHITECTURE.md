@@ -110,3 +110,42 @@ modification passe par une fonction pure du moteur (`takeTalent`, `respec`, `equ
 `upgradeItem`, `setTeam`, `completeDungeon`…) qui renvoie le nouveau profil ou un refus motivé
 (`not_enough_gold`, `talent_invalid`…), affiché tel quel par l'interface. Le profil est sauvegardé
 après chaque changement.
+
+Les coffres sont dans `packages/engine/src/chests.ts` (`openChest`, `summonHero`, `starUp`,
+`setFocus`) : mêmes fonctions pures, tirage avec la graine du profil. Le plafond de niveau par étoile
+est dans `progression.ts` (`levelCap`, `heroStars`, `atStarGate`) ; l'écran est
+`apps/web/src/screens/Chests.tsx`.
+
+La montée de niveau est manuelle (`levelUp`, `levelUpMax`, `levelUpCost`, `canLevelUp` dans
+`progression.ts`) : `addXp` ne fait que créditer la banque d'XP. Le rythme qui en découle se lit
+avec `pnpm --filter @outlaw/sim farm` (`tools/sim/src/farm.ts`).
+
+Le butin est dans `packages/engine/src/loot.ts` (tables pondérées, rangs de maîtrise, paliers de
+poussière) et `items.ts` (`upgradeCost`, `upgradeItem`, `dissolveCopies`, `mergeItems`) ; le tirage
+lui-même est dans `completeDungeon` (`progression.ts`). Un objet vient d'un seul donjon
+(`content.itemOrigin`) et le profil garde un exemplaire par objet avec ses `copies` ; l'atelier est
+`apps/web/src/screens/Workshop.tsx` (collection) et la carte affiche taux, maîtrise et pitié.
+
+Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
+moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
+active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.
+
+### Passer à quatre héros
+
+Le moteur de combat ne dépend plus de 3 pour Auto, mais ces endroits fixent encore la taille
+d'équipe à 3 (relevé par recherche dans le code, à contrôler au moment du chantier) :
+
+- Moteur : `battle.ts` (`MAX_UNITS_PER_SIDE`, emplacements 0 à 2, commentaire des emplacements) ;
+  la constante vaut pour les deux camps, donc pour les ennemis aussi sauf à la séparer.
+  `progression.ts` (`starters.slice(0, 3)`, `setTeam` refuse plus de 3 héros).
+- Données : `schemas/profile.ts` (`team` limité à 3), `schemas/dungeons.ts` (3 ennemis par
+  rencontre), `save/share.ts` du site (`b.length > 3`).
+- Interface : `combat/Stage.tsx` (3 emplacements `SLOTS` ; un 4ᵉ unité retomberait sur le premier
+  par le modulo et se superposerait), `screens/Team.tsx` (« trois emplacements »), textes de
+  `fr.json` (`refusal.bad_team`, `help.reserve`, `hub.menu.team.hint`).
+- Simulation : `pacing.ts`, `scenarios.ts`, `dungeons.ts` (`slice(0, 3)`), `auto.ts`
+  (`TEAM_SIZE`), `rules.ts` (les 20 équipes possibles) et leurs tests.
+- Équilibre : une quatrième unité change la réserve partagée, la puissance de l'équipe et la
+  durée des combats ; `balance.json`, `baseline.csv` (`pnpm sim:check`) et les niveaux conseillés
+  sont à recalibrer. La mise en page du combat (initiative, barre d'actions) est à revérifier à
+  844 × 390 par l'e2e.

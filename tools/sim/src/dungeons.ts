@@ -34,6 +34,7 @@ export function runDungeon(
       dungeon.recommendedLevel,
       dungeon.modifier,
       encounter.hpPct,
+      encounter.atkPct,
     );
     const outcome = runBattle({ units: [...heroes, ...enemies] }, content.balance, policy);
     actions += outcome.actions;
@@ -56,7 +57,7 @@ export function dungeonRows(content: Content, runs: number, seed: number): Scena
       const outcomes: BattleOutcome[] = [];
       for (let i = 0; i < runs; i++) {
         const builds = content.heroes
-          .slice(0, 3)
+          .slice(0, content.balance.progression.teamSize)
           .map((hero) => randomBuild(content, hero.id, level, rng));
         const run = runDungeon(content, dungeon.id, builds, lookahead);
         outcomes.push({
@@ -67,7 +68,7 @@ export function dungeonRows(content: Content, runs: number, seed: number): Scena
       rows.push(summarize(`dungeon_${dungeon.id}_${label}`, outcomes));
     }
     // Débutant : sans talent, ultime ou attaque de base. Le premier donjon doit lui rester ouvert.
-    const plain = content.heroes.slice(0, 3).map((hero) => ({
+    const plain = content.heroes.slice(0, content.balance.progression.teamSize).map((hero) => ({
       hero: hero.id,
       level: dungeon.recommendedLevel,
       talents: [],

@@ -42,7 +42,7 @@ describe('lien de build', () => {
       encode({ v: 1, b: [{ ...one, l: 'cinq' }] }),
       encode({ v: 1, b: [{ ...one, t: [3] }] }),
       encode({ v: 1, b: [{ ...one, i: [['ember_charm']] }] }),
-      encode({ v: 1, b: [{ ...one, t: ['pyra_tempo_core'] }] }),
+      encode({ v: 1, b: [{ ...one, t: ['pyra_tempo_surge'] }] }),
       encode({ v: 1, b: [{ ...one, h: 'ghost' }] }),
       encode({ v: 1, b: [42] }),
     ]) {

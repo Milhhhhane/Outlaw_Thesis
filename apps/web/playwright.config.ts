@@ -12,7 +12,8 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 120_000,
   fullyParallel: true,
-  reporter: [['list']],
+  // En CI, les échecs deviennent des annotations lisibles sur la PR (les journaux bruts ne le sont pas).
+  reporter: process.env.CI === undefined ? [['list']] : [['list'], ['github']],
   use: { baseURL: `http://localhost:${port}`, trace: 'off' },
   webServer: [
     {

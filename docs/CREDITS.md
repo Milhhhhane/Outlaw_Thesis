@@ -25,14 +25,20 @@ source).
   confond avec le S). Licence SIL Open Font License 1.1, texte joint dans
   `apps/web/src/assets/fonts/Silkscreen-OFL.txt`. Source : dépôt google/fonts
   (`ofl/silkscreen`), réduite aux chiffres et convertie en WOFF2 (`SilkscreenDigits.woff2`).
+- Atkinson Hyperlegible, du Braille Institute of America (dessin Applied Design Works ; voir
+  https://github.com/googlefonts/atkinson-hyperlegible), police du texte courant, choisie pour sa
+  lisibilité. Licence SIL Open Font License 1.1, texte joint dans
+  `apps/web/src/assets/fonts/AtkinsonHyperlegible-OFL.txt`. Source : dépôt google/fonts
+  (`ofl/atkinsonhyperlegible`), Regular et Bold réduites aux caractères latins et à la
+  ponctuation française, converties en WOFF2 (nom de la police inchangé).
 - Repli : polices système.
 
 ## Personnages
 
 - Héros et monstres : « 16x16 DungeonTileset II » (version 1.3) de 0x72
   (https://0x72.itch.io/dungeontileset-ii), licence Creative Commons Zero (CC0), note jointe dans
-  `tools/art/third_party/0x72/LICENSE.txt`. Les personnages sont recolorés par teinte et agrandis
-  ×2 par `tools/art/pack.py` ; les monstres sont retournés. Les anciens personnages générés
+  `tools/art/third_party/0x72/LICENSE.txt`. Les personnages et les armes des héros sont recolorés par
+  teinte et agrandis ×2 par `tools/art/pack.py` ; les monstres sont retournés. Les anciens personnages générés
   (`heroes.py`, `enemies.py`) ne sont plus utilisés.
 
 ## Données

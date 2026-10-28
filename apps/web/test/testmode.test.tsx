@@ -42,6 +42,7 @@ describe('mode test', () => {
       ['pyra', 12],
       ['maree', 30],
       ['ronce', 30],
+      ['cendre', 30],
     ]);
     expect(builds?.[2]?.talents).toEqual(['ronce_snare_core']);
     expect(window.localStorage.getItem('outlaw-thesis/save')).not.toContain('"testMode":true');

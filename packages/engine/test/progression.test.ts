@@ -2,15 +2,19 @@ import { loadContent, profileSchema, type Profile } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import {
   addXp,
+  canLevelUp,
   completeDungeon,
   dungeonOpen,
   energyAt,
   enterDungeon,
   equip,
   heroBuild,
-  lootRates,
+  levelDust,
+  levelDustTier,
+  levelUp,
+  levelUpCost,
+  levelUpMax,
   newProfile,
-  nextRandom,
   respec,
   respecCost,
   SANDBOX_COPIES,
@@ -20,8 +24,6 @@ import {
   setUpgrade,
   starterHeroes,
   takeTalent,
-  upgradeCost,
-  upgradeItem,
   xpToNext,
   type Outcome,
 } from '../src/progression';
@@ -31,6 +33,7 @@ const value = <T>(outcome: Outcome<T>): T => {
   if (!outcome.ok) throw new Error(outcome.reason);
   return outcome.value;
 };
+const reason = (outcome: Outcome<unknown>): string => (outcome.ok ? 'ok' : outcome.reason);
 const withLevel = (profile: Profile, hero: string, level: number): Profile => ({
   ...profile,
   heroes: { ...profile.heroes, [hero]: { ...profile.heroes[hero]!, level } },
@@ -40,29 +43,95 @@ describe('profil', () => {
   it('nouveau profil valide : héros de départ au niveau 1, équipe complète', () => {
     const profile = newProfile(content, 7, 1000);
     expect(profileSchema.parse(profile)).toEqual(profile);
-    expect(starterHeroes(content)).toEqual(['pyra', 'maree', 'ronce']);
-    expect(profile.team).toEqual(['pyra', 'maree', 'ronce']);
+    expect(starterHeroes(content)).toEqual(['pyra', 'maree', 'ronce', 'cendre']);
+    expect(profile.team).toEqual(['pyra', 'maree', 'ronce', 'cendre']);
     expect(profile.heroes.pyra).toEqual({
       level: 1,
       xp: 0,
       talents: [],
       items: [null, null],
       freeRespecUsed: false,
+      stars: 0,
     });
+    expect(profile.fragments).toEqual({});
+    expect(profile.chests).toEqual({});
+    expect(profile.focus).toBeNull();
+  });
+
+  it('une sauvegarde d’avant les coffres reste lisible, sans perdre ses niveaux', () => {
+    const profile = newProfile(content, 7, 1000);
+    const old = JSON.parse(JSON.stringify(profile)) as Record<string, unknown>;
+    delete old.fragments;
+    delete old.chests;
+    delete old.focus;
+    for (const hero of Object.values(old.heroes as Record<string, Record<string, unknown>>)) {
+      delete hero.stars;
+    }
+    const read = profileSchema.parse(old);
+    expect(read).toEqual(profile);
   });
 });
 
 describe('XP et niveaux', () => {
-  it('courbe base × N^exposant, plusieurs niveaux d’un coup, plafond', () => {
+  const dust = (profile: Profile, materials: Profile['materials']): Profile => ({
+    ...profile,
+    materials,
+  });
+
+  it('l’XP se met en banque, le niveau se paie en XP et en poussière du palier', () => {
     expect(xpToNext(1, content)).toBe(40);
     expect(xpToNext(4, content)).toBe(320);
-    const hero = newProfile(content).heroes.pyra!;
-    expect(addXp(hero, 39, content)).toEqual({ hero: { ...hero, xp: 39 }, levels: 0 });
-    const twice = addXp(hero, 40 + 113 + 5, content); // 40 (1→2) + 113 (2→3)
-    expect(twice.levels).toBe(2);
-    expect(twice.hero).toMatchObject({ level: 3, xp: 5 });
-    const capped = addXp(hero, 10 ** 9, content);
-    expect(capped.hero).toMatchObject({ level: 30, xp: 0 });
+    const base = newProfile(content);
+    const hero = base.heroes.pyra!;
+    // Rien ne monte tout seul, quelle que soit l'XP.
+    expect(addXp(hero, 10 ** 6, content)).toEqual({ ...hero, xp: 10 ** 6 });
+    expect(levelUpCost(content, hero)).toEqual({ xp: 40, dust: { tier: 1, amount: 2 } });
+    expect(levelDustTier(content, 7)).toBe(1);
+    expect(levelDustTier(content, 8)).toBe(2);
+    expect(levelDustTier(content, 22)).toBe(3);
+    // Dans un palier, la poussière demandée croît avec le niveau (fine +1, pure +2).
+    expect(levelDust(content, 7)).toEqual({ tier: 1, amount: 2 });
+    expect(levelDust(content, 8)).toEqual({ tier: 2, amount: 3 });
+    expect(levelDust(content, 11)).toEqual({ tier: 2, amount: 6 });
+    expect(levelDust(content, 22)).toEqual({ tier: 3, amount: 5 });
+    expect(levelDust(content, 29)).toEqual({ tier: 3, amount: 19 });
+
+    const banked = { ...base, heroes: { ...base.heroes, pyra: { ...hero, xp: 40 + 113 + 5 } } };
+    expect(reason(levelUp(content, banked, 'pyra'))).toBe('not_enough_materials');
+    expect(reason(levelUp(content, dust(base, [9, 0, 0]), 'pyra'))).toBe('not_enough_xp');
+    expect(canLevelUp(content, dust(banked, [9, 0, 0]), banked.heroes.pyra)).toBe(true);
+    const once = value(levelUp(content, dust(banked, [9, 0, 0]), 'pyra'));
+    expect(once.heroes.pyra).toMatchObject({ level: 2, xp: 113 + 5 });
+    expect(once.materials).toEqual([7, 0, 0]);
+    // « Au maximum » : deux niveaux possibles, le troisième manque d'XP.
+    const twice = value(levelUpMax(content, dust(banked, [9, 0, 0]), 'pyra'));
+    expect(twice.heroes.pyra).toMatchObject({ level: 3, xp: 5 });
+    expect(twice.materials).toEqual([5, 0, 0]);
+    expect(reason(levelUpMax(content, twice, 'pyra'))).toBe('not_enough_xp');
+    expect(reason(levelUp(content, base, 'nope'))).toBe('locked_hero');
+  });
+
+  it('plafond d’étoile et niveau maximum', () => {
+    const base = newProfile(content);
+    const gated = {
+      ...dust(base, [99, 99, 99]),
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 10, xp: 10 ** 6 } },
+    };
+    expect(reason(levelUp(content, gated, 'pyra'))).toBe('star_gate');
+    expect(canLevelUp(content, gated, gated.heroes.pyra)).toBe(false);
+    const maxed = {
+      ...gated,
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 30, xp: 50, stars: 2 } },
+    };
+    expect(levelUpCost(content, maxed.heroes.pyra)).toBeNull();
+    expect(reason(levelUp(content, maxed, 'pyra'))).toBe('max_level');
+    expect(addXp(maxed.heroes.pyra, 500, content)).toMatchObject({ level: 30, xp: 0 });
+    // Le dernier niveau vide la banque.
+    const almost = {
+      ...gated,
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 29, xp: 10 ** 6, stars: 2 } },
+    };
+    expect(value(levelUp(content, almost, 'pyra')).heroes.pyra).toMatchObject({ level: 30, xp: 0 });
   });
 });
 
@@ -108,9 +177,9 @@ describe('objets', () => {
   const owned: Profile = {
     ...newProfile(content),
     items: [
-      { uid: 1, item: 'ember_charm', upgrade: 0 },
-      { uid: 2, item: 'ember_charm', upgrade: 1 },
-      { uid: 3, item: 'iron_band', upgrade: 3 },
+      { uid: 1, item: 'ember_charm', upgrade: 0, copies: 0 },
+      { uid: 2, item: 'ember_charm', upgrade: 1, copies: 0 },
+      { uid: 3, item: 'iron_band', upgrade: 3, copies: 0 },
     ],
     nextUid: 4,
   };
@@ -128,31 +197,21 @@ describe('objets', () => {
     expect(equip(content, profile, 'maree', 0, 99)).toEqual({ ok: false, reason: 'unknown_item' });
     expect(equip(content, profile, 'ghost', 0, 1)).toEqual({ ok: false, reason: 'unknown_hero' });
   });
-
-  it('amélioration : or et matériaux, trois niveaux', () => {
-    expect(upgradeCost(content, 0)).toEqual({ gold: 100, materials: { tier: 1, amount: 5 } });
-    expect(upgradeCost(content, 3)).toBeNull();
-    expect(upgradeItem(content, owned, 1)).toEqual({ ok: false, reason: 'not_enough_gold' });
-    expect(upgradeItem(content, { ...owned, gold: 100 }, 1)).toEqual({
-      ok: false,
-      reason: 'not_enough_materials',
-    });
-    const rich = { ...owned, gold: 150, materials: [6, 0, 0] as Profile['materials'] };
-    const upgraded = value(upgradeItem(content, rich, 1));
-    expect(upgraded).toMatchObject({ gold: 50, materials: [1, 0, 0] });
-    expect(upgraded.items[0]).toEqual({ uid: 1, item: 'ember_charm', upgrade: 1 });
-    expect(upgradeItem(content, rich, 3)).toEqual({ ok: false, reason: 'max_upgrade' });
-    expect(upgradeItem(content, rich, 42)).toEqual({ ok: false, reason: 'unknown_item' });
-  });
 });
 
 describe('équipe et énergie', () => {
-  it('1 à 3 héros débloqués, sans doublon', () => {
+  it('1 à teamSize héros débloqués, sans doublon', () => {
     const profile = newProfile(content);
-    expect(value(setTeam(profile, ['ronce'])).team).toEqual(['ronce']);
-    expect(setTeam(profile, [])).toEqual({ ok: false, reason: 'bad_team' });
-    expect(setTeam(profile, ['pyra', 'pyra'])).toEqual({ ok: false, reason: 'bad_team' });
-    expect(setTeam(profile, ['ghost'])).toEqual({ ok: false, reason: 'locked_hero' });
+    const size = content.balance.progression.teamSize;
+    expect(size).toBe(4);
+    expect(profile.team).toHaveLength(size);
+    expect(
+      setTeam(content, profile, [...content.heroes.map((h) => h.id), 'ghost'].slice(0, size + 1)),
+    ).toEqual({ ok: false, reason: 'bad_team' });
+    expect(value(setTeam(content, profile, ['ronce'])).team).toEqual(['ronce']);
+    expect(setTeam(content, profile, [])).toEqual({ ok: false, reason: 'bad_team' });
+    expect(setTeam(content, profile, ['pyra', 'pyra'])).toEqual({ ok: false, reason: 'bad_team' });
+    expect(setTeam(content, profile, ['ghost'])).toEqual({ ok: false, reason: 'locked_hero' });
   });
 
   it('l’énergie existe mais ne coûte rien dans le MVP', () => {
@@ -176,7 +235,7 @@ describe('équipe et énergie', () => {
 
 describe('donjons et butin', () => {
   it('récompenses : XP (repos réduit), or, matériaux, objet, ouverture du suivant', () => {
-    let profile = value(setTeam(newProfile(content, 3), ['pyra', 'maree']));
+    let profile = value(setTeam(content, newProfile(content, 3), ['pyra', 'maree']));
     expect(dungeonOpen(content, profile, 'ember_wastes')).toBe(true);
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(false);
     const first = value(completeDungeon(content, profile, 'ember_wastes'));
@@ -186,47 +245,15 @@ describe('donjons et butin', () => {
       gold: 80,
       materials: { tier: 1, amount: 4 },
     });
-    expect(first.report.xp.pyra).toEqual({ gained: 100, levels: 1 });
-    expect(first.report.xp.ronce).toEqual({ gained: 50, levels: 1 });
+    expect(first.report.xp.pyra).toEqual({ gained: 60, ready: true });
+    expect(first.report.xp.ronce).toEqual({ gained: 30, ready: false });
+    expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 60 });
     expect(profile.items).toHaveLength(1);
-    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1 });
+    expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0 });
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(true);
     expect(dungeonOpen(content, { ...profile, testMode: true }, 'thorn_maze')).toBe(true);
     expect(dungeonOpen(content, profile, 'nowhere')).toBe(false);
     expect(profileSchema.parse(profile)).toEqual(profile);
-  });
-
-  it('même profil, même butin ; rare garanti au 5e donjon sans rare', () => {
-    const profile = newProfile(content, 99);
-    expect(value(completeDungeon(content, profile, 'ember_wastes')).report.item).toEqual(
-      value(completeDungeon(content, profile, 'ember_wastes')).report.item,
-    );
-    let current = profile;
-    let sinceRare = 0;
-    for (let i = 0; i < 40; i++) {
-      const { profile: next, report } = value(completeDungeon(content, current, 'ember_wastes'));
-      const rare = content.itemById.get(report.item.item)?.rarity === 'rare';
-      if (sinceRare === 4) expect(rare).toBe(true);
-      if (report.item.guaranteed) expect(sinceRare).toBe(4);
-      sinceRare = rare ? 0 : sinceRare + 1;
-      expect(next.sinceRare).toBe(sinceRare);
-      current = next;
-    }
-    expect(completeDungeon(content, profile, 'nowhere')).toEqual({
-      ok: false,
-      reason: 'unknown_dungeon',
-    });
-  });
-
-  it('taux affichés et générateur à graine', () => {
-    const dungeon = content.dungeonById.get('ember_wastes')!;
-    const rates = lootRates(dungeon);
-    expect(rates.reduce((s, r) => s + r.pct, 0)).toBeCloseTo(100);
-    expect(rates[0]).toEqual({ item: 'ember_charm', pct: 25 });
-    const a = nextRandom(5);
-    expect(nextRandom(5)).toEqual(a);
-    expect(a.value).toBeGreaterThanOrEqual(0);
-    expect(a.value).toBeLessThan(1);
   });
 
   it('déblocage d’un héros au niveau recommandé du donjon', () => {
@@ -299,8 +326,8 @@ describe('mode test', () => {
         items: [],
       },
     ]);
-    sandbox = value(setLevel(content, sandbox, 'pyra', 4));
-    expect(sandbox.heroes.pyra).toMatchObject({ level: 4, talents: ['pyra_exe_core'] });
+    sandbox = value(setLevel(content, sandbox, 'pyra', 2));
+    expect(sandbox.heroes.pyra).toMatchObject({ level: 2, talents: ['pyra_exe_core'] });
     expect(value(setLevel(content, sandbox, 'pyra', 99)).heroes.pyra?.level).toBe(30);
     expect(setLevel(content, sandbox, 'ghost', 3)).toEqual({ ok: false, reason: 'unknown_hero' });
     expect(setLevel(content, newProfile(content), 'pyra', 3)).toEqual({

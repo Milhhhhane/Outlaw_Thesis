@@ -1,5 +1,5 @@
-import { talentPoints } from '@outlaw/engine';
-import { PixelSprite } from '../art/Pixel';
+import { canLevelUp, heroStars, talentPoints } from '@outlaw/engine';
+import { HeroSprite } from '../art/HeroSprite';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { Screen } from '../game/ui';
@@ -40,21 +40,28 @@ export function Heroes() {
                 }}
               >
                 <span className="hero-card__sprite">
-                  <PixelSprite name={def.id} idle={unlocked} />
+                  <HeroSprite name={def.id} idle={unlocked} />
                 </span>
                 <span className="hero-card__name">{unlocked ? names.hero(def.id) : '???'}</span>
                 {unlocked ? (
                   <>
                     <span className="hero-card__meta">
-                      {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)}
+                      {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)} ·{' '}
+                      {t('hero.starsShort', { n: heroStars(hero, content) })}
                     </span>
                     <span className="hero-card__thesis">{names.heroThesis(def.id)}</span>
-                    {free > 0 && (
+                    {free > 0 ? (
                       <span className="hero-card__badge">{t('heroes.points', { n: free })}</span>
+                    ) : (
+                      canLevelUp(content, profile, hero) && (
+                        <span className="hero-card__badge">{t('hero.levelUp.ready')}</span>
+                      )
                     )}
                   </>
                 ) : (
-                  <span className="hero-card__thesis">{t('heroes.locked')}</span>
+                  <span className="hero-card__thesis">
+                    {t('heroes.locked', { n: content.balance.chests.summonCost })}
+                  </span>
                 )}
               </button>
             </li>

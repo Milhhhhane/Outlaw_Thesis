@@ -6,7 +6,7 @@ import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
 
 /**
- * Rythme et difficulté : pour chaque donjon, des équipes de 3 héros tirées au hasard (builds
+ * Rythme et difficulté : pour chaque donjon, des équipes de `teamSize` héros tirées au hasard (builds
  * aléatoires), au niveau conseillé et avec le retard de R2, jouées par la politique experte
  * (anticipation d'un coup) et par le joueur moyen (une décision sur quatre au hasard).
  * Les combats d'un donjon repartent à PV pleins : chacun est mesuré séparément.
@@ -40,7 +40,7 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
       };
       const clears: Record<Kind, BattleOutcome[]> = { expert: [], average: [] };
       for (let i = 0; i < runs; i++) {
-        const team = rng.shuffle(heroes).slice(0, 3);
+        const team = rng.shuffle(heroes).slice(0, content.balance.progression.teamSize);
         const builds = team.map((hero) => randomBuild(content, hero, level, rng));
         const party = compileTeam(content, builds, 'player', dungeon.modifier);
         for (const kind of ['expert', 'average'] as const) {
@@ -54,6 +54,7 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
               dungeon.recommendedLevel,
               dungeon.modifier,
               encounter.hpPct,
+              encounter.atkPct,
             );
             const outcome = runBattle({ units: [...party, ...foes] }, content.balance, policy);
             fights[kind][e]?.push(outcome);
@@ -109,5 +110,19 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
   };
   band('expert au niveau conseillé', expertRate, targets.expertWinRate);
   band('joueur moyen au niveau conseillé', averageRate, targets.averageWinRate);
+  // Courbe : facile au début, puis la difficulté monte sans redescendre brutalement.
+  const curve = targets.averageCurve;
+  clearRates.average.forEach((rate, i) => {
+    const id = content.dungeons[i]?.id ?? String(i);
+    if (i === 0 && rate < curve.first)
+      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.first * 100} %`);
+    if (rate < curve.last)
+      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.last * 100} %`);
+    const prev = clearRates.average[i - 1];
+    if (prev !== undefined && rate > prev + curve.tolerance)
+      problems.push(
+        `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % plus facile que le précédent (${(prev * 100).toFixed(0)} %)`,
+      );
+  });
   return { rows, problems, expertRate, averageRate };
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { t } from '../i18n';
+import { TooltipLayer } from './Glossed';
 import { toggleFullscreen } from './fullscreen';
 import './game.css';
 
@@ -56,6 +57,7 @@ export function GameShell({ children }: { readonly children: ReactNode }) {
         }}
       >
         {children}
+        <TooltipLayer />
       </div>
       <div className="shell__rotate">
         <span className="shell__rotate-icon" aria-hidden="true" />

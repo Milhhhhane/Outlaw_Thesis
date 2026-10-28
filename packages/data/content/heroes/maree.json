@@ -164,6 +164,63 @@
               }
             }
           ]
+        },
+        {
+          "id": "maree_bastion_brace",
+          "requires": "maree_bastion_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": 20
+            },
+            {
+              "type": "delay",
+              "slot": "a",
+              "delta": 10
+            }
+          ]
+        },
+        {
+          "id": "maree_bastion_rampart",
+          "requires": "maree_bastion_brace",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "a",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "a",
+              "kind": "shield",
+              "field": "power",
+              "mulPct": -40
+            }
+          ]
+        },
+        {
+          "id": "maree_bastion_citadel",
+          "requires": "maree_bastion_veil",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "shield",
+                "target": "all_allies",
+                "power": 60,
+                "duration": 2
+              }
+            },
+            {
+              "type": "cost",
+              "slot": "ult",
+              "delta": 1
+            }
+          ]
         }
       ]
     },
@@ -240,6 +297,57 @@
               "mulPct": 52
             }
           ]
+        },
+        {
+          "id": "maree_source_trickle",
+          "requires": "maree_source_core",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "basic",
+              "effect": {
+                "kind": "heal",
+                "target": "self",
+                "power": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "maree_source_tide",
+          "requires": "maree_source_trickle",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": 25
+            },
+            {
+              "type": "cost",
+              "slot": "b",
+              "delta": 1
+            }
+          ]
+        },
+        {
+          "id": "maree_source_deluge",
+          "requires": "maree_source_flood",
+          "mods": [
+            {
+              "type": "retarget",
+              "slot": "ult",
+              "targeting": "all_allies"
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "ult",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -30
+            }
+          ]
         }
       ]
     },
@@ -314,6 +422,55 @@
               "effect": {
                 "kind": "teamPoints",
                 "amount": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "maree_current_eddy",
+          "requires": "maree_current_core",
+          "mods": [
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "tempo",
+              "field": "amount",
+              "mulPct": 40
+            },
+            {
+              "type": "scaleEffect",
+              "slot": "b",
+              "kind": "heal",
+              "field": "power",
+              "mulPct": -15
+            }
+          ]
+        },
+        {
+          "id": "maree_current_riptide",
+          "requires": "maree_current_eddy",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "b",
+              "effect": {
+                "kind": "tempo",
+                "amount": 15
+              }
+            }
+          ]
+        },
+        {
+          "id": "maree_current_tidal",
+          "requires": "maree_current_wellspring",
+          "mods": [
+            {
+              "type": "addEffect",
+              "slot": "ult",
+              "effect": {
+                "kind": "tempo",
+                "target": "all_allies",
+                "amount": -20
               }
             }
           ]

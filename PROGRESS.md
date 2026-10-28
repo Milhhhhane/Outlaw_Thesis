@@ -38,11 +38,36 @@
 - Lot 9 — Grosse amélioration graphique : menus habillés (cadres bois, fond, socles), combat
   avec du jus (impacts, étincelles, secousses, chutes, flash d'ultime), carte du monde repeinte
   avec repères et sentier animé. Bundle : 178 ko gzip sur 300.
-- Lot 11 — PvP, salon personnalisé : moteur (règles de combat, action par défaut, empreinte d'état),
-  protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`, routes de création et de
-  connexion), interface « Duel en ligne » (salon, équipe, combat en direct, émotes, revanche, reprise).
-  Tests : serveur et client unitaires, trois duels à deux navigateurs réels contre `wrangler dev`.
-  Ouvert : équilibrage PvP (voir `docs/PVP.md`), propriété des héros non prouvée.
+- Lot 10 — Talents : 8 nœuds par page, 14 points, trois spécialisations ouvertes dès le départ ;
+  rééquilibrage mesuré par la simulation (docs/BALANCE.md).
+- Lot 11 — Début plus facile et courbe de difficulté vérifiée par la simulation ; trois donjons
+  de fin de progression (niveaux 28 à 30).
+- Lot 12 — Carte pilotée par les données (place, repère et chapitre dans `dungeons.json`),
+  butin en liste avec poids par rareté, rare au premier passage, doublons démontés ; liste de
+  contrôle « Ajouter un donjon » dans `docs/CONTENT.md`.
+- Lot 13 — Équipes de quatre héros (`teamSize`), Cendre au départ, salles de 3–4 ennemis,
+  donjons reconvergés ; outils de réglage corrigés.
+- Lot 14 — Texte courant en police lisible (Atkinson Hyperlegible), lexique survolable sur les
+  termes de règle, barre d'initiative à huit unités.
+
+- Coffres et fragments : trois paliers de coffres donnés par les donjons, fragments de héros,
+  invocation à 10 fragments, étoiles tous les 10 niveaux (10 puis 20 fragments), héros ciblé,
+  écran « Coffres » avec ouverture animée. Anciennes sauvegardes compatibles sans migration.
+  Équilibre à valider au test humain (voir `docs/BALANCE.md`).
+- Combat automatique : bouton « Auto » (touche A), règle déterministe du moteur indépendante de la
+  taille des équipes, mesurée à 58 % de donjons réussis contre 51 % pour le joueur moyen simulé et
+  85 % pour l'expert. Équipes de 4 héros : chantier à faire, liste dans `docs/ARCHITECTURE.md`.
+- Grind (PR A) — butin exclusif par donjon (commun + rare), copies pour améliorer les objets,
+  maîtrise de donjon, rare garanti par donjon, bouton « Rejouer », collection à l'atelier.
+  Espérances de farm calculées dans `docs/BALANCE.md` ; à confirmer au test humain.
+- Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
+  recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
+  en CI). Or non recalibré.
+- PvP, salon personnalisé (« Duel en ligne ») : moteur (règles de combat, action par défaut,
+  empreinte d'état), protocole et salon purs (`packages/net`), serveur (Durable Object `PvpRoom`),
+  interface (salon, équipe, combat en direct, émotes, revanche, reprise). Remis à jour après le
+  grind : équipes de `teamSize` (4) héros, entrée « PvP » au camp. Ouvert : équilibrage PvP (voir
+  `docs/PVP.md`), propriété des héros non prouvée.
 
 ## Reste à faire (hors code)
 

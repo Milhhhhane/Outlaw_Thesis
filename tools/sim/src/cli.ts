@@ -28,7 +28,7 @@ const option = (name: string, fallback: number): number => {
 const content = loadContent();
 const started = performance.now();
 const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
-const pace = pacing(content, option('--pace-runs', 16), option('--seed', 1));
+const pace = pacing(content, option('--pace-runs', 48), option('--seed', 1));
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),

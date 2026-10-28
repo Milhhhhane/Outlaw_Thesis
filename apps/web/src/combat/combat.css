@@ -52,7 +52,7 @@
 
 .track__list {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -62,11 +62,17 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  flex: 1;
+  flex: none;
   min-width: 0;
-  padding: 2px 4px;
+  padding: 2px 3px;
   background: rgb(18 13 24 / 85%);
   border-bottom: 3px solid var(--element);
+}
+
+/* Huit unités tiennent dans la barre : portrait et délai seulement, le nom en survol
+   (attribut title) et pour l'unité qui joue. */
+.track__entry:not(.track__entry--now) .track__name {
+  display: none;
 }
 
 .track__entry--enemy {
@@ -74,7 +80,8 @@
 }
 
 .track__entry--now {
-  flex: 1.3;
+  flex: 1;
+  max-width: 170px;
   outline: 2px solid var(--gold);
   outline-offset: -2px;
 }
@@ -144,6 +151,26 @@
 }
 
 /* Anticipation (recul tassé), fente (étiré vers l'avant), retour. */
+/* L'arme balaie vers l'avant pendant la fente. */
+.actor--acting .hero-sprite__weapon {
+  animation: weapon-swing 0.42s steps(7, end);
+}
+
+@keyframes weapon-swing {
+  0% {
+    transform: rotate(var(--tilt, 0deg));
+  }
+  30% {
+    transform: rotate(calc(var(--tilt, 0deg) - 35deg));
+  }
+  55% {
+    transform: rotate(calc(var(--tilt, 0deg) + 75deg));
+  }
+  100% {
+    transform: rotate(var(--tilt, 0deg));
+  }
+}
+
 @keyframes actor-lunge {
   0% {
     transform: translateX(0);
@@ -601,7 +628,8 @@
   display: grid;
   justify-items: center;
   gap: 1px;
-  width: 100px;
+  /* quatre emplacements espacés de 32 px natifs (96 px) : le repère reste sous cette largeur */
+  width: 92px;
   transform: translate(-50%, -100%);
   text-shadow:
     0 1px 0 #07050a,

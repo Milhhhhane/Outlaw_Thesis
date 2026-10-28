@@ -1,12 +1,20 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
+  atStarGate,
+  canLevelUp,
   compileHero,
   equip,
   heroBuild,
+  heroStars,
+  levelUp,
+  levelUpCost,
+  levelUpMax,
   respec,
   respecCost,
   setLevel,
   setUpgrade,
+  starCost,
+  starUp,
   takeTalent,
   talentPoints,
   unlockedPages,
@@ -15,13 +23,15 @@ import {
   type UnitDef,
 } from '@outlaw/engine';
 import { useState } from 'react';
+import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
-import { names, t, tk } from '../i18n';
+import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
+import { Glossed } from '../game/Glossed';
 
 type Tab = 'stats' | 'talents' | 'items';
 
@@ -163,24 +173,30 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
       <div className="talents__pages">
         {def.pages.map((page, index) => {
           const locked = index >= pages;
-          // Rangées : racine, ses enfants, puis les petits-enfants sous leur parent.
-          const root = page.nodes.find((n) => n.requires === undefined);
-          const children = page.nodes.filter((n) => n.requires === root?.id);
-          const grand = page.nodes.filter(
-            (n) => n.requires !== undefined && n.requires !== root?.id,
-          );
-          const column = (id: string): number => {
-            const i = children.findIndex((c) => c.id === id);
-            return i < 0 ? 1 : i;
+          // Rangées par profondeur de prérequis ; chaque rangée est centrée.
+          const byId = new Map(page.nodes.map((n) => [n.id, n] as const));
+          const depthOf = (n: TalentNode): number => {
+            let d = 0;
+            let cursor = n.requires === undefined ? undefined : byId.get(n.requires);
+            while (cursor !== undefined && d < 8) {
+              d += 1;
+              cursor = cursor.requires === undefined ? undefined : byId.get(cursor.requires);
+            }
+            return d;
           };
-          const pos = new Map<string, { col: number; row: number }>();
-          if (root) pos.set(root.id, { col: 1, row: 0 });
-          children.forEach((c, i) => pos.set(c.id, { col: i, row: 1 }));
-          grand.forEach((g) => pos.set(g.id, { col: column(g.requires ?? ''), row: 2 }));
-          const at = (id: string): { x: number; y: number } => {
-            const p = pos.get(id) ?? { col: 1, row: 0 };
-            return { x: 22 + p.col * 50, y: 26 + p.row * 76 };
-          };
+          const rows = new Map<number, TalentNode[]>();
+          for (const n of page.nodes) {
+            const d = depthOf(n);
+            rows.set(d, [...(rows.get(d) ?? []), n]);
+          }
+          const pos = new Map<string, { x: number; y: number }>();
+          for (const [d, list] of rows) {
+            list.forEach((n, i) => {
+              pos.set(n.id, { x: 72 + (i - (list.length - 1) / 2) * 36, y: 22 + d * 54 });
+            });
+          }
+          const at = (id: string): { x: number; y: number } => pos.get(id) ?? { x: 72, y: 22 };
+          const children = rows.get(1) ?? [];
           return (
             <section
               key={page.id}
@@ -197,7 +213,7 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                 </p>
               )}
               <div className="tree__board">
-                <svg className="tree__links" width="144" height="200" aria-hidden="true">
+                <svg className="tree__links" width="144" height="210" aria-hidden="true">
                   {page.nodes
                     .filter((n) => n.requires !== undefined)
                     .map((n) => {
@@ -247,7 +263,7 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
                         setPicked(n.id);
                       }}
                     >
-                      <Icon name={nodeIcon(n)} size={24} />
+                      <Icon name={nodeIcon(n)} size={18} />
                     </button>
                   );
                 })}
@@ -269,7 +285,9 @@ function TalentTree({ def, heroId }: { readonly def: Hero; readonly heroId: stri
             </h3>
             <ul className="effects">
               {describeNode(node, def).map((line, i) => (
-                <li key={i}>{line}</li>
+                <li key={i}>
+                  <Glossed text={line} />
+                </li>
               ))}
             </ul>
             {node.requires !== undefined && (
@@ -369,7 +387,7 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
                 setChoosing(slot);
               }}
             >
-              <Icon name="item" size={36} />
+              <Icon name={owned !== undefined ? `item_${owned.item}` : 'item'} size={36} />
               <span className="slot__name">
                 {owned !== undefined ? names.item(owned.item) : t('hero.slot.empty')}
               </span>
@@ -378,7 +396,9 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
             {item !== undefined && (
               <ul className="effects">
                 {describeItem(item).map((line, i) => (
-                  <li key={i}>{line}</li>
+                  <li key={i}>
+                    <Glossed text={line} />
+                  </li>
                 ))}
               </ul>
             )}
@@ -427,7 +447,7 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
                         }
                       }}
                     >
-                      <Icon name="item" size={24} />
+                      <Icon name={`item_${o.item}`} size={24} />
                       <span className="item-card__name">{names.item(o.item)}</span>
                       <UpgradePips
                         level={o.upgrade}
@@ -482,6 +502,10 @@ export function HeroSheet({
   const free = talentPoints(hero.level, balance) - hero.talents.length;
   const maxed = hero.level >= balance.progression.maxLevel;
   const next = xpToNext(hero.level, content);
+  const gate = atStarGate(hero, content);
+  const cost = levelUpCost(content, hero);
+  const gateCost = starCost(content, hero);
+  const fragments = profile.fragments[heroId] ?? 0;
 
   return (
     <Screen title={names.hero(heroId)} onBack={onBack} className={`sheet element-${def.element}`}>
@@ -489,7 +513,7 @@ export function HeroSheet({
         <aside className="sheet__id">
           <PixelSprite name="pedestal" className="pedestal" />
           <span className="sheet__sprite">
-            <PixelSprite name={heroId} idle />
+            <HeroSprite name={heroId} idle />
           </span>
           <p className="sheet__level">
             {t('hero.level', { level: hero.level })}
@@ -504,6 +528,61 @@ export function HeroSheet({
             </span>
           ) : (
             <span className="hint">{t('hero.xp.max')}</span>
+          )}
+          <p className="hint">
+            {t('hero.stars', {
+              n: heroStars(hero, content),
+              max: balance.chests.starCosts.length,
+            })}
+          </p>
+          {!maxed && !gate && !profile.testMode && cost !== null && (
+            <div className="sheet__gate">
+              <p className="hint">
+                {t('hero.levelUp.cost', {
+                  level: hero.level + 1,
+                  xp: cost.xp,
+                  dust: t('dust.amount', {
+                    amount: cost.dust.amount,
+                    dust: dustName(cost.dust.tier),
+                  }),
+                })}
+              </p>
+              <Button
+                size="small"
+                disabled={!canLevelUp(content, profile, hero)}
+                onClick={() => {
+                  apply(levelUp(content, profile, heroId));
+                }}
+              >
+                {t('hero.levelUp')}
+              </Button>
+              {canLevelUp(content, profile, hero) && (
+                <Button
+                  size="small"
+                  variant="quiet"
+                  onClick={() => {
+                    apply(levelUpMax(content, profile, heroId));
+                  }}
+                >
+                  {t('hero.levelUp.max')}
+                </Button>
+              )}
+            </div>
+          )}
+          {gate && gateCost !== null && !profile.testMode && (
+            <div className="sheet__gate">
+              <p>{t('hero.gate', { level: hero.level })}</p>
+              <Button
+                size="small"
+                disabled={fragments < gateCost}
+                onClick={() => {
+                  apply(starUp(content, profile, heroId));
+                }}
+              >
+                {t('hero.gate.buy')}
+              </Button>
+              <p className="hint">{t('hero.gate.count', { have: fragments, cost: gateCost })}</p>
+            </div>
           )}
           <p className="sheet__thesis">{names.heroThesis(heroId)}</p>
           {profile.testMode && (
@@ -541,7 +620,7 @@ export function HeroSheet({
                     <div key={stat}>
                       <dt>
                         <Icon name={STAT_ICON[stat]} size={12} />
-                        {tk(`stat.${stat}`)}
+                        <Glossed text={tk(`stat.${stat}`)} />
                       </dt>
                       <dd>{unit.stats[stat]}</dd>
                     </div>
@@ -555,15 +634,19 @@ export function HeroSheet({
                         {names.spell(spell.id)}
                       </p>
                       <p className="spell-card__meta">
-                        {spell.cost > 0
-                          ? t('combat.spell.cost', { cost: spell.cost })
-                          : t('combat.spell.gain', { gain: spell.gain })}{' '}
-                        · {t('combat.spell.delay', { delay: spell.delay })} ·{' '}
-                        {tk(`combat.target.${spell.targeting}`)}
+                        <Glossed
+                          text={`${
+                            spell.cost > 0
+                              ? t('combat.spell.cost', { cost: spell.cost })
+                              : t('combat.spell.gain', { gain: spell.gain })
+                          } · ${t('combat.spell.delay', { delay: spell.delay })} · ${tk(`combat.target.${spell.targeting}`)}`}
+                        />
                       </p>
                       <ul>
                         {describeSpell(spell).map((line, j) => (
-                          <li key={j}>{line}</li>
+                          <li key={j}>
+                            <Glossed text={line} />
+                          </li>
                         ))}
                       </ul>
                     </li>
@@ -575,7 +658,9 @@ export function HeroSheet({
                   </p>
                   <ul>
                     {unit.triggers.map((resolved, i) => (
-                      <li key={i}>{describeTrigger(resolved.trigger)}</li>
+                      <li key={i}>
+                        <Glossed text={describeTrigger(resolved.trigger)} />
+                      </li>
                     ))}
                   </ul>
                 </div>

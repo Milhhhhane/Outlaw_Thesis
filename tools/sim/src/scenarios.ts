@@ -1,4 +1,4 @@
-import { ELEMENTS, type Balance, type Content, type Element } from '@outlaw/data';
+import { ELEMENTS, MAX_SIDE, type Balance, type Content, type Element } from '@outlaw/data';
 import {
   compileEncounter,
   compileTeam,
@@ -116,9 +116,9 @@ export function randomBattles(content: Content, options: RandomRunOptions): Scen
 
   for (let i = 0; i < options.battles; i++) {
     const level = rng.int(1, content.balance.progression.maxLevel);
-    const order = rng.shuffle(heroes).slice(0, 3);
+    const order = rng.shuffle(heroes).slice(0, content.balance.progression.teamSize);
     const builds = order.map((hero) => randomBuild(content, hero, level, rng));
-    const size = rng.int(1, 3);
+    const size = rng.int(1, MAX_SIDE);
     const foes = Array.from({ length: size }, () => rng.pick(enemies));
     const setup: BattleSetup = {
       units: [...compileTeam(content, builds), ...compileEncounter(content, foes, level)],

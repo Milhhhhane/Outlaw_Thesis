@@ -1,4 +1,4 @@
-import type { Balance } from '@outlaw/data';
+import { MAX_SIDE, type Balance } from '@outlaw/data';
 import {
   aliveOf,
   changePoints,
@@ -33,7 +33,7 @@ import type {
   UnitState,
 } from './types';
 
-const MAX_UNITS_PER_SIDE = 3;
+const MAX_UNITS_PER_SIDE = MAX_SIDE;
 
 function needsTarget(spell: ResolvedSpell): boolean {
   return spell.targeting === 'enemy' || spell.targeting === 'ally';

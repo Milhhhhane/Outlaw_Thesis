@@ -1,4 +1,8 @@
+/** Unités au plus par camp en combat : les emplacements de la scène et des rencontres. */
+export const MAX_SIDE = 4;
+
 import { z } from 'zod';
+import { idSchema } from './common';
 
 const pos = z.number().positive();
 const nonNeg = z.number().min(0);
@@ -53,6 +57,10 @@ export const balanceSchema = z
 
     progression: z.strictObject({
       maxLevel: z.number().int().min(2),
+      /** Héros par équipe (emplacements côté joueur ; le moteur en accepte autant par camp). */
+      teamSize: z.number().int().min(1).max(MAX_SIDE),
+      /** Un héros ne dépasse pas (étoiles + 1) × ce nombre : chaque palier se paie en fragments. */
+      levelsPerStar: posInt,
       /** Croissance des stats brutes au niveau max, en fraction de la stat de niveau 1 (1 = +100 %). */
       growth: z.strictObject({ hero: growthSchema, enemy: growthSchema }),
       /** Niveaux auxquels un héros gagne 1 point de talent. */
@@ -63,6 +71,16 @@ export const balanceSchema = z
       restXpRate: z.number().min(0).max(1),
       /** XP pour passer du niveau N au suivant : round(base × N ^ exponent). */
       xp: z.strictObject({ base: pos, exponent: pos }),
+      /**
+       * Monter de niveau se paie : l'XP du niveau et de la poussière. `tierFrom[k]` est le premier
+       * niveau (celui qu'on quitte) payé en poussière du palier k + 1 ; la quantité est
+       * `dust[k] + dustPerLevel[k] × (niveau − tierFrom[k])`.
+       */
+      levelUp: z.strictObject({
+        tierFrom: z.array(posInt).length(3),
+        dust: z.array(posInt).length(3),
+        dustPerLevel: z.array(nonNegInt).length(3),
+      }),
       respec: z.strictObject({
         firstFreePerHero: z.boolean(),
         /** Coût en or du respec : coefficient × niveau du héros. */
@@ -76,21 +94,55 @@ export const balanceSchema = z
         upgradeScalePct: nonNeg,
         /** Plafond de la petite stat d'un objet, en %. */
         statCapPct: pos,
-        /** Coût d'amélioration vers le niveau 1, 2, 3… (longueur = maxUpgradeLevel). */
+        /**
+         * Coût d'amélioration vers le niveau 1, 2, 3… (longueur = maxUpgradeLevel) : exemplaires
+         * supplémentaires du même objet (consommés), or et poussière du palier du donjon d'origine.
+         */
         upgradeCosts: z.array(
-          z.strictObject({
-            gold: nonNegInt,
-            materials: z.strictObject({ tier: z.number().int().min(1).max(3), amount: nonNegInt }),
-          }),
+          z.strictObject({ copies: posInt, gold: nonNegInt, materials: nonNegInt }),
         ),
       }),
     }),
 
     economy: z.strictObject({
-      /** Un objet rare est garanti au plus tard au Nème donjon sans rare. */
-      rareGuaranteeAfter: posInt,
-      /** Part de l'XP, de l'or et des matériaux d'un donjon rejoué (farm) par rapport au premier passage. */
+      /** Part de l'XP, de l'or et de la poussière d'un donjon rejoué (farm) par rapport au premier passage. */
       replayRewardRate: z.number().min(0).max(1),
+      loot: z.strictObject({
+        /** Poids de tirage de chaque rareté (un objet de la table du donjon, pondéré par sa rareté). */
+        weights: z.strictObject({ common: posInt, rare: posInt }),
+        /** Le premier passage d'un donjon donne toujours un objet rare. */
+        firstClearRare: z.boolean(),
+        /** Un objet rare est garanti au plus tard au Nème passage sans rare DANS CE donjon. */
+        rarePity: posInt,
+        /**
+         * Maîtrise d'un donjon : un rang par palier de victoires atteint. Chaque rang ajoute du
+         * poids au tirage du rare et un pourcentage à la poussière gagnée.
+         */
+        mastery: z.strictObject({
+          clears: z.array(posInt).min(1),
+          rareWeightPerRank: nonNegInt,
+          materialsPctPerRank: nonNegInt,
+        }),
+        /** Poussière rendue par une copie dissoute, par rareté (palier = celui du donjon d'origine). */
+        salvage: z.strictObject({ common: posInt, rare: posInt }),
+      }),
+    }),
+
+    /**
+     * Coffres et fragments de héros. Un coffre ne donne que des fragments ; `summonCost` fragments
+     * invoquent un héros, et chaque palier de niveau se paie en fragments (`starCosts`).
+     */
+    chests: z.strictObject({
+      /** Fragments d'un héros pour l'invoquer. */
+      summonCost: posInt,
+      /** Fragments pour passer l'étoile 1, 2, 3… (une entrée par palier jusqu'au niveau maximum). */
+      starCosts: z.array(posInt),
+      /** Part des fragments d'un coffre qui va au héros ciblé par le joueur (le reste est au hasard). */
+      focusRate: z.number().min(0).max(1),
+      /** Chance qu'un donjon déjà terminé redonne son coffre (le premier passage le donne toujours). */
+      replayChestRate: z.number().min(0).max(1),
+      /** Paliers de coffre, du plus modeste au plus riche. */
+      tiers: z.array(z.strictObject({ id: idSchema, fragments: posInt })).min(1),
     }),
 
     /** L'énergie existe dès le MVP avec un coût de 0 : levier de monétisation sans gacha, plus tard. */
@@ -122,6 +174,16 @@ export const balanceSchema = z
       /** Part de donjons terminés au niveau conseillé, par politique (bornes incluses). */
       expertWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
       averageWinRate: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
+      /**
+       * Courbe de difficulté (joueur moyen, niveau conseillé) : le premier donjon réussit au moins
+       * `first`, chaque donjon réussit au plus `tolerance` de mieux que le précédent (la difficulté
+       * monte), et aucun ne descend sous `last`.
+       */
+      averageCurve: z.strictObject({
+        first: z.number().min(0).max(1),
+        last: z.number().min(0).max(1),
+        tolerance: z.number().min(0).max(1),
+      }),
     }),
   })
   .superRefine((b, ctx) => {
@@ -139,8 +201,24 @@ export const balanceSchema = z
         path: ['progression', 'items', 'upgradeCosts'],
       });
     }
+    const stars = Math.ceil(b.progression.maxLevel / b.progression.levelsPerStar) - 1;
+    if (b.chests.starCosts.length !== stars) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `starCosts doit avoir une entrée par palier (${String(stars)} attendues)`,
+        path: ['chests', 'starCosts'],
+      });
+    }
+    const tierIds = b.chests.tiers.map((tier) => tier.id);
+    if (new Set(tierIds).size !== tierIds.length) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'chests.tiers : identifiants en double',
+        path: ['chests', 'tiers'],
+      });
+    }
     const unlocks = b.progression.pageUnlockLevels;
-    const ascending = unlocks.every((level, i) => i === 0 || level > (unlocks[i - 1] ?? 0));
+    const ascending = unlocks.every((level, i) => i === 0 || level >= (unlocks[i - 1] ?? 0));
     if (!ascending || unlocks.some((level) => level > b.progression.maxLevel)) {
       ctx.addIssue({
         code: 'custom',

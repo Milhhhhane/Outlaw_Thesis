@@ -52,7 +52,12 @@ describe('builds aléatoires', () => {
       expect(validateBuild(content, build)).toEqual([]);
     }
     const pyra = content.heroById.get('pyra')!;
-    expect(availableNodes(pyra, 1, new Set(), content)).toEqual(['pyra_exe_core']);
+    // Les trois pages sont ouvertes dès le niveau 1 : une racine par page.
+    expect(availableNodes(pyra, 1, new Set(), content)).toEqual([
+      'pyra_exe_core',
+      'pyra_tempo_core',
+      'pyra_embers_core',
+    ]);
   });
 
   it('mélange sans perte', () => {
@@ -63,10 +68,15 @@ describe('builds aléatoires', () => {
 });
 
 describe('règles d’équilibre', () => {
-  it('les 20 équipes possibles : 3 héros parmi 6, sans doublon', () => {
+  it('toutes les équipes possibles : teamSize héros parmi ceux du jeu, sans doublon', () => {
+    const size = content.balance.progression.teamSize;
+    const n = content.heroes.length;
+    // C(n, size)
+    let expected = 1;
+    for (let i = 0; i < size; i++) expected = (expected * (n - i)) / (i + 1);
     const all = teams(content);
-    expect(all).toHaveLength(20);
-    expect(new Set(all.map((team) => team.join('+'))).size).toBe(20);
-    expect(all.every((team) => new Set(team).size === 3)).toBe(true);
+    expect(all).toHaveLength(expected); // 15 pour 4 héros parmi 6
+    expect(new Set(all.map((team) => team.join('+'))).size).toBe(expected);
+    expect(all.every((team) => new Set(team).size === size)).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import {
+  autoAction,
   enemyIntent,
   legalActions,
   type Action,
@@ -23,6 +24,10 @@ import { anchorOf, Stage } from './Stage';
 import { useBattle, type BattleHandle } from './useBattle';
 import type { UnitView } from './view';
 import './combat.css';
+import { Glossed } from '../game/Glossed';
+
+/** Pause (ms, à vitesse normale) entre deux décisions du combat automatique. */
+const AUTO_DELAY = 400;
 
 const HELP: readonly TextKey[] = [
   'help.queue',
@@ -195,6 +200,8 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
   const toggleSpeed = (): void => {
     setOptions({ speed: fast ? 'normal' : 'fast' });
   };
+  // Le combat automatique est un réglage du solo : en ligne, chaque joueur joue lui-même (le chrono du serveur joue à sa place s'il tarde).
+  const auto = pvp === undefined && options.auto;
   const game = useContext(GameContext);
   const { model, busy, act, skip, reset } = battle;
   const { state, view } = model;
@@ -244,6 +251,20 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
     if (finished) resultRef.current?.focus();
   }, [finished]);
 
+  // Combat automatique : une décision à la fois, quand rien ne s'anime et que le jeu n'est pas en pause.
+  useEffect(() => {
+    if (!auto || paused || busy || finished || state.active === null) return;
+    const timer = window.setTimeout(
+      () => {
+        act(autoAction(state));
+      },
+      AUTO_DELAY * speedFactor(options.speed),
+    );
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [auto, paused, busy, finished, state, act, options.speed]);
+
   useEffect(() => {
     // En ciblage, le focus va à la première cible : Entrée valide, Tab passe à la suivante.
     if (selected !== null) firstTarget.current?.focus();
@@ -257,6 +278,12 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
   const doAct = (action: Action): void => {
     if (pvp === undefined) act(action);
     else pvp.send(action);
+  };
+
+  const toggleAuto = (): void => {
+    if (pvp !== undefined) return;
+    setSelection(null);
+    setOptions({ auto: !auto });
   };
 
   const castSpell = (spell: ResolvedSpell): void => {
@@ -281,6 +308,10 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
         toggleSpeed();
         return;
       }
+      if (event.key === 'a' || event.key === 'A') {
+        toggleAuto();
+        return;
+      }
       if (event.key === ' ' && busy) {
         event.preventDefault();
         skip();
@@ -293,6 +324,7 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
         caster !== null &&
         !busy &&
         mine &&
+        !auto &&
         spell.cost <= state.points[caster.def.side]
       ) {
         castSpell(spell);
@@ -331,7 +363,9 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
         </p>
         <ul>
           {describeSpell(shownSpell).map((line, i) => (
-            <li key={i}>{line}</li>
+            <li key={i}>
+              <Glossed text={line} />
+            </li>
           ))}
         </ul>
       </>
@@ -367,9 +401,16 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
         >
           {options.speed === 'instant' ? t('combat.speed.instant') : fast ? '×2' : '×1'}
         </Button>
-        {busy && (
-          <Button variant="ghost" size="small" icon="speed" onClick={skip}>
-            {t('combat.skip')}
+        {pvp === undefined && (
+          <Button
+            variant={auto ? 'primary' : 'quiet'}
+            size="small"
+            aria-pressed={auto}
+            aria-keyshortcuts="A"
+            title={t('combat.auto.hint')}
+            onClick={toggleAuto}
+          >
+            {t('combat.auto')}
           </Button>
         )}
       </header>
@@ -445,6 +486,7 @@ export function CombatView({ onExit, title, scene, finish, battle, pvp }: ViewPr
         cap={content.balance.combat.teamPoints.cap}
         selected={selected}
         busy={busy || finished || !mine}
+        locked={auto}
         onSpell={castSpell}
         onFocusSpell={setFocusSpell}
         detail={detail}

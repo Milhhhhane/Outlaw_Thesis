@@ -10,6 +10,8 @@ interface Props {
   readonly cap: number;
   readonly selected: string | null;
   readonly busy: boolean;
+  /** Sorts verrouillés (combat automatique) : le héros actif reste affiché. */
+  readonly locked?: boolean;
   readonly onSpell: (spell: ResolvedSpell) => void;
   /** Sort survolé ou ciblé, pour le panneau de détail. */
   readonly onFocusSpell: (spell: string | null) => void;
@@ -36,6 +38,7 @@ export function ActionBar({
   cap,
   selected,
   busy,
+  locked = false,
   onSpell,
   onFocusSpell,
   detail,
@@ -77,7 +80,7 @@ export function ActionBar({
                 `spell--${spell.slot}`,
                 selected === spell.id ? 'spell--selected' : '',
               ].join(' ')}
-              disabled={busy || !affordable}
+              disabled={busy || locked || !affordable}
               aria-pressed={selected === spell.id}
               aria-describedby={detailId}
               aria-keyshortcuts={String(index + 1)}

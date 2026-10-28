@@ -1,0 +1,5 @@
+{
+  "combat.auto": "Auto",
+  "combat.auto.hint": "Combat automatique : le jeu joue les tours de vos héros (touche A). Il reste plus prudent qu'un joueur attentif.",
+  "combat.auto.waiting": "Combat automatique en cours"
+}

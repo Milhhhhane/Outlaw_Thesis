@@ -1,5 +1,5 @@
 import type { Profile } from '@outlaw/data';
-import { newProfile, type Outcome, type Refusal } from '@outlaw/engine';
+import { mergeItems, newProfile, type Outcome, type Refusal } from '@outlaw/engine';
 import {
   createContext,
   useCallback,
@@ -42,7 +42,8 @@ export function ProfileProvider({
       ? loadProfile(content, Date.now())
       : { profile: initial, recovered: false },
   );
-  const [profile, setProfile] = useState<Profile>(loaded.profile);
+  // Les anciennes sauvegardes avaient plusieurs exemplaires par objet : ils deviennent des copies.
+  const [profile, setProfile] = useState<Profile>(() => mergeItems(loaded.profile));
   const [refusal, setRefusal] = useState<Refusal | null>(null);
 
   const account = useAccount();
@@ -72,7 +73,9 @@ export function ProfileProvider({
     () => ({
       profile,
       apply,
-      replace: setProfile,
+      replace: (next) => {
+        setProfile(mergeItems(next));
+      },
       refusal,
       dismiss: () => {
         setRefusal(null);

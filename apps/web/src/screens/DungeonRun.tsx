@@ -31,6 +31,12 @@ export function DungeonRun({
 }) {
   const { profile, replace } = useProfile();
   const [phase, setPhase] = useState<Phase>({ kind: 'fight', room: 0 });
+  // Chaque passage recompile l'équipe : après des récompenses, les héros ont pu monter de niveau.
+  const [run, setRun] = useState(0);
+  const restart = (): void => {
+    setRun((n) => n + 1);
+    setPhase({ kind: 'fight', room: 0 });
+  };
   const dungeon = content.dungeonById.get(dungeonId);
   // L'équipe est figée à l'entrée : la compiler une fois suffit.
   const heroes = useMemo(
@@ -41,23 +47,23 @@ export function DungeonRun({
         'player',
         dungeon?.modifier,
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- figée à l'entrée du donjon
-    [dungeonId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- figée à l'entrée de chaque passage
+    [dungeonId, run],
   );
   if (dungeon === undefined) return null;
   const name = names.dungeon(dungeonId);
 
-  if (phase.kind === 'done') return <Rewards report={phase.report} onContinue={onExit} />;
+  if (phase.kind === 'done') {
+    return <Rewards report={phase.report} onContinue={onExit} onReplay={restart} />;
+  }
   if (phase.kind === 'failed' || phase.kind === 'tested') {
     const failed = phase.kind === 'failed';
     return (
       <RunEnd
-        scene={dungeonId}
+        scene={dungeon.scene ?? dungeonId}
         title={failed ? t('run.failed', { dungeon: name }) : t('test.done', { dungeon: name })}
         text={failed ? t('run.failed.text') : t('test.done.text')}
-        onRetry={() => {
-          setPhase({ kind: 'fight', room: 0 });
-        }}
+        onRetry={restart}
         onBack={onExit}
       />
     );
@@ -74,6 +80,7 @@ export function DungeonRun({
         dungeon.recommendedLevel,
         dungeon.modifier,
         encounter.hpPct,
+        encounter.atkPct,
       ),
     ],
   };
@@ -81,10 +88,10 @@ export function DungeonRun({
 
   return (
     <CombatScreen
-      key={phase.room}
+      key={`${run}-${phase.room}`}
       setup={setup}
       title={t('run.room', { dungeon: name, n: phase.room + 1 })}
-      scene={dungeonId}
+      scene={dungeon.scene ?? dungeonId}
       onExit={onExit}
       finish={{
         label: (won) => (!won ? t('run.back') : last ? t('run.claim') : t('run.next')),

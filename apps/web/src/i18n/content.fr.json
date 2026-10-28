@@ -104,7 +104,10 @@
     "discord": "Discorde",
     "cendre_smolder": "Couver",
     "ressac_surge": "Houle montante",
-    "seve_rootbond": "Racines liées"
+    "seve_rootbond": "Racines liées",
+    "mirage": "Mirage",
+    "glass_shards": "Éclats de verre",
+    "hollow_crown": "Couronne creuse"
   },
   "pages": {
     "pyra_page_execution": {
@@ -270,7 +273,61 @@
     "seve_roots_share": "Partage",
     "seve_roots_rally": "Ralliement",
     "seve_roots_grow": "Pousse",
-    "seve_roots_canopy": "Canopée"
+    "seve_roots_canopy": "Canopée",
+    "cendre_haze_smolder": "Fumerolles",
+    "cendre_haze_fog": "Brouillard",
+    "cendre_haze_eclipse": "Éclipse",
+    "cendre_slow_kindle": "Petit bois",
+    "cendre_slow_scorch": "Roussissure",
+    "cendre_slow_firestorm": "Tempête de feu",
+    "cendre_beat_skip": "Syncope",
+    "cendre_beat_lag": "Retard",
+    "cendre_beat_freeze": "Temps figé",
+    "maree_bastion_brace": "Appui ferme",
+    "maree_bastion_rampart": "Rempart partagé",
+    "maree_bastion_citadel": "Citadelle",
+    "maree_source_trickle": "Filet d’eau",
+    "maree_source_tide": "Marée haute",
+    "maree_source_deluge": "Déluge",
+    "maree_current_eddy": "Remous",
+    "maree_current_riptide": "Contre-courant",
+    "maree_current_tidal": "Raz-de-marée",
+    "pyra_exe_mark": "Œil du tireur",
+    "pyra_exe_volley": "Salve",
+    "pyra_exe_judgment": "Jugement",
+    "pyra_tempo_spark": "Étincelle rapide",
+    "pyra_tempo_chain": "Enchaînement",
+    "pyra_tempo_overdrive": "Surchauffe",
+    "pyra_embers_tinder": "Amadou",
+    "pyra_embers_ashfall": "Pluie de cendres",
+    "pyra_embers_inferno": "Brasier",
+    "ressac_break_hammer": "Marteau",
+    "ressac_break_surge": "Houle",
+    "ressac_break_tsunami": "Tsunami",
+    "ressac_ebb_lap": "Clapotis",
+    "ressac_ebb_backwash": "Reflux",
+    "ressac_ebb_lowtide": "Marée basse",
+    "ressac_cur_drift": "Dérive",
+    "ressac_cur_whirl": "Tourbillon",
+    "ressac_cur_abyss": "Abysse",
+    "ronce_snare_barb": "Barbelé",
+    "ronce_snare_net": "Filet",
+    "ronce_snare_pin": "Clouage",
+    "ronce_brand_scent": "Flair",
+    "ronce_brand_quarry": "Gibier",
+    "ronce_brand_cull": "Curée",
+    "ronce_venom_thorns": "Épines",
+    "ronce_venom_blight": "Flétrissure",
+    "ronce_venom_plague": "Pestilence",
+    "seve_bark_sap": "Résine",
+    "seve_bark_ring": "Cercle d’écorce",
+    "seve_bark_oak": "Chêne",
+    "seve_bloom_petal": "Pétale",
+    "seve_bloom_nectar": "Nectar",
+    "seve_bloom_harvest": "Moisson",
+    "seve_roots_sprout": "Pousse",
+    "seve_roots_vigor": "Vigueur",
+    "seve_roots_seed": "Graine"
   },
   "enemies": {
     "cinder_hound": "Molosse de braise",
@@ -298,7 +355,15 @@
     "phoenix_feather": "Plume de phénix",
     "storm_sigil": "Sceau d'orage",
     "chrono_gear": "Rouage du temps",
-    "aegis_shard": "Éclat d'égide"
+    "aegis_shard": "Éclat d'égide",
+    "eternal_ember": "Braise éternelle",
+    "drowned_pearl": "Perle noyée",
+    "verdant_seed": "Graine couronnée",
+    "salt_mirror": "Miroir de sel",
+    "obsidian_fang": "Croc d'obsidienne",
+    "throne_relic": "Relique du trône",
+    "obsidian_shard": "Éclat d'obsidienne",
+    "hollow_seal": "Sceau creux"
   },
   "dungeons": {
     "ember_wastes": {
@@ -328,6 +393,18 @@
     "broken_crossing": {
       "name": "Carrefour brisé",
       "text": "Tous les éléments à la fois, et deux anciens gardiens au bout du chemin."
+    },
+    "salt_flats": {
+      "name": "Salines blêmes",
+      "text": "La chaleur trouble la garde : votre défense flanche à chaque tour. Deux maîtres des lieux vous attendent."
+    },
+    "obsidian_pass": {
+      "name": "Col d'obsidienne",
+      "text": "Les éclats de verre brûlent à chaque coup reçu. Le tyran et la matrone tiennent le col ensemble."
+    },
+    "hollow_throne": {
+      "name": "Trône creux",
+      "text": "Le trône aspire votre réserve dès l'entrée. Trois colosses pour un dernier siège."
     }
   }
 }
