@@ -59,8 +59,8 @@ export const SPRITES: SpriteMap = {
   bolt_fire: {
     bottom: 13,
     frames: [
-      [691, 326],
-      [708, 326],
+      [559, 326],
+      [576, 326],
     ],
     h: 16,
     top: 4,
@@ -69,8 +69,8 @@ export const SPRITES: SpriteMap = {
   bolt_nature: {
     bottom: 10,
     frames: [
-      [725, 326],
-      [742, 326],
+      [593, 326],
+      [610, 326],
     ],
     h: 16,
     top: 7,
@@ -79,8 +79,8 @@ export const SPRITES: SpriteMap = {
   bolt_water: {
     bottom: 13,
     frames: [
-      [759, 326],
-      [776, 326],
+      [627, 326],
+      [644, 326],
     ],
     h: 16,
     top: 4,
@@ -131,24 +131,24 @@ export const SPRITES: SpriteMap = {
     w: 32,
   },
   burn: {
-    bottom: 23,
+    bottom: 24,
     frames: [
-      [759, 252],
-      [792, 252],
-      [825, 252],
-      [858, 252],
+      [231, 326],
+      [264, 326],
+      [297, 326],
+      [330, 326],
     ],
-    h: 32,
-    top: 16,
+    h: 24,
+    top: 3,
     w: 32,
   },
   burst_fire: {
     bottom: 24,
     frames: [
-      [891, 252],
-      [924, 252],
-      [957, 252],
-      [990, 252],
+      [759, 252],
+      [792, 252],
+      [825, 252],
+      [858, 252],
     ],
     h: 32,
     top: 14,
@@ -157,10 +157,10 @@ export const SPRITES: SpriteMap = {
   burst_nature: {
     bottom: 25,
     frames: [
-      [0, 293],
-      [33, 293],
-      [66, 293],
-      [99, 293],
+      [891, 252],
+      [924, 252],
+      [957, 252],
+      [990, 252],
     ],
     h: 32,
     top: 7,
@@ -169,10 +169,10 @@ export const SPRITES: SpriteMap = {
   burst_water: {
     bottom: 23,
     frames: [
-      [132, 293],
-      [165, 293],
-      [198, 293],
-      [231, 293],
+      [0, 293],
+      [33, 293],
+      [66, 293],
+      [99, 293],
     ],
     h: 32,
     top: 10,
@@ -181,8 +181,8 @@ export const SPRITES: SpriteMap = {
   campfire: {
     bottom: 24,
     frames: [
-      [495, 326],
-      [520, 326],
+      [363, 326],
+      [388, 326],
     ],
     h: 24,
     top: 2,
@@ -204,9 +204,9 @@ export const SPRITES: SpriteMap = {
   chest_bronze: {
     bottom: 32,
     frames: [
-      [264, 293],
-      [297, 293],
-      [330, 293],
+      [132, 293],
+      [165, 293],
+      [198, 293],
     ],
     h: 32,
     top: 4,
@@ -215,9 +215,9 @@ export const SPRITES: SpriteMap = {
   chest_gold: {
     bottom: 32,
     frames: [
-      [363, 293],
-      [396, 293],
-      [429, 293],
+      [231, 293],
+      [264, 293],
+      [297, 293],
     ],
     h: 32,
     top: 4,
@@ -226,9 +226,9 @@ export const SPRITES: SpriteMap = {
   chest_silver: {
     bottom: 32,
     frames: [
-      [462, 293],
-      [495, 293],
-      [528, 293],
+      [330, 293],
+      [363, 293],
+      [396, 293],
     ],
     h: 32,
     top: 4,
@@ -237,10 +237,10 @@ export const SPRITES: SpriteMap = {
   cinder_hound: {
     bottom: 32,
     frames: [
-      [561, 293],
-      [594, 293],
-      [627, 293],
-      [660, 293],
+      [429, 293],
+      [462, 293],
+      [495, 293],
+      [528, 293],
     ],
     h: 32,
     top: 8,
@@ -249,10 +249,10 @@ export const SPRITES: SpriteMap = {
   debuff: {
     bottom: 27,
     frames: [
-      [693, 293],
-      [726, 293],
-      [759, 293],
-      [792, 293],
+      [561, 293],
+      [594, 293],
+      [627, 293],
+      [660, 293],
     ],
     h: 32,
     top: 14,
@@ -261,10 +261,10 @@ export const SPRITES: SpriteMap = {
   dust: {
     bottom: 16,
     frames: [
-      [793, 326],
-      [826, 326],
-      [859, 326],
-      [892, 326],
+      [661, 326],
+      [694, 326],
+      [727, 326],
+      [760, 326],
     ],
     h: 16,
     top: 10,
@@ -531,12 +531,12 @@ export const SPRITES: SpriteMap = {
     w: 32,
   },
   mark: {
-    bottom: 29,
+    bottom: 28,
     frames: [
-      [825, 293],
-      [858, 293],
-      [891, 293],
-      [924, 293],
+      [693, 293],
+      [726, 293],
+      [759, 293],
+      [792, 293],
     ],
     h: 32,
     top: 4,
@@ -554,8 +554,8 @@ export const SPRITES: SpriteMap = {
     top: 8,
     w: 32,
   },
-  pedestal: { bottom: 17, frames: [[545, 326]], h: 18, top: 1, w: 72 },
-  pedestal_gold: { bottom: 17, frames: [[618, 326]], h: 18, top: 1, w: 72 },
+  pedestal: { bottom: 17, frames: [[413, 326]], h: 18, top: 1, w: 72 },
+  pedestal_gold: { bottom: 17, frames: [[486, 326]], h: 18, top: 1, w: 72 },
   pyra: {
     bottom: 56,
     frames: [
@@ -597,11 +597,11 @@ export const SPRITES: SpriteMap = {
   ronce: {
     bottom: 32,
     frames: [
+      [825, 293],
+      [858, 293],
+      [891, 293],
+      [924, 293],
       [957, 293],
-      [990, 293],
-      [0, 326],
-      [33, 326],
-      [66, 326],
     ],
     h: 32,
     top: 0,
@@ -623,10 +623,10 @@ export const SPRITES: SpriteMap = {
   shatter: {
     bottom: 26,
     frames: [
-      [99, 326],
-      [132, 326],
-      [165, 326],
-      [198, 326],
+      [990, 293],
+      [0, 326],
+      [33, 326],
+      [66, 326],
     ],
     h: 32,
     top: 6,
@@ -635,10 +635,10 @@ export const SPRITES: SpriteMap = {
   shield: {
     bottom: 26,
     frames: [
-      [231, 326],
-      [264, 326],
-      [297, 326],
-      [330, 326],
+      [99, 326],
+      [132, 326],
+      [165, 326],
+      [198, 326],
     ],
     h: 32,
     top: 7,
@@ -681,15 +681,15 @@ export const SPRITES: SpriteMap = {
     w: 48,
   },
   stun: {
-    bottom: 14,
+    bottom: 15,
     frames: [
-      [363, 326],
-      [396, 326],
-      [429, 326],
-      [462, 326],
+      [793, 326],
+      [826, 326],
+      [859, 326],
+      [892, 326],
     ],
-    h: 32,
-    top: 6,
+    h: 16,
+    top: 3,
     w: 32,
   },
   thorn_witch: {

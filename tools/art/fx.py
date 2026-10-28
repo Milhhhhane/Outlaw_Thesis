@@ -299,23 +299,40 @@ def shatter(frame):
 
 
 def stun(frame):
-    im = canvas()
+    """Étourdi : trois étoiles à quatre branches qui tournent au-dessus de la tête."""
+    im = canvas(32, 16)
     for i in range(3):
         a = frame / 4 * math.tau + i / 3 * math.tau
-        x, y = 16 + math.cos(a) * 9, 10 + math.sin(a) * 3
-        for dx, dy in PLUS:
-            put(im, x + dx, y + dy, '#fbe58a' if (dx, dy) == (0, 0) else '#e2b440')
+        x, y = 16 + math.cos(a) * 11, 8 + math.sin(a) * 3
+        behind = math.sin(a) < 0
+        star = [(0, -2), (0, -1), (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0), (0, 1), (0, 2)]
+        shape = star if not behind else PLUS
+        on = {(round(x) + dx, round(y) + dy) for dx, dy in shape}
+        for px, py in on:  # contour sombre : lisible sur le ciel clair comme sur le sol
+            for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if (px + ox, py + oy) not in on:
+                    put(im, px + ox, py + oy, '#140a10')
+        for px, py in on:
+            centre = (px, py) == (round(x), round(y))
+            put(im, px, py, '#fff6c8' if centre else ('#e2b440' if behind else '#fbe58a'))
     return im
 
 
 def burn(frame):
-    im = canvas()
-    rnd = random.Random(frame)
-    for i in range(7):
-        x = 8 + rnd.randint(0, 16)
-        y = 26 - rnd.randint(0, 10)
-        for k in range(3):
-            put(im, x, y - k, FIRE[max(0, 4 - k - (i % 2))])
+    """Brûlure : flammes qui lèchent le bas du corps, braises qui montent."""
+    im = canvas(32, 24)
+    rnd = random.Random(frame * 7 + 1)
+    for i, (x, h) in enumerate([(5, 7), (10, 11), (16, 9), (21, 12), (27, 8)]):
+        h = h + (frame % 2) * (1 if i % 2 else -1) * 2
+        lean = ((frame + i) % 3 - 1)
+        for k in range(h):
+            t = k / h
+            w = 1 if t < 0.55 else 0
+            tone = 4 if t < 0.2 else (3 if t < 0.5 else (2 if t < 0.8 else 1))
+            for dx in range(-w, w + 1):
+                put(im, x + dx + round(lean * t), 23 - k, FIRE[tone])
+    for i in range(4):
+        put(im, 4 + rnd.randint(0, 24), 2 + rnd.randint(0, 8), FIRE[3 + (i % 2)])
     return im
 
 
@@ -327,11 +344,12 @@ def mark(frame):
     for k in range(-3, 4):
         for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
             pass
-    for a in range(0, 360, 6):
+    for a in range(0, 360, 4):
         if (a // 30) % 3 != 1:
-            x = 16 + math.cos(math.radians(a)) * r
-            y = 16 + math.sin(math.radians(a)) * r
-            put(im, x, y, col)
+            for rr, c in ((r, col), (r - 1, '#a03050')):  # trait double : lisible sur tout fond
+                x = 16 + math.cos(math.radians(a)) * rr
+                y = 16 + math.sin(math.radians(a)) * rr
+                put(im, x, y, c)
     for d in range(2, 5):
         put(im, 16, 16 - r - 1 + d, '#ffd0dc')
         put(im, 16, 16 + r + 1 - d, '#ffd0dc')

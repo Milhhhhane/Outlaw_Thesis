@@ -215,3 +215,30 @@ describe('soins et boucliers', () => {
     expect(container.querySelector('.actor__fx--heal')).not.toBeNull();
   });
 });
+
+describe('altérations', () => {
+  it('brûlure, marque et étourdissement restent visibles tant qu’ils durent', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    if (a === undefined || b === undefined) throw new Error('deux unités attendues');
+    let view: BattleView = viewFromState(state);
+    for (const [i, status] of (['burn', 'mark', 'stun'] as const).entries()) {
+      view = applyEvent(
+        view,
+        { type: 'status', source: a.def.id, target: b.def.id, status, turns: 2, resisted: false },
+        i + 1,
+      );
+    }
+    const { container, rerender } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    const actor = () => container.querySelector(`[data-unit="${b.def.id}"]`);
+    for (const status of ['burn', 'mark', 'stun']) {
+      expect(actor()?.querySelector(`.actor__status--${status}`), status).not.toBeNull();
+    }
+    view = applyEvent(view, { type: 'expired', unit: b.def.id, effect: 'burn' }, 4);
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__status--burn')).toBeNull();
+    expect(actor()?.querySelector('.actor__status--mark')).not.toBeNull();
+  });
+});

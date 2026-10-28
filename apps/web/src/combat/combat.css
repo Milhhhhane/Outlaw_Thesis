@@ -500,6 +500,41 @@
   }
 }
 
+/* Altérations : posées d'un coup (petit rebond), puis en boucle tant qu'elles durent. */
+.actor__status {
+  position: absolute;
+  z-index: 3;
+  animation: status-pop 0.3s steps(3, end);
+  transform-origin: 50% 100%;
+}
+
+.actor__status--burn {
+  z-index: 1;
+}
+
+.actor__status--burn .pixel--idle {
+  animation-duration: 0.5s;
+}
+
+.actor__status--stun .pixel--idle {
+  animation-duration: 1s;
+}
+
+.actor__status--mark .pixel--idle {
+  animation-duration: 1.4s;
+}
+
+@keyframes status-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
 /* Bulle de bouclier : apparaît d'un coup, respire, part quand le bouclier tombe. */
 .actor__bubble {
   position: absolute;

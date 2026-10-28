@@ -121,8 +121,6 @@ function elementOf(view: BattleView, id: string): string {
   return view.units.find((u) => u.id === id)?.element ?? 'fire';
 }
 
-const STATUS_FX: Readonly<Record<string, string>> = { burn: 'burn', stun: 'stun', mark: 'mark' };
-
 /** Applique un événement du journal à la vue. `key` : position de l'événement, pour les animations. */
 export function applyEvent(view: BattleView, event: BattleEvent, key: number): BattleView {
   const next = applyOne(view, event, key);
@@ -231,7 +229,8 @@ function applyOne(view: BattleView, event: BattleEvent, key: number): BattleView
         event.target,
         '',
         'status',
-        STATUS_FX[event.status] ?? null,
+        // L'altération reste affichée sur l'unité tant qu'elle dure : pas d'effet à la pose.
+        null,
       );
     case 'stat_mod':
       return flash(

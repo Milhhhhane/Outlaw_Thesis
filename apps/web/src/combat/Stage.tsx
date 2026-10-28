@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { backgroundUrl, GROUND_Y, sprite } from '../art';
+import { backgroundUrl, GROUND_Y, sprite, type SpriteInfo } from '../art';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite, PixelText } from '../art/Pixel';
 import type { BattleView, Flash, UnitView } from './view';
@@ -102,6 +102,20 @@ export function dashOf(view: BattleView, unit: UnitView): Dash | undefined {
   return { key: cast.seq, dx: to.x - dir * DASH_GAP - from.x, dy: to.y - from.y, z: to.y + 1 };
 }
 
+/** Où se pose chaque altération sur le sprite : brûlure aux pieds, étourdissement au-dessus de la
+    tête, marque au centre du corps. */
+const STATUS_PLACE: Readonly<
+  Record<
+    string,
+    { readonly sprite: string; readonly top: (unit: SpriteInfo, fx: SpriteInfo) => number }
+  >
+> = {
+  burn: { sprite: 'burn', top: (unit, fx) => unit.bottom - fx.h + 2 },
+  // Sur le haut du crâne, sous le repère (nom, PV) qui flotte juste au-dessus.
+  stun: { sprite: 'stun', top: (unit, fx) => unit.top - fx.h / 2 + 1 },
+  mark: { sprite: 'mark', top: (unit, fx) => (unit.top + unit.bottom) / 2 - fx.h / 2 },
+};
+
 function Actor(props: {
   readonly unit: UnitView;
   readonly active: boolean;
@@ -166,6 +180,23 @@ function Actor(props: {
             <PixelSprite name={unit.kind} idle={unit.alive} />
           )}
         </span>
+        {/* Altérations en cours (brûlure aux pieds, étoiles au-dessus de la tête, viseur sur le
+            corps) : tant que le journal les dit actives. */}
+        {unit.alive &&
+          unit.statuses.map((status) => {
+            const place = STATUS_PLACE[status.kind];
+            const fx = place === undefined ? undefined : sprite(place.sprite);
+            if (place === undefined || fx === undefined) return null;
+            return (
+              <span
+                key={status.kind}
+                className={`actor__status actor__status--${status.kind}`}
+                style={{ left: info.w / 2 - fx.w / 2, top: place.top(info, fx) }}
+              >
+                <PixelSprite name={place.sprite} idle />
+              </span>
+            );
+          })}
         {/* Bulle de bouclier, dans le corps pour suivre la course : visible tant qu'il reste du
             bouclier (valeur portée par le journal). */}
         {unit.shield > 0 && unit.alive && bubble !== undefined && (
