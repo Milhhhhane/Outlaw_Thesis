@@ -124,10 +124,10 @@
   "quests": {
     "daily": {
       "count": 5,
-      "reward": { "passagePct": 20 },
+      "reward": { "passagePct": 15 },
       "bonus": { "passagePct": 0, "chest": "bronze" }
     },
-    "weekly": { "count": 5, "reward": { "passagePct": 60 } },
+    "weekly": { "count": 5, "reward": { "passagePct": 50 } },
     "achievements": {
       "small": { "passagePct": 100, "chest": "bronze" },
       "medium": { "passagePct": 200, "chest": "silver" },
