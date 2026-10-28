@@ -253,11 +253,41 @@ describe('amélioration par copies', () => {
     const max = content.balance.progression.items.maxUpgradeLevel;
     const maxed = owning([{ item: 'ember_charm', upgrade: max, copies: 9 }]);
     expect(upgradeItem(content, rich(maxed), 1)).toEqual({ ok: false, reason: 'max_upgrade' });
-    const total = content.balance.progression.items.upgradeCosts.reduce((s, c) => s + c.copies, 0);
+    const total = (item: string): number =>
+      Array.from({ length: max }, (_, level) => upgradeCost(content, item, level)!.copies).reduce(
+        (s, c) => s + c,
+        0,
+      );
     expect(copiesToMax(content, { uid: 1, item: 'ember_charm', upgrade: 0, copies: 0 })).toBe(
-      total,
+      total('ember_charm'),
     );
     expect(copiesToMax(content, maxed.items[0]!)).toBe(0);
+  });
+
+  it('le coût grimpe avec le palier de poussière de l’objet (tierCostPct)', () => {
+    const { upgradeCosts, tierCostPct } = content.balance.progression.items;
+    const last = upgradeCosts.length - 1;
+    for (const [item, tier] of [
+      ['ember_charm', 1],
+      ['thorn_ring', 2],
+      ['throne_relic', 3],
+    ] as const) {
+      const cost = upgradeCost(content, item, last)!;
+      const step = upgradeCosts[last]!;
+      expect(cost.materials.tier).toBe(tier);
+      expect(cost.copies).toBe(
+        Math.max(1, Math.round((step.copies * tierCostPct.copies[tier - 1]!) / 100)),
+      );
+      expect(cost.gold).toBe(Math.round((step.gold * tierCostPct.gold[tier - 1]!) / 100));
+      expect(cost.materials.amount).toBe(
+        Math.round((step.materials * tierCostPct.materials[tier - 1]!) / 100),
+      );
+    }
+    // Un objet du début demande moins de copies qu'un objet de fin de jeu.
+    const full = (item: string): number =>
+      copiesToMax(content, { uid: 1, item, upgrade: 0, copies: 0 });
+    expect(full('ember_charm')).toBeLessThan(full('thorn_ring'));
+    expect(full('thorn_ring')).toBeLessThan(full('throne_relic'));
   });
 
   it('dissoudre des copies donne de la poussière du palier de l’objet', () => {

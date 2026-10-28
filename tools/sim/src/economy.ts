@@ -48,6 +48,10 @@ export interface Milestones {
   readonly firstStar: number | null;
   readonly teamEquipped: number | null;
   readonly teamMaxLevel: number | null;
+  /** Les deux objets de chaque héros de l'équipe au niveau maximum. */
+  readonly teamMaxed: number | null;
+  /** Tous les objets du jeu possédés et au niveau maximum. */
+  readonly collection: number | null;
   /** Passage de la première victoire de chaque donjon. */
   readonly firstClears: Readonly<Record<string, number>>;
 }
@@ -141,16 +145,38 @@ export function blocker(
 }
 
 /**
+ * Donjons où il reste des copies à chercher : ceux des objets portés par l'équipe pas encore au
+ * maximum, sinon ceux de tout objet (possédé ou non) pas encore au maximum (collection).
+ */
+function wantedOrigins(content: Content, profile: Profile): Set<string> {
+  const max = content.balance.progression.items.maxUpgradeLevel;
+  const worn = new Set(profile.team.flatMap((id) => profile.heroes[id]?.items ?? []));
+  const wornOrigins = new Set<string>();
+  const anyOrigins = new Set<string>();
+  for (const item of content.items) {
+    const owned = profile.items.find((o) => o.item === item.id);
+    if (owned !== undefined && owned.upgrade >= max) continue;
+    const origin = content.itemOrigin.get(item.id);
+    if (origin === undefined) continue;
+    anyOrigins.add(origin);
+    if (owned !== undefined && worn.has(owned.uid)) wornOrigins.add(origin);
+  }
+  return wornOrigins.size > 0 ? wornOrigins : anyOrigins;
+}
+
+/**
  * Le passage le plus utile à la portée de l'équipe (niveau visé ≤ niveau du plus faible héros) :
  * un donjon jamais terminé d'abord, sinon celui qui rapporte le plus de ce qui manque — XP,
- * poussière du palier demandé, fragments — et à égalité le plus avancé (niveau visé le plus haut,
- * puis le plus d'or).
+ * poussière du palier demandé, fragments, ou copies d'un objet porté une fois les niveaux finis —
+ * et à égalité le plus avancé (niveau visé le plus haut, puis le plus d'or).
  */
 export function pickRun(content: Content, profile: Profile): Candidate {
   const level = teamLevel(profile);
   const all = candidates(content, profile);
   const reachable = all.filter((c) => c.level <= level);
   const need = blocker(content, profile);
+  // Niveaux finis : il reste à farmer les copies des objets portés pas encore au maximum.
+  const wanted = need.kind === 'done' ? wantedOrigins(content, profile) : new Set<string>();
   const score = (c: Candidate): number => {
     // Un donjon jamais terminé passe avant tout : il ouvre la suite.
     if ((profile.dungeons[c.dungeon]?.clears ?? 0) === 0) return Number.POSITIVE_INFINITY;
@@ -162,7 +188,7 @@ export function pickRun(content: Content, profile: Profile): Candidate {
       case 'star':
         return c.fragments;
       case 'done':
-        return c.gold;
+        return wanted.has(c.dungeon) ? 1 : 0;
     }
   };
   const best = reachable.reduce<Candidate | undefined>((acc, c) => {
@@ -216,14 +242,18 @@ function equipAll(content: Content, profile: Profile): Profile {
   return current;
 }
 
-/** Améliore les objets portés par l'équipe tant qu'un paiement est possible (le plus de copies d'abord). */
-function upgradeWorn(content: Content, profile: Profile, ledger: Ledger): Profile {
+/**
+ * Améliore les objets tant qu'un paiement est possible : ceux que porte l'équipe d'abord (le plus
+ * de copies en réserve en premier), puis les autres (collection).
+ */
+function upgradeItems(content: Content, profile: Profile, ledger: Ledger): Profile {
   let current = profile;
   for (;;) {
     const worn = new Set(current.team.flatMap((id) => current.heroes[id]?.items ?? []));
-    const owned = current.items
-      .filter((o) => worn.has(o.uid))
-      .sort((a, b) => b.copies - a.copies || a.uid - b.uid);
+    const owned = [...current.items].sort(
+      (a, b) =>
+        Number(worn.has(b.uid)) - Number(worn.has(a.uid)) || b.copies - a.copies || a.uid - b.uid,
+    );
     let done = false;
     for (const item of owned) {
       const before = current;
@@ -336,10 +366,12 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
   let firstStar: number | null = null;
   let teamEquipped: number | null = null;
   let teamMaxLevel: number | null = null;
+  let teamMaxed: number | null = null;
+  let collection: number | null = null;
   let runs = 0;
   const allCleared = (): boolean =>
     content.dungeons.every((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0);
-  while (runs < maxRuns && (teamMaxLevel === null || !allCleared())) {
+  while (runs < maxRuns && (teamMaxLevel === null || collection === null || !allCleared())) {
     const pick = pickRun(content, profile);
     const won = winRun(content, profile, pick);
     if (won === null) break;
@@ -362,7 +394,7 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
     profile = stars.profile;
     if (stars.starred && firstStar === null) firstStar = runs;
     profile = equipAll(content, profile);
-    profile = upgradeWorn(content, profile, ledger);
+    profile = upgradeItems(content, profile, ledger);
     profile = levelTeam(content, profile, ledger);
     // Une étoile payée juste après un niveau : on retente une fois (le plafond vient de sauter).
     const again = starAll(content, profile);
@@ -378,8 +410,28 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
       (profile.heroes[id]?.items ?? []).every((uid) => uid !== null),
     );
     if (teamEquipped === null && equipped) teamEquipped = runs;
-    if (profile.team.every((id) => (profile.heroes[id]?.level ?? 1) >= maxLevel))
+    if (
+      teamMaxLevel === null &&
+      profile.team.every((id) => (profile.heroes[id]?.level ?? 1) >= maxLevel)
+    )
       teamMaxLevel = runs;
+    const maxed = profile.team.every((id) =>
+      (profile.heroes[id]?.items ?? []).every(
+        (uid) =>
+          uid !== null &&
+          (profile.items.find((o) => o.uid === uid)?.upgrade ?? 0) >= itemRules.maxUpgradeLevel,
+      ),
+    );
+    if (teamMaxed === null && maxed) teamMaxed = runs;
+    if (
+      collection === null &&
+      content.items.every(
+        (item) =>
+          (profile.items.find((o) => o.item === item.id)?.upgrade ?? 0) >=
+          itemRules.maxUpgradeLevel,
+      )
+    )
+      collection = runs;
   }
   ledger.items.maxed = profile.items.filter((o) => o.upgrade >= itemRules.maxUpgradeLevel).length;
   const wornUids = profile.team.flatMap((id) => profile.heroes[id]?.items ?? []);
@@ -387,7 +439,15 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
   ledger.items.wornLevel = mean(worn.map((o) => o.upgrade));
   return {
     runs,
-    milestones: { firstMaxItem, firstStar, teamEquipped, teamMaxLevel, firstClears },
+    milestones: {
+      firstMaxItem,
+      firstStar,
+      teamEquipped,
+      teamMaxLevel,
+      teamMaxed,
+      collection,
+      firstClears,
+    },
     ledger,
     profile,
   };
@@ -439,10 +499,14 @@ export function summarizeEconomy(content: Content, seeds: number, maxRuns = 600)
       firstStar: pick('firstStar'),
       teamEquipped: pick('teamEquipped'),
       teamMaxLevel: pick('teamMaxLevel'),
+      teamMaxed: pick('teamMaxed'),
+      collection: pick('collection'),
     },
     firstClears,
     ledger,
-    unreached: runs.filter((r) => r.milestones.teamMaxLevel === null).length,
+    unreached: runs.filter(
+      (r) => r.milestones.teamMaxLevel === null || r.milestones.collection === null,
+    ).length,
   };
 }
 
@@ -477,10 +541,18 @@ export function printTables(content: Content): void {
       `  niveaux ${String(levels[0])}→${String((levels.at(-1) ?? 0) + 1)} : ${String(xp)} XP par héros, ${String(dust)} poussière T${String(tier)} par héros (${String(dust * team)} pour ${String(team)})`,
     );
   }
-  const costs = progression.items.upgradeCosts;
-  console.log(
-    `  objet au niveau ${String(progression.items.maxUpgradeLevel)} : ${String(costs.reduce((s, c) => s + c.copies, 0))} copies, ${String(costs.reduce((s, c) => s + c.gold, 0))} or, ${String(costs.reduce((s, c) => s + c.materials, 0))} poussière du palier de son donjon (${costs.map((c) => `${String(c.copies)}/${String(c.gold)}/${String(c.materials)}`).join(', ')})`,
-  );
+  const { upgradeCosts: costs, tierCostPct } = progression.items;
+  for (const tier of [1, 2, 3]) {
+    const scaled = (value: number, pct: readonly number[]): number =>
+      Math.round((value * (pct[tier - 1] ?? 100)) / 100);
+    const copies = (c: { copies: number }): number =>
+      Math.max(1, scaled(c.copies, tierCostPct.copies));
+    const gold = (c: { gold: number }): number => scaled(c.gold, tierCostPct.gold);
+    const dust = (c: { materials: number }): number => scaled(c.materials, tierCostPct.materials);
+    console.log(
+      `  objet du palier ${String(tier)} au niveau ${String(progression.items.maxUpgradeLevel)} : ${String(costs.reduce((s, c) => s + copies(c), 0))} copies, ${String(costs.reduce((s, c) => s + gold(c), 0))} or, ${String(costs.reduce((s, c) => s + dust(c), 0))} poussière T${String(tier)} (${costs.map((c) => `${String(copies(c))}/${String(gold(c))}/${String(dust(c))}`).join(', ')})`,
+    );
+  }
   console.log(
     `  étoiles : ${chests.starCosts.join(' puis ')} fragments ; invocation : ${String(chests.summonCost)} fragments ; respec : ${String(progression.respec.goldPerHeroLevel)} or × niveau après le premier`,
   );
@@ -505,12 +577,14 @@ function main(): void {
   console.log(
     `Joueur modèle, ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
   );
-  console.log(`  premier objet au niveau maximum : ${f(summary.milestones.firstMaxItem)}`);
-  console.log(`  première étoile                 : ${f(summary.milestones.firstStar)}`);
-  console.log(`  équipe de 4 équipée (2 objets)  : ${f(summary.milestones.teamEquipped)}`);
+  console.log(`  premier objet au niveau maximum    : ${f(summary.milestones.firstMaxItem)}`);
+  console.log(`  première étoile                    : ${f(summary.milestones.firstStar)}`);
+  console.log(`  équipe de 4 équipée (2 objets)     : ${f(summary.milestones.teamEquipped)}`);
   console.log(
-    `  équipe de 4 au niveau ${content.balance.progression.maxLevel}        : ${f(summary.milestones.teamMaxLevel)}`,
+    `  équipe de 4 au niveau ${String(content.balance.progression.maxLevel).padEnd(12)}: ${f(summary.milestones.teamMaxLevel)}`,
   );
+  console.log(`  équipe de 4 aux objets au maximum  : ${f(summary.milestones.teamMaxed)}`);
+  console.log(`  collection complète au maximum     : ${f(summary.milestones.collection)}`);
   if (summary.unreached > 0)
     console.log(`  ! ${summary.unreached} partie(s) n'ont pas atteint le dernier jalon`);
   console.log('Première victoire (passage gagnant) :');

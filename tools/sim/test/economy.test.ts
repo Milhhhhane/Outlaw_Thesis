@@ -48,4 +48,29 @@ describe('économie : joueur modèle', () => {
     expect(summary.unreached).toBe(0);
     expect(summary.milestones.teamMaxLevel).toBeGreaterThan(summary.milestones.firstStar ?? 0);
   });
+
+  // Cibles du réglage (docs/BALANCE.md, « Économie : réglage ») : un début rapide, un craft de fin
+  // qui demande du grind. Une valeur de balance.json ou de dungeons.json qui sort de ces bornes
+  // casse la CI : la retoucher, c'est rouvrir le réglage et le justifier par un chiffre.
+  it('jalons du joueur modèle dans les bornes du réglage (20 graines)', () => {
+    const { milestones: m, ledger, unreached } = summarizeEconomy(content, 20);
+    expect(unreached).toBe(0);
+    const within = (value: number | null, lo: number, hi: number): void => {
+      expect(value).not.toBeNull();
+      expect(value ?? 0).toBeGreaterThanOrEqual(lo);
+      expect(value ?? 0).toBeLessThanOrEqual(hi);
+    };
+    within(m.firstMaxItem, 4, 14);
+    within(m.firstStar, 15, 30);
+    within(m.teamEquipped, 25, 55);
+    within(m.teamMaxLevel, 85, 120);
+    within(m.teamMaxed, 100, 140);
+    within(m.collection, 200, 300);
+    // L'or et la poussière pure servent : au moins les trois quarts de ce qui tombe est dépensé.
+    expect(ledger.gold.items).toBeGreaterThan(0.75 * ledger.gold.earned);
+    const pure = (ledger.dust.levels[2] ?? 0) + (ledger.dust.items[2] ?? 0);
+    expect(pure).toBeGreaterThan(
+      0.75 * ((ledger.dust.earned[2] ?? 0) + (ledger.dust.salvage[2] ?? 0)),
+    );
+  });
 });

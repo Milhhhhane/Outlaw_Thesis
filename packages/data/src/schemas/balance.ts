@@ -101,6 +101,17 @@ export const balanceSchema = z
         upgradeCosts: z.array(
           z.strictObject({ copies: posInt, gold: nonNegInt, materials: nonNegInt }),
         ),
+        /**
+         * Multiplicateur (en %) des copies, de l'or et de la poussière de `upgradeCosts` selon le
+         * palier de poussière de l'objet (celui de son donjon), arrondi (au moins une copie) : un
+         * objet du début s'améliore vite, un objet de fin de jeu demande du vrai grind. Une entrée
+         * par palier.
+         */
+        tierCostPct: z.strictObject({
+          copies: z.array(pos).length(3),
+          gold: z.array(pos).length(3),
+          materials: z.array(pos).length(3),
+        }),
       }),
     }),
 

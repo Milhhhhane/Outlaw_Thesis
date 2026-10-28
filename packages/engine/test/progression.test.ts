@@ -243,7 +243,7 @@ describe('donjons et butin', () => {
     expect(first.report).toMatchObject({
       firstClear: true,
       gold: 80,
-      materials: { tier: 1, amount: 4 },
+      materials: { tier: 1, amount: 8 },
     });
     expect(first.report.xp.pyra).toEqual({ gained: 60, ready: true });
     expect(first.report.xp.ronce).toEqual({ gained: 30, ready: false });

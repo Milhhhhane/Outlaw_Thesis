@@ -633,7 +633,7 @@ du dernier (tous terminés), ce qui permet de savoir exactement quels premiers p
 Une ancienne sauvegarde (champ absent) dont le donjon est terminé compte comme palier I terminé :
 le palier II s'ouvre sans migration. Raison : un seul champ, pas de version de sauvegarde.
 
-**XP inchangée par le palier** — Choix : `rewardPctPerTier.xp` à 0 ; or et poussière +50 % par
+**XP inchangée par le palier** — Choix : `rewardPctPerTier.xp` à 0 ; or et poussière +25 % par
 palier, rare +5 de poids, coffre d'un cran. Raison : le brief demande or, poussière, rares et
 coffre ; l'XP qui monte avec le palier ferait farmer le premier donjon au niveau 11 plutôt
 qu'avancer. Réglable sans code.
@@ -644,3 +644,22 @@ vient d'ouvrir ; le I reste à un clic pour farmer tranquille. Le mode test ouvr
 **Ports des tests de bout en bout surchargeables** — Contexte : plusieurs copies du dépôt
 tournent en parallèle sur la même machine. Choix : `E2E_PORT` et `E2E_API_PORT` (4174 et 8788
 par défaut). Raison : rien ne change en CI.
+
+**Le coût d'un objet dépend du palier de poussière de son donjon** — Contexte : les trois paliers
+d'amélioration (1/2/3 copies, 100/300/800 or, 5/8/12 poussière) coûtaient la même chose pour un
+objet du premier donjon et du dernier ; le premier objet au maximum arrivait au 29ᵉ passage et
+l'or ne servait presque pas (4,6 %). Choix : `tierCostPct` (copies, or, poussière, en % par
+palier de poussière) multiplie `upgradeCosts` ; un objet du palier 1 coûte 4 copies, du palier 3
+8 copies, 22 000 or et 160 pures. Raison : une seule table d'étapes, une seule courbe par palier,
+le début rapide et la fin longue se règlent séparément. Chiffres dans `docs/BALANCE.md`.
+
+**Le réglage de l'économie est borné en CI** — Choix : `tools/sim/test/economy.test.ts` borne les
+six jalons du joueur modèle et exige que l'or et la poussière pure soient dépensés aux trois
+quarts. Raison : comme le test `farm`, une récompense retouchée qui casse le rythme se voit tout
+de suite. Le joueur modèle est un ordre de grandeur, pas un joueur : il dépense tout dès qu'il
+peut, sans arbitrer.
+
+**Cibles du réglage interprétées** — Contexte : le brief demande « premier objet amélioré en
+quelques donjons » et « du vrai grind » sans chiffre. Choix : premier objet au maximum en moins
+de 15 passages gagnants (8 mesurés), collection complète entre 200 et 300 (244). Raison : choix de
+l'assistant, à confirmer au test humain ; les bornes du test se déplacent avec un chiffre.

@@ -45,7 +45,7 @@ describe('carte : paliers de donjon', () => {
     expect(
       screen.getByText(t('hub.dungeon.recommended', { level: tierLevel(content, ember, 2) })),
     ).toBeInTheDocument();
-    expect(screen.getByText(/or \+50 %/)).toBeInTheDocument();
+    expect(screen.getByText(/or \+25 %/)).toBeInTheDocument();
 
     await user.click(one);
     expect(one).toHaveAttribute('aria-pressed', 'true');

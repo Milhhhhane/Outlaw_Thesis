@@ -4,8 +4,9 @@ Tout ce qui tombe, tout ce qui se dépense, et le nombre de donjons gagnants que
 jalon. Les valeurs vivent dans [`packages/data/balance.json`](../packages/data/balance.json) et
 [`packages/data/content/dungeons.json`](../packages/data/content/dungeons.json) ; les chiffres de
 ce document sortent de `pnpm --filter @outlaw/sim economy` (`tools/sim/src/economy.ts`), à relancer
-après tout changement. La première partie (« audit ») est l'état **avant** réglage ; la dernière
-partie donne les valeurs **après** réglage (voir aussi `docs/BALANCE.md`).
+après tout changement. Les tableaux « Ce qui tombe » et « Ce qui se dépense » et la partie
+« Audit » décrivent l'état **avant** réglage (2026-10-27) ; la dernière partie, « Après réglage »,
+donne les valeurs en vigueur (justifications chiffrées dans `docs/BALANCE.md`).
 
 ## Ce qui tombe
 
@@ -121,3 +122,73 @@ Ils ont été mesurés avant les paliers de donjon ; avec les paliers (`balance.
 réglage de l'économie) le même joueur modèle donne 30,6 / 26,4 / 44,8 / 102,3 passages : il farme
 les paliers des Landes pour la poussière brute (premier objet un peu plus tard), et finit plus
 tôt grâce à la poussière pure des paliers de fin.
+
+## Après réglage (2026-10-28)
+
+Changements : paliers de donjon (I à III, `balance.tiers`), coûts d'objets par palier de
+poussière (`progression.items.tierCostPct`), poussière brute des deux premiers donjons 4 → 8.
+Tout le reste des tableaux plus haut est inchangé.
+
+### Ce qui tombe, par palier
+
+Au palier k d'un donjon (formule unique, `balance.tiers`) : ennemis au niveau conseillé
+
+- 5 × (k − 1) (plafonné à 30 par le moteur) et +20 % de PV et d'ATK par palier ; XP inchangée ;
+  or et poussière × (1 + 0,25 × (k − 1)) ; rare +5 de poids par palier (15 → 20 → 25 contre 85,
+  soit 15 % → 19 % → 23 % au rang de maîtrise 0) ; coffre d'un cran par palier (bronze → argent →
+  or). Le premier passage de chaque palier garantit le rare et le coffre.
+
+| Donjon          | Poussière I / II / III | Or I / II / III       | Coffre I / II / III  |
+| --------------- | ---------------------- | --------------------- | -------------------- |
+| ember_wastes    | 8 / 10 / 12 brute      | 80 / 100 / 120        | bronze / argent / or |
+| drowned_halls   | 8 / 10 / 12 brute      | 160 / 200 / 240       | bronze / argent / or |
+| thorn_maze      | 7 / 9 / 11 fine        | 260 / 325 / 390       | argent / or / or     |
+| cinder_citadel  | 15 / 19 / 23 fine      | 380 / 475 / 570       | argent / or / or     |
+| sunken_spire    | 20 / 25 / 30 fine      | 520 / 650 / 780       | argent / or / or     |
+| verdant_crown   | 12 / 15 / 18 pure      | 700 / 875 / 1 050     | or                   |
+| broken_crossing | 8 / 10 / 12 pure       | 950 / 1 188 / 1 425   | or                   |
+| salt_flats      | 9 / 11 / 14 pure       | 1 100 / 1 375 / 1 650 | or                   |
+| obsidian_pass   | 10 / 13 / 15 pure      | 1 250 / 1 563 / 1 875 | or                   |
+| hollow_throne   | 12 / 15 / 18 pure      | 1 500 / 1 875 / 2 250 | or                   |
+
+(Arrondis comme le moteur : `Math.round`, maîtrise non comprise.)
+
+### Ce qui se dépense : objets
+
+| Palier de poussière de l'objet | Niveau 1           | Niveau 2            | Niveau 3             | Total au maximum               |
+| ------------------------------ | ------------------ | ------------------- | -------------------- | ------------------------------ |
+| 1 (donjons 1 et 2)             | 1 copie, 40, 3     | 1 copie, 120, 5     | 2 copies, 280, 8     | 4 copies, 440 or, 16 brutes    |
+| 2 (donjons 3 à 5)              | 1 copie, 160, 9    | 2 copies, 480, 15   | 3 copies, 1 120, 24  | 6 copies, 1 760 or, 48 fines   |
+| 3 (donjons 6 à 10)             | 1 copie, 2 000, 30 | 3 copies, 6 000, 50 | 4 copies, 14 000, 80 | 8 copies, 22 000 or, 160 pures |
+
+Niveaux, étoiles, invocation et respec : inchangés (tableau « Ce qui se dépense »).
+
+### Jalons
+
+| Jalon                             | Passages gagnants | Tentatives à 58 % | Dispersion (20 graines) | Audit |
+| --------------------------------- | ----------------: | ----------------: | ----------------------- | ----: |
+| Premier objet au niveau maximum   |               8,1 |                14 | 6 à 14                  |  28,8 |
+| Première étoile                   |              20,0 |                34 | 20                      |  21,8 |
+| Équipe de 4 équipée (2 objets)    |              38,5 |                66 | 31 à 47                 |  38,5 |
+| Équipe de 4 au niveau 30          |             101,6 |               175 | 95 à 109                | 115,5 |
+| Équipe de 4 aux objets au maximum |             116,0 |               200 | 107 à 128               |     — |
+| Collection (20 objets au maximum) |             243,9 |               421 | 225 à 267               |     — |
+
+Première victoire de chaque donjon : 1 / 8 / 16 / 37,5 / 55,8 / 70,9 / 88,2 / 92,2 / 96,2 / 102,6.
+
+Bilan moyen jusqu'à la collection complète : or 256 800 gagnés, 232 300 dépensés en objets ;
+poussière brute 336 (+38 dissoutes) pour 56 en niveaux et 64 en objets ; fine 1 376 (+69) pour 532
+et 288 ; pure 2 307 (+99) pour 384 et 1 600 ; 244 objets tombés dont 82 rares ; 135 coffres,
+973 fragments.
+
+Lecture :
+
+1. **Début rapide** : le charme des Landes (4 copies) est au maximum vers le 8ᵉ passage ; la
+   poussière brute doublée paie à la fois les niveaux 1 à 7 et l'objet.
+2. **Milieu gouverné par les étoiles** : la première étoile au 20ᵉ passage, la seconde retient
+   le 6ᵉ donjon ; non réglé ici (voir `docs/BALANCE.md`).
+3. **Fin de jeu en grind** : après le niveau 30 (101,6), il faut encore 14 passages pour équiper
+   l'équipe au maximum et 142 pour finir la collection. Le goulot reste les copies de rares
+   (8 par objet du palier 3), les paliers II et III l'accélèrent (+5 et +10 de poids) ; l'or et la
+   poussière pure sont désormais dépensés à 90 % et 86 %.
+4. Les bornes de ces jalons sont vérifiées en CI (`tools/sim/test/economy.test.ts`).

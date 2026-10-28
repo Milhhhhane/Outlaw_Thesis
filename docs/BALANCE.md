@@ -272,7 +272,8 @@ Valeurs de `balance.json` → `economy.loot` et `progression.items.upgradeCosts`
   garanti au premier passage et au plus tard au 10ᵉ passage sans rare dans le donjon.
 - Passages gagnants entre deux rares (pitié comprise) : 5,35 au rang 0, 4,27 au rang 2, 3,57 au
   rang 4. Pendant ce temps le donjon donne en moyenne 27 communs pour 6 utiles : le surplus se dissout en poussière, ce qui finance les améliorations.
-- Coût d'un objet jusqu'au niveau 3 : 6 copies (1 + 2 + 3), 1 200 or et 25 poussières du palier.
+- Coût d'un objet jusqu'au niveau 3 (valeurs de ce lot, remplacées depuis : voir « Économie :
+  réglage ») : 6 copies (1 + 2 + 3), 1 200 or et 25 poussières du palier.
 - Le rare est le goulot : 6 copies = environ 32 passages gagnants au rang 0, 21 au rang 4. À
   58 % de réussite d'Auto (voir plus haut) : environ 55 et 37 tentatives.
 - Collection complète (20 objets au niveau 3) : environ 320 passages gagnants (10 donjons × 32) ;
@@ -318,7 +319,8 @@ long sur les objets et un peu plus court sur la poussière.
 ## Paliers de donjon
 
 `balance.json` → `tiers` : 3 paliers, +5 niveaux d'ennemis par palier (bornés à 30 par le
-moteur), **+20 % de PV et d'ATK par palier**, or et poussière +50 % par palier, rare +5 de poids,
+moteur), **+20 % de PV et d'ATK par palier**, or et poussière +25 % par palier (réglés au chapitre
+« Économie : réglage »), rare +5 de poids,
 coffre d'un cran (bronze → argent → or). Mesure : `tools/sim/src/tiers.ts`, lignes
 `tier_<donjon>_<palier>_expert` de `pnpm sim` (48 équipes par ligne, politique experte, niveau
 visé = celui des ennemis borné à 30, équipement visé : aucun objet au I, deux objets bruts au II,
@@ -348,3 +350,58 @@ jamais plus de 12 points plus facile que le palier précédent.
 - Les six premiers donjons restent à 100 % à tous les paliers : avec des objets, l'expert ne perd
   plus dans le premier tiers du jeu. C'est là que le joueur moyen choisira son palier.
 - Le butin par palier est dans `docs/ECONOMY.md`.
+
+## Économie : réglage
+
+Mesure : `pnpm --filter @outlaw/sim economy` (joueur modèle, 20 graines, passages **gagnants** ;
+tentatives à 58 % de réussite d'Auto ; méthode et audit dans `docs/ECONOMY.md`). Bornes en CI :
+`tools/sim/test/economy.test.ts`. Cibles : un premier objet au maximum en quelques donjons, puis
+un craft de fin de jeu qui demande du vrai grind, avec or et poussière pure réellement dépensés.
+
+| Jalon (passages gagnants)         | Audit (avant paliers) | Paliers seuls | Après réglage | Dispersion |
+| --------------------------------- | --------------------: | ------------: | ------------: | ---------- |
+| Premier objet au niveau maximum   |                  28,8 |          30,6 |       **8,1** | 6 à 14     |
+| Première étoile                   |                  21,8 |          26,4 |          20,0 | 20         |
+| Équipe de 4 équipée (2 objets)    |                  38,5 |          44,8 |          38,5 | 31 à 47    |
+| Équipe de 4 au niveau 30          |                 115,5 |         102,3 |         101,6 | 95 à 109   |
+| Équipe de 4 aux objets au maximum |                     — |             — |         116,0 | 107 à 128  |
+| Collection (20 objets au maximum) |                     — |             — |     **243,9** | 225 à 267  |
+
+Valeurs changées, chacune avec la mesure qui la justifie (configuration finale, une seule valeur
+remise à l'ancienne à la fois) :
+
+- **`upgradeCosts` de base** 1/100/5, 2/300/8, 3/800/12 → **1/40/3, 2/120/5, 3/280/8** (copies / or
+  / poussière) et **`tierCostPct`** (nouveau, % appliqués selon le palier de poussière de l'objet) :
+  copies 60 / 100 / 130, or 100 / 400 / 5 000, poussière 100 / 300 / 1 000. Un objet au maximum
+  coûte 4 copies, 440 or et 16 brutes au palier 1 ; 6 copies, 1 760 or et 48 fines au palier 2 ;
+  8 copies, 22 000 or et 160 pures au palier 3 (avant : 6 copies, 1 200 or, 25 poussières partout).
+  Mesures : avec les coûts d'avant, premier objet au maximum 31,9 passages, or dépensé 24 000 sur
+  192 500 gagnés (12 %), poussière pure 634 sur 1 605 ; avec les nouveaux, 8,1 passages, or
+  232 300 sur 256 800 (90 %), pure 1 984 sur 2 307 (86 %). Copies plates (100/100/100) : premier
+  objet au maximum 21,4 et équipe au maximum 127,2 (au lieu de 116,0). Or plat : 8 800 dépensés.
+  Poussière plate : 544 pures dépensées.
+- **Poussière brute des deux premiers donjons 4 → 8** (`dungeons.json`). Mesure : avec 4, premier
+  objet au maximum 15,3 passages, équipe équipée 45,8, niveau 30 à 107,8 ; avec 8 : 8,1, 38,5 et
+  101,6. Les niveaux 1 à 7 coûtent 56 brutes pour quatre héros : à 4 par passage, l'objet du
+  premier donjon attendait la fin des niveaux. Le calculateur `farm` ne bouge pas (Landes 6,0 et
+  Salles 8,1 passages, toujours limités par l'XP ; poussière 3,0 et 4,0) : ses bornes tiennent.
+- **Paliers : or et poussière +50 % → +25 % par palier** (`tiers.rewardPctPerTier`). Mesure : à
+  +50 %, or 314 000 gagnés et poussière pure 2 738 pour les mêmes dépenses : plus de 300 pures et
+  80 000 or jamais utilisés ; à +25 %, 90 % et 86 % dépensés, pour 3 passages de plus jusqu'au
+  niveau 30 (98,5 → 101,6) et 9 de plus pour la collection (234,7 → 243,9). À 0 %, jouer les
+  paliers ne rapporte plus que des rares : niveau 30 à 108,6, collection à 289,6.
+- **Gardés tels quels, mesurés** : rare +5 de poids par palier (à 0 : collection 265,4 ; à 10 :
+  235,8) ; coffre d'un cran par palier (à 0 : niveau 30 à 105,8 au lieu de 101,6, les fragments des
+  étoiles venant des coffres) ; poids 85/15, pitié 10, maîtrise et dissolution 3/4 : aucun jalon
+  ne les rend nécessaires. Sans paliers (`tiers.count` = 1) : collection 320,9 passages, équipe au
+  maximum 157,1, niveau 30 à 111,9 : les paliers sont la voie rapide du craft, comme voulu.
+
+Limite assumée : la collection complète n'est que 15 % plus longue qu'avec les coûts d'avant
+(243,9 contre 212,3), car le goulot de fin de jeu reste les copies de rares ; ce qui change, c'est
+que l'or et la poussière pure comptent désormais et que la fin coûte bien plus que le début.
+
+Ce que le réglage ne règle pas : la première étoile (20 passages, 10 fragments) et la seconde
+(niveau 22, 80 fragments pour quatre héros) gouvernent le milieu de partie (4ᵉ donjon ouvert au
+37ᵉ passage en moyenne, 30 à 46 selon le tirage) ; `starCosts` et `replayChestRate` n'ont pas été
+touchés, faute de cible chiffrée dans le brief. L'or n'a toujours que les objets et le respec
+comme puits : une fois la collection finie, il s'accumule.

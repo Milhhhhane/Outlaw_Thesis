@@ -89,9 +89,9 @@ describe('atelier : collection, copies, amélioration', () => {
 
   it('sans assez de copies, l’amélioration est refusée et rien n’est dépensé', async () => {
     const user = userEvent.setup();
-    const profile = owning([{ uid: 1, item: 'ember_charm', upgrade: 1, copies: 1 }]);
+    const profile = owning([{ uid: 1, item: 'thorn_ring', upgrade: 1, copies: 1 }]);
     render(<App version="test" initial={profile} start={{ name: 'workshop' }} />);
-    // Le niveau 2 demande plus d’une copie.
+    // Le niveau 2 d'un objet de poussière fine demande plus d’une copie.
     await user.click(screen.getByRole('button', { name: t('hero.upgrade') }));
     expect(screen.getByRole('alert')).toHaveTextContent(t('refusal.not_enough_copies'));
     expect(saved().gold).toBe(500);
