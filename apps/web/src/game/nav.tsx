@@ -10,6 +10,7 @@ export type Route =
   | { readonly name: 'hero'; readonly id: string }
   | { readonly name: 'workshop' }
   | { readonly name: 'chests' }
+  | { readonly name: 'quests' }
   | { readonly name: 'credits' }
   | { readonly name: 'dungeon'; readonly id: string; readonly tier?: number }
   | { readonly name: 'demo' }

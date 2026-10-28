@@ -1,4 +1,5 @@
-import { chestCount, dungeonOpen } from '@outlaw/engine';
+import { chestCount, claimableCount, dungeonOpen } from '@outlaw/engine';
+import { useState } from 'react';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -10,7 +11,7 @@ import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 
 const ENTRIES: readonly {
-  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
+  readonly route: 'map' | 'team' | 'heroes' | 'workshop' | 'chests' | 'quests' | 'pvp';
   readonly label: TextKey;
   readonly hint: TextKey;
   readonly icon: string;
@@ -20,6 +21,7 @@ const ENTRIES: readonly {
   { route: 'heroes', label: 'hub.menu.heroes', hint: 'hub.menu.heroes.hint', icon: 'stat' },
   { route: 'workshop', label: 'hub.menu.workshop', hint: 'hub.menu.workshop.hint', icon: 'item' },
   { route: 'chests', label: 'hub.menu.chests', hint: 'hub.menu.chests.hint', icon: 'chest' },
+  { route: 'quests', label: 'hub.menu.quests', hint: 'hub.menu.quests.hint', icon: 'check' },
   { route: 'pvp', label: 'hub.menu.pvp', hint: 'hub.menu.pvp.hint', icon: 'damage' },
 ];
 
@@ -28,6 +30,9 @@ export function Hub() {
   const { go, openOptions, toggleTestMode } = useGame();
   const { profile, recovered } = useProfile();
   const test = profile.testMode;
+  // Récompenses de quêtes et succès à réclamer (le profil passe au nouveau jour tout seul).
+  const [now] = useState(() => Date.now());
+  const claims = claimableCount(content, profile, now);
   useEscape(() => {
     go({ name: 'title' });
   });
@@ -48,7 +53,9 @@ export function Hub() {
       {test && <p className="hub__notice">{t('test.banner')}</p>}
       {recovered && <p className="hub__notice">{t('hub.saveRecovered')}</p>}
       <nav className="hub__menu" aria-label={t('hub.title')}>
-        {ENTRIES.filter((entry) => !test || entry.route !== 'chests').map((entry) => (
+        {ENTRIES.filter(
+          (entry) => !test || (entry.route !== 'chests' && entry.route !== 'quests'),
+        ).map((entry) => (
           <button
             key={entry.route}
             type="button"
@@ -62,6 +69,11 @@ export function Hub() {
               {t(entry.label)}
               {entry.route === 'chests' && chestCount(profile) > 0 && (
                 <span className="hub__badge">{chestCount(profile)}</span>
+              )}
+              {entry.route === 'quests' && claims > 0 && (
+                <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
+                  {claims}
+                </span>
               )}
             </span>
             <span className="hub__entry-hint">{t(entry.hint)}</span>

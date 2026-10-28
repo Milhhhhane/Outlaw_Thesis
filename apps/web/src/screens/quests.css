@@ -1,0 +1,116 @@
+/* Écran des quêtes : onglets en tête, liste qui défile dans son panneau, règles en pied. */
+
+.quests__layout {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  height: 100%;
+}
+
+.quests__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quests__reset,
+.quests__rules {
+  margin: 0;
+}
+
+.quests__panel {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.quest-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  align-content: start;
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.quest-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px 120px;
+  align-items: center;
+  column-gap: 12px;
+  min-height: 52px;
+  padding: 4px 10px;
+  background: rgb(0 0 0 / 22%);
+  border: 2px solid var(--line);
+  border-left: 5px solid var(--line);
+}
+
+.quest-row--ready {
+  border-left-color: var(--gold);
+}
+
+.quest-row--claimed {
+  opacity: 0.7;
+}
+
+.quest-row__text {
+  display: grid;
+  min-width: 0;
+}
+
+.quest-row__title {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.quest-row__detail,
+.quest-row__reward {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.quest-row__meter {
+  display: grid;
+  gap: 2px;
+}
+
+.quest-row .bar {
+  display: block;
+  height: 8px;
+  background: rgb(0 0 0 / 55%);
+  border: 1px solid var(--line);
+}
+
+.quest-row .bar > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.quest-row .bar--full > span {
+  background: var(--heal);
+}
+
+.quest-row__count {
+  font-size: 13px;
+  text-align: right;
+}
+
+.quest-row__done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  color: var(--heal);
+  font-size: 14px;
+}
+
+.quest-row .gbtn {
+  justify-self: end;
+}
