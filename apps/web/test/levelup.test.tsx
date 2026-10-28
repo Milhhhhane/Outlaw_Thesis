@@ -65,6 +65,18 @@ describe('monter de niveau', () => {
     expect(screen.queryByText(t('hero.levelUp.ready'))).toBeNull();
   });
 
+  it('XP en banque au-delà du niveau : la barre reste pleine et la poussière manquante est dite', () => {
+    const { container } = render(
+      <App version="test" initial={banked([1, 0, 0])} start={{ name: 'hero', id: 'pyra' }} />,
+    );
+    const fill = container.querySelector<HTMLElement>('.sheet__xp span');
+    expect(fill?.style.width).toBe('100%');
+    expect(
+      screen.getByText(t('hero.levelUp.missingDust', { dust: dustName(1), have: 1, need: 2 })),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t('hero.levelUp') })).toBeDisabled();
+  });
+
   it('avec de quoi payer, la galerie signale le niveau prêt', () => {
     render(<App version="test" initial={banked([10, 0, 0])} start={{ name: 'heroes' }} />);
     const card = screen.getByRole('button', { name: new RegExp(`^${names.hero('pyra')}`) });

@@ -530,7 +530,7 @@ export function HeroSheet({
           </p>
           {!maxed ? (
             <span className="sheet__xp" role="img" aria-label={t('hero.xp', { xp: hero.xp, next })}>
-              <span style={{ width: `${Math.round((hero.xp / next) * 100)}%` }} />
+              <span style={{ width: `${Math.min(100, Math.round((hero.xp / next) * 100))}%` }} />
             </span>
           ) : (
             <span className="hint">{t('hero.xp.max')}</span>
@@ -553,6 +553,16 @@ export function HeroSheet({
                   }),
                 })}
               </p>
+              {hero.xp >= cost.xp &&
+                (profile.materials[cost.dust.tier - 1] ?? 0) < cost.dust.amount && (
+                  <p className="hint">
+                    {t('hero.levelUp.missingDust', {
+                      dust: dustName(cost.dust.tier),
+                      have: profile.materials[cost.dust.tier - 1] ?? 0,
+                      need: cost.dust.amount,
+                    })}
+                  </p>
+                )}
               <Button
                 size="small"
                 disabled={!canLevelUp(content, profile, hero)}
