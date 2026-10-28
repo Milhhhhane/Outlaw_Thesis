@@ -60,3 +60,9 @@ export function pickTeam(content: Content, order: readonly string[], size: numbe
   }
   return team;
 }
+
+/** Le même build, tous ses sorts au niveau `level` (montée des sorts) ; inchangé au niveau 1. */
+export function withSpellLevel(build: HeroBuild, level: number): HeroBuild {
+  if (level <= 1) return build;
+  return { ...build, spells: { basic: level, a: level, b: level, ult: level } };
+}

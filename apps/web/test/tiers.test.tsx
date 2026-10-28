@@ -105,6 +105,7 @@ describe('carte : paliers de donjon', () => {
       mastery: { rank: 0, rankUp: false, clears: 2, next: 5 },
       unlockedHero: null,
       chest: 'silver',
+      grimoires: 1,
     };
     render(
       <GameContext.Provider
@@ -119,5 +120,6 @@ describe('carte : paliers de donjon', () => {
       t('reward.title', { dungeon: `${names.dungeon('ember_wastes')} II` }),
     );
     expect(screen.getByText(t('reward.tierUnlocked', { tier: 'III' }))).toBeInTheDocument();
+    expect(screen.getByText(t('reward.grimoires', { n: 1 }))).toBeInTheDocument();
   });
 });

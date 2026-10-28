@@ -1,6 +1,6 @@
 import type { Content, Dungeon } from '@outlaw/data';
 import { compileTeam, type HeroBuild } from '@outlaw/engine';
-import { pickTeam, randomBuild } from './builds';
+import { pickTeam, randomBuild, withSpellLevel } from './builds';
 import { runDungeon } from './dungeons';
 import { average, lookahead } from './policy';
 import { createRng } from './rng';
@@ -88,11 +88,14 @@ function rank(
   level: number,
   samples: number,
   seed: number,
+  spellLevel: number,
 ): Ranked[] {
   const rng = createRng(seed);
   const ranked: Ranked[] = [];
   for (let i = 0; i < samples; i++) {
-    const builds = team.map((hero) => randomBuild(content, hero, level, rng));
+    const builds = team.map((hero) =>
+      withSpellLevel(randomBuild(content, hero, level, rng), spellLevel),
+    );
     const run = runDungeon(content, dungeon.id, builds, lookahead);
     ranked.push({
       builds,
@@ -125,9 +128,11 @@ function duelExtremes(
   level: number,
   samples: number,
   seed: number,
+  spellLevel: number,
 ) {
   const rng = createRng(seed);
-  const draw = (): HeroBuild[] => team.map((hero) => randomBuild(content, hero, level, rng));
+  const draw = (): HeroBuild[] =>
+    team.map((hero) => withSpellLevel(randomBuild(content, hero, level, rng), spellLevel));
   const reference = Array.from({ length: REFERENCE }, draw);
   const scored = Array.from({ length: samples }, () => {
     const builds = draw();
@@ -163,7 +168,16 @@ const outcome = (won: boolean): BattleOutcome => ({
   actions: 0,
 });
 
-export function evaluateRules(content: Content, samples: number, seed: number): RulesReport {
+/**
+ * `spellLevel` : niveau de tous les sorts des héros (montée des sorts) ; 1 par défaut, comme la
+ * référence. `pnpm --filter @outlaw/sim skillups` rejoue les règles avec tous les sorts au maximum.
+ */
+export function evaluateRules(
+  content: Content,
+  samples: number,
+  seed: number,
+  spellLevel = 1,
+): RulesReport {
   const { targets } = content.balance;
   const all = sampleTeams(content, TEAM_SAMPLE, seed);
   const duels: BattleOutcome[] = [];
@@ -183,17 +197,29 @@ export function evaluateRules(content: Content, samples: number, seed: number): 
       // R1 : meilleur et pire build jugés au duel, contre un groupe de référence qu'ils ne
       // rencontrent qu'une fois classés ; puis ils s'affrontent dans les deux sens.
       const pair =
-        t < R1_TEAMS ? duelExtremes(content, team, level, samples, seed + 3000 * d + t) : null;
+        t < R1_TEAMS
+          ? duelExtremes(content, team, level, samples, seed + 3000 * d + t, spellLevel)
+          : null;
       if (pair !== null) {
         local.push(outcome(duel(content, pair.best, pair.worst)));
         local.push(outcome(!duel(content, pair.worst, pair.best)));
       }
       if (behind >= 1) {
-        const late = rank(content, dungeon, team, behind, samples, seed + 1000 * d + t + 500)[0];
+        const late = rank(
+          content,
+          dungeon,
+          team,
+          behind,
+          samples,
+          seed + 1000 * d + t + 500,
+          spellLevel,
+        )[0];
         r2.push(outcome(late?.cleared === true));
         const rng = createRng(seed + 5000 * d + t);
         for (let k = 0; k < TEAM_SAMPLES; k++) {
-          const builds = team.map((hero) => randomBuild(content, hero, behind, rng));
+          const builds = team.map((hero) =>
+            withSpellLevel(randomBuild(content, hero, behind, rng), spellLevel),
+          );
           const run = runDungeon(
             content,
             dungeon.id,

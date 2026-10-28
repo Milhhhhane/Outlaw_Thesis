@@ -140,6 +140,13 @@ prennent le palier, la carte le choisit et le passe à l'équipe puis à `Dungeo
 les mesure dans `tools/sim/src/tiers.ts` ; l'économie hors combat (jalons, bilan) dans
 `tools/sim/src/economy.ts` (`pnpm --filter @outlaw/sim economy`, voir `docs/ECONOMY.md`).
 
+La montée des sorts est dans `packages/engine/src/skillups.ts` (`spellUp`, `spellUpCost`,
+`spellMaxCost`, `setSpellLevel` en mode test) ; les niveaux (`heroes[id].spells` du profil,
+`HeroBuild.spells`) sont compilés dans les sorts par `compileHero` (`spellPowerPct` et bonus du
+dernier niveau, après les talents). Les grimoires sont crédités par `completeDungeon` (palier) et
+`openChest` (coffre). L'onglet est `apps/web/src/screens/SpellLevels.tsx` ; la mesure,
+`tools/sim/src/skillups.ts` (`pnpm --filter @outlaw/sim skillups`).
+
 Le combat automatique (`autoAction`, `packages/engine/src/auto.ts`) est une politique pure du
 moteur, exportée comme `legalActions` ; l'écran de combat l'appelle quand l'option `auto` est
 active (voir `docs/DECISIONS.md`). La simulation la mesure avec `pnpm --filter @outlaw/sim auto`.

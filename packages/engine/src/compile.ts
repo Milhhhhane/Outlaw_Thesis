@@ -6,6 +6,7 @@ import {
   type Effect,
   type Hero,
   type Item,
+  type SpellLevels,
   type SpellMod,
   type TalentNode,
   type Trigger,
@@ -31,6 +32,8 @@ export interface HeroBuild {
   /** Nœuds de talents choisis (identifiants). */
   readonly talents: readonly string[];
   readonly items: readonly EquippedItem[];
+  /** Niveau de chaque sort (montée des sorts) ; absent : tous au niveau 1. */
+  readonly spells?: Readonly<SpellLevels>;
 }
 
 type ScalableField = 'power' | 'duration' | 'amount' | 'percent';
@@ -118,6 +121,12 @@ export function validateBuild(content: Content, build: HeroBuild): string[] {
       issues.push(`amélioration ${equipped.upgrade} hors de 0..${maxUpgradeLevel}`);
     }
   }
+  const { max } = balance.spellLevels;
+  for (const [slot, level] of Object.entries(build.spells ?? {})) {
+    if (!Number.isInteger(level) || level < 1 || level > max) {
+      issues.push(`sort ${slot} au niveau ${level} hors de 1..${max}`);
+    }
+  }
   return issues;
 }
 
@@ -174,6 +183,44 @@ function applySpellMod(spells: MutableSpell[], mod: SpellMod): void {
     case 'retarget':
       for (const spell of target(mod.slot)) spell.targeting = mod.targeting;
       return;
+  }
+}
+
+/** Bonus de puissance (en %) d'un sort à ce niveau : `powerPctPerLevel` par niveau au-delà du premier. */
+export function spellPowerPct(balance: Balance, level: number): number {
+  return balance.spellLevels.powerPctPerLevel * Math.max(0, level - 1);
+}
+
+/** Briques dont la montée des sorts renforce la puissance. */
+const LEVELED_KINDS: ReadonlySet<Effect['kind']> = new Set(['damage', 'heal', 'shield']);
+
+/**
+ * Montée des sorts, après les talents (les briques ajoutées par un talent montent aussi) :
+ * puissance des dégâts, soins et boucliers + `spellPowerPct` %, et au niveau maximum le bonus
+ * `capstone` de l'emplacement (coût en points, délai).
+ */
+function applySpellLevels(
+  spells: MutableSpell[],
+  levels: Readonly<SpellLevels> | undefined,
+  balance: Balance,
+): void {
+  if (levels === undefined) return;
+  const { max, capstone } = balance.spellLevels;
+  for (const spell of spells) {
+    const level = levels[spell.slot];
+    const pct = spellPowerPct(balance, level);
+    if (pct > 0) {
+      spell.effects = spell.effects.map((effect) =>
+        LEVELED_KINDS.has(effect.kind)
+          ? adjust(effect, 'power', (v) => v * (1 + pct / 100))
+          : effect,
+      );
+    }
+    if (level >= max && max > 1) {
+      const bonus = capstone[spell.slot];
+      spell.cost = Math.max(0, spell.cost + bonus.cost);
+      spell.delay = Math.max(1, spell.delay + bonus.delay);
+    }
   }
 }
 
@@ -278,6 +325,7 @@ export function compileHero(
     .sort((a, b) => a.page - b.page || a.index - b.index);
   const spells = baseSpells(hero.spells, hero.element, balance);
   for (const ref of ordered) for (const mod of ref.node.mods) applySpellMod(spells, mod);
+  applySpellLevels(spells, build.spells, balance);
 
   const equipped = build.items
     .map((e): [Item, number] | null => {

@@ -29,6 +29,18 @@ describe('lien de build', () => {
     expect(buildsFromLocation('#autre', content)).toBeNull();
   });
 
+  it('garde les niveaux de sort ; un lien sans niveaux ou à niveaux faux', () => {
+    const leveled = [{ ...builds[1]!, spells: { basic: 1, a: 3, b: 1, ult: 5 } }];
+    expect(decodeBuilds(encodeBuilds(leveled), content)).toEqual(leveled);
+    // Tous au niveau 1 : rien n'est écrit, le lien reste celui d'avant.
+    const plain = [{ ...builds[1]!, spells: { basic: 1, a: 1, b: 1, ult: 1 } }];
+    expect(encodeBuilds(plain)).toBe(encodeBuilds([builds[1]!]));
+    const bad = (s: unknown): string =>
+      btoa(JSON.stringify({ v: 1, b: [{ h: 'maree', l: 1, t: [], i: [], s }] }));
+    expect(decodeBuilds(bad([1, 1, 1]), content)).toBeNull();
+    expect(decodeBuilds(bad([1, 1, 1, 99]), content)).toBeNull();
+  });
+
   it('refuse un lien abîmé ou incompatible avec le contenu', () => {
     const encode = (value: unknown) =>
       btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
