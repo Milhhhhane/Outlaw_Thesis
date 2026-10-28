@@ -1124,6 +1124,18 @@ le décompte du bilan entre à l'étage suivant ; sans l'option, le bilan attend
 étage ne rapportant rien, le relancer seul n'aurait pas de sens). Raison : même règle que
 l'enchaînement des donjons, une navigation différée ; monter est une décision.
 
+## Confort de farm (MaJ 1/7)
+
+**Le nombre de passages remplace la relance automatique** — Contexte : l'enchaînement relançait le
+même donjon sans fin dès qu'Auto était coché ; les séries rendent le nombre de passages explicite.
+Choix : un passage = pas de relance ; 3, 5, 10 ou ∞ = série jouée en Auto, close par un bilan ; une
+défaite termine la série et mène au bilan. Raison : le joueur décide de combien il farme et voit
+ce qu'il a gagné, comme les multi-combats des jeux du genre.
+
+**Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
+fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
+Raison : une seule source de vérité, testable sans écran.
+
 ## Éveil des héros et sanctuaires d'essence
 
 **Sanctuaires hors du contenu des donjons** — Contexte : trois donjons d'essence, hors du chemin.

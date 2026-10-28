@@ -62,6 +62,23 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 
 - Camp : entrées un peu plus compactes pour loger la septième (Tour).
 
+## [Non publié] — 2026-10-28 — confort de farm (MaJ 1/7)
+
+### Ajouté
+
+- Séries : sur l'écran d'équipe, 1, 3, 5, 10 ou ∞ passages joués d'affilée en Auto, « passage k
+  sur N » en combat, arrêt sur défaite, manque d'énergie ou action du joueur.
+- Bilan de série : passages gagnés et perdus, or, poussière par palier, coffres, objets (nouveaux,
+  copies, dissous), niveaux prêts, maîtrise et paliers.
+- Trois équipes enregistrées (nommées), chargées en un clic ; refus clair si un héros manque.
+- Tri (rareté, niveau, élément, rôle, nom) et filtres (élément, rôle, rareté, possédés) de la
+  galerie et du vivier, retenus sur l'appareil.
+- Badges « à faire » au camp : niveaux payables, talents, étoiles, objets améliorables, coffres.
+
+### Modifié
+
+- À 1 passage, Auto ne relance plus le donjon après les récompenses : choisir ∞ pour farmer sans fin.
+
 ## [Non publié] — 2026-10-28 — barre d'XP de la fiche
 
 ### Corrigé

@@ -68,9 +68,12 @@
   `economy`) puis réglage : premier objet au maximum en 8 passages, coûts d'objets par palier de
   poussière, collection complète en 244 passages, bornes en CI. Étoiles non réglées.
 - Enchaînement automatique — en mode Auto, décompte de 5 s entre les salles et sur l'écran de
-  récompenses, qui relance le même donjon ; tout clic ou touche rend la main. Vitesse
+  récompenses, qui enchaîne le passage suivant d'une série (voir « Confort de farm ») ; tout clic ou touche rend la main. Vitesse
   « instantanée » supprimée (×1, ×2). Tests : `apps/web/test/countdown.test.tsx`, e2e à 1280×720
   et 844×390.
+- Confort de farm (MaJ 1/7) — séries de 1, 3, 5, 10 ou ∞ passages en Auto, bilan de série, trois
+  équipes enregistrées, tri et filtres des héros, badges « à faire » au camp. Tests :
+  `packages/engine/test/farm.test.ts`, `apps/web/test/farm.test.tsx`, e2e série de trois.
 - 25 héros et rareté — 19 héros ajoutés (10 communs, 8 rares, 5 épiques, 2 légendaires en
   tout), obtenus par invocation ; coffres pondérés et invocation payée selon la rareté ; rareté
   affichée partout. « Aucun héros indispensable » tenue pour la première fois depuis le lot 7

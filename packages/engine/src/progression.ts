@@ -43,6 +43,9 @@ export type Refusal =
   | 'star_gate'
   | 'not_enough_xp'
   | 'tier_locked'
+  | 'no_preset'
+  | 'bad_name'
+  | 'preset_unavailable'
   | 'unknown_quest'
   | 'quest_not_done'
   | 'already_claimed'
@@ -116,6 +119,7 @@ export function newProfile(content: Content, seed = 1, now = 0): Profile {
     fragments: {},
     chests: {},
     focus: null,
+    presets: [],
     stats: {},
     quests: emptyQuestState(),
     tower: { cleared: 0 },

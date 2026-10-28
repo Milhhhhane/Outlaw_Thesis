@@ -36,6 +36,17 @@ export const ownedItemSchema = z.strictObject({
 });
 export type OwnedItem = z.infer<typeof ownedItemSchema>;
 
+/** Équipes enregistrées : nombre d'emplacements et longueur maximale d'un nom. */
+export const PRESET_SLOTS = 3;
+export const PRESET_NAME_MAX = 20;
+
+/** Une équipe enregistrée : un nom choisi par le joueur et ses héros, dans l'ordre. */
+export const teamPresetSchema = z.strictObject({
+  name: z.string().min(1).max(PRESET_NAME_MAX),
+  team: z.array(idSchema).min(1).max(MAX_SIDE),
+});
+export type TeamPreset = z.infer<typeof teamPresetSchema>;
+
 export const PROFILE_VERSION = 1;
 
 /**
@@ -78,6 +89,11 @@ export const profileSchema = z.strictObject({
   chests: z.record(idSchema, nonNegInt).default({}),
   /** Héros qui reçoit une part des fragments des coffres (le joueur se spécialise). */
   focus: idSchema.nullable().default(null),
+  /**
+   * Équipes enregistrées, une par emplacement (index = emplacement, null = vide). Absent des
+   * anciennes sauvegardes : aucun emplacement rempli.
+   */
+  presets: z.array(teamPresetSchema.nullable()).max(PRESET_SLOTS).default([]),
   /**
    * Compteurs à vie (donjons gagnés, niveaux payés, coffres ouverts…), tenus par le moteur ; les
    * quêtes comptent leur différence depuis le début de la période. Absent des anciennes sauvegardes.

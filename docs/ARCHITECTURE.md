@@ -166,6 +166,16 @@ sont tirés par `drawFragments` (`chests.ts`, partagé avec `openChest`). Écran
 bilan, enchaînement Auto par l'option `towerClimb`). Simulation : `tools/sim/src/tower.ts` (règles
 en CI) et `pnpm --filter @outlaw/sim tower` (lecture).
 
+Le confort de farm est dans `packages/engine/src/farm.ts` : équipes enregistrées (`savePreset`,
+`loadPreset`, `presetMissing`, champ `presets` du profil, absent des anciennes sauvegardes),
+choses à faire au camp (`campTodo`, `heroTodo`, `canUpgradeItem` : badges de `screens/Hub.tsx`),
+séries de passages (`farmTarget`, `seriesNext`) et leur bilan (`summarizeSeries`, qui additionne
+les `DungeonReport`). L'écran d'équipe choisit le nombre de passages (option `runs`, passé à la
+route `dungeon`) ; `DungeonRun` garde les rapports, `Rewards` enchaîne le passage suivant et
+`screens/Recap.tsx` affiche le bilan. Le tri et les filtres de la galerie et du vivier
+(`game/heroList.ts`, `game/HeroFilters.tsx`) ne sont que de l'ordre d'affichage, retenu dans les
+options de l'appareil (`heroView`).
+
 L'éveil et les donjons d'essence sont dans `packages/engine/src/awakening.ts` (`essencesOpen`,
 `essenceTierOpen`, `essenceEncounter`, `essenceDrop`, `enterEssence`, `completeEssence`,
 `awakenCost`, `awaken`, `setAwakened`) ; l'effet est appliqué par `compileHero` quand le build porte
