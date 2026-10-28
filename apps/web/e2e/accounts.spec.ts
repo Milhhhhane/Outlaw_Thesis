@@ -14,7 +14,7 @@ async function device(browser: Browser): Promise<Page> {
   const context = await browser.newContext();
   const page = await context.newPage();
   await page.addInitScript(() => {
-    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+    localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'fast' }));
     localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
   });
   await page.goto('/');

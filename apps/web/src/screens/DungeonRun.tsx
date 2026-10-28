@@ -2,12 +2,14 @@ import {
   compileEncounter,
   compileTeam,
   completeDungeon,
+  enterDungeon,
   heroBuild,
   type DungeonReport,
 } from '@outlaw/engine';
 import { useMemo, useState } from 'react';
 import { CombatScreen } from '../combat/CombatScreen';
 import { content } from '../combat/session';
+import { useOptions } from '../game/options';
 import { names, t } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Rewards, RunEnd } from './Rewards';
@@ -16,11 +18,18 @@ type Phase =
   | { readonly kind: 'fight'; readonly room: number }
   | { readonly kind: 'failed' }
   | { readonly kind: 'tested' }
-  | { readonly kind: 'done'; readonly report: DungeonReport };
+  | {
+      readonly kind: 'done';
+      readonly report: DungeonReport;
+      /** Le moteur accepte une nouvelle entrée (énergie) : Auto peut relancer. */
+      readonly canReplay: boolean;
+    };
 
 /**
  * Un donjon : 3 combats d'affilée (PV et réserve remis à zéro à chaque combat), modificateur
  * appliqué aux deux camps, récompenses à la fin. Une défaite renvoie au camp sans pénalité.
+ * En mode Auto, chaque salle gagnée ouvre la suivante après un décompte, et les récompenses
+ * relancent le même donjon avec la même équipe : l'enchaînement n'est qu'une navigation.
  */
 export function DungeonRun({
   dungeonId,
@@ -30,6 +39,7 @@ export function DungeonRun({
   readonly onExit: () => void;
 }) {
   const { profile, replace } = useProfile();
+  const { options } = useOptions();
   const [phase, setPhase] = useState<Phase>({ kind: 'fight', room: 0 });
   // Chaque passage recompile l'équipe : après des récompenses, les héros ont pu monter de niveau.
   const [run, setRun] = useState(0);
@@ -54,7 +64,14 @@ export function DungeonRun({
   const name = names.dungeon(dungeonId);
 
   if (phase.kind === 'done') {
-    return <Rewards report={phase.report} onContinue={onExit} onReplay={restart} />;
+    return (
+      <Rewards
+        report={phase.report}
+        onContinue={onExit}
+        onReplay={restart}
+        autoReplay={options.auto && phase.canReplay}
+      />
+    );
   }
   if (phase.kind === 'failed' || phase.kind === 'tested') {
     const failed = phase.kind === 'failed';
@@ -115,8 +132,13 @@ export function DungeonRun({
             return;
           }
           replace(outcome.value.profile);
-          setPhase({ kind: 'done', report: outcome.value.report });
+          setPhase({
+            kind: 'done',
+            report: outcome.value.report,
+            canReplay: enterDungeon(content, outcome.value.profile, dungeonId, Date.now()).ok,
+          });
         },
+        last,
       }}
     />
   );
