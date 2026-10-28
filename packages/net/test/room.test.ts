@@ -29,6 +29,7 @@ import {
   richProfile,
   squad,
   Table,
+  TEAM,
   teamRequest,
 } from './helpers';
 
@@ -158,6 +159,23 @@ describe('règles du salon', () => {
     expect(table.room.rules).toEqual(tight);
   });
 
+  it('budget de paliers : refusé hors de teamSize à teamSize × 4, salon inchangé', () => {
+    const table = lobbyWithBoth();
+    table.take('p1');
+    const before = table.room;
+    for (const tierBudget of [TEAM - 1, TEAM * 4 + 1]) {
+      table.send('p1', { type: 'set_rules', rules: { ...before.rules, tierBudget } });
+      expect(table.take('p1')).toEqual([
+        { type: 'error', code: 'bad_schema', detail: `budget de paliers : ${TEAM} à ${TEAM * 4}` },
+      ]);
+      expect(table.room).toBe(before);
+    }
+    for (const tierBudget of [TEAM, TEAM * 4]) {
+      table.send('p1', { type: 'set_rules', rules: { ...before.rules, tierBudget } });
+      expect(table.room.rules.tierBudget).toBe(tierBudget);
+    }
+  });
+
   it('remettent les « prêt » à faux', () => {
     const table = lobbyWithBoth();
     table.send('p1', { type: 'set_team', heroes: teamRequest(squad('a')).heroes });
@@ -191,19 +209,17 @@ describe('règles du salon', () => {
     table.send('p1', { type: 'set_team', heroes: teamRequest(squad('a'), { level: 1 }).heroes });
     const hp = (): number => table.room.players.p1.team!.units[0]!.stats.hp;
     const levels = (): number[] => table.room.players.p1.team!.builds.map((b) => b.level);
-    expect(levels()).toEqual([30, 30, 30]);
+    expect(levels()).toEqual(Array(TEAM).fill(30));
     const full = hp();
     table.send('p1', { type: 'set_rules', rules: { ...table.room.rules, maxLevel: 12 } });
-    expect(levels()).toEqual([12, 12, 12]);
+    expect(levels()).toEqual(Array(TEAM).fill(12));
     expect(hp()).toBeLessThan(full);
     table.send('p1', { type: 'set_rules', rules: { ...table.room.rules, maxLevel: 30 } });
     expect(hp()).toBe(full);
     // Les unités compilées ont toujours les identifiants du joueur.
-    expect(table.room.players.p1.team!.units.map((u) => u.id)).toEqual([
-      'p1_pyra',
-      'p1_maree',
-      'p1_ronce',
-    ]);
+    expect(table.room.players.p1.team!.units.map((u) => u.id)).toEqual(
+      squad('a').map((hero) => `p1_${hero}`),
+    );
   });
 
   it('un profil devenu introuvable retire l’équipe', () => {
@@ -221,7 +237,7 @@ describe('équipes et départ du combat', () => {
   it('un refus de validateTeam renvoie son code et ne change rien', () => {
     const table = lobbyWithBoth();
     const before = table.room;
-    const bad = teamRequest(['pyra', 'pyra', 'ronce']);
+    const bad = teamRequest(['pyra', 'pyra', 'ronce', 'cendre']);
     table.send('p1', { type: 'set_team', heroes: bad.heroes });
     expect(table.take('p1')).toEqual([{ type: 'error', code: 'duplicate_hero', detail: 'pyra' }]);
     table.send('p1', { type: 'set_team', heroes: bad.heroes.slice(0, 2) });
@@ -283,7 +299,11 @@ describe('équipes et départ du combat', () => {
     });
     expect(start1.setup.rules).toEqual({ firstSide: 'enemy', limit: 'hp_ratio' });
     const ids = start1.setup.units.map((u) => u.id);
-    expect(ids).toEqual(['p1_pyra', 'p1_maree', 'p1_ronce', 'p2_cendre', 'p2_ressac', 'p2_seve']);
+    expect(ids).toEqual([
+      ...squad('a').map((hero) => `p1_${hero}`),
+      ...squad('b').map((hero) => `p2_${hero}`),
+    ]);
+    expect(ids).toHaveLength(2 * TEAM);
     expect(start1.setup.units.every((u) => u.controller === 'policy')).toBe(true);
     const state = table.state();
     // La priorité ne départage que les égalités : les unités sont rangées en commençant par son camp.
@@ -1247,9 +1267,9 @@ describe('équité en miroir', () => {
   const squads = [
     squad('a'),
     squad('b'),
-    ['pyra', 'ressac', 'seve'],
-    ['maree', 'ronce', 'cendre'],
-    ['ronce', 'seve', 'ressac'],
+    ['pyra', 'ressac', 'seve', 'maree'],
+    ['maree', 'ronce', 'cendre', 'seve'],
+    ['ronce', 'seve', 'ressac', 'cendre'],
   ];
 
   it('mêmes équipes, priorité échangée : résultat et PV en miroir', () => {

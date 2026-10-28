@@ -3,6 +3,7 @@ import {
   defaultRules,
   MAX_LEVEL_LIMIT,
   roomRulesSchema,
+  tierBudgetBounds,
   tierBudgetOptions,
   toBattleRules,
   TURN_SECONDS_OPTIONS,
@@ -25,12 +26,17 @@ describe('règles du salon', () => {
     }
   });
 
-  it('budget de paliers : aucun, ou un entier de 3 à 12', () => {
-    expect(tierBudgetOptions).toEqual([null, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    for (const tierBudget of tierBudgetOptions) {
+  it('budget de paliers : aucun, ou de teamSize (tous de palier I) à teamSize × 4 (tous de palier IV)', () => {
+    const size = balance.progression.teamSize;
+    expect(tierBudgetBounds(size)).toEqual({ min: size, max: size * 4 });
+    expect(tierBudgetBounds(4)).toEqual({ min: 4, max: 16 });
+    expect(tierBudgetOptions(4)).toEqual([null, ...Array.from({ length: 13 }, (_, i) => i + 4)]);
+    expect(tierBudgetOptions(3)).toEqual([null, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    for (const tierBudget of tierBudgetOptions(size)) {
       expect(roomRulesSchema.safeParse({ ...defaultRules, tierBudget }).success).toBe(true);
     }
-    for (const tierBudget of [0, 2, 13, 4.5, '6', undefined]) {
+    // Le schéma borne largement (1 à 4 × 4) ; le salon refuse le reste (voir room.test.ts).
+    for (const tierBudget of [0, 17, 4.5, '6', undefined]) {
       expect(roomRulesSchema.safeParse({ ...defaultRules, tierBudget }).success).toBe(false);
     }
   });

@@ -32,7 +32,7 @@ export function cappedLevel(content: Content, profile: Profile, hero: string, ru
   );
 }
 
-/** La demande d'équipe envoyée au salon pour trois héros du profil. */
+/** La demande d'équipe envoyée au salon pour les héros choisis du profil (emplacements dans l'ordre). */
 export function teamRequestFor(
   content: Content,
   profile: Profile,
@@ -56,7 +56,7 @@ export function teamRequestFor(
   };
 }
 
-/** Somme des paliers de trois héros (le budget de paliers du salon). */
+/** Somme des paliers des héros choisis (le budget de paliers du salon). */
 export function tierOf(content: Content, heroes: readonly string[]): number {
   return heroes.reduce((sum, hero) => sum + (content.heroById.get(hero)?.tier ?? 1), 0);
 }

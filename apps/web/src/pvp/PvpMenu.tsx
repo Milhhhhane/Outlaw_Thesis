@@ -1,15 +1,23 @@
+import { teamSizeOf } from '@outlaw/net';
 import { useEffect, useState } from 'react';
 import { META_KEY, useAccount } from '../account/AccountProvider';
+import { AuthWindow, PrivacyWindow } from '../account/windows';
+import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { Button, Panel, Screen } from '../game/ui';
 import { t } from '../i18n';
 import { createRoom, normalizeCode } from './api';
 import './pvp.css';
 
+/** Héros par camp, pour les textes (« 4 héros contre 4 »). */
+const TEAM_SIZE = teamSizeOf(content.balance);
+
 /** Entrée du duel en ligne : créer un salon (on reçoit un code) ou en rejoindre un. */
 export function PvpMenu() {
-  const { go, openOptions } = useGame();
+  const { go } = useGame();
   const account = useAccount();
+  const [auth, setAuth] = useState<'login' | 'register' | null>(null);
+  const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,21 +44,70 @@ export function PvpMenu() {
 
   if (account === null || account.status === 'unavailable') {
     return (
-      <Screen title={t('pvp.title')} onBack={back} resources={false}>
+      <Screen title={t('pvp.title')} onBack={back} className="pvp-menu" resources={false}>
         <Panel>
-          <p>{t('pvp.unavailable')}</p>
+          <p>{t('pvp.intro', { count: TEAM_SIZE })}</p>
+          <p data-testid="pvp-account">{t('pvp.unavailable')}</p>
         </Panel>
       </Screen>
     );
   }
-  if (account.status !== 'signed') {
+  if (account.status === 'loading') {
     return (
-      <Screen title={t('pvp.title')} onBack={back} resources={false}>
+      <Screen title={t('pvp.title')} onBack={back} className="pvp-menu" resources={false}>
+        <p role="status">{t('pvp.room.connecting')}</p>
+      </Screen>
+    );
+  }
+  if (account.status !== 'signed') {
+    // Invité : le duel exige un compte (le salon lit la sauvegarde en ligne). On le dit, et on
+    // ouvre directement la connexion ou la création de compte, sans détour par les options.
+    return (
+      <Screen title={t('pvp.title')} onBack={back} className="pvp-menu" resources={false}>
         <Panel>
-          <p>{t('pvp.intro')}</p>
-          <p>{t('pvp.signin')}</p>
-          <Button onClick={openOptions}>{t('pvp.signin.button')}</Button>
+          <p>{t('pvp.intro', { count: TEAM_SIZE })}</p>
+          <p data-testid="pvp-account">
+            <strong>{t('pvp.signin')}</strong>
+          </p>
+          <p className="pvp-hint">{t('pvp.signin.free')}</p>
+          <div className="pvp-menu__auth">
+            <Button
+              size="large"
+              onClick={() => {
+                setAuth('login');
+              }}
+            >
+              {t('pvp.signin.button')}
+            </Button>
+            <Button
+              variant="quiet"
+              size="large"
+              onClick={() => {
+                setAuth('register');
+              }}
+            >
+              {t('pvp.signin.register')}
+            </Button>
+          </div>
         </Panel>
+        {auth !== null && (
+          <AuthWindow
+            initial={auth}
+            onClose={() => {
+              setAuth(null);
+            }}
+            onPrivacy={() => {
+              setPrivacy(true);
+            }}
+          />
+        )}
+        {privacy && (
+          <PrivacyWindow
+            onClose={() => {
+              setPrivacy(false);
+            }}
+          />
+        )}
       </Screen>
     );
   }
@@ -68,7 +125,7 @@ export function PvpMenu() {
 
   return (
     <Screen title={t('pvp.title')} onBack={back} className="pvp-menu" resources={false}>
-      <p className="pvp-hint">{t('pvp.intro')}</p>
+      <p className="pvp-hint">{t('pvp.intro', { count: TEAM_SIZE })}</p>
       {!ready && (
         <p className="pvp-hint" role="status">
           {t('pvp.sync')}

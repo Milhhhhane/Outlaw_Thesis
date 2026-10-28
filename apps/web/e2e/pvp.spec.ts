@@ -1,3 +1,4 @@
+import { loadContent } from '@outlaw/data';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
 /**
@@ -36,7 +37,7 @@ async function player(browser: Browser, pseudo: string): Promise<Page> {
 }
 
 async function openMenu(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /^Duel en ligne/ }).click();
+  await page.getByRole('button', { name: /^PvP/ }).click();
   await expect(page.getByRole('heading', { name: 'Duel en ligne' })).toBeVisible();
 }
 
@@ -58,13 +59,16 @@ async function joinRoom(page: Page, code: string): Promise<void> {
   await join.click();
 }
 
-/** Trois héros choisis, équipe validée par le salon, puis « Prêt ». */
+/** Héros par équipe (`balance.progression.teamSize`). */
+const TEAM_SIZE = loadContent().balance.progression.teamSize;
+
+/** Une équipe complète, validée par le salon, puis « Prêt ». */
 async function getReady(page: Page): Promise<void> {
   const picks = page.getByRole('button', { name: /^(Choisir|Retirer) / });
   await expect(picks.first()).toBeVisible();
   for (let i = 0; i < 12; i++) {
     const pressed = await page.locator('.pvp-pick[aria-pressed=true]').count();
-    if (pressed >= 3) break;
+    if (pressed >= TEAM_SIZE) break;
     await page.locator('.pvp-pick[aria-pressed=false]:not([disabled])').first().click();
   }
   await expect(page.getByText('Équipe validée par le salon.')).toBeVisible();
@@ -114,10 +118,16 @@ test('un salon, un combat entier, des émotes, une revanche, puis un abandon', a
   await expect(bob.getByLabel('Niveau maximum')).toHaveCount(0);
   await alice.getByLabel('Niveau maximum').fill('12');
   await expect(bob.locator('.pvp-rules-list')).toContainText('12');
+  // Le salon tient dans la fenêtre (1280 x 720).
+  await noScroll(alice);
 
   await Promise.all([getReady(alice), getReady(bob)]);
   await expect(alice.locator('.battle')).toBeVisible({ timeout: 20_000 });
   await expect(bob.locator('.battle')).toBeVisible({ timeout: 20_000 });
+  // Quatre héros de chaque côté, et pas de bouton Auto en ligne.
+  await expect(alice.locator('.battle .hitbox')).toHaveCount(2 * TEAM_SIZE);
+  await expect(alice.locator('.battle__top button[aria-keyshortcuts="A"]')).toHaveCount(0);
+  await noScroll(alice);
   // Les pseudos sont affichés de chaque côté, chacun voit « vous » de son côté.
   await expect(alice.getByTestId(/plate-/).filter({ hasText: 'vous' })).toHaveCount(1);
   await expect(bob.getByTestId(/plate-/).filter({ hasText: 'vous' })).toHaveCount(1);
@@ -191,3 +201,59 @@ test('un code inconnu ou un salon complet ne se rejoint pas', async ({ browser }
   await carol.getByRole('button', { name: 'Rejoindre', exact: true }).click();
   await expect(carol.getByRole('alert')).toContainText('Impossible de rejoindre ce salon');
 });
+
+/** La page tient dans la fenêtre : aucun défilement. */
+async function noScroll(page: Page): Promise<void> {
+  const m = await page.evaluate(() => ({
+    sw: document.documentElement.scrollWidth,
+    sh: document.documentElement.scrollHeight,
+    w: window.innerWidth,
+    h: window.innerHeight,
+  }));
+  expect(m.sw).toBeLessThanOrEqual(m.w);
+  expect(m.sh).toBeLessThanOrEqual(m.h);
+}
+
+for (const viewport of [
+  { width: 1280, height: 720 },
+  { width: 844, height: 390 },
+]) {
+  test(`invité (${String(viewport.width)}x${String(viewport.height)}) : l'entrée PvP du camp dit qu'il faut un compte et mène à l'inscription`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport,
+      extraHTTPHeaders: { 'CF-Connecting-IP': `203.0.113.${String((counter += 1) % 250)}` },
+    });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Jouer en invité' }).click();
+
+    // L'entrée est au camp, visible en entier, sans défilement.
+    const entry = page.getByRole('button', { name: /^PvP/ });
+    await expect(entry).toBeInViewport({ ratio: 0.99 });
+    await noScroll(page);
+
+    await entry.click();
+    await expect(page.getByRole('heading', { name: 'Duel en ligne' })).toBeVisible();
+    await expect(page.getByTestId('pvp-account')).toContainText('demande un compte');
+    await expect(page.getByText(/Un compte est gratuit/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Se connecter' })).toBeInViewport();
+    await noScroll(page);
+
+    // « Créer un compte » ouvre l'inscription sur place ; une fois inscrit, le menu des salons s'affiche.
+    await page.getByRole('button', { name: 'Créer un compte' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Créer un compte' });
+    await dialog.getByLabel('Pseudo').fill(uniquePseudo('In'));
+    await dialog.locator('input[type=password]').fill(PASSWORD);
+    await dialog.getByRole('checkbox').check();
+    await dialog.getByRole('button', { name: 'Créer mon compte' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Créer', exact: true })).toBeVisible();
+    await noScroll(page);
+    await context.close();
+  });
+}

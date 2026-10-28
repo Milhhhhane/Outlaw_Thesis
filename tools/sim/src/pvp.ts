@@ -11,7 +11,7 @@ import { runBattle } from './run';
  * Mesure d'équilibrage du PVP (pnpm sim:pvp). Rien n'est appliqué : le rapport mesure et propose.
  *
  * Deux séries de combats, toutes à graines fixes (deux exécutions donnent le même rapport) :
- *  - miroir : la même composition de trois héros, avec les mêmes builds, des deux côtés. La seule
+ *  - miroir : la même composition de `teamSize` héros, avec les mêmes builds, des deux côtés. La seule
  *    différence est la priorité : l'écart du premier joueur (cible 50 % ± 3) est le gain de jouer
  *    en premier ;
  *  - croisée : deux compositions différentes, dans les deux sens, pour que la priorité s'annule.
@@ -31,9 +31,9 @@ export const DURATION_TARGET = { min: 30, max: 60 } as const;
 export const HERO_BAND = 0.1;
 
 export interface PvpOptions {
-  /** Jeux de builds de la série croisée : chacun joue les 380 paires de compositions, dans un sens et dans l'autre. */
+  /** Jeux de builds de la série croisée : chacun joue toutes les paires ordonnées de compositions (15 × 14 à quatre héros parmi six). */
   readonly samples: number;
-  /** Builds tirés au hasard par composition dans la série miroir (20 compositions). */
+  /** Builds tirés au hasard par composition dans la série miroir (15 compositions de quatre héros parmi six). */
   readonly mirrorSamples: number;
   readonly seed: number;
   /** Niveau de tous les héros ; celui du plafond par défaut d'un salon. */

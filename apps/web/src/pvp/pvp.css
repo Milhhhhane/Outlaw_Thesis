@@ -154,6 +154,13 @@
   align-content: start;
 }
 
+.pvp-menu__auth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
 .pvp-menu__choices {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

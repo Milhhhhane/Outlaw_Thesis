@@ -52,6 +52,7 @@ export {
   MAX_LEVEL_LIMIT,
   roomRulesSchema,
   TURN_SECONDS_OPTIONS,
+  tierBudgetBounds,
   tierBudgetOptions,
   toBattleRules,
   type RoomRules,
@@ -60,7 +61,7 @@ export { loggedActionSchema, type LoggedAction } from './schemas';
 export {
   compilePlayerTeam,
   TEAM_ERROR_CODES,
-  TEAM_SIZE,
+  teamSizeOf,
   teamRequestSchema,
   validateTeam,
   type RejectedTeam,

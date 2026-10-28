@@ -487,6 +487,32 @@ sécuriser pour une première version entre amis ; le serveur retient la place p
 même message (« Impossible de rejoindre ce salon »). Raison : un WebSocket refusé n'expose pas son
 code HTTP au navigateur ; distinguer demanderait un appel de plus.
 
+## PVP : remise à jour après les équipes de quatre et le grind
+
+**La taille d'équipe du PvP est celle du jeu** — Contexte : les salons dataient d'avant le lot 13 et
+fixaient trois héros à plusieurs endroits (validation, schémas, salle d'attente, simulation, tests).
+Choix : `teamSizeOf(balance)` (`balance.progression.teamSize`, 4) pour l'équipe, `MAX_SIDE` de
+`@outlaw/data` pour les bornes des schémas ; aucun nombre de héros dans le code du PvP. Raison :
+même règle que le lot 13, changer la taille d'équipe redevient un nombre dans `balance.json`.
+
+**Budget de paliers borné par la taille d'équipe** — Choix : la forme des règles ne change pas
+(`tierBudget` : entier ou null) ; le schéma borne largement (1 à `MAX_SIDE` × 4) et le salon refuse
+(`bad_schema`) un budget hors de `teamSize` à `teamSize` × 4 (4 à 16). Le champ `tier` des héros garde
+exactement sa forme. Raison : un budget sous `teamSize` refuserait toute équipe ; les bornes suivent
+la donnée sans figer 3 ni 4 dans un schéma.
+
+**Pas de combat automatique en duel** — Contexte : le bouton Auto (solo) est un réglage de l'appareil,
+retenu d'un combat à l'autre. Choix : en duel, ni bouton ni touche A ; le réglage est ignoré. Raison :
+un duel entre amis se joue à la main ; le chrono du serveur joue déjà l'action par défaut d'un joueur
+absent, et deux dépassements valent forfait.
+
+**Entrée « PvP » au camp, compte exigé et expliqué** — Contexte : le propriétaire ne trouvait pas le
+mode. Choix : l'entrée du camp s'appelle « PvP » (l'écran garde le titre « Duel en ligne ») ; en invité,
+l'écran dit que le duel exige un compte et pourquoi (le salon lit la sauvegarde en ligne), puis ouvre
+la connexion ou l'inscription sur place (l'ancien bouton ouvrait les options, sans formulaire de
+connexion). Pas d'entrée sur l'écran-titre : `docs/PVP.md` place le mode au camp. Raison : le joueur
+voit le mode, comprend ce qui manque et le règle sans quitter l'écran.
+
 ## Lot 9 — amélioration graphique
 
 **Habillage par CSS et tuiles plutôt que par écrans peints** — Contexte : les menus étaient des

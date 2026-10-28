@@ -118,6 +118,10 @@ function talents(hero: string): string[] {
   return taken;
 }
 
+/** Deux équipes de `teamSize` (4) héros ; un héros peut être dans les deux (profils distincts). */
+const TEAM_A = ['pyra', 'maree', 'ronce', 'cendre'];
+const TEAM_B = ['cendre', 'ressac', 'seve', 'pyra'];
+
 const team = (heroes: readonly string[], items: readonly number[]): ClientMessage => ({
   type: 'set_team',
   heroes: heroes.map((hero, slot) => ({
@@ -149,8 +153,8 @@ async function lobby() {
 async function startBattle() {
   const table = await lobby();
   const { service } = table;
-  await service.message('p1', text(team(['pyra', 'maree', 'ronce'], [1, 4, 7])));
-  await service.message('p2', text(team(['cendre', 'ressac', 'seve'], [10, 13, 16])));
+  await service.message('p1', text(team(TEAM_A, [1, 4, 7, 10])));
+  await service.message('p2', text(team(TEAM_B, [13, 16, 19, 22])));
   await service.message('p1', text({ type: 'ready' }));
   await service.message('p2', text({ type: 'ready' }));
   return table;
@@ -341,10 +345,10 @@ describe('salons : messages et profils', () => {
     const { host, service, alice } = await lobby();
     // Entre-temps, Alice n'a plus de sauvegarde en ligne.
     host.profiles.set(ALICE.id, null);
-    await service.message('p1', text(team(['pyra', 'maree', 'ronce'], [1, 4, 7])));
+    await service.message('p1', text(team(TEAM_A, [1, 4, 7, 10])));
     expect(alice.of('error').at(-1)?.code).toBe('no_profile');
     host.profiles.set(ALICE.id, rich);
-    await service.message('p1', text(team(['pyra', 'maree', 'ronce'], [1, 4, 7])));
+    await service.message('p1', text(team(TEAM_A, [1, 4, 7, 10])));
     expect(alice.of('error')).toHaveLength(1);
   });
 

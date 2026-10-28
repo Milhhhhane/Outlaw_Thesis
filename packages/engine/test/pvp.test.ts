@@ -5,7 +5,7 @@
 import { loadContent, type Balance } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import { createBattle, legalActions, replay, step, validateSetup } from '../src/battle';
-import { compileTeam, talentPoints, type HeroBuild } from '../src/compile';
+import { compileTeam, talentPoints, unlockedPages, type HeroBuild } from '../src/compile';
 import { defaultAction } from '../src/fallback';
 import { canonicalState, cyrb53, hashState } from '../src/hash';
 import { compareTurnOrder, nextActor, projectQueue } from '../src/queue';
@@ -53,7 +53,7 @@ function lcg(seed: number) {
 function buildFor(hero: string, level: number): HeroBuild {
   const def = content.heroById.get(hero)!;
   const taken: string[] = [];
-  const pages = level >= 20 ? 3 : level >= 10 ? 2 : 1;
+  const pages = unlockedPages(level, balance);
   const nodes = def.pages.slice(0, pages).flatMap((page) => page.nodes);
   for (let guard = 0; guard < 50 && taken.length < talentPoints(level, balance); guard++) {
     const groups = new Set(nodes.filter((n) => taken.includes(n.id)).map((n) => n.group));
@@ -263,12 +263,16 @@ describe('symétrie des camps', () => {
     return { actions, ended: sa };
   }
 
+  // Équipes de `teamSize` (4) héros, comme en salon.
   const squads = [
-    ['pyra', 'maree', 'ronce'],
-    ['cendre', 'ressac', 'seve'],
-    ['pyra', 'ressac', 'seve'],
-    ['maree', 'ronce', 'cendre'],
+    ['pyra', 'maree', 'ronce', 'cendre'],
+    ['cendre', 'ressac', 'seve', 'pyra'],
+    ['pyra', 'ressac', 'seve', 'maree'],
+    ['maree', 'ronce', 'cendre', 'seve'],
   ];
+  it('les équipes ont la taille du jeu', () => {
+    for (const heroes of squads) expect(heroes).toHaveLength(balance.progression.teamSize);
+  });
 
   it('même équipe contre elle-même, côtés échangés : résultats miroir', () => {
     for (const heroes of squads) {
@@ -452,8 +456,8 @@ describe('action par défaut', () => {
     const { state } = createBattle(
       {
         units: [
-          ...team('a', ['pyra', 'maree', 'ronce'], 'player'),
-          ...team('b', ['cendre', 'ressac', 'seve'], 'enemy'),
+          ...team('a', ['pyra', 'maree', 'ronce', 'cendre'], 'player'),
+          ...team('b', ['cendre', 'ressac', 'seve', 'pyra'], 'enemy'),
         ],
       },
       balance,
@@ -521,8 +525,8 @@ describe('action par défaut', () => {
 describe('empreinte d’état', () => {
   const setup: BattleSetup = {
     units: [
-      ...team('a', ['pyra', 'maree', 'ronce'], 'player'),
-      ...team('b', ['cendre', 'ressac', 'seve'], 'enemy'),
+      ...team('a', ['pyra', 'maree', 'ronce', 'cendre'], 'player'),
+      ...team('b', ['cendre', 'ressac', 'seve', 'pyra'], 'enemy'),
     ],
     rules: { firstSide: 'enemy', limit: 'hp_ratio' },
   };

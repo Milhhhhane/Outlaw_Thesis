@@ -1,3 +1,4 @@
+import { MAX_SIDE } from '@outlaw/data';
 import { describe, expect, it } from 'vitest';
 import {
   encodeMessage,
@@ -103,7 +104,7 @@ describe('messages client', () => {
         type: 'set_rules',
         rules: { maxLevel: 31, items: true, tierBudget: null, turnSeconds: 30 },
       },
-      { type: 'set_rules', rules: { maxLevel: 30, items: true, tierBudget: 2, turnSeconds: 30 } },
+      { type: 'set_rules', rules: { maxLevel: 30, items: true, tierBudget: 17, turnSeconds: 30 } },
       {
         type: 'set_rules',
         rules: { maxLevel: 30, items: true, tierBudget: null, turnSeconds: 25 },
@@ -117,7 +118,7 @@ describe('messages client', () => {
       { type: 'set_team', heroes: [{ hero: 'pyra', slot: 0.5, talents: [], items: [] }] },
       {
         type: 'set_team',
-        heroes: Array.from({ length: 7 }, () => ({
+        heroes: Array.from({ length: 2 * MAX_SIDE + 1 }, () => ({
           hero: 'pyra',
           slot: 0,
           talents: [],

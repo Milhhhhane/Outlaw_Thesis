@@ -5,18 +5,31 @@ import { DURATION_TARGET, evaluatePvp, formatReport, proposals, type PvpReport }
 const content = loadContent();
 const small = { samples: 1, mirrorSamples: 2, seed: 1, level: 30 };
 
+/** Combinaisons de k parmi n. */
+function choose(n: number, k: number): number {
+  let result = 1;
+  for (let i = 0; i < k; i++) result = (result * (n - i)) / (i + 1);
+  return result;
+}
+
 describe('mesure du PVP', () => {
   const report = evaluatePvp(content, small);
 
   it('compte les combats attendus', () => {
-    // 20 compositions de trois héros parmi six, deux builds chacune en miroir.
-    expect(report.mirror.battles).toBe(20 * 2);
-    // 20 × 19 paires ordonnées, un jeu de builds.
-    expect(report.cross.battles).toBe(20 * 19);
+    const heroes = content.heroes.length;
+    const size = content.balance.progression.teamSize;
+    // Compositions de `teamSize` héros parmi ceux du jeu : 15 pour quatre parmi six.
+    const compositions = choose(heroes, size);
+    expect(size).toBe(4);
+    // Deux builds par composition en miroir.
+    expect(report.mirror.battles).toBe(compositions * 2);
+    // Toutes les paires ordonnées, un jeu de builds.
+    expect(report.cross.battles).toBe(compositions * (compositions - 1));
+    // Un héros est dans `withHero` compositions : avec chacune des autres, il n'est que d'un côté, deux sens.
+    const withHero = choose(heroes - 1, size - 1);
     for (const row of report.heroes) {
-      // Un héros est dans 10 compositions sur 20 : 10 × 10 paires où il est dans un seul camp, deux sens.
-      expect(row.battles).toBe(200);
-      expect(row.mirrorBattles).toBe(10 * 2);
+      expect(row.battles).toBe(2 * withHero * (compositions - withHero));
+      expect(row.mirrorBattles).toBe(withHero * 2);
       expect(row.winRate).toBeGreaterThanOrEqual(0);
       expect(row.winRate).toBeLessThanOrEqual(1);
     }

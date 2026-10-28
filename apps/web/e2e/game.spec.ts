@@ -52,7 +52,9 @@ test('chaque écran tient dans la fenêtre, sans défilement', async ({ page }) 
   await noScroll(page);
   await page.getByRole('button', { name: 'Jouer en invité' }).click();
   await noScroll(page);
-  for (const entry of ['Donjons', 'Équipe', 'Héros', 'Atelier', 'Coffres']) {
+  // Toutes les entrées du camp sont visibles en entier, PvP compris.
+  await expect(page.getByRole('button', { name: /^PvP/ })).toBeInViewport({ ratio: 0.99 });
+  for (const entry of ['Donjons', 'Équipe', 'Héros', 'Atelier', 'Coffres', 'PvP']) {
     await page.getByRole('button', { name: new RegExp(`^${entry}`) }).click();
     await noScroll(page);
     if (entry === 'Héros') {

@@ -6,6 +6,7 @@ import {
   sandboxProfile,
   step,
   talentPoints,
+  unlockedPages,
   type Action,
   type BattleState,
   type Side,
@@ -39,18 +40,18 @@ export const HELLO: ClientMessage = {
   contentHash: contentHash(content),
 };
 
-/** Tous les héros au niveau maximum, trois exemplaires de chaque objet (uid 1 à 36). */
+/** Tous les héros au niveau maximum, plusieurs exemplaires de chaque objet (voir sandboxProfile). */
 export const richProfile: Profile = sandboxProfile(content);
 
 const TEAMS: Readonly<Record<string, readonly string[]>> = {
-  a: ['pyra', 'maree', 'ronce'],
-  b: ['cendre', 'ressac', 'seve'],
+  a: ['pyra', 'maree', 'ronce', 'cendre'],
+  b: ['cendre', 'ressac', 'seve', 'pyra'],
 };
 
 /** Premiers talents valides jusqu'à épuisement des points du niveau donné. */
 export function talentsFor(hero: string, level: number): string[] {
   const def = content.heroById.get(hero)!;
-  const pages = level >= 20 ? 3 : level >= 10 ? 2 : 1;
+  const pages = unlockedPages(level, balance);
   const nodes = def.pages.slice(0, pages).flatMap((page) => page.nodes);
   const taken: string[] = [];
   for (let guard = 0; guard < 50 && taken.length < talentPoints(level, balance); guard++) {
@@ -67,7 +68,7 @@ export function talentsFor(hero: string, level: number): string[] {
   return taken;
 }
 
-/** Demande d'équipe : trois héros dans l'ordre, talents au niveau donné, un objet par héros (uid donnés). */
+/** Demande d'équipe : les héros dans l'ordre, talents au niveau donné, un objet par héros (uid donnés). */
 export function teamRequest(
   heroes: readonly string[],
   options: { level?: number; items?: readonly (readonly number[])[] } = {},
@@ -84,6 +85,9 @@ export function teamRequest(
 }
 
 export const squad = (name: 'a' | 'b'): readonly string[] => TEAMS[name]!;
+
+/** Héros par équipe, lu dans l'équilibrage (4) : les tests ne supposent pas de nombre. */
+export const TEAM = balance.progression.teamSize;
 
 /** Un salon et ses deux joueurs : l'heure, les profils et les messages reçus sont suivis ici. */
 export class Table {
@@ -154,8 +158,8 @@ export class Table {
   /** Les deux joueurs rejoignent, composent leur équipe et se déclarent prêts : le combat commence. */
   startBattle(
     teams: { p1: TeamRequest; p2: TeamRequest } = {
-      p1: teamRequest(squad('a'), { items: [[1], [4], [7]] }),
-      p2: teamRequest(squad('b'), { items: [[10], [13], [16]] }),
+      p1: teamRequest(squad('a'), { items: [[1], [4], [7], [10]] }),
+      p2: teamRequest(squad('b'), { items: [[13], [16], [19], [22]] }),
     },
   ): void {
     this.send('p1', HELLO);

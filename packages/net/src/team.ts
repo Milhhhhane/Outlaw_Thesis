@@ -1,5 +1,5 @@
 import type { Balance, Content, Profile } from '@outlaw/data';
-import { idSchema, NODES_PER_PAGE, PAGES_PER_HERO } from '@outlaw/data';
+import { idSchema, MAX_SIDE, NODES_PER_PAGE, PAGES_PER_HERO } from '@outlaw/data';
 import {
   compileTeam,
   talentPoints,
@@ -12,8 +12,10 @@ import { z } from 'zod';
 import { sideOf, type PlayerId } from './players';
 import type { RoomRules } from './rules';
 
-/** Héros par équipe. */
-export const TEAM_SIZE = 3;
+/** Héros par équipe : la taille d'équipe du jeu (`balance.progression.teamSize`), la même qu'en PvE. */
+export function teamSizeOf(balance: Balance): number {
+  return balance.progression.teamSize;
+}
 
 /** Identifiant court : tout champ texte d'un message client est borné. */
 export const shortIdSchema = idSchema.max(64);
@@ -24,14 +26,14 @@ export const shortIdSchema = idSchema.max(64);
  */
 export const teamHeroSchema = z.strictObject({
   hero: shortIdSchema,
-  /** Emplacement dans la ligne, de gauche à droite : les trois équipes doivent couvrir 0, 1 et 2. */
+  /** Emplacement dans la ligne, de gauche à droite : l'équipe couvre 0 à `teamSize` − 1. */
   slot: z.number().int().min(0).max(99),
   talents: z.array(shortIdSchema).max(NODES_PER_PAGE.max * PAGES_PER_HERO),
   items: z.array(z.number().int().min(0)).max(4),
 });
 
 /** Bornes larges : c'est validateTeam qui refuse avec un code précis (team_size, bad_slots…). */
-export const teamHeroesSchema = z.array(teamHeroSchema).max(6);
+export const teamHeroesSchema = z.array(teamHeroSchema).max(2 * MAX_SIDE);
 export const teamRequestSchema = z.strictObject({ heroes: teamHeroesSchema });
 export type TeamRequest = z.infer<typeof teamRequestSchema>;
 
@@ -53,7 +55,7 @@ export interface ValidatedTeam {
   readonly ok: true;
   /** Builds finaux (niveau plafonné), classés par emplacement : l'indice est l'emplacement. */
   readonly builds: readonly HeroBuild[];
-  /** Somme des paliers des trois héros. */
+  /** Somme des paliers des héros de l'équipe. */
   readonly tier: number;
 }
 export interface RejectedTeam {
@@ -117,7 +119,7 @@ export function validateTeam(input: TeamInput): TeamCheck {
   const balance = input.balance ?? content.balance;
   const heroes = [...request.heroes].sort((a, b) => a.slot - b.slot);
 
-  if (heroes.length !== TEAM_SIZE) return reject('team_size', String(heroes.length));
+  if (heroes.length !== teamSizeOf(balance)) return reject('team_size', String(heroes.length));
   if (heroes.some((entry, index) => entry.slot !== index)) return reject('bad_slots');
 
   const seen = new Set<string>();

@@ -5,7 +5,7 @@ import { content } from '../combat/session';
 import { useBattle } from '../combat/useBattle';
 import { speedFactor, useOptions } from '../game/options';
 import { t, tk } from '../i18n';
-import type { ClientMessage } from '@outlaw/net';
+import { teamSizeOf, type ClientMessage } from '@outlaw/net';
 import type { PvpInfo } from './info';
 import { toAction, type BattleStart, type SessionState } from './session';
 
@@ -22,9 +22,11 @@ const CLAIM_AFTER_MS = 2000;
 const SILENT = new Set(['not_expired', 'not_your_turn']);
 
 export function errorText(code: string): string {
+  // Seul team_size a un paramètre : la taille d'équipe du jeu.
+  const params = { count: teamSizeOf(content.balance) };
   return tk(`pvp.error.${code}`) === `pvp.error.${code}`
     ? t('pvp.error.generic')
-    : tk(`pvp.error.${code}`);
+    : tk(`pvp.error.${code}`, params);
 }
 
 /** Réplique locale de l'état du combat, avancée en même temps que l'affichage pour vérifier les empreintes. */

@@ -4,6 +4,7 @@ import {
   elementSchema,
   enemyTargetRuleSchema,
   idSchema,
+  MAX_SIDE,
   roleSchema,
   spellSlotSchema,
   targetingSchema,
@@ -43,7 +44,11 @@ export const unitDefSchema: z.ZodType<UnitDef> = z.strictObject({
   id: unitIdSchema,
   kind: idSchema,
   side: sideSchema,
-  slot: z.number().int().min(0).max(2),
+  slot: z
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_SIDE - 1),
   element: elementSchema,
   role: roleSchema.nullable(),
   boss: z.boolean(),
@@ -55,7 +60,10 @@ export const unitDefSchema: z.ZodType<UnitDef> = z.strictObject({
 });
 
 export const battleSetupSchema: z.ZodType<BattleSetup> = z.strictObject({
-  units: z.array(unitDefSchema).min(2).max(6),
+  units: z
+    .array(unitDefSchema)
+    .min(2)
+    .max(2 * MAX_SIDE),
   rules: battleRulesSchema.optional(),
 });
 

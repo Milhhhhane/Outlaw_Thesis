@@ -2,6 +2,24 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — PvP : duel en ligne, à quatre héros, accessible depuis le camp
+
+### Ajouté
+
+- Duel en ligne entre amis (salon privé par code ou lien `#salon=CODE`), arbitré par un Durable
+  Object : règles de l'hôte (niveau maximum, objets, budget de paliers, temps par action), combat
+  en direct avec chrono serveur, émotes, revanche, reprise après coupure (`docs/PVP.md`).
+- Entrée **PvP** au camp. En invité, l'écran explique que le duel exige un compte (gratuit, sans
+  e-mail) et ouvre la connexion ou l'inscription sur place.
+- `pnpm sim:pvp` : mesure de l'équilibrage du duel (priorité, durée, héros), sans rien appliquer.
+
+### Modifié
+
+- Le PvP suit la taille d'équipe du jeu : `teamSize` (4) héros par camp, sans nombre écrit dans le
+  code ; le budget de paliers va de `teamSize` à `teamSize` × 4 (4 à 16) et le salon refuse un
+  budget hors de ces bornes.
+- Le bouton Auto n'apparaît pas en duel : chaque joueur joue lui-même.
+
 ## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
 
 ### Modifié

@@ -1,3 +1,4 @@
+import { MAX_SIDE } from '@outlaw/data';
 import { compileTeam, createBattle, type HeroBuild } from '@outlaw/engine';
 import { describe, expect, it } from 'vitest';
 import { battleSetupSchema, unitDefSchema } from '../src/schemas';
@@ -61,7 +62,8 @@ describe('schémas des unités compilées', () => {
       'player',
     );
     expect(unitDefSchema.safeParse({ ...unit, extra: 1 }).success).toBe(false);
-    expect(unitDefSchema.safeParse({ ...unit, slot: 3 }).success).toBe(false);
+    expect(unitDefSchema.safeParse({ ...unit, slot: MAX_SIDE - 1 }).success).toBe(true);
+    expect(unitDefSchema.safeParse({ ...unit, slot: MAX_SIDE }).success).toBe(false);
     expect(unitDefSchema.safeParse({ ...unit, stats: { ...unit!.stats, hp: 0 } }).success).toBe(
       false,
     );

@@ -1,7 +1,8 @@
 # PVP : salon personnalisé
 
-Premier mode JcJ : un salon privé, deux joueurs, trois héros chacun, arbitré par un serveur (un
-Durable Object Cloudflare) et joué depuis l'écran « Duel en ligne » du hub. Ce document décrit ce qui
+Premier mode JcJ : un salon privé, deux joueurs, `teamSize` héros chacun (4, la même taille d'équipe
+qu'en donjon, lue dans `balance.json`), arbitré par un serveur (un Durable Object Cloudflare) et joué
+depuis l'entrée **PvP** du camp (écran « Duel en ligne »). Ce document décrit ce qui
 est fait dans le dépôt (moteur, protocole, logique de salon, serveur, interface, mesure
 d'équilibrage) et ce qui reste. Les choix et leurs raisons sont aussi dans `docs/DECISIONS.md`
 (section « PVP »).
@@ -25,7 +26,14 @@ hasard (le test `purity.test.ts` de `packages/net` balaie les sources).
 
 - **Deux joueurs pilotés.** Les deux camps ont `controller: 'policy'`. Le joueur 1 (l'hôte) est le
   camp `player`, le joueur 2 le camp `enemy`. Seule la priorité change d'un combat à l'autre.
-- **Unités déterministes.** Identifiants `p1_<héros>` et `p2_<héros>`, emplacements 0 à 2.
+- **Unités déterministes.** Identifiants `p1_<héros>` et `p2_<héros>`, emplacements 0 à
+  `teamSize` − 1 (0 à 3).
+- **Taille d'équipe lue dans les données.** Aucun nombre de héros n'est écrit dans le code du PvP :
+  `teamSizeOf(balance)` (`balance.progression.teamSize`) pour l'équipe, `MAX_SIDE` de `@outlaw/data`
+  pour les bornes des schémas (emplacements, unités par camp).
+- **Pas de combat automatique en ligne.** Le bouton Auto (et la touche A) du solo n'apparaît pas
+  dans un duel : chaque joueur joue lui-même ; s'il tarde, le chrono du serveur joue l'action par
+  défaut.
 - **Un combat par partie.** Une revanche est un nouveau combat : mêmes équipes, priorité échangée,
   acceptée par les deux joueurs.
 - **Pas de récompense, pas de classement.** Rien n'est écrit dans les profils.
@@ -37,12 +45,12 @@ hasard (le test `purity.test.ts` de `packages/net` balaie les sources).
 
 Réglées par l'hôte avant le combat (`set_rules`), valeurs par défaut entre parenthèses :
 
-| Règle         | Valeurs                                                                 |
-| ------------- | ----------------------------------------------------------------------- |
-| `maxLevel`    | 1 à 30 (30) : le niveau d'un héros est `min(niveau du profil, plafond)` |
-| `items`       | oui / non (oui)                                                         |
-| `tierBudget`  | aucun (défaut), ou un entier de 3 à 12 : somme des paliers des 3 héros  |
-| `turnSeconds` | 20, 30, 45 ou 60 (30) : temps accordé à chaque action                   |
+| Règle         | Valeurs                                                                        |
+| ------------- | ------------------------------------------------------------------------------ |
+| `maxLevel`    | 1 à 30 (30) : le niveau d'un héros est `min(niveau du profil, plafond)`        |
+| `items`       | oui / non (oui)                                                                |
+| `tierBudget`  | aucun (défaut), ou de `teamSize` à `teamSize` × 4 (4 à 16) : somme des paliers |
+| `turnSeconds` | 20, 30, 45 ou 60 (30) : temps accordé à chaque action                          |
 
 Paliers : un héros a un `tier` de 1 à 4 (I à IV, champ ajouté à `heroSchema`, défaut 1). Les six
 héros actuels sont tous de palier I, donc un budget de 3 (le minimum) les autorise tous.
@@ -113,8 +121,8 @@ modification de contenu, même d'un texte de héros, invalide les clients ancien
 
 ### Validation d'équipe (`validateTeam`)
 
-Contrôles dans cet ordre, le premier refus l'emporte : `team_size` (3 héros), `bad_slots`
-(emplacements 0, 1, 2), `duplicate_hero`, `hero_not_owned`, `items_forbidden`, puis pour chaque
+Contrôles dans cet ordre, le premier refus l'emporte : `team_size` (`teamSize` héros), `bad_slots`
+(emplacements 0 à `teamSize` − 1), `duplicate_hero`, `hero_not_owned`, `items_forbidden`, puis pour chaque
 héros dans l'ordre des emplacements : `bad_slots` (trop d'objets, ou deux fois le même),
 `item_not_owned` (exemplaire absent du profil, déjà pris par un autre héros, amélioration hors
 bornes), `unknown_talent`, `talent_invalid` (doublon, prérequis, choix exclusif),
@@ -178,8 +186,10 @@ fermeture de connexion, `reduceRoom(..., { type: 'disconnect', player }, ctx)` ;
 expédier `update.send` (`to: 'all'` ou un joueur), programmer l'alarme à `nextWakeUp(update.room)`
 (null : pas d'alarme), supprimer l'objet si `update.closed`. `deserializeRoom` valide tout ce qu'il
 lit (`RoomFormatError` sinon) ; `ROOM_FORMAT` versionne la forme. Le serveur fournit `now`, `coin`
-(tirage au sort fait côté serveur) et `profileOf`. Mesures : environ 1,3 ms par action (le réducteur
-rejoue le combat à chaque action) et 26 Ko de JSON pour un salon en cours. Le détail du câblage est
+(tirage au sort fait côté serveur) et `profileOf`. Mesures à quatre contre quatre : environ 1,2 ms
+par action une fois le code chaud (le réducteur rejoue le combat à chaque action ; 3 à 11 ms sur les
+premiers combats d'un processus neuf) et 35 Ko de JSON pour un salon dont le combat est fini (70
+actions ; 26 Ko à trois contre trois). Le détail du câblage est
 dans la section « Serveur » ci-dessous.
 
 ## Empreinte d'état et rejeu
@@ -195,7 +205,7 @@ hasard dans le moteur).
 
 Rapport seulement : rien n'est appliqué, `baseline.csv` et `pnpm sim:check` ne changent pas.
 
-- **Série miroir** : la même composition (20 possibles) des deux côtés, mêmes builds tirés au
+- **Série miroir** : la même composition (15 possibles : quatre héros parmi six) des deux côtés, mêmes builds tirés au
   hasard, niveau 30, sans objet, politique « joueur moyen » de `tools/sim/src/policy.ts` pour
   chaque camp (graines distinctes). La seule différence est la priorité : taux de victoire du premier
   joueur, cible 50 % ± 3 points.
@@ -207,35 +217,38 @@ Rapport seulement : rien n'est appliqué, `baseline.csv` et `pnpm sim:check` ne 
 Options : `--samples` (jeux de builds croisés, 4 par défaut), `--mirror-samples` (60 par
 composition), `--seed` (1), `--level` (30). Durée : une dizaine de secondes par défaut.
 
-Résultats à la livraison (graine 1, 4 jeux de builds, 1 200 miroirs et 1 520 croisés ; entre
-parenthèses graine 2, 8 jeux, 2 400 miroirs et 3 040 croisés) :
+Résultats après le passage à quatre héros et le grind (graine 1, 4 jeux de builds, 900 miroirs et
+840 croisés ; entre parenthèses graine 2, 8 jeux, 120 miroirs par composition, 1 800 miroirs et
+1 680 croisés). La première livraison, à trois héros, est rappelée en dernière colonne (graine 1).
 
-| Mesure                                  | Valeur                                 | Cible                 |
-| --------------------------------------- | -------------------------------------- | --------------------- |
-| Victoires du premier joueur (miroir)    | 52,3 % (51,5 %)                        | 50 % ± 3              |
-| Durée moyenne (actions du moteur)       | 77,2 (77,7), soit 38,6 par joueur      | 30 à 60               |
-| Combats arrêtés par la limite d'actions | miroir 38 % (40 %), croisé 29 % (31 %) | -                     |
-| pyra                                    | 39,8 % (36,3 %)                        | 50 % ± 10 (indicatif) |
-| maree                                   | 38,8 % (43,3 %)                        | idem                  |
-| ronce                                   | 45,6 % (48,9 %)                        | idem                  |
-| cendre                                  | 71,3 % (65,7 %)                        | idem                  |
-| ressac                                  | 54,7 % (56,1 %)                        | idem                  |
-| seve                                    | 49,9 % (49,7 %)                        | idem                  |
+| Mesure                                  | Quatre contre quatre                   | À trois (graine 1)       | Cible                 |
+| --------------------------------------- | -------------------------------------- | ------------------------ | --------------------- |
+| Victoires du premier joueur (miroir)    | 54,7 % (50,5 %)                        | 52,3 %                   | 50 % ± 3              |
+| Durée moyenne (actions du moteur)       | 81,1 (81,0), soit 40,5 par joueur      | 77,2                     | 30 à 60               |
+| Combats arrêtés par la limite d'actions | miroir 44 % (42 %), croisé 31 % (34 %) | miroir 38 %, croisé 29 % | -                     |
+| pyra                                    | 42,5 % (43,9 %)                        | 39,8 %                   | 50 % ± 10 (indicatif) |
+| maree                                   | 39,5 % (39,9 %)                        | 38,8 %                   | idem                  |
+| ronce                                   | 43,3 % (41,8 %)                        | 45,6 %                   | idem                  |
+| cendre                                  | 64,0 % (56,1 %)                        | 71,3 %                   | idem                  |
+| ressac                                  | 60,5 % (55,1 %)                        | 54,7 %                   | idem                  |
+| seve                                    | 50,2 % (63,2 %)                        | 49,9 %                   | idem                  |
 
 Lecture et propositions (non appliquées) :
 
-1. **Priorité** : dans la cible dans les deux exécutions. Rien à faire.
-2. **Durée** : 77 actions du moteur, hors cible si elle se compte en actions du moteur ; environ 39 par
+1. **Priorité** : 54,7 % à la graine 1 (hors de la bande de 3 points), 50,5 % à la graine 2 sur deux
+   fois plus de combats. L'écart entre les deux exécutions est du même ordre que la bande : rien de
+   sûr, à remesurer avec plus d'échantillons avant de compenser le second joueur.
+2. **Durée** : 81 actions du moteur, hors cible si elle se compte en actions du moteur ; environ 40 par
    joueur, dans la cible si elle se compte par joueur (convention de `docs/BALANCE.md` pour le PvE :
-   « actions de joueur »). À trancher. Près de 4 miroirs sur 10 finissent à la limite d'actions, donc
-   au ratio de PV. Essai en mémoire (rien d'écrit, 2 jeux de builds, 40 miroirs par composition,
-   graine 1) : `defenseScale` de 100 à 150, 200, 300 donne 78,5, 74,0, 70,6, 67,5 actions. Ce seul levier
-   ne ramène pas sous 60 et il est global (il toucherait le PvE et la baseline). Pistes : une règle de
-   combat PvP en plus dans `BattleRules` (par exemple un pourcentage de dégâts), ou raccourcir la
-   limite d'actions en PvP ; les causes (soins, boucliers, PV de niveau 30) n'ont pas été isolées.
-3. **Héros** : `cendre` est nettement au-dessus (66 à 71 %), `pyra` et `maree` en dessous (36 à 43 %),
-   sans objet et avec la politique moyenne. Les héros relèvent d'un autre chantier : à traiter avec
-   les mêmes mesures sur `balance.json` et `content/heroes` quand ce chantier le permet.
+   « actions de joueur »). À trancher. Quatre héros par camp allongent un peu les combats et plus de
+   4 miroirs sur 10 finissent à la limite d'actions, donc au ratio de PV. Essai fait à trois héros
+   (rien d'écrit) : `defenseScale` de 100 à 300 ne ramène pas sous 60 et toucherait le PvE. Pistes :
+   une règle de combat PvP en plus dans `BattleRules` (par exemple un pourcentage de dégâts), ou
+   raccourcir la limite d'actions en PvP ; les causes (soins, boucliers, PV de niveau 30) n'ont pas
+   été isolées.
+3. **Héros** : `pyra`, `maree` et `ronce` restent sous 45 %, `cendre`, `ressac` et `seve` au-dessus de
+   55 % selon la graine. Avec quatre héros parmi six, deux équipes partagent toujours au moins deux
+   héros, ce qui rend le taux par héros plus bruité qu'à trois. Les héros relèvent d'un autre chantier.
 
 Précautions : politique « joueur moyen » (un humain fera mieux ou autrement), pas d'objet, niveau 30,
 builds au hasard : c'est un thermomètre pour comparer avant et après un changement, pas une vérité.
@@ -278,14 +291,14 @@ websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et
 
 ## Interface (`apps/web/src/pvp`)
 
-| Fichier                         | Rôle                                                                              |
-| ------------------------------- | --------------------------------------------------------------------------------- |
-| `PvpMenu.tsx`                   | Entrée « Duel en ligne » : créer un salon ou en rejoindre un par code             |
-| `Lobby.tsx`, `PvpRoom.tsx`      | Salle d'attente : code et lien, règles (hôte), équipe, joueurs, bouton « Prêt »   |
-| `team.ts`                       | Choix des 3 héros, ramenés au plafond de niveau du salon, talents retirés au-delà |
-| `socket.ts`, `session.ts`       | WebSocket, `hello`, reprise avec attente croissante (jusqu'à 75 s), `ping`        |
-| `PvpBattle.tsx`, `overlays.tsx` | Combat en direct : chrono, émotes, résultat, revanche                             |
-| `combat/useBattle.ts`           | Le combat solo réutilisé : `apply` et `restore` rejouent les actions annoncées    |
+| Fichier                         | Rôle                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------- |
+| `PvpMenu.tsx`                   | Écran « Duel en ligne » : créer un salon, en rejoindre un, ou se connecter      |
+| `Lobby.tsx`, `PvpRoom.tsx`      | Salle d'attente : code et lien, règles (hôte), équipe, joueurs, bouton « Prêt » |
+| `team.ts`                       | Choix des héros, ramenés au plafond de niveau du salon, talents retirés au-delà |
+| `socket.ts`, `session.ts`       | WebSocket, `hello`, reprise avec attente croissante (jusqu'à 75 s), `ping`      |
+| `PvpBattle.tsx`, `overlays.tsx` | Combat en direct : chrono, émotes, résultat, revanche                           |
+| `combat/useBattle.ts`           | Le combat solo réutilisé : `apply` et `restore` rejouent les actions annoncées  |
 
 - **Le client n'invente rien.** Il joue une action seulement quand le serveur l'annonce (`applied`),
   vérifie l'empreinte avec son état local et demande `resync` (deux fois au plus) en cas d'écart.
@@ -301,11 +314,13 @@ websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et
 
 ## Jouer à deux
 
-1. Les deux joueurs se connectent à leur compte (le menu **Duel en ligne** propose « Se connecter »).
-2. Le premier ouvre **Duel en ligne** depuis le hub, puis **Créer un salon**. Il envoie le code (ou le
+1. Les deux joueurs se connectent à leur compte. Le duel en ligne exige un compte : en invité,
+   l'entrée **PvP** du camp l'explique et ouvre directement « Se connecter » ou « Créer un compte »
+   (gratuit, sans e-mail ; la partie d'invité peut être envoyée sur le compte à la première connexion).
+2. Le premier ouvre **PvP** depuis le camp, puis **Créer un salon**. Il envoie le code (ou le
    lien) à son ami.
-3. L'ami ouvre **Duel en ligne**, saisit le code (ou ouvre le lien) et rejoint.
-4. Chacun choisit trois héros. L'hôte règle niveau maximum, objets, budget de paliers et temps par
+3. L'ami ouvre **PvP**, saisit le code (ou ouvre le lien) et rejoint.
+4. Chacun choisit quatre héros (`teamSize`). L'hôte règle niveau maximum, objets, budget de paliers et temps par
    action, puis chacun appuie sur **Prêt**.
 5. Le serveur tire au sort qui commence. Le combat se joue comme en solo, au tour par tour ; si le
    chrono expire, le serveur joue l'action par défaut, et deux dépassements d'affilée valent forfait.
@@ -316,15 +331,18 @@ websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et
 
 ## Tests
 
-- `packages/net` (135 tests) : protocole, règles, validation, salon pur, pureté des sources.
+- `packages/net` (136 tests) : protocole, règles, validation, salon pur, pureté des sources.
 - `apps/api/test/pvp-room.test.ts` : le service de salon avec des sockets factices (rejeu complet d'un
   combat, reprise, chrono, forfait, débit, remplacement de connexion, redémarrage entre deux
   messages). `pvp-routes.test.ts` : identité, origine, limites, codes.
 - `apps/web/test/pvp.test.ts` : session, reprise, équipe et talents, empreinte, action en attente.
 - `apps/web/e2e/pvp.spec.ts` : deux navigateurs réels contre un vrai Worker et un vrai Durable Object
   (`wrangler dev`) : un salon, un combat entier, des émotes, une revanche puis un abandon ; la reprise
-  après rechargement de la page ; un code inconnu ou un salon complet. Joué avec `pnpm e2e` (projet
-  `comptes`).
+  après rechargement de la page ; un code inconnu ou un salon complet ; en invité, à 1280 x 720 et à
+  844 x 390, l'entrée **PvP** du camp visible sans défilement, l'explication du compte et
+  l'inscription sur place. Joué avec `pnpm e2e` (projet `comptes`). `game.spec.ts` vérifie aussi
+  l'entrée PvP dans toutes les résolutions du jeu seul (sans serveur : message « comptes non
+  disponibles »).
 - Un test de fumée manuel contre `wrangler dev` a joué un combat de bout en bout avec deux sockets
   (hors dépôt) et a révélé la limite de débit trop basse, relevée depuis de 30 à 60 messages.
 
@@ -347,6 +365,8 @@ websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et
   combats d'une même partie.
 - **`applied.auto: 'forfeit'` réservé.** En version 1, un forfait s'annonce par `result`.
 - **Deux joueurs, pas de spectateur, pas de chat libre.**
+- **Navigateurs.** La connexion WebSocket au salon n'est vérifiée (e2e) que sous Chromium ; Safari
+  n'a pas été essayé.
 
 - **Camp non inversé pour le joueur 2.** Chaque joueur voit son équipe à droite ou à gauche selon
   son camp (`player` à gauche, `enemy` à droite) : le joueur 2 voit sa propre équipe à droite. Pas
@@ -354,7 +374,7 @@ websocket` (400), code bien formé (404 sinon). Limites : 20 salons par heure et
 - **Salon inconnu ou plein : un seul message.** Le navigateur ne distingue pas les deux cas (le
   WebSocket refusé n'expose pas le code HTTP) : « Impossible de rejoindre ce salon ».
 - **Pas de reprise automatique de l'écran.** Un rechargement de la page ramène au hub : il faut
-  rouvrir **Duel en ligne** et ressaisir le code. Le serveur, lui, retient la place.
+  rouvrir **PvP** et ressaisir le code. Le serveur, lui, retient la place.
 - **Durée de partie.** La cible de « 30 à 60 actions » est ambiguë : une partie compte environ 77
   actions du moteur, soit environ 39 par joueur (voir `pnpm sim:pvp`).
 

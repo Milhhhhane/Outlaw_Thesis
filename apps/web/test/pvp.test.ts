@@ -310,7 +310,8 @@ function withTalents(heroes: readonly string[]) {
 }
 
 describe('équipe envoyée au salon', () => {
-  const heroes = ['pyra', 'maree', 'ronce'];
+  // Une équipe de la taille du jeu (`teamSize`, 4) : le salon refuse toute autre taille.
+  const heroes = content.heroes.slice(0, content.balance.progression.teamSize).map((h) => h.id);
   const profile = withTalents(heroes);
   const check = (level: number, items = true) =>
     validateTeam({

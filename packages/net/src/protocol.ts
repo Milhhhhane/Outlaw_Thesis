@@ -1,4 +1,4 @@
-import { idSchema } from '@outlaw/data';
+import { idSchema, MAX_SIDE } from '@outlaw/data';
 import { z } from 'zod';
 import { roomRulesSchema } from './rules';
 import { battleSetupSchema, loggedActionSchema, sideSchema } from './schemas';
@@ -133,7 +133,11 @@ export type RoomResult = z.infer<typeof roomResultSchema>;
 
 const teamHeroViewSchema = z.strictObject({
   hero: idSchema,
-  slot: z.number().int().min(0).max(2),
+  slot: z
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_SIDE - 1),
   level: z.number().int().min(1),
   talents: z.array(idSchema),
   items: z.array(z.strictObject({ id: idSchema, upgrade: z.number().int().min(0) })),

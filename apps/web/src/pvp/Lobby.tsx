@@ -1,5 +1,6 @@
 import {
   MAX_LEVEL_LIMIT,
+  teamSizeOf,
   tierBudgetOptions,
   TURN_SECONDS_OPTIONS,
   type ClientMessage,
@@ -16,7 +17,9 @@ import { errorText } from './PvpBattle';
 import type { SessionState } from './session';
 import { cappedLevel, teamRequestFor, tierOf } from './team';
 
-const TEAM_SIZE = 3;
+/** Héros par équipe : la taille d'équipe du jeu (`balance.progression.teamSize`). */
+const TEAM_SIZE = teamSizeOf(content.balance);
+const TIER_BUDGETS = tierBudgetOptions(TEAM_SIZE);
 
 interface Props {
   readonly code: string;
@@ -101,7 +104,7 @@ function Rules({
             set({ tierBudget: event.target.value === 'none' ? null : Number(event.target.value) });
           }}
         >
-          {tierBudgetOptions.map((option) => (
+          {TIER_BUDGETS.map((option) => (
             <option key={option ?? 'none'} value={option === null ? 'none' : String(option)}>
               {option === null ? t('pvp.rules.tier.none') : option}
             </option>
@@ -139,7 +142,7 @@ export function Lobby({ code, state, room, send, onDismiss, onLeave, pseudo }: P
   const [copied, setCopied] = useState(false);
   const rulesKey = JSON.stringify(room.rules);
 
-  // Dès que trois héros sont choisis (ou que les règles changent), le salon valide l'équipe.
+  // Dès que l'équipe est complète (ou que les règles changent), le salon valide l'équipe.
   const lastSent = useRef('');
   const { link } = state;
   useEffect(() => {
@@ -183,7 +186,7 @@ export function Lobby({ code, state, room, send, onDismiss, onLeave, pseudo }: P
   const readyLabel = me.ready
     ? t('pvp.ready.waiting')
     : me.team === null
-      ? t('pvp.ready.needTeam')
+      ? t('pvp.ready.needTeam', { count: TEAM_SIZE })
       : !them.present
         ? t('pvp.ready.needOpponent')
         : t('pvp.ready');
@@ -253,7 +256,7 @@ export function Lobby({ code, state, room, send, onDismiss, onLeave, pseudo }: P
 
         <Panel className="pvp-room__team" label={t('pvp.team')}>
           <h2 className="pvp-title">{t('pvp.team')}</h2>
-          <p className="pvp-hint">{t('pvp.team.hint')}</p>
+          <p className="pvp-hint">{t('pvp.team.hint', { count: TEAM_SIZE })}</p>
           <ul className="pvp-picks">
             {owned.map((id) => {
               const def = content.heroById.get(id);

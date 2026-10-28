@@ -1,3 +1,4 @@
+import { MAX_SIDE } from '@outlaw/data';
 import { z } from 'zod';
 import { roomResultSchema } from './protocol';
 import { roomRulesSchema } from './rules';
@@ -15,7 +16,7 @@ const teamEntrySchema = z.strictObject({
       items: z.array(z.strictObject({ id: z.string(), upgrade: z.number().int().min(0) })),
     }),
   ),
-  units: z.array(unitDefSchema).max(3),
+  units: z.array(unitDefSchema).max(MAX_SIDE),
 });
 
 const playerSchema = z.strictObject({

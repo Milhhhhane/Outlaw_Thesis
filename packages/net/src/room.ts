@@ -26,9 +26,9 @@ import {
   type RoomView,
   type ServerMessage,
 } from './protocol';
-import { defaultRules, toBattleRules, type RoomRules } from './rules';
+import { defaultRules, tierBudgetBounds, toBattleRules, type RoomRules } from './rules';
 import type { LoggedAction } from './schemas';
-import { compilePlayerTeam, validateTeam, type TeamRequest } from './team';
+import { compilePlayerTeam, teamSizeOf, validateTeam, type TeamRequest } from './team';
 
 /**
  * Salon PvP : un réducteur pur et déterministe. (salon, événement, contexte) → (salon, messages).
@@ -474,6 +474,14 @@ function onSetRules(
   }
   if (room.phase !== 'lobby') {
     fail(out, player, 'wrong_phase');
+    return room;
+  }
+  const bounds = tierBudgetBounds(teamSizeOf(ctx.balance));
+  if (
+    rules.tierBudget !== null &&
+    (rules.tierBudget < bounds.min || rules.tierBudget > bounds.max)
+  ) {
+    fail(out, player, 'bad_schema', `budget de paliers : ${bounds.min} à ${bounds.max}`);
     return room;
   }
   let next: Room = {
