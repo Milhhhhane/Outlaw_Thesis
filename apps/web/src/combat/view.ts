@@ -42,11 +42,15 @@ export interface Flash {
 /** Sort en cours d'animation : le lanceur, ses cibles et son élément. */
 export interface CastView {
   readonly key: number;
+  /** Rang du sort dans le combat : sa parité alterne les noms d'animation (a/b) d'un sort au suivant. */
+  readonly seq: number;
   readonly unit: string;
   readonly targets: readonly string[];
   readonly element: string;
   /** Ultime : flash d'écran et zoom bref. */
   readonly ult: boolean;
+  /** Attaque de base sur un seul ennemi : le sprite court jusqu'à sa cible et frappe au contact. */
+  readonly dash: boolean;
 }
 
 export interface BattleView {
@@ -60,6 +64,8 @@ export interface BattleView {
   readonly shake: { readonly key: number; readonly power: number } | null;
   /** Dernier coup reçu par un héros (voile rouge) : clé de l'événement. */
   readonly hurt: number | null;
+  /** Premier coup d'un ultime qui touche (flash blanc et grosse secousse) : clé de l'événement. */
+  readonly ultHit: number | null;
 }
 
 function modsOf(unit: UnitState): Record<string, number> {
@@ -90,6 +96,7 @@ export function viewFromState(state: BattleState): BattleView {
     cast: null,
     shake: null,
     hurt: null,
+    ultHit: null,
   };
 }
 
@@ -114,25 +121,48 @@ function elementOf(view: BattleView, id: string): string {
   return view.units.find((u) => u.id === id)?.element ?? 'fire';
 }
 
-const STATUS_FX: Readonly<Record<string, string>> = { burn: 'burn', stun: 'stun', mark: 'mark' };
-
 /** Applique un événement du journal à la vue. `key` : position de l'événement, pour les animations. */
 export function applyEvent(view: BattleView, event: BattleEvent, key: number): BattleView {
+  const next = applyOne(view, event, key);
+  // Premier effet d'un ultime (coup, soin, bouclier, altération, tempo…) : le flash d'écran part
+  // à l'impact, pas au lancer. Les ultimes sans dégâts ont aussi le leur.
+  const cast = view.cast;
+  const strikes =
+    'source' in event &&
+    cast !== null &&
+    cast.ult &&
+    cast.unit === event.source &&
+    event.type !== 'trigger_fired' &&
+    (view.ultHit === null || view.ultHit < cast.key);
+  return strikes ? { ...next, ultHit: key } : next;
+}
+
+function applyOne(view: BattleView, event: BattleEvent, key: number): BattleView {
   switch (event.type) {
     case 'turn_start':
       return { ...view, acting: event.unit };
-    case 'cast':
+    case 'cast': {
+      const caster = view.units.find((u) => u.id === event.unit);
+      const only = event.targets.length === 1 ? event.targets[0] : undefined;
+      const target = view.units.find((u) => u.id === only);
       return {
         ...view,
         acting: event.unit,
         cast: {
           key,
+          seq: (view.cast?.seq ?? 0) + 1,
           unit: event.unit,
           targets: event.targets,
-          element: elementOf(view, event.unit),
+          element: caster?.element ?? 'fire',
           ult: event.slot === 'ult',
+          dash:
+            event.slot === 'basic' &&
+            caster !== undefined &&
+            target !== undefined &&
+            target.side !== caster.side,
         },
       };
+    }
     case 'damage': {
       const next = update(view, event.target, (u) => ({
         ...u,
@@ -143,21 +173,27 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
       const element = event.cause === 'burn' ? 'fire' : elementOf(view, event.source);
       const target = view.units.find((u) => u.id === event.target);
       const dealt = event.amount - event.absorbed;
+      // Coup d'un ultime : toujours lourd.
+      const fromUlt =
+        event.cause === 'spell' && view.cast?.ult === true && view.cast.unit === event.source;
       const heavy =
-        event.cause !== 'burn' &&
-        (event.killed || (target !== undefined && dealt >= target.maxHp * 0.3));
+        fromUlt ||
+        (event.cause !== 'burn' &&
+          (event.killed || (target !== undefined && dealt >= target.maxHp * 0.3)));
       const shaken = {
         ...next,
         shake: event.cause === 'burn' ? next.shake : { key, power: heavy ? 2 : 1 },
         hurt: target?.side === 'player' && event.cause !== 'burn' ? key : next.hurt,
       };
+      // Bouclier brisé sans que rien ne passe : la bulle éclate à la place de l'impact.
+      const shattered = event.absorbed > 0 && event.shieldAfter === 0 && dealt === 0;
       return flash(
         shaken,
         key,
         event.target,
         `−${dealt}`,
         'damage',
-        heavy ? `impact_${element}` : `burst_${element}`,
+        shattered ? 'shatter' : heavy ? `impact_${element}` : `burst_${element}`,
         { heavy },
       );
     }
@@ -193,7 +229,8 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         event.target,
         '',
         'status',
-        STATUS_FX[event.status] ?? null,
+        // L'altération reste affichée sur l'unité tant qu'elle dure : pas d'effet à la pose.
+        null,
       );
     case 'stat_mod':
       return flash(
@@ -224,8 +261,7 @@ export function applyEvent(view: BattleView, event: BattleEvent, key: number): B
         event.unit,
         '',
         'status',
-        'dust',
-        { feet: true },
+        `motes_${elementOf(view, event.unit)}`,
       );
     default:
       return view;

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { backgroundUrl, GROUND_Y, sprite } from '../art';
+import { backgroundUrl, GROUND_Y, sprite, type SpriteInfo } from '../art';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite, PixelText } from '../art/Pixel';
 import type { BattleView, Flash, UnitView } from './view';
@@ -62,7 +62,7 @@ function Sparks({
 }) {
   const count = flash.heavy ? 10 : 6;
   return (
-    <span className="sparks" style={{ top }} aria-hidden="true">
+    <span className={`sparks sparks--${element}`} style={{ top }} aria-hidden="true">
       {Array.from({ length: count }, (_, i) => {
         const angle = (i / count) * Math.PI * 2 + (flash.key % 7) * 0.3;
         const dist = (flash.heavy ? 22 : 14) + ((flash.key * 13 + i * 7) % 9);
@@ -78,33 +78,94 @@ function Sparks({
   );
 }
 
+/** Course d'une attaque de base : déplacement (pixels natifs) jusqu'au contact de la cible. */
+export interface Dash {
+  /** Rang du sort (parité → nom d'animation a/b). */
+  readonly key: number;
+  readonly dx: number;
+  readonly dy: number;
+  /** Profondeur de la cible : le coureur passe devant elle le temps du coup. */
+  readonly z: number;
+}
+
+/** Écart gardé entre les pieds du coureur et ceux de sa cible. */
+const DASH_GAP = 26;
+
+export function dashOf(view: BattleView, unit: UnitView): Dash | undefined {
+  const cast = view.cast;
+  if (cast === null || !cast.dash || cast.unit !== unit.id) return undefined;
+  const target = view.units.find((u) => u.id === cast.targets[0]);
+  if (target === undefined) return undefined;
+  const from = placeOf(unit);
+  const to = placeOf(target);
+  const dir = unit.side === 'player' ? 1 : -1;
+  return { key: cast.seq, dx: to.x - dir * DASH_GAP - from.x, dy: to.y - from.y, z: to.y + 1 };
+}
+
+/** Où se pose chaque altération sur le sprite : brûlure aux pieds, étourdissement au-dessus de la
+    tête, marque au centre du corps. */
+const STATUS_PLACE: Readonly<
+  Record<
+    string,
+    { readonly sprite: string; readonly top: (unit: SpriteInfo, fx: SpriteInfo) => number }
+  >
+> = {
+  burn: { sprite: 'burn', top: (unit, fx) => unit.bottom - fx.h + 2 },
+  // Sur le haut du crâne, sous le repère (nom, PV) qui flotte juste au-dessus.
+  stun: { sprite: 'stun', top: (unit, fx) => unit.top - fx.h / 2 + 1 },
+  mark: { sprite: 'mark', top: (unit, fx) => (unit.top + unit.bottom) / 2 - fx.h / 2 },
+};
+
 function Actor(props: {
   readonly unit: UnitView;
   readonly active: boolean;
   readonly acting: boolean;
   readonly targetable: boolean;
   readonly flash: Flash | undefined;
+  readonly dash: Dash | undefined;
+  /** Lanceur de l'ultime en cours : passe devant et reste éclairé quand le reste s'assombrit. */
+  readonly caster: boolean;
 }) {
-  const { unit, flash } = props;
+  const { unit, flash, dash } = props;
   const info = sprite(unit.kind);
   if (info === undefined) return null;
   const { x, y } = placeOf(unit);
-  const hit = flash?.tone === 'damage' ? flash.key : 0;
-  const heavy = flash?.tone === 'damage' && flash.heavy;
+  // Réaction du corps au dernier événement : choc (dégâts) ou lueur (soin, bouclier).
+  const pulse =
+    flash !== undefined &&
+    (flash.tone === 'damage' || flash.tone === 'heal' || flash.tone === 'shield')
+      ? flash
+      : undefined;
+  // Élément du coup reçu (celui de l'attaquant, porté par l'effet), pour teinter le choc.
+  const hitElement = flash?.fx?.split('_')[1] ?? unit.element;
+  const pulseClass =
+    pulse === undefined
+      ? ''
+      : pulse.tone === 'damage'
+        ? `actor__hit actor__hit--${hitElement}${pulse.heavy ? ' actor__hit--heavy' : ''}`
+        : `actor__glow actor__glow--${pulse.tone}`;
+  const height = info.bottom - info.top;
+  const bubble = height > 44 ? sprite('bubble_l') : sprite('bubble_s');
   const style = {
     left: x - info.w / 2,
     top: y - info.bottom,
     width: info.w,
     height: info.h,
-    zIndex: y,
+    // Pendant sa course, l'attaquant passe devant sa cible ; il reprend sa profondeur au tour suivant.
+    zIndex: props.caster ? 300 : dash !== undefined && props.acting ? Math.max(y, dash.z) : y,
     '--dir': unit.side === 'player' ? 1 : -1,
     '--delay': `${-(unit.slot * 0.37 + (unit.side === 'enemy' ? 0.2 : 0))}s`,
+    '--dx': dash === undefined ? '0px' : `${dash.dx}px`,
+    '--dy': dash === undefined ? '0px' : `${dash.dy}px`,
   } as CSSProperties;
+  // Deux noms d'animation (a/b) : la course rejoue à chaque attaque sans remonter l'acteur.
   const className = [
     'actor',
     `actor--${unit.side}`,
     props.active ? 'actor--active' : '',
     props.acting ? 'actor--acting' : '',
+    props.caster ? 'actor--caster' : '',
+    dash === undefined ? '' : `actor--dash actor--dash-${dash.key % 2 === 0 ? 'a' : 'b'}`,
     props.targetable ? 'actor--targetable' : '',
     unit.alive ? '' : 'actor--down',
   ].join(' ');
@@ -112,39 +173,89 @@ function Actor(props: {
     <div className={className} style={style} data-unit={unit.id}>
       <span className="actor__shadow" style={{ top: info.bottom - 2 }} />
       <span className="actor__body">
-        <span
-          key={hit}
-          className={hit > 0 ? (heavy ? 'actor__hit actor__hit--heavy' : 'actor__hit') : ''}
-        >
+        <span key={pulse?.key ?? 0} className={pulseClass}>
           {unit.side === 'player' ? (
             <HeroSprite name={unit.kind} idle={unit.alive} />
           ) : (
             <PixelSprite name={unit.kind} idle={unit.alive} />
           )}
         </span>
+        {/* Altérations en cours (brûlure aux pieds, étoiles au-dessus de la tête, viseur sur le
+            corps) : tant que le journal les dit actives. */}
+        {unit.alive &&
+          unit.statuses.map((status) => {
+            const place = STATUS_PLACE[status.kind];
+            const fx = place === undefined ? undefined : sprite(place.sprite);
+            if (place === undefined || fx === undefined) return null;
+            return (
+              <span
+                key={status.kind}
+                className={`actor__status actor__status--${status.kind}`}
+                style={{ left: info.w / 2 - fx.w / 2, top: place.top(info, fx) }}
+              >
+                <PixelSprite name={place.sprite} idle />
+              </span>
+            );
+          })}
+        {/* Bulle de bouclier, dans le corps pour suivre la course : visible tant qu'il reste du
+            bouclier (valeur portée par le journal). */}
+        {unit.shield > 0 && unit.alive && bubble !== undefined && (
+          <span
+            className="actor__bubble"
+            style={{
+              left: info.w / 2 - bubble.w / 2,
+              top: (info.top + info.bottom) / 2 - bubble.h / 2 + 2,
+            }}
+          >
+            <PixelSprite name={height > 44 ? 'bubble_l' : 'bubble_s'} idle />
+          </span>
+        )}
       </span>
-      {flash?.fx != null && (
+    </div>
+  );
+}
+
+/**
+ * Effets posés sur une unité (impact, étincelles, chiffre) : dans une couche au-dessus des
+ * acteurs, pour qu'un attaquant au contact ne cache pas le coup qu'il porte.
+ */
+function Effects({ unit, flash }: { readonly unit: UnitView; readonly flash: Flash }) {
+  const info = sprite(unit.kind);
+  if (info === undefined) return null;
+  const { x, y } = placeOf(unit);
+  const hitElement = flash.fx?.split('_')[1] ?? unit.element;
+  const fx = flash.fx === null ? undefined : sprite(flash.fx);
+  return (
+    <div
+      className="effects"
+      style={{ left: x - info.w / 2, top: y - info.bottom, width: info.w, height: info.h }}
+    >
+      {fx !== undefined && flash.fx !== null && (
         <span
           key={`fx${flash.key}`}
-          className={flash.feet ? 'actor__fx actor__fx--feet' : 'actor__fx'}
-          style={flash.feet ? { top: info.bottom - 12 } : { top: info.top + 6 }}
+          className={`actor__fx actor__fx--${flash.fx.startsWith('motes_') ? 'motes' : flash.fx}`}
+          style={{
+            left: info.w / 2 - fx.w / 2,
+            // Aux pieds (poussière), posé au sol (soin, cendres), sinon centré sur le corps.
+            top: flash.feet
+              ? info.bottom - fx.h + 4
+              : flash.fx === 'heal' || flash.fx.startsWith('motes_')
+                ? info.bottom - fx.h + 6
+                : (info.top + info.bottom) / 2 - fx.h / 2,
+          }}
         >
-          <PixelSprite
-            name={flash.fx}
-            className={flash.fx.startsWith('impact_') ? 'fx-play fx-play--big' : 'fx-play'}
-          />
+          <PixelSprite name={flash.fx} className="fx-play" />
         </span>
       )}
-      {flash?.tone === 'damage' && (
-        <Sparks
-          key={`sp${flash.key}`}
-          flash={flash}
-          element={flash.fx?.split('_')[1] ?? unit.element}
-          top={info.top + 22}
-        />
+      {flash.tone === 'damage' && (
+        <Sparks key={`sp${flash.key}`} flash={flash} element={hitElement} top={info.top + 22} />
       )}
-      {flash !== undefined && flash.text !== '' && (
-        <span key={`n${flash.key}`} className="actor__number" style={{ top: info.top - 4 }}>
+      {flash.text !== '' && (
+        <span
+          key={`n${flash.key}`}
+          className={`actor__number actor__number--${flash.tone}`}
+          style={{ top: info.top - 4 }}
+        >
           <PixelText text={flash.text} tone={flash.tone} />
         </span>
       )}
@@ -161,15 +272,19 @@ function Bolts({ view }: { readonly view: BattleView }) {
   const casterInfo = sprite(caster.kind);
   const chest = from.y - ((casterInfo?.bottom ?? 60) - (casterInfo?.top ?? 0)) / 2;
   const dir = caster.side === 'player' ? 1 : -1;
+  // Course : l'arc de frappe part du point de contact, une fois le coureur arrivé.
+  const dash = cast.dash ? dashOf(view, caster) : undefined;
+  const slashX = from.x + (dash?.dx ?? 0) + dir * 18 - 24;
+  const slashY = chest + (dash?.dy ?? 0) - 24;
   return (
     <>
       <span
         key={`slash${cast.key}`}
-        className="stage__slash"
+        className={dash === undefined ? 'stage__slash' : 'stage__slash stage__slash--dash'}
         style={{
-          left: from.x + dir * 18 - 24,
-          top: chest - 24,
-          zIndex: from.y + 1,
+          left: slashX,
+          top: slashY,
+          zIndex: from.y + (dash?.dy ?? 0) + 2,
           transform: dir < 0 ? 'scaleX(-1)' : undefined,
         }}
       >
@@ -184,7 +299,7 @@ function Bolts({ view }: { readonly view: BattleView }) {
       </span>
       {cast.targets.map((id) => {
         const target = view.units.find((u) => u.id === id);
-        if (target === undefined || target.side === caster.side) return null;
+        if (dash !== undefined || target === undefined || target.side === caster.side) return null;
         const to = placeOf(target);
         const info = sprite(target.kind);
         const toY = to.y - ((info?.bottom ?? 60) - (info?.top ?? 0)) / 2;
@@ -211,18 +326,35 @@ export function Stage({
   scene,
   active,
   targets,
+  pace = 1,
 }: {
   readonly view: BattleView;
   readonly scene: string;
   readonly active: string | null;
   readonly targets: ReadonlySet<string>;
+  /** Multiplicateur de durée des animations (1 normal, 0,5 en ×2), comme pour le rejeu. */
+  readonly pace?: number;
 }) {
   const latest = new Map<string, Flash>();
   for (const f of view.flashes) latest.set(f.unit, f);
   const shake = view.shake;
-  const ult = view.cast?.ult === true ? view.cast.key : null;
+  const cast = view.cast;
+  const ult = cast?.ult === true ? cast.seq : null;
+  const caster = ult === null ? undefined : view.units.find((u) => u.id === cast?.unit);
+  // Le zoom de l'ultime vise le lanceur, en tirant vers le centre pour garder les cibles à l'écran.
+  const focus = caster === undefined ? { x: STAGE_W / 2, y: GROUND_Y } : placeOf(caster);
+  const stageStyle = {
+    '--pace': pace,
+    '--ox': `${((focus.x + STAGE_W / 2) / 2) * STAGE_SCALE}px`,
+    '--oy': `${(focus.y - 24 - STAGE_OFFSET) * STAGE_SCALE}px`,
+  } as CSSProperties;
+  const ab = (n: number): string => (n % 2 === 0 ? 'a' : 'b');
   return (
-    <div className="stage" aria-hidden="true">
+    <div
+      className={ult === null ? 'stage' : `stage stage--ult${ab(ult)}`}
+      aria-hidden="true"
+      style={stageStyle}
+    >
       {/* Secousse et zoom : jamais de clé React ici, sinon tous les acteurs seraient recréés à
           chaque coup et l'animation de chute des unités à terre rejouerait. Le nom de
           l'animation alterne (a/b) pour relancer la secousse sans remonter le conteneur. */}
@@ -233,13 +365,7 @@ export function Stage({
             : `stage__shake stage__shake--${shake.power}${shake.key % 2 === 0 ? 'a' : 'b'}`
         }
       >
-        <div
-          className={
-            ult === null
-              ? 'stage__zoom'
-              : `stage__zoom stage__zoom--ult${ult % 2 === 0 ? 'a' : 'b'}`
-          }
-        >
+        <div className={ult === null ? 'stage__zoom' : `stage__zoom stage__zoom--ult${ab(ult)}`}>
           <div
             className="stage__world"
             style={{
@@ -257,14 +383,23 @@ export function Stage({
                 acting={view.acting === unit.id && active === null}
                 targetable={targets.has(unit.id)}
                 flash={latest.get(unit.id)}
+                dash={dashOf(view, unit)}
+                caster={cast?.unit === unit.id && cast.ult}
               />
             ))}
             <Bolts view={view} />
+            {view.units.map((unit) => {
+              const flash = latest.get(unit.id);
+              return flash === undefined ? null : (
+                <Effects key={unit.id} unit={unit} flash={flash} />
+              );
+            })}
           </div>
         </div>
       </div>
       {view.hurt !== null && <span key={`hurt${view.hurt}`} className="stage__hurt" />}
       {ult !== null && <span key={`flash${ult}`} className="stage__ult" />}
+      {view.ultHit !== null && <span key={`uh${view.ultHit}`} className="stage__ult-hit" />}
     </div>
   );
 }

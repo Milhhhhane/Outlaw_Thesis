@@ -75,3 +75,188 @@ describe('simulation du champ de bataille', () => {
     expect(shakes).toBeGreaterThan(5);
   }, 30_000);
 });
+
+describe('course de l’attaque de base', () => {
+  it('l’attaquant court vers un ennemi seul, pas pour un sort sur soi', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const active = state.units.find((u) => u.def.id === state.active);
+    expect(active).toBeDefined();
+    if (active === undefined) return;
+    const enemy = state.units.find((u) => u.def.side !== active.def.side);
+    expect(enemy).toBeDefined();
+    if (enemy === undefined) return;
+    let view: BattleView = viewFromState(state);
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: active.def.id, spell: 'x', slot: 'basic', targets: [enemy.def.id] },
+      1,
+    );
+    expect(view.cast?.dash).toBe(true);
+    const { container, rerender } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    const actor = container.querySelector<HTMLElement>(`[data-unit="${active.def.id}"]`);
+    expect(actor?.className).toContain('actor--dash-b');
+    expect(actor?.style.getPropertyValue('--dx')).not.toBe('0px');
+    // Pas de projectile pendant une course : le coup se donne au contact.
+    expect(container.querySelector('.stage__bolt')).toBeNull();
+    expect(container.querySelector('.stage__slash--dash')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: active.def.id, spell: 'y', slot: 'a', targets: [active.def.id] },
+      2,
+    );
+    expect(view.cast?.dash).toBe(false);
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(container.querySelector(`[data-unit="${active.def.id}"]`)?.className).not.toContain(
+      'actor--dash',
+    );
+  });
+});
+
+describe('ultime', () => {
+  it('le flash d’impact part au premier effet de l’ultime, pas pour un autre sort', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    expect(a).toBeDefined();
+    expect(b).toBeDefined();
+    if (a === undefined || b === undefined) return;
+    let view: BattleView = viewFromState(state);
+    const tempo = {
+      type: 'tempo',
+      source: a.def.id,
+      target: b.def.id,
+      delta: -10,
+      nextTime: 0,
+    } as const;
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: a.def.id, spell: 'x', slot: 'a', targets: [] },
+      1,
+    );
+    view = applyEvent(view, tempo, 2);
+    expect(view.ultHit).toBeNull();
+    view = applyEvent(
+      view,
+      { type: 'cast', unit: a.def.id, spell: 'u', slot: 'ult', targets: [] },
+      3,
+    );
+    view = applyEvent(view, tempo, 4);
+    view = applyEvent(view, tempo, 5);
+    // Seul le premier effet compte : un flash par ultime.
+    expect(view.ultHit).toBe(4);
+    const { container } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    expect(container.querySelector('.stage__ult-hit')).not.toBeNull();
+    expect(container.querySelector('.stage--ulta')).not.toBeNull();
+    expect(container.querySelector(`[data-unit="${a.def.id}"]`)?.className).toContain(
+      'actor--caster',
+    );
+  });
+});
+
+describe('soins et boucliers', () => {
+  it('la bulle suit le bouclier, le soin fait luire, le bouclier brisé éclate', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    if (a === undefined || b === undefined) throw new Error('deux unités attendues');
+    let view: BattleView = viewFromState(state);
+    const render1 = () =>
+      render(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    const { container, rerender } = render1();
+    const actor = () => container.querySelector(`[data-unit="${b.def.id}"]`);
+    expect(actor()?.querySelector('.actor__bubble')).toBeNull();
+
+    view = applyEvent(
+      view,
+      { type: 'shield', source: a.def.id, target: b.def.id, amount: 20, total: 20, turns: 2 },
+      1,
+    );
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__bubble')).not.toBeNull();
+    expect(actor()?.querySelector('.actor__glow--shield')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      {
+        type: 'damage',
+        source: a.def.id,
+        target: b.def.id,
+        cause: 'spell',
+        amount: 20,
+        absorbed: 20,
+        multiplier: 1,
+        hpAfter: b.hp,
+        shieldAfter: 0,
+        killed: false,
+      },
+      2,
+    );
+    expect(view.flashes.at(-1)?.fx).toBe('shatter');
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__bubble')).toBeNull();
+    expect(container.querySelector('.actor__fx--shatter')).not.toBeNull();
+
+    view = applyEvent(
+      view,
+      {
+        type: 'heal',
+        source: a.def.id,
+        target: b.def.id,
+        cause: 'spell',
+        amount: 5,
+        hpAfter: b.hp,
+      },
+      3,
+    );
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__glow--heal')).not.toBeNull();
+    expect(container.querySelector('.actor__fx--heal')).not.toBeNull();
+  });
+});
+
+describe('altérations', () => {
+  it('brûlure, marque et étourdissement restent visibles tant qu’ils durent', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const [a, b] = state.units;
+    if (a === undefined || b === undefined) throw new Error('deux unités attendues');
+    let view: BattleView = viewFromState(state);
+    for (const [i, status] of (['burn', 'mark', 'stun'] as const).entries()) {
+      view = applyEvent(
+        view,
+        { type: 'status', source: a.def.id, target: b.def.id, status, turns: 2, resisted: false },
+        i + 1,
+      );
+    }
+    const { container, rerender } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    const actor = () => container.querySelector(`[data-unit="${b.def.id}"]`);
+    for (const status of ['burn', 'mark', 'stun']) {
+      expect(actor()?.querySelector(`.actor__status--${status}`), status).not.toBeNull();
+    }
+    view = applyEvent(view, { type: 'expired', unit: b.def.id, effect: 'burn' }, 4);
+    rerender(<Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />);
+    expect(actor()?.querySelector('.actor__status--burn')).toBeNull();
+    expect(actor()?.querySelector('.actor__status--mark')).not.toBeNull();
+  });
+});
+
+describe('mort', () => {
+  it('une unité tombée part en cendres de son élément', () => {
+    const { state } = createBattle(demoSetup(), content.balance);
+    const unit = state.units[0];
+    if (unit === undefined) throw new Error('une unité attendue');
+    const view = applyEvent(viewFromState(state), { type: 'unit_down', unit: unit.def.id }, 1);
+    expect(view.flashes.at(-1)?.fx).toBe(`motes_${unit.def.element}`);
+    const { container } = render(
+      <Stage view={view} scene="ember_wastes" active={null} targets={new Set()} />,
+    );
+    expect(container.querySelector(`[data-unit="${unit.def.id}"]`)?.className).toContain(
+      'actor--down',
+    );
+    expect(container.querySelector('.actor__fx--motes')).not.toBeNull();
+  });
+});
