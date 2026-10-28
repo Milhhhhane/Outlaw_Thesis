@@ -647,7 +647,7 @@ export function HeroSheet({
                             })}{' '}
                             ·{' '}
                             {t('spells.gain', {
-                              pct: spellPowerPct(balance, hero.spells[spell.slot]),
+                              pct: frPct(spellPowerPct(balance, hero.spells[spell.slot])),
                             })}
                           </span>
                         )}

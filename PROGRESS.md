@@ -97,6 +97,12 @@
   difficulté du palier (l'or ne tombe que dans les passages durs). Répond au point ouvert
   ci-dessus « marier les raretés hautes avec des donjons plus durs ». Chiffres dans
   `docs/ECONOMY.md`.
+- Montée des sorts — chaque sort monte du niveau 1 à 5 (+2,5 % de puissance par niveau, −10 de
+  délai à l'ultime au niveau 5), payé en grimoires (paliers II/III, coffres d'argent et d'or) et
+  en fragments du héros ; onglet « Grimoire » de la fiche. Écart sorts au maximum : +13,8 points
+  de donjons terminés en retard (cible ≤ 20) ; R1, R2 et « aucun héros indispensable » tenues
+  sorts au maximum. Ouvert : les quêtes (autre chantier) pourront aussi donner des grimoires ;
+  le PvP reste au niveau 1 (à trancher par le propriétaire).
 
 ## Reste à faire (hors code)
 
