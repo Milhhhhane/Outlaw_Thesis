@@ -83,6 +83,10 @@
   par la vue rejouée ; durées à l'échelle de la vitesse ; tests dans
   `apps/web/test/stage-sim.test.tsx`.
 
+- Silhouettes des héros — 18 héros récents habillés d'une coiffe ou d'un accessoire dessiné
+  (`tools/art/looks.py`), palettes franches, armes mieux réparties ; aucune paire de héros n'a la
+  même silhouette (vérifié par `export.py`). Gameplay inchangé.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

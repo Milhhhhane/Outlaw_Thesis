@@ -14,10 +14,12 @@ les personnages (25 héros, 12 ennemis) viennent d'un pack CC0 (voir `pack.py` e
 | `backgrounds.py` | un décor 320 × 180 par donjon                                          |
 | `ui.py`          | habillage des menus : fond, cadres bois, planche, corde, cuir, socles  |
 | `worldmap.py`    | carte du monde 320 × 180 : contrées, reliefs, eau, repères des donjons |
+| `pack.py`        | personnages du pack 0x72 : recoloration, armes des héros, coffres      |
+| `looks.py`       | coiffes et accessoires dessinés des héros, posés sur le pack           |
 | `export.py`      | écrit l'atlas, les décors, les cadres et `sprites.ts` dans le web      |
 | `scene.py`       | aperçu d'une scène complète, pour juger un réglage                     |
 
 Après une retouche : `python3 tools/art/export.py`, `pnpm prettier --write apps/web/src/art`, puis
-committer `apps/web/src/art/`.
+committer `apps/web/src/art/`. `export.py` refuse deux héros de même silhouette.
 Pour voir une planche : `python3 tools/art/heroes.py /tmp/heros.png` (idem `enemies.py`,
 `backgrounds.py`).

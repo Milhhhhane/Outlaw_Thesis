@@ -753,6 +753,38 @@ qu'ils ont d'autres coéquipiers) et se règlent par les donjons ; à arbitrer p
 trois lignes), grille qui défile dans son cadre ; le vivier de l'équipe et la liste des fragments
 défilaient déjà. Raison : 25 cartes lisibles à 844 × 390 sans pagination à inventer.
 
+## Silhouettes des héros
+
+**Coiffes dessinées sur les bases héros plutôt que bases de monstres** — Contexte : les 19 héros
+récents partageaient huit personnages du pack, distingués par la teinte et l'arme ; le
+propriétaire : « ils ont tous la même image ». Choix : chaque héros récent sauf Genêt reçoit une
+surcouche dessinée pixel par pixel à la résolution de la planche (`tools/art/looks.py` :
+chapeau, capuche, cornes, couronne, ailes, bannière, cadran…), qui efface au besoin la coiffe
+d'origine, suit la tête sur chaque image par recherche du motif du visage, et une palette
+remplacée couleur par couleur quand la rotation de teinte ne suffit pas. Raison : les bases
+encore libres lisent « monstre » et se confondent avec les ennemis (chort et imp, orc_warrior et
+les orcs, muddy et swampy, zombie et big_zombie) ; elles n'ont pas d'image de dégâts. Les
+surcouches gardent le style du pack et ne coûtent que 3 Ko d'atlas.
+
+**Qui garde son image** — Choix : les six héros d'origine et Genêt (seul lézard à houppe nue)
+restent tels quels. Phénix, Torrent et Étendard étaient les plus réussis mais partageaient la
+silhouette de Ronce ou de Marée (chevalier et chevalière sont le même dessin) : ils gardent
+palette et arme et reçoivent leur accessoire (ailes, vague, bannière). Raison : la règle « deux
+héros, deux silhouettes » prime ; `export.py` la vérifie (masque de la première image de repos).
+
+**Plus marquants en haut de la rareté** — Choix : les légendaires et les épiques portent les
+accessoires les plus grands (ailes de flammes, cadran doré, bannière, bois, vague, cornes de
+bélier), les communs et rares une coiffe simple. Marge latérale au plus 4 pixels de planche de
+chaque côté : la carte de la galerie (72 px, sprite ×1,5) reste lisible.
+
+**Prise d'arme depuis le milieu du sprite** — Contexte : un sprite élargi (cornes, ailes) déplaçait
+la main. Choix : `GRIP.x` se compte depuis le milieu du sprite (élargi symétriquement : la scène
+le centre). Raison : une seule table de prises, juste quelle que soit la coiffe.
+
+**Limite assumée** — Le portrait de la file d'initiative est cadré sur le haut du sprite : pour
+Étendard, Séquoia ou Sablier il montre surtout la coiffe, qui est justement le signe distinctif.
+Le jeu n'utilise pas les images de course du pack ; les surcouches y ont été vérifiées quand même.
+
 ## Animations de combat
 
 **Tout part de la vue rejouée** — Contexte : rendre le combat plus vivant sans logique de jeu

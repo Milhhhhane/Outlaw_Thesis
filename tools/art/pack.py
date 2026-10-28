@@ -1,13 +1,16 @@
 """Personnages tirés du « 16x16 DungeonTileset II » de 0x72 (CC0, voir third_party/0x72/LICENSE.txt).
 
 Chaque héros et monstre du jeu correspond à un personnage de la planche, recoloré (rotation de
-teinte, peau préservée) et agrandi ×2 sans lissage. Les monstres sont retournés pour faire face
-aux héros. Images : 4 de repos, puis 1 de dégâts (héros seulement, celle de la planche).
+teinte, peau préservée) et agrandi ×2 sans lissage ; la plupart des héros reçoivent en plus une
+coiffe ou un accessoire dessiné à la main (looks.py) pour une silhouette propre. Les monstres sont
+retournés pour faire face aux héros. Images : 4 de repos, puis 1 de dégâts (héros seulement, celle de la planche).
 """
 import colorsys
 import pathlib
 
 from PIL import Image
+
+import looks
 
 HERE = pathlib.Path(__file__).resolve().parent / 'third_party' / '0x72'
 SHEET = Image.open(HERE / '0x72_DungeonTilesetII_v1_3.png').convert('RGBA')
@@ -27,26 +30,9 @@ HEROES = {
     'ressac': ('lizard_m', 120, 1.1, 1.0),      # vert → bleu-vert
     'ronce': ('elf_f', 0, 1.0, 0.95),           # tunique verte
     'seve': ('elf_m', 20, 0.9, 1.05),           # vert jaune
-    # Les 19 héros suivants partagent ces huit bases : teinte, arme et couleur d'arme les distinguent.
-    'tison': ('lizard_f', 235, 1.0, 1.0),       # écailles orange braise
-    'ecume': ('elf_m', 110, 1.0, 1.0),          # ciré bleu
-    'yucca': ('knight_f', 305, 1.0, 1.0),       # armure vert cactus
-    'houx': ('wizzard_m', 230, 0.5, 0.6),       # soutane vert noir
-    'forge': ('knight_m', 215, 1.5, 0.7),       # fer rouge
-    'lanterne': ('wizzard_f', 175, 1.0, 1.15),   # robe ambre
-    'mousson': ('lizard_f', 60, 1.1, 1.0),      # écailles bleues
-    'brume': ('wizzard_f', 330, 0.35, 1.15),    # voile gris pâle
-    'sillage': ('elf_f', 100, 0.8, 1.0),        # varech sarcelle
-    'chardon': ('lizard_m', 200, 1.0, 1.0),     # violet chardon
-    'mousse': ('elf_m', 10, 0.6, 0.85),         # mousse terne
+    # Genêt garde sa base nue (houppe d'origine) ; les 18 autres héros récents sont habillés par
+    # looks.py (coiffe, accessoire, palette), qui donne aussi leur base.
     'genet': ('lizard_f', 270, 1.1, 1.0),       # jaune genêt
-    'etendard': ('knight_f', 190, 1.9, 1.0),    # rouge régiment
-    'soufre': ('wizzard_m', 175, 1.0, 0.95),    # jaune soufre
-    'torrent': ('knight_m', 50, 1.0, 1.05),     # acier bleu
-    'sequoia': ('knight_m', 280, 0.9, 0.7),    # écorce brune
-    'eden': ('wizzard_f', 230, 1.1, 1.0),       # robe de feuilles
-    'phenix': ('elf_f', 290, 1.4, 1.0),         # plumage cramoisi
-    'sablier': ('wizzard_m', 20, 0.8, 0.9),     # indigo d'horloger
 }
 ENEMIES = {
     'cinder_hound': ('imp', 0, 1.1, 1.0),
@@ -69,7 +55,8 @@ def is_skin(r, g, b):
     return 0.02 < h < 0.12 and 0.2 < s < 0.6 and v > 0.55
 
 
-def recolor(im, hue, sat, val):
+def recolor(im, hue, sat, val, keep=()):
+    """Rotation de teinte (peau préservée) ; les pixels de `keep` ne bougent pas."""
     if hue == 0 and sat == 1 and val == 1:
         return im
     out = im.copy()
@@ -77,7 +64,7 @@ def recolor(im, hue, sat, val):
     for y in range(im.height):
         for x in range(im.width):
             r, g, b, a = px[x, y]
-            if a == 0 or is_skin(r, g, b):
+            if a == 0 or is_skin(r, g, b) or (x, y) in keep:
                 continue
             h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
             if s < 0.12:  # gris : on ne touche qu'à la valeur
@@ -94,6 +81,14 @@ def recolor(im, hue, sat, val):
 def frames_of(name, kind):
     x, y, w, h, n = TILES[f'{name}_{kind}_anim']
     return [SHEET.crop((x + i * w, y, x + (i + 1) * w, y + h)) for i in range(n)]
+
+
+def dressed(name, kinds=('idle', 'hit')):
+    """Héros habillé par looks.py : images agrandies et marge ajoutée de chaque côté (pixels ×2)."""
+    look = looks.LOOKS[name]
+    raws = [im for kind in kinds for im in frames_of(look.base, kind)]
+    ims, pad = looks.dress(look, raws, 4, recolor)
+    return [im.resize((im.width * SCALE, im.height * SCALE), Image.NEAREST) for im in ims], pad * SCALE
 
 
 def character(sheet_name, hue, sat, val, flip):
@@ -146,20 +141,20 @@ WEAPONS = {
     'seve': ('weapon_green_magic_staff', 0, 1.0, 1.0),
     'tison': ('weapon_hammer', 20, 1.0, 1.0),
     'ecume': ('weapon_spear', 180, 0.8, 1.0),
-    'yucca': ('weapon_spear', 80, 1.0, 1.0),
+    'yucca': ('weapon_machete', 0, 1.0, 1.0),
     'houx': ('weapon_mace', 90, 0.7, 0.8),
     'forge': ('weapon_big_hammer', 0, 1.0, 1.0),
     'lanterne': ('weapon_red_magic_staff', 40, 1.0, 1.1),
-    'mousson': ('weapon_spear', 200, 1.0, 1.0),
+    'mousson': ('weapon_anime_sword', 0, 1.0, 1.0),
     'brume': ('weapon_green_magic_staff', 150, 0.5, 1.1),
     'sillage': ('weapon_baton_with_spikes', 150, 1.0, 1.0),
     'chardon': ('weapon_katana', 0, 1.0, 1.0),
     'mousse': ('weapon_green_magic_staff', 30, 0.7, 0.9),
     'genet': ('weapon_axe', 0, 1.0, 1.0),
-    'etendard': ('weapon_spear', 0, 1.2, 1.0),
-    'soufre': ('weapon_red_magic_staff', 60, 1.0, 1.0),
+    'etendard': ('weapon_regular_sword', 0, 1.0, 1.0),
+    'soufre': ('weapon_red_gem_sword', 50, 1.0, 1.0),
     'torrent': ('weapon_saw_sword', 180, 1.0, 1.0),
-    'sequoia': ('weapon_axe', 30, 0.8, 0.8),
+    'sequoia': ('weapon_cleaver', 0, 1.0, 1.0),
     'eden': ('weapon_green_magic_staff', 330, 1.0, 1.0),
     'phenix': ('weapon_golden_sword', 340, 1.1, 1.0),
     'sablier': ('weapon_lavish_sword', 0, 1.0, 1.0),
@@ -178,6 +173,8 @@ def all_characters():
         out[f'weapon_{name}'] = weapon(src, hue, sat, val)
     for name, (src, hue, sat, val) in HEROES.items():
         out[name] = character(src, hue, sat, val, flip=False)
+    for name in looks.LOOKS:
+        out[name] = dressed(name)[0]
     for name, (src, hue, sat, val) in ENEMIES.items():
         out[name] = character(src, hue, sat, val, flip=True)
     return out

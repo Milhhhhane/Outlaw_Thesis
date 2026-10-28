@@ -67,7 +67,9 @@ héros de départ ou de donjon au-dessus de rare.
 Ajouter un héros : un fichier JSON (élément, rôle, rareté, stats, sorts, passif, trois pages de
 huit nœuds : racine, choix exclusif de deux, deux branches de deux, sommet), une ligne dans
 `content/heroes/index.ts`, ses textes dans `content.fr.json`, son sprite (`HEROES` et `WEAPONS`
-dans `tools/art/pack.py`, prise d'arme dans `apps/web/src/art/HeroSprite.tsx`), puis
+dans `tools/art/pack.py`, ou une coiffe propre dans `tools/art/looks.py` : deux héros n'ont jamais
+la même silhouette, `export.py` le vérifie ; prise d'arme depuis le milieu du sprite dans
+`apps/web/src/art/HeroSprite.tsx`), puis
 `pnpm --filter @outlaw/sim heroes` pour situer sa force et `pnpm sim` pour les règles.
 
 4 sorts (un par emplacement : `basic`, `a`, `b`, `ult`), un passif, 3 pages de 5 nœuds de
