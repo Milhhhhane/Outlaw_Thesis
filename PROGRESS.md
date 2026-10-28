@@ -109,6 +109,10 @@
   peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro
   ni de récompense de rejeu ; courbe à confirmer au test humain.
 
+- Administration — écran réservé aux pseudos du secret `ADMIN_PSEUDOS` : comptes, activité,
+  avancement, fiche par compte. Reste au propriétaire : créer le secret dans Cloudflare
+  (`docs/DEPLOY.md`).
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

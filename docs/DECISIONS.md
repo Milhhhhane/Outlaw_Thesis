@@ -1123,3 +1123,24 @@ alors des récompenses de rejeu).
 le décompte du bilan entre à l'étage suivant ; sans l'option, le bilan attend le joueur (rejouer un
 étage ne rapportant rien, le relancer seul n'aurait pas de sens). Raison : même règle que
 l'enchaînement des donjons, une navigation différée ; monter est une décision.
+
+## Administration
+
+**L'admin est désigné par un secret, pas par le dépôt** — Contexte : le propriétaire veut voir
+les comptes, leur activité et leur avancement. Choix : un secret Cloudflare `ADMIN_PSEUDOS`
+(pseudos séparés par des virgules, comparés après normalisation) ; secret absent ou vide :
+personne n'est admin. Raison : rien d'utilisable dans le dépôt public ; un secret survit aux
+déploiements (« Wrangler will not delete your secrets »), contrairement à une variable réglée
+dans le tableau de bord, qu'un déploiement écrase. Écarté : un pseudo dans `wrangler.jsonc`
+(public et réservable par n'importe qui avant le propriétaire). Ordre imposé dans
+`docs/DEPLOY.md` : créer son compte, puis le secret.
+
+**Un non-admin ne voit pas que l'admin existe** — Choix : les routes `/api/admin/*` répondent
+404 `not_found`, octet pour octet comme une route inconnue, à toute session non admin ; l'entrée
+du camp n'est rendue que si `/api/me` dit `admin: true`. Lecture seule, champs listés un par un
+(jamais `pw_hash`, jeton ni `pseudo_key`). L'avancement est calculé côté serveur à partir de la
+sauvegarde validée par le schéma, `null` si elle est absente ou invalide.
+
+**Coût accepté** — Le premier appel admin d'un isolate charge le contenu (`loadContent`, environ
+92 ms à froid mesurés sous Node) : au-delà des 10 ms du plan gratuit, comme le scrypt de la
+connexion déjà toléré ; un seul utilisateur, de temps en temps. Mesures dans `docs/ACCOUNTS.md`.
