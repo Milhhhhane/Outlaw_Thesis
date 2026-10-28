@@ -23,3 +23,4 @@ export * from './items';
 export * from './progression';
 export * from './chests';
 export * from './tiers';
+export * from './tower';

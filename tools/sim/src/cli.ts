@@ -13,6 +13,7 @@ import { pacing } from './pacing';
 import { evaluateRules } from './rules';
 import { randomBattles, sprint0Scenarios } from './scenarios';
 import { tiers } from './tiers';
+import { towerSim } from './tower';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const baselinePath = join(root, 'baseline.csv');
@@ -31,6 +32,8 @@ const started = performance.now();
 const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
 const pace = pacing(content, option('--pace-runs', 48), option('--seed', 1));
 const tier = tiers(content, option('--tier-runs', 48), option('--seed', 1));
+// 32 équipes par étage : 1 600 combats, une dizaine de secondes (sim:check doit rester rapide).
+const tower = towerSim(content, option('--tower-runs', 32), option('--seed', 1));
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
   ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
@@ -38,6 +41,7 @@ const csv = toCsv([
   ...rules.rows,
   ...pace.rows,
   ...tier.rows,
+  ...tower.rows,
 ]);
 const { targets } = content.balance;
 const verdicts: string[] = [
@@ -58,11 +62,17 @@ verdicts.push(
     .map(([id, rates]) => `${id} ${rates.map((r) => (r * 100).toFixed(0)).join('/')}`)
     .join(', ')}`,
   ...tier.problems.map((p) => `  - ${p}`),
+  `Tour ${tower.problems.length === 0 ? 'tenue' : 'NON TENUE'} : expert par étage ${tower.rates.map((r) => (r * 100).toFixed(0)).join('/')}`,
+  ...tower.problems.map((p) => `  - ${p}`),
 );
 // « Aucun héros indispensable » est mesuré et affiché mais ne bloque pas : l'écart vient des
 // héros eux-mêmes, que ce lot ne doit pas toucher (voir docs/BALANCE.md).
 const rulesOk =
-  rules.r1.ok && rules.r2.ok && pace.problems.length === 0 && tier.problems.length === 0;
+  rules.r1.ok &&
+  rules.r2.ok &&
+  pace.problems.length === 0 &&
+  tier.problems.length === 0 &&
+  tower.problems.length === 0;
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {

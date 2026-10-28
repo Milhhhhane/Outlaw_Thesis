@@ -158,3 +158,12 @@ export const dungeonFixture = {
   loot: ['test_charm', 'test_relic'],
   map: { x: 40, y: 140, landmark: 'camp', chapter: 1 },
 };
+
+export const towerFixture = {
+  pools: {
+    fire: { enemies: ['test_grunt'] },
+    water: { enemies: ['test_grunt'] },
+    nature: { enemies: ['test_grunt'] },
+  },
+  bosses: Array.from({ length: 5 }, () => ({ enemies: ['test_boss'] })),
+};
