@@ -21,6 +21,7 @@
     "sim:check": "pnpm --filter @outlaw/sim check",
     "size": "node scripts/check-bundle-size.mjs",
     "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm sim:check && pnpm build && pnpm size && pnpm e2e",
+    "verify:fast": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm sim:check && pnpm build && pnpm size",
     "e2e": "pnpm --filter @outlaw/web e2e",
     "admin:reset-password": "pnpm --filter @outlaw/admin reset-password"
   },
