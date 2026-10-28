@@ -1,4 +1,5 @@
 import { loadContent } from '@outlaw/data';
+import { tierReached, tierTargetLevel } from '@outlaw/engine';
 import { describe, expect, it } from 'vitest';
 import { pickRun, simulateEconomy, summarizeEconomy } from '../src/economy';
 
@@ -28,12 +29,17 @@ describe('économie : joueur modèle', () => {
 
   it('choisit le donjon le plus avancé à la portée du plus faible héros', () => {
     const fresh = simulateEconomy(content, 1, 0).profile;
-    expect(pickRun(content, fresh)).toEqual({ dungeon: 'ember_wastes', tier: 1, level: 1 });
+    expect(pickRun(content, fresh)).toMatchObject({ dungeon: 'ember_wastes', tier: 1, level: 1 });
     const later = simulateEconomy(content, 1, 25).profile;
     const pick = pickRun(content, later);
     const level = Math.min(...later.team.map((id) => later.heroes[id]?.level ?? 1));
     expect(pick.level).toBeLessThanOrEqual(level);
-    expect(content.dungeonById.get(pick.dungeon)?.recommendedLevel).toBe(pick.level);
+    const dungeon = content.dungeonById.get(pick.dungeon)!;
+    expect(tierTargetLevel(content, dungeon, pick.tier)).toBe(pick.level);
+    expect(pick.tier).toBeLessThanOrEqual(tierReached(content, later, pick.dungeon));
+    // Un donjon jamais terminé passe avant tout.
+    const fresh2 = { ...later, dungeons: { ember_wastes: { clears: 2, dry: 0, tier: 3 } } };
+    expect(pickRun(content, fresh2)).toMatchObject({ dungeon: 'drowned_halls', tier: 1 });
   });
 
   it('résume plusieurs graines', () => {

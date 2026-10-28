@@ -1,4 +1,4 @@
-import type { DungeonReport } from '@outlaw/engine';
+import { tierNumeral, type DungeonReport } from '@outlaw/engine';
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { backgroundUrl } from '../art';
 import { PixelSprite } from '../art/Pixel';
@@ -8,7 +8,7 @@ import { useEscape } from '../game/keys';
 import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
-import { dustName, names, t, tk } from '../i18n';
+import { dungeonTitle, dustName, names, t, tk } from '../i18n';
 import { ChestArt } from './Chests';
 import { Glossed } from '../game/Glossed';
 
@@ -70,10 +70,15 @@ export function Rewards({
     <main className="end end--rewards">
       <Backdrop scene={report.dungeon} />
       <h1 ref={heading} tabIndex={-1} className="end__title">
-        {t('reward.title', { dungeon: names.dungeon(report.dungeon) })}
+        {t('reward.title', { dungeon: dungeonTitle(report.dungeon, report.tier) })}
       </h1>
       <p className="end__text">
         {report.firstClear ? t('reward.firstClear') : t('reward.replay')}{' '}
+        {report.tierUnlocked !== null && (
+          <strong className="reward__tier">
+            {t('reward.tierUnlocked', { tier: tierNumeral(report.tierUnlocked) })}{' '}
+          </strong>
+        )}
         {report.mastery.rankUp
           ? t('reward.mastery.up', { rank: report.mastery.rank })
           : report.mastery.next === null

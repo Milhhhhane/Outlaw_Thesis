@@ -104,6 +104,23 @@ export const balanceSchema = z
       }),
     }),
 
+    /**
+     * Paliers de donjon (I, II, III…) : terminer un palier ouvre le suivant du même donjon. Une
+     * seule formule pour tous les donjons : le palier k ajoute (k − 1) × `levelsPerTier` au niveau
+     * des ennemis et (k − 1) × `enemyPctPerTier` % à leurs PV et ATK (les niveaux seuls pèsent
+     * peu, la croissance des monstres étant plate), (k − 1) × `rewardPctPerTier` % aux
+     * récompenses, (k − 1) × `rareWeightPerTier` au poids du rare, et monte le coffre de
+     * (k − 1) × `chestStepPerTier` paliers.
+     */
+    tiers: z.strictObject({
+      count: posInt,
+      levelsPerTier: nonNegInt,
+      enemyPctPerTier: z.strictObject({ hp: nonNeg, atk: nonNeg }),
+      rewardPctPerTier: z.strictObject({ xp: nonNeg, gold: nonNeg, materials: nonNeg }),
+      rareWeightPerTier: nonNegInt,
+      chestStepPerTier: nonNegInt,
+    }),
+
     economy: z.strictObject({
       /** Part de l'XP, de l'or et de la poussière d'un donjon rejoué (farm) par rapport au premier passage. */
       replayRewardRate: z.number().min(0).max(1),
@@ -182,6 +199,14 @@ export const balanceSchema = z
       averageCurve: z.strictObject({
         first: z.number().min(0).max(1),
         last: z.number().min(0).max(1),
+        tolerance: z.number().min(0).max(1),
+      }),
+      /**
+       * Paliers de donjon (expert au niveau visé) : chaque palier réussit au moins `expertMin`,
+       * et aucun palier n'est plus facile que le précédent du même donjon de plus de `tolerance`.
+       */
+      tiers: z.strictObject({
+        expertMin: z.number().min(0).max(1),
         tolerance: z.number().min(0).max(1),
       }),
     }),

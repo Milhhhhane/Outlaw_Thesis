@@ -84,6 +84,14 @@
       ]
     }
   },
+  "tiers": {
+    "count": 3,
+    "levelsPerTier": 5,
+    "enemyPctPerTier": { "hp": 20, "atk": 20 },
+    "rewardPctPerTier": { "xp": 0, "gold": 50, "materials": 50 },
+    "rareWeightPerTier": 5,
+    "chestStepPerTier": 1
+  },
   "economy": {
     "replayRewardRate": 1,
     "loot": {
@@ -141,6 +149,10 @@
     "averageCurve": {
       "first": 0.85,
       "last": 0.3,
+      "tolerance": 0.12
+    },
+    "tiers": {
+      "expertMin": 0.5,
       "tolerance": 0.12
     }
   }

@@ -3,12 +3,14 @@ import {
   compileTeam,
   completeDungeon,
   heroBuild,
+  tierEncounterPct,
+  tierLevel,
   type DungeonReport,
 } from '@outlaw/engine';
 import { useMemo, useState } from 'react';
 import { CombatScreen } from '../combat/CombatScreen';
 import { content } from '../combat/session';
-import { names, t } from '../i18n';
+import { dungeonTitle, t } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Rewards, RunEnd } from './Rewards';
 
@@ -19,14 +21,17 @@ type Phase =
   | { readonly kind: 'done'; readonly report: DungeonReport };
 
 /**
- * Un donjon : 3 combats d'affilée (PV et réserve remis à zéro à chaque combat), modificateur
- * appliqué aux deux camps, récompenses à la fin. Une défaite renvoie au camp sans pénalité.
+ * Un donjon à un palier : 3 combats d'affilée (PV et réserve remis à zéro à chaque combat),
+ * ennemis au niveau et à l'échelle du palier, modificateur appliqué aux deux camps, récompenses
+ * à la fin. Une défaite renvoie au camp sans pénalité.
  */
 export function DungeonRun({
   dungeonId,
+  tier,
   onExit,
 }: {
   readonly dungeonId: string;
+  readonly tier: number;
   readonly onExit: () => void;
 }) {
   const { profile, replace } = useProfile();
@@ -51,7 +56,7 @@ export function DungeonRun({
     [dungeonId, run],
   );
   if (dungeon === undefined) return null;
-  const name = names.dungeon(dungeonId);
+  const name = dungeonTitle(dungeonId, tier);
 
   if (phase.kind === 'done') {
     return <Rewards report={phase.report} onContinue={onExit} onReplay={restart} />;
@@ -71,16 +76,17 @@ export function DungeonRun({
 
   const encounter = dungeon.encounters[phase.room];
   if (encounter === undefined) return null;
+  const pct = tierEncounterPct(content, tier, encounter.hpPct, encounter.atkPct);
   const setup = {
     units: [
       ...heroes,
       ...compileEncounter(
         content,
         encounter.enemies,
-        dungeon.recommendedLevel,
+        tierLevel(content, dungeon, tier),
         dungeon.modifier,
-        encounter.hpPct,
-        encounter.atkPct,
+        pct.hpPct,
+        pct.atkPct,
       ),
     ],
   };
@@ -109,7 +115,7 @@ export function DungeonRun({
             setPhase({ kind: 'tested' });
             return;
           }
-          const outcome = completeDungeon(content, profile, dungeonId);
+          const outcome = completeDungeon(content, profile, dungeonId, tier);
           if (!outcome.ok) {
             onExit();
             return;

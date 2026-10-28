@@ -274,3 +274,51 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
   await page.getByRole('button', { name: 'Retour au camp' }).click();
   await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
 });
+
+test('carte : les paliers d’un donjon se choisissent et tiennent à l’écran', async ({ page }) => {
+  test.skip(portrait(page), 'portrait');
+  test.skip(
+    (page.viewportSize()?.width ?? 0) !== 1280 && (page.viewportSize()?.width ?? 0) !== 844,
+    'ordinateur et téléphone',
+  );
+  const content = loadContent();
+  const base = newProfile(content, 5, 0);
+  // Landes terminées : palier I terminé, palier II ouvert, palier III verrouillé.
+  const profile = { ...base, dungeons: { ember_wastes: { clears: 1, dry: 0, tier: 2 } } };
+  await page.addInitScript(
+    (save) => {
+      localStorage.setItem('outlaw-thesis/save', save);
+      localStorage.setItem('outlaw-thesis/options', JSON.stringify({ speed: 'instant' }));
+      localStorage.setItem('outlaw-thesis/intro-dismissed', '1');
+    },
+    JSON.stringify({ version: 1, profile }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: /^Donjons/ }).click();
+  await page.getByRole('button', { name: /^Étape 1 :/ }).click();
+  const tiers = page.getByRole('group', { name: 'Palier' });
+  await expect(tiers).toBeVisible();
+  await inView(page, '.map__tiers');
+  await expect(tiers.getByRole('button', { name: /^Palier III/ })).toBeDisabled();
+  await expect(tiers.getByRole('button', { name: /^Palier II,/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByText(/Niveau conseillé 6/)).toBeVisible();
+  await tiers.getByRole('button', { name: /^Palier I,/ }).click();
+  await expect(page.getByText(/Niveau conseillé 1/)).toBeVisible();
+  await tiers.getByRole('button', { name: /^Palier II,/ }).click();
+  await inView(page, '.map__go');
+  await noScroll(page);
+  await page.getByRole('button', { name: /Préparer l'équipe/ }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Landes de braise II');
+  await noScroll(page);
+  await page.getByRole('button', { name: /^Partir : Landes de braise II/ }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    'Landes de braise II : combat 1 sur 3',
+  );
+  await inView(page, '.track');
+  await inView(page, '.actions');
+  await noScroll(page);
+});

@@ -101,7 +101,7 @@ describe('maîtrise', () => {
     const max = rules.mastery.clears.at(-1) ?? 0;
     const veteran = {
       ...start,
-      dungeons: { hollow_throne: { clears: max, dry: 0 } },
+      dungeons: { hollow_throne: { clears: max, dry: 0, tier: 1 } },
     };
     const run = value(completeDungeon(content, veteran, 'hollow_throne'));
     const factor = 1 + (rules.mastery.clears.length * rules.mastery.materialsPctPerRank) / 100;
@@ -109,7 +109,7 @@ describe('maîtrise', () => {
     expect(run.report.mastery.next).toBeNull();
     const edge = {
       ...start,
-      dungeons: { ember_wastes: { clears: (rules.mastery.clears[0] ?? 1) - 1, dry: 0 } },
+      dungeons: { ember_wastes: { clears: (rules.mastery.clears[0] ?? 1) - 1, dry: 0, tier: 1 } },
     };
     const up = value(completeDungeon(content, edge, 'ember_wastes'));
     expect(up.report.mastery).toMatchObject({ rank: 1, rankUp: true });
@@ -291,7 +291,7 @@ describe('anciennes sauvegardes', () => {
     };
     const read = profileSchema.parse(legacy);
     expect(read.items[0]).toEqual({ uid: 1, item: 'ember_charm', upgrade: 1, copies: 0 });
-    expect(read.dungeons.ember_wastes).toEqual({ clears: 2, dry: 0 });
+    expect(read.dungeons.ember_wastes).toEqual({ clears: 2, dry: 0, tier: 1 });
   });
 
   it('les exemplaires en trop deviennent des copies, sans rien retirer aux héros', () => {

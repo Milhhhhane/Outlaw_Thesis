@@ -9,8 +9,10 @@
  * d'Auto. Le seul hasard est celui du butin (graine du profil) : on moyenne sur plusieurs graines.
  *
  * Politique du joueur modèle (documentée dans `docs/ECONOMY.md`) :
- * - il farme le donjon le plus avancé dont le niveau conseillé ne dépasse pas le niveau du plus
- *   faible héros de l'équipe (ouvert ou à ouvrir : le donjon suivant s'ouvre en le terminant) ;
+ * - parmi les donjons ouverts (ou à ouvrir) et leurs paliers ouverts dont le niveau visé ne
+ *   dépasse pas celui du plus faible héros, il farme celui qui rapporte le plus de ce qui lui
+ *   manque pour monter ce héros (XP, poussière du palier demandé, fragments pour l'étoile), à
+ *   égalité le plus avancé ;
  * - après chaque passage : il ouvre ses coffres (héros ciblé : celui de l'équipe le plus proche
  *   de son plafond), paie l'étoile dès que possible, équipe tout objet neuf sur un emplacement
  *   libre de l'équipe, améliore d'abord les objets portés qu'il peut payer, puis monte les
@@ -22,11 +24,19 @@ import {
   completeDungeon,
   equip,
   levelDust,
+  levelUpCost,
   levelUpMax,
+  masteryMaterialsFactor,
+  masteryRank,
   newProfile,
   openChest,
   setFocus,
   starUp,
+  tierChest,
+  tierCleared,
+  tierReached,
+  tierRewardFactor,
+  tierTargetLevel,
   upgradeItem,
   xpToNext,
   type DungeonReport,
@@ -66,11 +76,15 @@ export interface EconomyRun {
   readonly profile: Profile;
 }
 
-/** Un passage possible : le donjon, son palier et le niveau qu'il vise. */
+/** Un passage possible : le donjon, son palier, le niveau qu'il vise et ce qu'il rapporte. */
 export interface Candidate {
   readonly dungeon: string;
   readonly tier: number;
   readonly level: number;
+  readonly xp: number;
+  readonly gold: number;
+  readonly dust: { readonly tier: number; readonly amount: number };
+  readonly fragments: number;
 }
 
 /** Niveau du plus faible héros de l'équipe. */
@@ -78,28 +92,99 @@ export function teamLevel(profile: Profile): number {
   return Math.min(...profile.team.map((id) => profile.heroes[id]?.level ?? 1));
 }
 
-/** Les passages que le joueur modèle peut tenter : donjons ouverts ou à ouvrir, au palier I. */
+/** Les passages que le joueur modèle peut tenter : donjons ouverts ou à ouvrir, paliers ouverts. */
 export function candidates(content: Content, profile: Profile): Candidate[] {
   const out: Candidate[] = [];
+  const { chests } = content.balance;
   for (const [i, dungeon] of content.dungeons.entries()) {
     const previous = content.dungeons[i - 1];
     const open = previous === undefined || (profile.dungeons[previous.id]?.clears ?? 0) > 0;
     if (!open) break;
-    out.push({ dungeon: dungeon.id, tier: 1, level: dungeon.recommendedLevel });
+    const rank = masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0);
+    for (let tier = 1; tier <= tierReached(content, profile, dungeon.id); tier++) {
+      const chest = chests.tiers.find((t) => t.id === tierChest(content, dungeon, tier));
+      const chestRate = tierCleared(profile, dungeon.id, tier) ? chests.replayChestRate : 1;
+      out.push({
+        dungeon: dungeon.id,
+        tier,
+        level: tierTargetLevel(content, dungeon, tier),
+        xp: dungeon.rewards.xp * tierRewardFactor(content, tier, 'xp'),
+        gold: dungeon.rewards.gold * tierRewardFactor(content, tier, 'gold'),
+        dust: {
+          tier: dungeon.rewards.materials.tier,
+          amount:
+            dungeon.rewards.materials.amount *
+            tierRewardFactor(content, tier, 'materials') *
+            masteryMaterialsFactor(content, rank),
+        },
+        fragments: (chest?.fragments ?? 0) * chestRate,
+      });
+    }
   }
   return out;
 }
 
-/** Le passage le plus rentable à la portée de l'équipe : niveau visé le plus haut sans la dépasser. */
+/** Ce qui empêche le plus faible héros de l'équipe de monter : XP, poussière (d'un palier), étoile, ou rien. */
+export function blocker(
+  content: Content,
+  profile: Profile,
+): { kind: 'xp' | 'dust' | 'star' | 'done'; dustTier: number } {
+  const lowest = [...profile.team].sort(
+    (a, b) => (profile.heroes[a]?.level ?? 1) - (profile.heroes[b]?.level ?? 1),
+  )[0];
+  const hero = lowest === undefined ? undefined : profile.heroes[lowest];
+  const cost = hero === undefined ? null : levelUpCost(content, hero);
+  if (hero === undefined || cost === null) return { kind: 'done', dustTier: 3 };
+  if (atStarGate(hero, content)) return { kind: 'star', dustTier: cost.dust.tier };
+  if (hero.xp < cost.xp) return { kind: 'xp', dustTier: cost.dust.tier };
+  return { kind: 'dust', dustTier: cost.dust.tier };
+}
+
+/**
+ * Le passage le plus utile à la portée de l'équipe (niveau visé ≤ niveau du plus faible héros) :
+ * un donjon jamais terminé d'abord, sinon celui qui rapporte le plus de ce qui manque — XP,
+ * poussière du palier demandé, fragments — et à égalité le plus avancé (niveau visé le plus haut,
+ * puis le plus d'or).
+ */
 export function pickRun(content: Content, profile: Profile): Candidate {
   const level = teamLevel(profile);
   const all = candidates(content, profile);
   const reachable = all.filter((c) => c.level <= level);
-  const best = reachable.reduce<Candidate | undefined>(
-    (acc, c) => (acc === undefined || c.level >= acc.level ? c : acc),
-    undefined,
+  const need = blocker(content, profile);
+  const score = (c: Candidate): number => {
+    // Un donjon jamais terminé passe avant tout : il ouvre la suite.
+    if ((profile.dungeons[c.dungeon]?.clears ?? 0) === 0) return Number.POSITIVE_INFINITY;
+    switch (need.kind) {
+      case 'xp':
+        return c.xp;
+      case 'dust':
+        return c.dust.tier === need.dustTier ? c.dust.amount : 0;
+      case 'star':
+        return c.fragments;
+      case 'done':
+        return c.gold;
+    }
+  };
+  const best = reachable.reduce<Candidate | undefined>((acc, c) => {
+    if (acc === undefined) return c;
+    const diff = score(c) - score(acc);
+    if (diff !== 0) return diff > 0 ? c : acc;
+    if (c.level !== acc.level) return c.level > acc.level ? c : acc;
+    return c.gold >= acc.gold ? c : acc;
+  }, undefined);
+  const first = content.dungeons[0];
+  return (
+    best ??
+    all[0] ?? {
+      dungeon: first?.id ?? '',
+      tier: 1,
+      level: 1,
+      xp: 0,
+      gold: 0,
+      dust: { tier: 1, amount: 0 },
+      fragments: 0,
+    }
   );
-  return best ?? all[0] ?? { dungeon: content.dungeons[0]?.id ?? '', tier: 1, level: 1 };
 }
 
 function ok<T>(outcome: { ok: true; value: T } | { ok: false }): T | null {
@@ -232,13 +317,13 @@ function emptyLedger(): Ledger {
   };
 }
 
-/** Un passage gagnant du donjon choisi, avec le palier (ignoré tant que les donjons n'en ont pas). */
+/** Un passage gagnant du donjon choisi, à son palier. */
 export function winRun(
   content: Content,
   profile: Profile,
   pick: Candidate,
 ): { profile: Profile; report: DungeonReport } | null {
-  return ok(completeDungeon(content, profile, pick.dungeon));
+  return ok(completeDungeon(content, profile, pick.dungeon, pick.tier));
 }
 
 /** Joue la partie modèle jusqu'au dernier jalon ou à `maxRuns` passages gagnants. */
@@ -261,7 +346,7 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
     runs += 1;
     const { report } = won;
     profile = won.profile;
-    if (report.firstClear) firstClears[report.dungeon] = runs;
+    if (profile.dungeons[report.dungeon]?.clears === 1) firstClears[report.dungeon] = runs;
     ledger.gold.earned += report.gold;
     ledger.dust.earned[report.materials.tier - 1] =
       (ledger.dust.earned[report.materials.tier - 1] ?? 0) + report.materials.amount;

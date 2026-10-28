@@ -2,6 +2,19 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — paliers de donjon et économie
+
+### Ajouté
+
+- Paliers de donjon (I, II, III) : terminer un palier ouvre le suivant du même donjon. Chaque
+  palier monte le niveau des ennemis (+5) et leurs PV et ATK (+20 %), et le butin : or et
+  poussière +50 %, rare plus fréquent, coffre d'un cran. Choix du palier sur la carte, titre de la
+  salle et récompenses avec le palier, badge du palier atteint sur la carte. Les sauvegardes
+  gardent tout : un donjon déjà terminé a son palier II ouvert.
+- Simulation : lignes `tier_*` et règles « chaque palier reste gagnable par l'expert, jamais plus
+  facile que le précédent » (`pnpm sim:check`) ; `pnpm --filter @outlaw/sim economy` : joueur
+  modèle et jalons de l'économie (`docs/ECONOMY.md`).
+
 ## [Non publié] — 2026-10-27 — grind : niveaux payants, rythme recalibré
 
 ### Modifié

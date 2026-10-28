@@ -64,8 +64,11 @@ invocations) ; les copies n'en ont qu'un (améliorer, ou se dissoudre).
 sur 20 graines. Les tentatives divisent par le taux de réussite d'Auto (58 %, `docs/BALANCE.md`).
 Politique :
 
-- il farme le donjon le plus avancé dont le niveau conseillé ne dépasse pas le niveau du plus
-  faible héros de l'équipe (le suivant s'ouvre en le terminant) ;
+- parmi les donjons ouverts (ou à ouvrir : le suivant s'ouvre en terminant le précédent) et leurs
+  paliers ouverts dont le niveau visé ne dépasse pas celui du plus faible héros de l'équipe, il
+  tente d'abord un donjon jamais terminé, sinon le passage qui rapporte le plus de ce qui manque
+  à ce héros pour monter (XP, poussière du palier demandé, fragments pour l'étoile), à égalité le
+  plus avancé ;
 - après chaque passage : coffres ouverts (héros ciblé : celui qui attend son étoile, sinon le plus
   haut), étoile payée dès que possible, tout objet neuf équipé sur un emplacement libre, les objets
   portés améliorés dès qu'ils sont payables (le plus de copies d'abord), puis les niveaux avec le
@@ -114,3 +117,7 @@ Constats :
    tombés dont 30 rares en 115 passages : les rares arrivent pour 2 à 3 objets sur 8.
 
 Ces constats sont l'entrée du réglage (section suivante) ; rien n'a été modifié pour les obtenir.
+Ils ont été mesurés avant les paliers de donjon ; avec les paliers (`balance.tiers`, avant tout
+réglage de l'économie) le même joueur modèle donne 30,6 / 26,4 / 44,8 / 102,3 passages : il farme
+les paliers des Landes pour la poussière brute (premier objet un peu plus tard), et finit plus
+tôt grâce à la poussière pure des paliers de fin.

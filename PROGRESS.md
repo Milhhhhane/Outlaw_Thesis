@@ -63,6 +63,8 @@
 - Grind (PR B) — niveaux payants (XP en banque + poussière du palier), XP et poussière des donjons
   recalibrées sur le calculateur `farm` (89 passages gagnants, ≈ 150 tentatives avec Auto, bornes
   en CI). Or non recalibré.
+- Paliers de donjon (PR C/D) — I, II, III par donjon (formule dans `balance.tiers`, mesure en
+  CI), choix sur la carte ; audit de l'économie (`docs/ECONOMY.md`, calculateur `economy`).
 
 ## Reste à faire (hors code)
 

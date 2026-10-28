@@ -314,3 +314,37 @@ long sur les objets et un peu plus court sur la poussière.
   à resserrer si le test humain montre qu'il ne compte pas.
 - À vérifier au test humain : si 150 tentatives pour finir paraissent trop, baisser
   `levelUp.dustPerLevel` avant de toucher aux récompenses des donjons.
+
+## Paliers de donjon
+
+`balance.json` → `tiers` : 3 paliers, +5 niveaux d'ennemis par palier (bornés à 30 par le
+moteur), **+20 % de PV et d'ATK par palier**, or et poussière +50 % par palier, rare +5 de poids,
+coffre d'un cran (bronze → argent → or). Mesure : `tools/sim/src/tiers.ts`, lignes
+`tier_<donjon>_<palier>_expert` de `pnpm sim` (48 équipes par ligne, politique experte, niveau
+visé = celui des ennemis borné à 30, équipement visé : aucun objet au I, deux objets bruts au II,
+deux objets au maximum au III). Règles en CI (`targets.tiers`) : expert ≥ 50 % à chaque palier,
+jamais plus de 12 points plus facile que le palier précédent.
+
+| Donjon          | Niv. I / II / III | Expert I | Expert II | Expert III |
+| --------------- | ----------------- | -------: | --------: | ---------: |
+| ember_wastes    | 1 / 6 / 11        |    100 % |     100 % |      100 % |
+| drowned_halls   | 4 / 9 / 14        |     98 % |     100 % |      100 % |
+| thorn_maze      | 8 / 13 / 18       |     94 % |     100 % |      100 % |
+| cinder_citadel  | 12 / 17 / 22      |     96 % |     100 % |      100 % |
+| sunken_spire    | 17 / 22 / 27      |     96 % |      98 % |       98 % |
+| verdant_crown   | 22 / 27 / 30      |     83 % |      92 % |       90 % |
+| broken_crossing | 27 / 30 / 30      |     88 % |      83 % |       75 % |
+| salt_flats      | 28 / 30 / 30      |     77 % |      85 % |       73 % |
+| obsidian_pass   | 29 / 30 / 30      |     75 % |      77 % |       73 % |
+| hollow_throne   | 30 / 30 / 30      |     75 % |      79 % |       67 % |
+
+- Les niveaux seuls ne font rien : la croissance des monstres est plate et le moteur borne leur
+  niveau à 30. Sans `enemyPctPerTier`, les paliers II et III des quatre derniers donjons étaient
+  identiques au I (77/77/77 aux Salines) et ceux du début plus faciles.
+- Les objets pèsent lourd : à +20 % par palier, un palier II avec deux objets bruts reste plus
+  facile qu'un palier I nu sur les donjons de fin ; c'est le palier III (objets au maximum) qui
+  retrouve la difficulté du I. Essais écartés : +25 % (Trône creux III à 44 %), +30 % (trois
+  paliers III sous 50 %), +15 % (palier II plus facile de plus de 12 points sur quatre donjons).
+- Les six premiers donjons restent à 100 % à tous les paliers : avec des objets, l'expert ne perd
+  plus dans le premier tiers du jeu. C'est là que le joueur moyen choisira son palier.
+- Le butin par palier est dans `docs/ECONOMY.md`.

@@ -135,7 +135,7 @@ describe('carte des donjons', () => {
   it('annonce l’objet exclusif du donjon, sa maîtrise et la garantie', () => {
     const profile: Profile = {
       ...owning([]),
-      dungeons: { ember_wastes: { clears: 6, dry: 0 } },
+      dungeons: { ember_wastes: { clears: 6, dry: 0, tier: 1 } },
     };
     render(
       <App version="test" initial={profile} start={{ name: 'map', dungeon: 'ember_wastes' }} />,
@@ -155,6 +155,8 @@ describe('carte des donjons', () => {
 function report(patch: Partial<DungeonReport> = {}): DungeonReport {
   return {
     dungeon: 'ember_wastes',
+    tier: 1,
+    tierUnlocked: null,
     firstClear: false,
     xp: { pyra: { gained: 40, ready: false } },
     gold: 60,
