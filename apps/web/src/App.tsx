@@ -19,6 +19,7 @@ import { HeroSheet } from './screens/HeroSheet';
 import { Hub } from './screens/Hub';
 import { MapScreen } from './screens/MapScreen';
 import { OptionsWindow } from './screens/OptionsWindow';
+import { Quests } from './screens/Quests';
 import { Team } from './screens/Team';
 import { Title } from './screens/Title';
 import { Tower } from './screens/Tower';
@@ -59,6 +60,8 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <Workshop />;
     case 'chests':
       return <Chests />;
+    case 'quests':
+      return <Quests />;
     case 'credits':
       return <Credits />;
     case 'dungeon':

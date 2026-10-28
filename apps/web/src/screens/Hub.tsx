@@ -1,4 +1,5 @@
-import { chestCount, dungeonOpen } from '@outlaw/engine';
+import { chestCount, claimableCount, dungeonOpen } from '@outlaw/engine';
+import { useState } from 'react';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
@@ -29,6 +30,9 @@ export function Hub() {
   const { go, openOptions, toggleTestMode } = useGame();
   const { profile, recovered } = useProfile();
   const test = profile.testMode;
+  // Récompenses de quêtes et succès à réclamer (le profil passe au nouveau jour tout seul).
+  const [now] = useState(() => Date.now());
+  const claims = claimableCount(content, profile, now);
   useEscape(() => {
     go({ name: 'title' });
   });
@@ -43,6 +47,26 @@ export function Hub() {
       </div>
       <header className="hub__bar">
         <h1 className="hub__title">{t('hub.title')}</h1>
+        {/* Quêtes : dans la barre du haut, le menu de droite est plein. */}
+        {!test && (
+          <Button
+            variant="quiet"
+            size="small"
+            icon="check"
+            className="hub__quests"
+            title={t('hub.menu.quests.hint')}
+            onClick={() => {
+              go({ name: 'quests' });
+            }}
+          >
+            {t('hub.menu.quests')}
+            {claims > 0 && (
+              <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
+                {claims}
+              </span>
+            )}
+          </Button>
+        )}
         <SyncBadge />
         <Resources />
       </header>

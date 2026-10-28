@@ -33,6 +33,13 @@ import {
   setFocus,
   starUp,
   chestOdds,
+  achievementStatus,
+  bonusReady,
+  claimAchievement,
+  claimBonus,
+  claimQuest,
+  questStatus,
+  rollQuests,
   tierCleared,
   tierReached,
   tierRewardFactor,
@@ -63,6 +70,8 @@ export interface Ledger {
   readonly dust: { earned: number[]; levels: number[]; items: number[]; salvage: number[] };
   fragments: number;
   chests: number;
+  /** Récompenses des quêtes et succès (avec `quests` seulement). */
+  readonly quests: { gold: number; dust: number[]; chests: number; claims: number };
   readonly items: {
     drops: number;
     rares: number;
@@ -349,6 +358,7 @@ function emptyLedger(): Ledger {
     dust: { earned: [0, 0, 0], levels: [0, 0, 0], items: [0, 0, 0], salvage: [0, 0, 0] },
     fragments: 0,
     chests: 0,
+    quests: { gold: 0, dust: [0, 0, 0], chests: 0, claims: 0 },
     items: { drops: 0, rares: 0, upgrades: 0, maxed: 0, wornLevel: 0 },
   };
 }
@@ -362,8 +372,51 @@ export function winRun(
   return ok(completeDungeon(content, profile, pick.dungeon, pick.tier));
 }
 
+/**
+ * Quêtes dans la partie modèle : le joueur fait `perDay` passages gagnants par jour (UTC) et
+ * réclame tout ce qui est prêt après chaque passage (quêtes du jour, de la semaine, bonus, succès).
+ */
+export interface QuestModel {
+  readonly perDay: number;
+}
+
+const DAY_MS = 86_400_000;
+/** Premier jour de la partie modèle : un lundi (la semaine commence avec la partie). */
+const START = Date.UTC(2026, 10, 2);
+
+/** Réclame tout ce qui est prêt ; note ce que les récompenses ont rapporté. */
+function claimAll(content: Content, profile: Profile, now: number, ledger: Ledger): Profile {
+  let current = profile;
+  const take = (next: Profile | null): void => {
+    if (next === null) return;
+    ledger.quests.gold += next.gold - current.gold;
+    next.materials.forEach((m, tier) => {
+      ledger.quests.dust[tier] =
+        (ledger.quests.dust[tier] ?? 0) + m - (current.materials[tier] ?? 0);
+    });
+    const chests = (p: Profile): number => Object.values(p.chests).reduce((a, b) => a + b, 0);
+    ledger.quests.chests += chests(next) - chests(current);
+    ledger.quests.claims += 1;
+    current = next;
+  };
+  for (const kind of ['daily', 'weekly'] as const)
+    for (const status of questStatus(content, current, kind))
+      if (status.done && !status.claimed)
+        take(ok(claimQuest(content, current, kind, status.quest.id, now)));
+  if (bonusReady(current)) take(ok(claimBonus(content, current, now)));
+  for (const status of achievementStatus(content, current))
+    if (status.done && !status.claimed)
+      take(ok(claimAchievement(content, current, status.achievement.id)));
+  return current;
+}
+
 /** Joue la partie modèle jusqu'au dernier jalon ou à `maxRuns` passages gagnants. */
-export function simulateEconomy(content: Content, seed: number, maxRuns = 600): EconomyRun {
+export function simulateEconomy(
+  content: Content,
+  seed: number,
+  maxRuns = 600,
+  quests: QuestModel | null = null,
+): EconomyRun {
   let profile = newProfile(content, seed);
   const ledger = emptyLedger();
   const firstClears: Record<string, number> = {};
@@ -378,6 +431,8 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
   const allCleared = (): boolean =>
     content.dungeons.every((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0);
   while (runs < maxRuns && (teamMaxLevel === null || collection === null || !allCleared())) {
+    const now = quests === null ? 0 : START + Math.floor(runs / quests.perDay) * DAY_MS;
+    if (quests !== null) profile = rollQuests(content, profile, now);
     const pick = pickRun(content, profile);
     const won = winRun(content, profile, pick);
     if (won === null) break;
@@ -395,6 +450,7 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
     ledger.items.drops += 1;
     if (content.itemById.get(report.item.item)?.rarity === 'rare') ledger.items.rares += 1;
 
+    if (quests !== null) profile = claimAll(content, profile, now, ledger);
     profile = openAll(content, profile, ledger);
     const stars = starAll(content, profile);
     profile = stars.profile;
@@ -409,6 +465,9 @@ export function simulateEconomy(content: Content, seed: number, maxRuns = 600): 
       if (firstStar === null) firstStar = runs;
       profile = levelTeam(content, profile, ledger);
     }
+    // Les quêtes faites par les dépenses de ce passage (niveaux, objets, coffres) : réclamées
+    // maintenant, dépensées au passage suivant.
+    if (quests !== null) profile = claimAll(content, profile, now, ledger);
 
     if (firstMaxItem === null && profile.items.some((o) => o.upgrade >= itemRules.maxUpgradeLevel))
       firstMaxItem = runs;
@@ -468,8 +527,15 @@ export interface EconomySummary {
 }
 
 /** Moyenne des jalons et du bilan sur plusieurs graines (un jalon jamais atteint compte comme absent). */
-export function summarizeEconomy(content: Content, seeds: number, maxRuns = 600): EconomySummary {
-  const runs = Array.from({ length: seeds }, (_, i) => simulateEconomy(content, i + 1, maxRuns));
+export function summarizeEconomy(
+  content: Content,
+  seeds: number,
+  maxRuns = 600,
+  quests: QuestModel | null = null,
+): EconomySummary {
+  const runs = Array.from({ length: seeds }, (_, i) =>
+    simulateEconomy(content, i + 1, maxRuns, quests),
+  );
   const pick = (key: keyof Omit<Milestones, 'firstClears'>): number | null => {
     const values = runs.map((r) => r.milestones[key]).filter((v): v is number => v !== null);
     return values.length === runs.length ? mean(values) : null;
@@ -492,6 +558,10 @@ export function summarizeEconomy(content: Content, seeds: number, maxRuns = 600)
     ledger.dust.salvage[tier] = avg((l) => l.dust.salvage[tier] ?? 0);
   }
   ledger.fragments = avg((l) => l.fragments);
+  ledger.quests.gold = avg((l) => l.quests.gold);
+  ledger.quests.chests = avg((l) => l.quests.chests);
+  ledger.quests.claims = avg((l) => l.quests.claims);
+  for (const tier of [0, 1, 2]) ledger.quests.dust[tier] = avg((l) => l.quests.dust[tier] ?? 0);
   ledger.chests = avg((l) => l.chests);
   ledger.items.drops = avg((l) => l.items.drops);
   ledger.items.rares = avg((l) => l.items.rares);
@@ -582,9 +652,11 @@ function main(): void {
     return Number.isFinite(value) && value > 0 ? value : fallback;
   };
   const auto = option('--auto', 58) / 100;
+  const perDay = option('--per-day', 0);
   const content = loadContent();
   printTables(content);
-  const summary = summarizeEconomy(content, option('--seeds', 20), option('--runs', 600));
+  const seeds = option('--seeds', 20);
+  const summary = summarizeEconomy(content, seeds, option('--runs', 600));
   const f = (n: number | null): string =>
     n === null ? '   —  ' : `${n.toFixed(1).padStart(5)} (${(n / auto).toFixed(0)} tent.)`;
   console.log(
@@ -620,6 +692,50 @@ function main(): void {
   console.log(
     `  objets tombés ${l.items.drops.toFixed(0)} dont rares ${l.items.rares.toFixed(1)}, améliorations ${l.items.upgrades.toFixed(1)} (objets au maximum ${l.items.maxed.toFixed(1)}, niveau moyen des objets portés ${l.items.wornLevel.toFixed(2)}) ; coffres ${l.chests.toFixed(1)}, fragments ${l.fragments.toFixed(0)}`,
   );
+  printQuestEffect(
+    content,
+    summary,
+    seeds,
+    option('--runs', 600),
+    perDay > 0 ? [perDay] : [5, 10, 20],
+  );
+}
+
+/** Effet des quêtes et succès sur les jalons, pour quelques rythmes de jeu (passages gagnants par jour). */
+export function questEffect(
+  base: EconomySummary,
+  withQuests: EconomySummary,
+): Record<keyof EconomySummary['milestones'], number | null> {
+  const out = {} as Record<keyof EconomySummary['milestones'], number | null>;
+  for (const key of Object.keys(base.milestones) as (keyof EconomySummary['milestones'])[]) {
+    const a = base.milestones[key];
+    const b = withQuests.milestones[key];
+    out[key] = a === null || b === null ? null : (100 * (a - b)) / a;
+  }
+  return out;
+}
+
+function printQuestEffect(
+  content: Content,
+  base: EconomySummary,
+  seeds: number,
+  maxRuns: number,
+  rhythms: readonly number[],
+): void {
+  console.log('Quêtes et succès : jalons (passages gagnants) et raccourcissement :');
+  for (const perDay of rhythms) {
+    const q = summarizeEconomy(content, seeds, maxRuns, { perDay });
+    const effect = questEffect(base, q);
+    const cells = (Object.keys(effect) as (keyof typeof effect)[]).map(
+      (key) =>
+        `${key} ${q.milestones[key]?.toFixed(1) ?? '—'} (${effect[key]?.toFixed(1) ?? '—'} %)`,
+    );
+    const l = q.ledger.quests;
+    console.log(`  ${String(perDay)} passages/jour : ${cells.join(', ')}`);
+    console.log(
+      `    récompenses : ${l.claims.toFixed(0)} réclamées, or ${l.gold.toFixed(0)} (${((100 * l.gold) / q.ledger.gold.earned).toFixed(1)} % de l'or des donjons), poussière ${l.dust.map((d) => d.toFixed(0)).join('/')}, coffres ${l.chests.toFixed(1)} (sur ${q.ledger.chests.toFixed(1)} ouverts)`,
+    );
+  }
 }
 
 if (process.argv[1]?.endsWith('economy.ts')) main();

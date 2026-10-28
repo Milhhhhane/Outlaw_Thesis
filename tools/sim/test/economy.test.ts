@@ -1,7 +1,7 @@
 import { loadContent } from '@outlaw/data';
 import { tierReached, tierTargetLevel } from '@outlaw/engine';
 import { describe, expect, it } from 'vitest';
-import { pickRun, simulateEconomy, summarizeEconomy } from '../src/economy';
+import { pickRun, questEffect, simulateEconomy, summarizeEconomy } from '../src/economy';
 
 const content = loadContent();
 
@@ -72,5 +72,20 @@ describe('économie : joueur modèle', () => {
     expect(pure).toBeGreaterThan(
       0.75 * ((ledger.dust.earned[2] ?? 0) + (ledger.dust.salvage[2] ?? 0)),
     );
+  });
+
+  // Quêtes et succès (docs/BALANCE.md, « Quêtes et succès ») : une raison de revenir, pas un
+  // raccourci. À 5 et 10 passages gagnants par jour, aucun jalon n'arrive plus de 15 % plus tôt.
+  it('les quêtes ne raccourcissent aucun jalon de plus de 15 % (5 et 10 passages par jour)', () => {
+    const base = summarizeEconomy(content, 20);
+    for (const perDay of [5, 10]) {
+      const withQuests = summarizeEconomy(content, 20, 600, { perDay });
+      expect(withQuests.unreached).toBe(0);
+      expect(withQuests.ledger.quests.claims).toBeGreaterThan(0);
+      for (const shortening of Object.values(questEffect(base, withQuests))) {
+        expect(shortening).not.toBeNull();
+        expect(shortening ?? 0).toBeLessThanOrEqual(15);
+      }
+    }
   });
 });

@@ -397,6 +397,29 @@ describe('parseContent : références croisées', () => {
     }
   };
 
+  it('quêtes : identifiants uniques, tirage rempli dès le début, coffres connus', () => {
+    const quest = (id: string, minWins = 0) => ({ id, metric: 'wins', target: 2, minWins });
+    const daily = ['a', 'b', 'c', 'd', 'e'].map((id) => quest(`d_${id}`));
+    const weekly = ['a', 'b', 'c', 'd', 'e'].map((id) => quest(`w_${id}`));
+    const ok = { daily, weekly, achievements: [] };
+    expect(parseContent({ ...rawFixture(), quests: ok }).quests.daily).toHaveLength(5);
+    expectIssue((raw) => {
+      raw.quests = { ...ok, weekly: [...weekly, quest('d_a')] };
+    }, 'identifiant en double « d_a »');
+    expectIssue((raw) => {
+      raw.quests = { ...ok, daily: [...daily.slice(1), quest('late', 10)] };
+    }, "daily n'a que 4 quête(s) sans condition");
+    expectIssue((raw) => {
+      raw.quests = {
+        ...ok,
+        achievements: [{ id: 'x', metric: 'nope', target: 1, reward: 'small' }],
+      };
+    }, 'quêtes : achievements.0.metric');
+    expectIssue((raw) => {
+      (raw.balance as typeof balanceJson).quests.daily.bonus.chest = 'diamond';
+    }, 'coffre inconnu « diamond »');
+  });
+
   it('tour : refuse un boss dans un groupe, un étage de boss sans boss, un donjon inconnu', () => {
     expectIssue((raw) => {
       (raw.tower as typeof towerFixture).pools.fire = { enemies: ['test_boss'] };

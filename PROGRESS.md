@@ -98,6 +98,12 @@
   ci-dessus « marier les raretés hautes avec des donjons plus durs ». Chiffres dans
   `docs/ECONOMY.md`.
 
+- Quêtes et succès — 5 quêtes du jour et 5 de la semaine tirées selon la date UTC et la graine
+  du profil, bonus du jour (coffre de bronze), 20 succès par paliers ; progression comptée par le
+  moteur (compteurs à vie), récompenses relatives au meilleur donjon terminé, écran « Quêtes » au
+  camp avec badge. Effet mesuré : au plus 13,7 % de raccourcissement d'un jalon (cible ≤ 15 %,
+  en CI). Pas de quête PvP (voir DECISIONS).
+
 - Tour à étages — 50 étages générés par formule (un combat chacun, boss tous les 10 étages),
   progression dans le profil, récompenses de première victoire, écran « Tour » au camp, Auto qui
   peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro

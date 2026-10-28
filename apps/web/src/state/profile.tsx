@@ -1,5 +1,5 @@
 import type { Profile } from '@outlaw/data';
-import { mergeItems, newProfile, type Outcome, type Refusal } from '@outlaw/engine';
+import { mergeItems, newProfile, rollQuests, type Outcome, type Refusal } from '@outlaw/engine';
 import {
   createContext,
   useCallback,
@@ -43,7 +43,10 @@ export function ProfileProvider({
       : { profile: initial, recovered: false },
   );
   // Les anciennes sauvegardes avaient plusieurs exemplaires par objet : ils deviennent des copies.
-  const [profile, setProfile] = useState<Profile>(() => mergeItems(loaded.profile));
+  // Les quêtes passent à la période courante au chargement, puis toutes les 30 s et à chaque action.
+  const [profile, setProfile] = useState<Profile>(() =>
+    rollQuests(content, mergeItems(loaded.profile), Date.now()),
+  );
   const [refusal, setRefusal] = useState<Refusal | null>(null);
 
   const account = useAccount();
@@ -59,13 +62,23 @@ export function ProfileProvider({
     }
   }, [profile, persist, changed]);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setProfile((current) => rollQuests(content, current, Date.now()));
+    }, 30_000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
   const apply = useCallback((outcome: Outcome): boolean => {
     if (!outcome.ok) {
       setRefusal(outcome.reason);
       return false;
     }
     setRefusal(null);
-    setProfile(outcome.value);
+    // Une action faite après minuit compte pour le nouveau jour : départ = profil d'avant l'action.
+    setProfile((before) => rollQuests(content, outcome.value, Date.now(), before));
     return true;
   }, []);
 
