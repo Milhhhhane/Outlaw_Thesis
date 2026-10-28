@@ -2,6 +2,7 @@ import balanceJson from '../balance.json' with { type: 'json' };
 import { rawHeroes } from '../content/heroes/index';
 import dungeonsJson from '../content/dungeons.json' with { type: 'json' };
 import enemiesJson from '../content/enemies.json' with { type: 'json' };
+import essencesJson from '../content/essences.json' with { type: 'json' };
 import itemsJson from '../content/items.json' with { type: 'json' };
 import questsJson from '../content/quests.json' with { type: 'json' };
 import towerJson from '../content/tower.json' with { type: 'json' };
@@ -13,6 +14,7 @@ export * from './schemas/common';
 export * from './schemas/dungeons';
 export * from './schemas/effects';
 export * from './schemas/enemies';
+export * from './schemas/essences';
 export * from './schemas/heroes';
 export * from './schemas/items';
 export * from './schemas/profile';
@@ -29,5 +31,6 @@ export function loadContent(): Content {
     dungeons: dungeonsJson,
     quests: questsJson,
     tower: towerJson,
+    essences: essencesJson,
   });
 }

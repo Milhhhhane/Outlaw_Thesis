@@ -1231,3 +1231,46 @@ ce qu'il a gagné, comme les multi-combats des jeux du genre.
 **Badges et tri calculés par le moteur** — Choix : `campTodo` et les équipes enregistrées sont des
 fonctions pures du moteur ; seul le tri par nom (dépendant de la langue) vit dans l'interface.
 Raison : une seule source de vérité, testable sans écran.
+
+## Éveil des héros et sanctuaires d'essence
+
+**Sanctuaires hors du contenu des donjons** — Contexte : trois donjons d'essence, hors du chemin.
+Choix : un fichier à part (`content/essences.json`, `content.essenceDungeons`) plutôt que des
+entrées de `dungeons.json`. Raison : la carte, la courbe, les règles R2, le joueur modèle, les
+succès et le butin exclusif parcourent `content.dungeons` ; y glisser des donjons sans butin ni
+place sur le chemin aurait demandé une exception dans chacun. Les paliers réutilisent
+`balance.tiers` (niveau, PV et ATK) : `tierLevel` accepte tout ce qui a un niveau conseillé.
+
+**Accès par un bouton sous la carte, pas une 8ᵉ entrée du camp** — Raison : le brief ; le bouton
+tient dans la légende de la carte à 844 × 390 (vérifié en e2e), le menu du camp reste à 7 entrées.
+
+**Une qualité d'essence par palier, rien d'autre** — Choix : palier I → faibles, II → moyennes,
+III → supérieures (`drops` 3 / 3 / 2) ; ni XP, ni or, ni objet, ni coffre ; la première victoire
+d'un palier ouvre le suivant. Raison : un farm dédié qui ne concurrence pas les donjons ; le coût
+qui demande les trois qualités force à monter les paliers.
+
+**Coût : essences de l'élément et or, pas de poussière** — Contexte : « un peu de magie/poussière,
+à trancher ». Choix : 5 000 or. Raison : la poussière est déjà la monnaie d'arbitrage (niveaux et
+objets) ; l'or manque de puits (`docs/ECONOMY.md`). Condition : niveau 20 (pas d'étoile exigée :
+le niveau 20 demande déjà la première).
+
+**Effet : une formule commune, sur le terrain des objets** — Choix : `balance.awakening` porte
+`statPct` (PV, ATK, DEF, hors plafond des objets, borné à 10 par le schéma) et `mods`, des
+modifications de passif identiques à celles des objets (`scale` de `power`, `amount` et `percent`
+à +20 %), appliquées par la même fonction (`applyItems`) comme un objet de plus. Raison : aucune
+règle de moteur nouvelle, texte généré par `describeItem`, même effet lisible pour les 25 héros ;
+la règle « les objets ont le passif pour terrain » est respectée. Écarté : +1 utilisation par
+combat (`limit`) : rien pour la moitié des héros, énorme pour Phénix et Étendard.
+
+**Visible sans sprite neuf** — Choix : badge « Éveillé » sur la fiche, liseré et halo de la
+couleur de l'élément en CSS (`drop-shadow`) autour du sprite, sur la fiche et en combat, sans
+animation (rien à couper avec `[data-motion='off']`). Raison : le brief (pas de sprites lourds).
+
+**Règle de CI sur le pire héros, avec passe de confirmation** — Contexte : à 64 donjons par héros,
+le bruit du pire des 25 héros dépasse 10 points même pour un effet moyen de 3 points. Choix : un
+héros au-dessus de la cible est remesuré sur trois fois plus d'équipes et l'écart pris sur le tout
+(256 donjons). Raison : garder une règle « par héros » sans tripler le temps de `sim:check`.
+
+**Règles « tous éveillés » en CI, R1 sur 4 équipes** — Raison : R1 coûte surtout en duels ; sur
+les 12 équipes la mesure donnait 82 %, sur 4 elle donne 79 % (cible 70 %). R2 et « aucun héros
+indispensable » portent sur les 50 équipes.

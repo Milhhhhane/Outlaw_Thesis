@@ -175,6 +175,17 @@ niveau, courbe, taille des groupes, équipement visé, récompenses) sont dans `
 Après un changement : `pnpm --filter @outlaw/sim tower`, puis `pnpm sim --update` si la baseline
 change.
 
+## Donjons d'essence et éveil
+
+`content/essences.json` : exactement un donjon par élément (`id`, `element`, `recommendedLevel` du
+palier I, `scene` = identifiant d'un donjon dont on emprunte le décor, 3 `encounters` avec
+`hpPct` / `atkPct` facultatifs). Le chargement vérifie que les ennemis sont de l'élément du
+donjon et qu'un boss n'apparaît qu'au dernier combat. Les noms sont dans
+`apps/web/src/i18n/awakening.fr.json` (`essence.name.<élément>`). Coût, effet de l'éveil,
+ouverture (`openAfter`) et essences par palier (`drops`) : `balance.awakening`. Après un
+changement : `pnpm sim` (lignes `essence_*`, `awakening_*`, `awake_*`) et
+`pnpm --filter @outlaw/sim economy`.
+
 ## Boss de la semaine
 
 Tout est dans `balance.boss` : `bosses` (identifiants d'ennemis `boss`, un par élément, ordre de

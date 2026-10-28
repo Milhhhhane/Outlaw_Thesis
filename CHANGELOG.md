@@ -2,6 +2,26 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-28 — éveil des héros et sanctuaires d'essence
+
+### Ajouté
+
+- **Sanctuaires d'essence** (bouton « Sanctuaires » sous la carte) : trois donjons hors du chemin,
+  un par élément (`content/essences.json`), ennemis et boss existants de l'élément, trois combats,
+  paliers I à III de `balance.tiers`. Ouverts quand la Citadelle de cendre est terminée. Ils ne
+  donnent ni or, ni XP, ni objet : 3 essences faibles (palier I), 3 moyennes (II) ou 2 supérieures
+  (III) de leur élément.
+- **Éveil** (onglet « Éveil » de la fiche du héros) : une fois par héros, dès le niveau 20, contre
+  15 faibles, 10 moyennes et 6 supérieures de son élément et 5 000 or. Effet commun
+  (`balance.awakening`) : PV, ATK et DEF +4 % (hors plafond des objets) et passif +20 % (puissance,
+  tempo et points, pourcentages de stat), par les modifications de passif des objets ; texte
+  généré. Badge « Éveillé » sur la fiche, liseré de l'élément autour du sprite en combat.
+- Profil : `heroes[id].awakened`, `essences`, `essenceDungeons` (valeurs par défaut pour les
+  anciennes sauvegardes). Mode test : case « Éveillé » sur la fiche ; lien de build : champ `a`.
+- Simulation : écart d'un héros éveillé (au plus 9 points mesurés, cible ≤ 10), donjons d'essence
+  (expert ≥ 50 % à chaque palier), R1 / R2 / « aucun héros indispensable » avec tous les héros
+  éveillés, en CI ; `economy` mesure l'éveil (premier héros au 81ᵉ passage, équipe au 137ᵉ).
+
 ## [Non publié] — 2026-10-28 — boss de la semaine
 
 ### Ajouté
