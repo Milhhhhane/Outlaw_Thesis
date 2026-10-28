@@ -22,7 +22,7 @@ const refuse = <T>(reason: Refusal): Outcome<T> => ({ ok: false, reason });
 export interface TowerFloor {
   readonly floor: number;
   readonly boss: boolean;
-  /** Élément du groupe (rotation feu → eau → nature) ; un étage de boss suit son boss. */
+  /** Élément de l'étage (rotation feu → eau → nature, boss compris : couleur de la colonne). */
   readonly element: Element;
   /** Ennemis, de gauche à droite. */
   readonly enemies: readonly string[];
@@ -30,7 +30,8 @@ export interface TowerFloor {
   readonly level: number;
   readonly hpPct: number;
   readonly atkPct: number;
-  readonly modifier?: DungeonModifier;
+  /** Modificateur de donjon (étages de boss qui en citent un), posé sur les deux camps. */
+  readonly modifier: DungeonModifier | undefined;
   /** Équipement visé : objets portés par héros et leur amélioration. */
   readonly gear: { readonly items: number; readonly upgrade: number };
 }
@@ -69,16 +70,19 @@ export function towerLevel(content: Content, floor: number): number {
 /** PV et ATK des ennemis de l'étage, en % : courbe interpolée, majorée aux étages de boss. */
 export function towerPct(content: Content, floor: number): { hpPct: number; atkPct: number } {
   const { curve, boss, bossEvery } = content.balance.tower;
-  const upper = curve.find((p) => p.floor >= floor) ?? curve[curve.length - 1];
-  const lower = curve.findLast((p) => p.floor <= floor) ?? upper;
-  if (lower === undefined || upper === undefined) return { hpPct: 100, atkPct: 100 };
-  const t = upper.floor === lower.floor ? 0 : (floor - lower.floor) / (upper.floor - lower.floor);
-  const isBoss = floor % bossEvery === 0;
-  const at = (a: number, b: number, bossPct: number): number =>
-    Math.round((a + (b - a) * t) * (isBoss ? bossPct / 100 : 1));
+  // Segment [a, b] de la courbe qui contient l'étage (le schéma la fait aller du 1er au dernier).
+  let a = { floor: 1, hpPct: 100, atkPct: 100 };
+  let b = a;
+  for (const point of curve) {
+    a = b;
+    b = point;
+    if (point.floor >= floor) break;
+  }
+  const t = b.floor === a.floor ? 1 : (floor - a.floor) / (b.floor - a.floor);
+  const scale = floor % bossEvery === 0 ? boss : { hpPct: 100, atkPct: 100 };
   return {
-    hpPct: at(lower.hpPct, upper.hpPct, boss.hpPct),
-    atkPct: at(lower.atkPct, upper.atkPct, boss.atkPct),
+    hpPct: Math.round(((a.hpPct + (b.hpPct - a.hpPct) * t) * scale.hpPct) / 100),
+    atkPct: Math.round(((a.atkPct + (b.atkPct - a.atkPct) * t) * scale.atkPct) / 100),
   };
 }
 
@@ -98,47 +102,37 @@ export function towerGear(content: Content, floor: number): { items: number; upg
 export function towerFloor(content: Content, floor: number): TowerFloor | null {
   if (!isTowerFloor(content, floor)) return null;
   const rules = content.balance.tower;
-  const level = towerLevel(content, floor);
-  const pct = towerPct(content, floor);
-  const gear = towerGear(content, floor);
-  if (floor % rules.bossEvery === 0) {
-    const boss = content.tower.bosses[floor / rules.bossEvery - 1];
-    const enemies = boss?.enemies ?? [];
-    const lead = enemies.find((id) => content.enemyById.get(id)?.boss === true) ?? '';
-    return {
-      floor,
-      boss: true,
-      element: content.enemyById.get(lead)?.element ?? 'fire',
-      enemies,
-      level,
-      hpPct: Math.round((pct.hpPct * (boss?.hpPct ?? 100)) / 100),
-      atkPct: Math.round((pct.atkPct * (boss?.atkPct ?? 100)) / 100),
-      ...(boss?.modifier === undefined ? {} : { modifier: boss.modifier }),
-      gear,
-    };
-  }
   const index = (floor - 1) % ELEMENTS.length;
-  const element = ELEMENTS[index] ?? 'fire';
-  const next = ELEMENTS[(index + 1) % ELEMENTS.length] ?? 'fire';
+  const element: Element = index === 0 ? 'fire' : index === 1 ? 'water' : 'nature';
+  const base = {
+    floor,
+    element,
+    level: towerLevel(content, floor),
+    gear: towerGear(content, floor),
+  };
+  const pct = towerPct(content, floor);
+  const at = (scale: { hpPct: number; atkPct: number }): { hpPct: number; atkPct: number } => ({
+    hpPct: Math.round((pct.hpPct * scale.hpPct) / 100),
+    atkPct: Math.round((pct.atkPct * scale.atkPct) / 100),
+  });
+  // `slice` plutôt qu'un index : un boss, un ennemi ou rien, sans valeur de repli.
+  const bossIndex = floor / rules.bossEvery - 1;
+  const bosses =
+    floor % rules.bossEvery === 0 ? content.tower.bosses.slice(bossIndex, bossIndex + 1) : [];
+  for (const boss of bosses) {
+    return { ...base, boss: true, enemies: boss.enemies, ...at(boss), modifier: boss.modifier };
+  }
   const group = content.tower.pools[element];
-  const pool = group.enemies;
   const shift = Math.floor((floor - 1) / ELEMENTS.length);
   const size = stepAt(rules.sizes, floor)?.count ?? 1;
-  const enemies = Array.from({ length: size }, (_, i) => pool[(i + shift) % pool.length] ?? '');
+  const pick = (pool: readonly string[], k: number): string[] =>
+    pool.slice(k % pool.length, (k % pool.length) + 1);
+  const enemies = Array.from({ length: size }, (_, i) => pick(group.enemies, i + shift)).flat();
   if (floor >= rules.mixFrom && size > 1) {
-    const other = content.tower.pools[next].enemies;
-    enemies[size - 1] = other[shift % other.length] ?? '';
+    const next: Element = element === 'fire' ? 'water' : element === 'water' ? 'nature' : 'fire';
+    enemies.splice(size - 1, 1, ...pick(content.tower.pools[next].enemies, shift));
   }
-  return {
-    floor,
-    boss: false,
-    element,
-    enemies,
-    level,
-    hpPct: Math.round((pct.hpPct * group.hpPct) / 100),
-    atkPct: Math.round((pct.atkPct * group.atkPct) / 100),
-    gear,
-  };
+  return { ...base, boss: false, enemies, ...at(group), modifier: undefined };
 }
 
 /** Récompense de la première victoire d'un étage. */
@@ -146,11 +140,13 @@ export function towerReward(content: Content, floor: number): TowerReward {
   const { rewards, bossEvery } = content.balance.tower;
   const boss = floor % bossEvery === 0;
   const tier = levelDustTier(content, towerLevel(content, floor));
-  const base = rewards.dust[tier - 1] ?? 0;
+  // `slice` : la valeur du palier ou du boss, sans repli (le schéma garantit les longueurs).
+  const base = rewards.dust.slice(tier - 1, tier).reduce((sum, n) => sum + n, 0);
+  const chest = rewards.bossChests.slice(floor / bossEvery - 1, floor / bossEvery);
   return {
     materials: { tier, amount: Math.round(boss ? (base * rewards.bossDustPct) / 100 : base) },
     fragments: rewards.fragments,
-    chest: boss ? (rewards.bossChests[floor / bossEvery - 1] ?? null) : null,
+    chest: boss ? chest.join('') : null,
   };
 }
 

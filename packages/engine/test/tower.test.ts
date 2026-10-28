@@ -9,6 +9,7 @@ import {
   towerFloors,
   towerGear,
   towerOpen,
+  towerPct,
   towerReward,
 } from '../src/tower';
 
@@ -32,6 +33,7 @@ describe('tour : étages générés par formule', () => {
     expect(towerFloor(content, 3)!.element).toBe('nature');
     for (const floor of floors) {
       const f = towerFloor(content, floor)!;
+      expect(f.boss).toBe(floor % rules.bossEvery === 0);
       if (f.boss) continue;
       expect(f.enemies.every((id) => content.enemyById.get(id)?.boss !== true)).toBe(true);
       const own = f.enemies.filter((id) => content.enemyById.get(id)?.element === f.element);
@@ -48,19 +50,26 @@ describe('tour : étages générés par formule', () => {
 
   it('courbe monotone : niveau, PV, ATK et équipement visé ne baissent jamais', () => {
     const all = floors.map((floor) => towerFloor(content, floor)!);
-    const ordinary = all.filter((f) => !f.boss);
     all.slice(1).forEach((f, i) => {
       const before = all[i]!;
       expect(f.level).toBeGreaterThanOrEqual(before.level);
       expect(f.gear.upgrade).toBeGreaterThanOrEqual(before.gear.upgrade);
-      // Un boss est au moins aussi dur que l'étage d'avant.
-      if (f.boss) expect(f.atkPct).toBeGreaterThanOrEqual(before.atkPct);
     });
-    // Étages ordinaires : PV et ATK jamais en baisse (le boss est majoré à part).
-    ordinary.slice(1).forEach((f, i) => {
-      expect(f.atkPct).toBeGreaterThanOrEqual(ordinary[i]!.atkPct);
-      expect(f.hpPct).toBeGreaterThanOrEqual(ordinary[i]!.hpPct);
+    // La courbe des étages ordinaires ne baisse jamais (le boss a sa majoration à part).
+    const curve = floors.filter((n) => n % rules.bossEvery !== 0).map((n) => towerPct(content, n));
+    curve.slice(1).forEach((p, i) => {
+      expect(p.atkPct).toBeGreaterThanOrEqual(curve[i]!.atkPct);
+      expect(p.hpPct).toBeGreaterThanOrEqual(curve[i]!.hpPct);
     });
+    // Un étage applique la correction de son groupe (ordinaire) ou de son boss.
+    const water = content.tower.pools.water;
+    expect(towerFloor(content, 2)!.atkPct).toBe(
+      Math.round((towerPct(content, 2).atkPct * water.atkPct) / 100),
+    );
+    const firstBoss = content.tower.bosses[1]!;
+    expect(towerFloor(content, 2 * rules.bossEvery)!.atkPct).toBe(
+      Math.round((towerPct(content, 2 * rules.bossEvery).atkPct * firstBoss.atkPct) / 100),
+    );
     expect(towerGear(content, 1)).toEqual({ items: 0, upgrade: 0 });
     const last = rules.gear.at(-1)!;
     expect(towerGear(content, rules.floors)).toEqual({ items: last.items, upgrade: last.upgrade });
@@ -69,7 +78,8 @@ describe('tour : étages générés par formule', () => {
 
 describe('tour : progression et récompenses', () => {
   it('ancienne sauvegarde sans tour : aucun étage battu, seul le premier est ouvert', () => {
-    const { tower: _omitted, ...legacy } = newProfile(content, 1);
+    const legacy: Record<string, unknown> = { ...newProfile(content, 1) };
+    delete legacy.tower;
     const read = profileSchema.parse(legacy);
     expect(towerCleared(read)).toBe(0);
     expect(towerOpen(content, read, 1)).toBe(true);

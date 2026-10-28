@@ -290,7 +290,7 @@ function resolveTower(
     for (const id of pool.enemies) {
       const enemy = enemyById.get(id);
       if (enemy === undefined) issues.push(`tour : ennemi inconnu « ${id} »`);
-      else if (enemy.boss === true) issues.push(`tour : « ${id} » est un boss (groupe ${element})`);
+      else if (enemy.boss) issues.push(`tour : « ${id} » est un boss (groupe ${element})`);
     }
   }
   const expected = balance.tower.floors / balance.tower.bossEvery;

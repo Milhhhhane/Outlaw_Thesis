@@ -28,7 +28,12 @@ type Phase =
   | { readonly kind: 'fight' }
   | { readonly kind: 'failed' }
   | { readonly kind: 'tested' }
-  | { readonly kind: 'done'; readonly report: TowerReport };
+  | {
+      readonly kind: 'done';
+      readonly report: TowerReport;
+      /** Le moteur accepte l'entrée à l'étage suivant : bouton et enchaînement Auto. */
+      readonly canClimb: boolean;
+    };
 
 /**
  * Un étage de la tour : un seul combat (ennemis, niveau et modificateur de l'étage), puis le
@@ -56,7 +61,8 @@ export function TowerRun({ floor }: { readonly floor: number }) {
   if (f === null) return null;
   const scene = f.boss ? 'hollow_throne' : SCENES[f.element];
 
-  if (phase.kind === 'done') return <TowerEnd report={phase.report} scene={scene} />;
+  if (phase.kind === 'done')
+    return <TowerEnd report={phase.report} canClimb={phase.canClimb} scene={scene} />;
   if (phase.kind === 'failed' || phase.kind === 'tested') {
     const failed = phase.kind === 'failed';
     return (
@@ -104,8 +110,14 @@ export function TowerRun({ floor }: { readonly floor: number }) {
             back();
             return;
           }
-          replace(outcome.value.profile);
-          setPhase({ kind: 'done', report: outcome.value.report });
+          const { profile: after, report } = outcome.value;
+          replace(after);
+          const next = report.next;
+          setPhase({
+            kind: 'done',
+            report,
+            canClimb: next !== null && enterTower(content, after, next, Date.now()).ok,
+          });
         },
         last: true,
       }}
@@ -114,7 +126,15 @@ export function TowerRun({ floor }: { readonly floor: number }) {
 }
 
 /** Bilan d'un étage gagné : poussière, fragments, coffre ; étage suivant ou retour à la tour. */
-function TowerEnd({ report, scene }: { readonly report: TowerReport; readonly scene: string }) {
+function TowerEnd({
+  report,
+  canClimb,
+  scene,
+}: {
+  readonly report: TowerReport;
+  readonly canClimb: boolean;
+  readonly scene: string;
+}) {
   const { go } = useGame();
   const { profile, apply } = useProfile();
   const { options } = useOptions();
@@ -127,7 +147,6 @@ function TowerEnd({ report, scene }: { readonly report: TowerReport; readonly sc
     heading.current?.focus();
   }, []);
   const next = report.next;
-  const canClimb = next !== null && enterTower(content, profile, next, Date.now()).ok;
   const climb = (): void => {
     if (next !== null && apply(enterTower(content, profile, next, Date.now())))
       go({ name: 'tower_run', floor: next });
