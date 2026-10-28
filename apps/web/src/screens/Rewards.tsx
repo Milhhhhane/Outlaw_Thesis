@@ -166,6 +166,12 @@ export function Rewards({
           <Icon name="gold" size={36} />
           <p className="reward-card__big gold-text">{t('reward.gold', { gold: report.gold })}</p>
         </Card>
+        {report.grimoires > 0 && (
+          <Card index={index++} title={t('reward.grimoiresCard')}>
+            <Icon name="trigger" size={36} />
+            <p className="reward-card__big">{t('reward.grimoires', { n: report.grimoires })}</p>
+          </Card>
+        )}
         <Card index={index++} title={t('reward.materialsCard')}>
           <Icon name="points" size={36} />
           <p className="reward-card__big">

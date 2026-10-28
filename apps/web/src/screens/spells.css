@@ -1,0 +1,83 @@
+/* Onglet « Grimoire » de la fiche du héros : la liste défile dans le panneau, jamais la page. */
+.spell-levels {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 4px;
+  height: 100%;
+  min-height: 0;
+}
+
+.spell-levels__intro,
+.spell-levels__stock {
+  margin: 0;
+  font-size: 12px;
+}
+
+.spell-levels__stock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gold);
+}
+
+.spell-levels__list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.spell-level {
+  padding: 4px 8px;
+  border: 8px solid transparent;
+  border-image: var(--frame) 4 fill / 8px / 0 stretch;
+  font-size: 12px;
+  image-rendering: pixelated;
+}
+
+.spell-level p {
+  margin: 0;
+}
+
+.spell-level__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.spell-level__name {
+  font-size: 14px;
+}
+
+.spell-level__state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.spell-level .preview {
+  margin: 0;
+  padding-left: 14px;
+}
+
+.spell-level__buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+@media (max-height: 480px) {
+  .spell-levels__intro {
+    display: none;
+  }
+}

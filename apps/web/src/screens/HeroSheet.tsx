@@ -13,6 +13,7 @@ import {
   respecCost,
   setLevel,
   setUpgrade,
+  spellPowerPct,
   starCost,
   starUp,
   takeTalent,
@@ -33,8 +34,9 @@ import { dustName, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
 import { Glossed } from '../game/Glossed';
+import { SpellLevels } from './SpellLevels';
 
-type Tab = 'stats' | 'talents' | 'items';
+type Tab = 'stats' | 'talents' | 'items' | 'spells';
 
 const STAT_ICON = { hp: 'hp', atk: 'damage', def: 'shield', vit: 'spd' } as const;
 
@@ -614,6 +616,7 @@ export function HeroSheet({
                 badge: free > 0 ? String(free) : undefined,
               },
               { key: 'items', label: t('sheet.tab.items') },
+              { key: 'spells', label: t('sheet.tab.spells') },
             ]}
           />
           <div className="sheet__panel" role="tabpanel">
@@ -636,6 +639,18 @@ export function HeroSheet({
                       <p className="spell-card__name">
                         <span className="spell-card__key">{i + 1}</span>
                         {names.spell(spell.id)}
+                        {hero.spells[spell.slot] > 1 && (
+                          <span className="hint">
+                            {t('spells.level', {
+                              level: hero.spells[spell.slot],
+                              max: balance.spellLevels.max,
+                            })}{' '}
+                            ·{' '}
+                            {t('spells.gain', {
+                              pct: spellPowerPct(balance, hero.spells[spell.slot]),
+                            })}
+                          </span>
+                        )}
                       </p>
                       <p className="spell-card__meta">
                         <Glossed
@@ -672,6 +687,7 @@ export function HeroSheet({
             )}
             {tab === 'talents' && <TalentTree def={def} heroId={heroId} />}
             {tab === 'items' && <ItemSlots heroId={heroId} />}
+            {tab === 'spells' && <SpellLevels heroId={heroId} />}
           </div>
         </div>
       </div>
