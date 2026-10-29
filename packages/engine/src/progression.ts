@@ -1,5 +1,6 @@
 import {
   BASE_SPELL_LEVELS,
+  dungeonPrerequisiteAt,
   emptyQuestState,
   PROFILE_VERSION,
   type Content,
@@ -597,13 +598,25 @@ export function completeDungeon(
   });
 }
 
-/** Un donjon est ouvert si c'est le premier ou si le précédent a été terminé (ou en mode test). */
+/**
+ * Donjon à terminer pour ouvrir celui-ci : `opensAfter`, sinon le précédent dans le fichier (règle
+ * d'origine, inchangée pour les sauvegardes) ; null s'il est ouvert d'emblée, undefined s'il est
+ * inconnu.
+ */
+export function dungeonPrerequisite(
+  content: Content,
+  dungeonId: string,
+): string | null | undefined {
+  const index = content.dungeons.findIndex((d) => d.id === dungeonId);
+  return index < 0 ? undefined : dungeonPrerequisiteAt(content.dungeons, index);
+}
+
+/** Un donjon est ouvert si son prérequis (voir `dungeonPrerequisite`) est terminé, ou en mode test. */
 export function dungeonOpen(content: Content, profile: Profile, dungeonId: string): boolean {
   if (profile.testMode) return true;
-  const index = content.dungeons.findIndex((d) => d.id === dungeonId);
-  if (index <= 0) return index === 0;
-  const previous = content.dungeons[index - 1];
-  return previous !== undefined && (profile.dungeons[previous.id]?.clears ?? 0) > 0;
+  const prerequisite = dungeonPrerequisite(content, dungeonId);
+  if (prerequisite === undefined) return false;
+  return prerequisite === null || (profile.dungeons[prerequisite]?.clears ?? 0) > 0;
 }
 
 /** Exemplaires de chaque objet dans le bac à sable : un par membre d'équipe possible. */

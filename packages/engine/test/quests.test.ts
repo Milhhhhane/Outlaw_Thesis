@@ -176,6 +176,29 @@ describe('quêtes du jour et de la semaine', () => {
     };
     expect(rewardValue(content, late, reward).gold).toBe(Math.round(last.rewards.gold / 2));
   });
+
+  it('le plus avancé est le plus haut niveau conseillé, pas le dernier du fichier', () => {
+    const reward = { passagePct: 100, chest: null };
+    const base = content.dungeonById.get('ember_wastes')!;
+    // Région parallèle : un donjon de bas niveau placé après tous les autres dans le fichier.
+    const parallel = {
+      ...base,
+      id: 'test_parallel',
+      recommendedLevel: 2,
+      opensAfter: 'ember_wastes',
+      rewards: { ...base.rewards, gold: 7 },
+      map: { ...base.map, chapter: 2 },
+    };
+    const custom = { ...content, dungeons: [...content.dungeons, parallel] };
+    const cleared = { clears: 1, dry: 0, tier: 2 };
+    const profile = {
+      ...newProfile(content),
+      dungeons: { drowned_halls: cleared, test_parallel: cleared },
+    };
+    expect(rewardValue(custom, profile, reward).gold).toBe(160);
+    const alone = { ...newProfile(content), dungeons: { test_parallel: cleared } };
+    expect(rewardValue(custom, alone, reward).gold).toBe(7);
+  });
 });
 
 describe('succès', () => {

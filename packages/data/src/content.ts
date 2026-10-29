@@ -219,6 +219,8 @@ export function parseContent(raw: RawContent): Content {
     }
   }
 
+  checkUnlockOrder(dungeons, dungeonById, issues);
+
   // Obtention : une équipe de départ, des héros offerts par les donjons (communs ou rares), les
   // autres par invocation. Une rareté haute ne s'obtient jamais sans fragments.
   const dungeonHeroes = new Set(dungeons.flatMap((d) => d.unlocksHero ?? []));
@@ -293,6 +295,49 @@ export function parseContent(raw: RawContent): Content {
     itemOrigin,
     quests,
   };
+}
+
+/**
+ * Donjon à terminer pour ouvrir le donjon n° `index` : `opensAfter`, sinon le précédent dans le
+ * fichier ; null pour le premier sans `opensAfter`. Même règle que `dungeonOpen` du moteur.
+ */
+export function dungeonPrerequisiteAt(dungeons: readonly Dungeon[], index: number): string | null {
+  const dungeon = dungeons[index];
+  if (dungeon === undefined) return null;
+  return dungeon.opensAfter ?? dungeons[index - 1]?.id ?? null;
+}
+
+/**
+ * Déblocage : `opensAfter` cite un donjon connu, et aucun enchaînement de prérequis (explicites ou
+ * implicites) ne boucle : sinon un donjon de la boucle ne s'ouvrirait jamais.
+ */
+function checkUnlockOrder(
+  dungeons: readonly Dungeon[],
+  dungeonById: ReadonlyMap<string, Dungeon>,
+  issues: string[],
+): void {
+  const index = new Map(dungeons.map((d, i) => [d.id, i] as const));
+  for (const dungeon of dungeons) {
+    if (dungeon.opensAfter !== undefined && !dungeonById.has(dungeon.opensAfter))
+      issues.push(`donjon « ${dungeon.id} » : opensAfter inconnu « ${dungeon.opensAfter} »`);
+  }
+  const reported = new Set<string>();
+  dungeons.forEach((start) => {
+    const path: string[] = [];
+    let current: string | null = start.id;
+    while (current !== null && !path.includes(current)) {
+      path.push(current);
+      const at = index.get(current);
+      current = at === undefined ? null : dungeonPrerequisiteAt(dungeons, at);
+    }
+    if (current === null) return;
+    // Boucle trouvée : on la signale une fois, à partir du donjon qui la referme.
+    const loop = [...path.slice(path.indexOf(current)), current];
+    const key = [...new Set(loop)].sort().join('+');
+    if (reported.has(key)) return;
+    reported.add(key);
+    issues.push(`cycle de déblocage : ${loop.join(' → ')}`);
+  });
 }
 
 const NO_QUESTS: QuestsContent = { daily: [], weekly: [], achievements: [] };

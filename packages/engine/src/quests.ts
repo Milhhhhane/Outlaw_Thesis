@@ -183,11 +183,17 @@ export interface RewardValue {
 /**
  * Ce que vaut une récompense pour ce profil : `passagePct` % de l'or et de la poussière d'un
  * passage du donjon le plus avancé terminé (palier I, sans maîtrise ; le premier donjon sinon).
+ * Le plus avancé : le plus haut niveau conseillé, à égalité le premier du fichier (les chapitres
+ * sont parallèles : le dernier du fichier n'est pas le plus avancé).
  */
 export function rewardValue(content: Content, profile: Profile, reward: QuestReward): RewardValue {
   const best =
-    [...content.dungeons].reverse().find((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0) ??
-    content.dungeons[0];
+    content.dungeons
+      .filter((d) => (profile.dungeons[d.id]?.clears ?? 0) > 0)
+      .reduce<(typeof content.dungeons)[number] | undefined>(
+        (acc, d) => (acc === undefined || d.recommendedLevel > acc.recommendedLevel ? d : acc),
+        undefined,
+      ) ?? content.dungeons[0];
   const scale = (n: number): number => Math.round((n * reward.passagePct) / 100);
   return {
     gold: scale(best?.rewards.gold ?? 0),

@@ -517,6 +517,50 @@ describe('parseContent : références croisées', () => {
     }, 'héros débloqué inconnu');
   });
 
+  /** Un second donjon (chapitre 2), avec ses deux objets propres, ouvert après `opensAfter`. */
+  const withSecondDungeon = (raw: RawContent, opensAfter?: string): void => {
+    const items = [
+      { ...clone(itemFixture), id: 'test_charm_b' },
+      { ...clone(rareItemFixture), id: 'test_relic_b' },
+    ];
+    const second: Record<string, unknown> = {
+      ...clone(dungeonFixture),
+      id: 'test_dungeon_b',
+      loot: ['test_charm_b', 'test_relic_b'],
+      map: { x: 40, y: 140, landmark: 'camp', chapter: 2 },
+    };
+    if (opensAfter !== undefined) second.opensAfter = opensAfter;
+    raw.items = [...raw.items, ...items];
+    raw.dungeons = [...raw.dungeons, second];
+  };
+
+  it('opensAfter : un donjon connu, facultatif (le précédent du fichier sinon)', () => {
+    const raw = rawFixture();
+    withSecondDungeon(raw, 'test_dungeon');
+    expect(parseContent(raw).dungeonById.get('test_dungeon_b')?.opensAfter).toBe('test_dungeon');
+    const implicit = rawFixture();
+    withSecondDungeon(implicit);
+    expect(parseContent(implicit).dungeonById.get('test_dungeon_b')?.opensAfter).toBeUndefined();
+  });
+
+  it('opensAfter : refuse un donjon inconnu', () => {
+    expectIssue((raw) => {
+      withSecondDungeon(raw, 'fantome');
+    }, 'opensAfter inconnu « fantome »');
+  });
+
+  it('opensAfter : refuse un cycle de déblocage, même avec la règle du précédent', () => {
+    // Soi-même.
+    expectIssue((raw) => {
+      (raw.dungeons[0] as Record<string, unknown>).opensAfter = 'test_dungeon';
+    }, 'cycle de déblocage');
+    // Le premier s'ouvre après le second, qui s'ouvre après le précédent du fichier : le premier.
+    expectIssue((raw) => {
+      withSecondDungeon(raw);
+      (raw.dungeons[0] as Record<string, unknown>).opensAfter = 'test_dungeon_b';
+    }, 'cycle de déblocage : test_dungeon → test_dungeon_b → test_dungeon');
+  });
+
   it('refuse un niveau recommandé au-dessus du niveau maximum', () => {
     expectIssue((raw) => {
       (raw.dungeons[0] as typeof dungeonFixture).recommendedLevel = 99;
