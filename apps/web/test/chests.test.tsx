@@ -127,10 +127,9 @@ describe('écran des coffres', () => {
     render(<App version="test" initial={atGate(gold + 5)} start={{ name: 'chests' }} />);
 
     expect(
-      within(row('pyra')).getByText(
-        `${t('chests.hero.gate', { level: cap })} · ${t('chests.star.gold', { gold })}`,
-      ),
+      within(row('pyra')).getByText(t('chests.hero.gate', { level: cap })),
     ).toBeInTheDocument();
+    expect(within(row('pyra')).getByText(t('chests.star.gold', { gold }))).toBeInTheDocument();
     await user.click(within(row('pyra')).getByRole('button', { name: t('chests.star') }));
     expect(within(row('pyra')).getByText(/étoiles 1 \//)).toBeInTheDocument();
     expect(within(row('pyra')).queryByRole('button', { name: t('chests.star') })).toBeNull();
@@ -143,9 +142,10 @@ describe('écran des coffres', () => {
     expect(gold).toBeGreaterThan(0);
     render(<App version="test" initial={atGate(gold - 1)} start={{ name: 'chests' }} />);
     expect(
-      within(row('pyra')).getByText(
-        `${t('chests.hero.gate', { level: cap })} · ${t('chests.star.missingGold', { have: gold - 1, need: gold })}`,
-      ),
+      within(row('pyra')).getByText(t('chests.hero.gate', { level: cap })),
+    ).toBeInTheDocument();
+    expect(
+      within(row('pyra')).getByText(t('chests.star.missingGold', { have: gold - 1, need: gold })),
     ).toBeInTheDocument();
     expect(within(row('pyra')).getByRole('button', { name: t('chests.star') })).toBeDisabled();
   });

@@ -320,17 +320,26 @@ export function Chests() {
                       {!unlocked
                         ? t('chests.hero.locked')
                         : gate
-                          ? `${t('chests.hero.gate', { level: hero.level })} · ${
-                              profile.gold < gold
-                                ? t('chests.star.missingGold', { have: profile.gold, need: gold })
-                                : t('chests.star.gold', { gold })
-                            }`
+                          ? t('chests.hero.gate', { level: hero.level })
                           : t('chests.hero.line', {
                               level: hero.level,
                               stars: heroStars(hero, content),
                               max: chests.starCosts.length,
                             })}
                     </span>
+                    {gate && (
+                      // Ligne à part : le montant et le manque se lisent entiers, sans ellipse.
+                      <span
+                        className={[
+                          'hint frag-row__gold',
+                          profile.gold < gold ? 'frag-row__gold--short' : '',
+                        ].join(' ')}
+                      >
+                        {profile.gold < gold
+                          ? t('chests.star.missingGold', { have: profile.gold, need: gold })
+                          : t('chests.star.gold', { gold })}
+                      </span>
+                    )}
                   </span>
                   <span className="frag-row__bar">
                     {cost !== null && (

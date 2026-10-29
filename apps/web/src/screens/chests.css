@@ -241,6 +241,25 @@
   white-space: nowrap;
 }
 
+/* Au plafond, deux lignes sous le nom : plafond, puis l'or de l'étoile (jamais coupé) ; la ligne
+   grandit d'autant. */
+.frag-row:has(.frag-row__gold) {
+  height: 62px;
+}
+
+.frag-row__id:has(.frag-row__gold) .hint {
+  line-height: 1.2;
+}
+
+.frag-row .frag-row__gold {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.frag-row__gold--short {
+  color: var(--danger);
+}
+
 .frag-row__name {
   overflow: hidden;
   text-overflow: ellipsis;
