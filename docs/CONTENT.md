@@ -154,7 +154,9 @@ dépend que de l'ordre du fichier. **On n'insère jamais un donjon entre deux do
 (un donjon déjà terminé redeviendrait verrouillé) : un nouveau donjon va à la fin du fichier, avec
 `opensAfter` s'il ne suit pas le dernier. Le chapitre 2 est une région parallèle (niveaux 2 à 30) :
 chacun de ses donjons porte `opensAfter` = le donjon du chapitre 1 de niveau conseillé égal ou
-immédiatement inférieur. Le chargement refuse un `opensAfter` inconnu et tout cycle de prérequis
+immédiatement inférieur, sauf les quatre premiers (niveaux 2 à 11), ouverts comme le cinquième
+après la Citadelle de cendre pour ne pas équiper l'équipe trop tôt (`docs/ECONOMY.md`,
+« Chapitre 2 »). Le chargement refuse un `opensAfter` inconnu et tout cycle de prérequis
 (explicites ou implicites : « cycle de déblocage : a → b → a »).
 
 `firstClearRare` et `firstClearChest` (facultatifs, booléens) : garanties du premier passage de
