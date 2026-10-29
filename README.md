@@ -28,6 +28,7 @@ pnpm verify:fast  # pareil sans les e2e (~1 min de moins)
 | `pnpm sim --update` | met à jour la référence après un changement d'équilibrage voulu         |
 | `pnpm build`        | build de production dans `apps/web/dist`                                |
 | `pnpm size`         | vérifie le budget de 300 Kio gzip                                       |
+| `pnpm fonts`        | vérifie qu'aucune police n'est intégrée en `data:` (CSP)                |
 
 ## Organisation
 

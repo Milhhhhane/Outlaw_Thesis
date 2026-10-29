@@ -22,6 +22,16 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
 - Simulateur d'économie : or en réserve et or gagné à chaque jalon ; borne CI sur « équipe au
   niveau 30 avec l'éveil ».
 
+## [Non publié] — 2026-10-29 — police des chiffres en production
+
+### Corrigé
+
+- La police des chiffres (« Pixel Digits », Silkscreen) était intégrée en `data:` par Vite et
+  bloquée par la CSP de production (`font-src 'self'`) : les chiffres en police pixel tombaient
+  sur la police de repli, où le 5 ressemble au S. Les polices sont désormais toujours servies en
+  fichiers (`build.assetsInlineLimit`), CSP inchangée. Contrôle `pnpm fonts` en CI (Linux et
+  Windows) : il échoue si une police revient en `data:` ou manque dans le build.
+
 ## [Non publié] — 2026-10-28 — arbre des talents : liens lisibles
 
 ### Corrigé
