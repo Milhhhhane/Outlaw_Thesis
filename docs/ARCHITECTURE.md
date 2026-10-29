@@ -87,15 +87,16 @@ programme l'alarme ; l'interface est dans `apps/web/src/pvp/`. Voir [`PVP.md`](P
 
 ## Interface (`apps/web`)
 
-| Fichier               | Rôle                                                                     |
-| --------------------- | ------------------------------------------------------------------------ |
-| `combat/session.ts`   | contenu chargé au démarrage, rencontre d'essai                           |
-| `combat/useBattle.ts` | état du moteur + vue rejouée événement par événement                     |
-| `combat/view.ts`      | vue d'un état, application d'un événement (valeurs déjà dans le journal) |
-| `combat/log.ts`       | phrase française par événement                                           |
-| `combat/*.tsx`        | ligne de temps, cartes d'unité, barre d'action, résultat                 |
-| `i18n/fr.json`        | textes de l'interface ; `content.fr.json` : noms et thèses du contenu    |
-| `i18n/describe.ts`    | descriptions des sorts et passifs générées depuis leurs briques          |
+| Fichier               | Rôle                                                                      |
+| --------------------- | ------------------------------------------------------------------------- |
+| `combat/session.ts`   | contenu chargé au démarrage, rencontre d'essai                            |
+| `combat/useBattle.ts` | état du moteur + vue rejouée événement par événement                      |
+| `combat/view.ts`      | vue d'un état, application d'un événement (valeurs déjà dans le journal)  |
+| `combat/log.ts`       | phrase française par événement                                            |
+| `combat/*.tsx`        | ligne de temps, cartes d'unité, barre d'action, résultat                  |
+| `i18n/fr.json`        | textes de l'interface ; `content.fr.json` : noms et thèses du contenu     |
+| `i18n/describe.ts`    | descriptions des sorts et passifs générées depuis leurs briques           |
+| `game/talentTree.ts`  | mise en page de l'arbre des talents : positions et un lien par `requires` |
 
 Après chaque action, l'interface reçoit le nouvel état et le journal. Elle rejoue le journal pour
 animer (chaque événement porte ses valeurs finales : PV restants, total de bouclier, réserve), puis
