@@ -290,6 +290,74 @@ def world_map_2():
     return c.image()
 
 
+# Chapitre 3 : la région des sables (dunes, oasis, désert de verre, mesas, ruines, ciel).
+BIOMES_3 = {
+    'dunes': dict(c=(56, 150), r=(60, 28), cols=('#8a5a2a', '#b07a3a', '#d8a85a'), seed=31),
+    'oasis': dict(c=(80, 118), r=(18, 11), cols=('#14506a', '#1e6a84', '#3a90a8'), seed=32, water=True),
+    'glass': dict(c=(168, 140), r=(44, 26), cols=('#5a8a8a', '#7aaeae', '#b0dad6'), seed=33),
+    'mesas': dict(c=(236, 150), r=(40, 26), cols=('#6a2e1e', '#8a3e26', '#aa5a34'), seed=34),
+    'necropolis': dict(c=(280, 106), r=(34, 30), cols=('#5a4a3a', '#76624c', '#96806a'), seed=35),
+    'ruins': dict(c=(190, 82), r=(54, 26), cols=('#7a6a4a', '#9a865a', '#baa676'), seed=36),
+    'gardens': dict(c=(96, 58), r=(48, 28), cols=('#2e5a2a', '#3e7a34', '#5a9a44'), seed=37),
+    'clouds': dict(c=(210, 22), r=(110, 18), cols=('#8ab0d0', '#b0cce4', '#e0ecf6'), seed=38),
+}
+PLAIN_3 = ('#6a4a2e', '#80603a', '#9a7648')
+
+
+def world_map_3():
+    c = Canvas()
+    rnd = random.Random(79)
+    kind, dist, paint = terrain(c, BIOMES_3, PLAIN_3, lambda name: '#8ae0e6')
+    inside = lambda name, x, y: 0 <= x < W and 0 <= y < H and kind[y][x] == name and dist[y][x] < 0.85
+
+    # dunes : crêtes claires et ombres portées
+    for _ in range(90):
+        x, y = rnd.randint(0, 120), rnd.randint(118, 178)
+        if inside('dunes', x, y):
+            c.blob(['..#####..', '.#hhhhh#.', 'lll.....l'], x, y, {'#': '#f0c878', 'h': '#e0b060', 'l': '#6a4020'})
+    # palmiers autour de l'oasis
+    for x, y in [(62, 110), (96, 112), (70, 128), (94, 126), (82, 104)]:
+        c.blob(['#.#.#', '.###.', '..l..', '..l..'], x, y, {'#': '#4a8a3a', 'l': '#6a4a2a'})
+    # désert de verre : éclats qui brillent
+    for _ in range(70):
+        x, y = rnd.randint(120, 214), rnd.randint(112, 168)
+        if inside('glass', x, y):
+            if rnd.random() < 0.6:
+                c.blob(['.#.', '#o#', '.#.'], x, y, {'#': '#d8f4f0', 'o': '#ffffff'})
+            else:
+                c.put(x, y, '#ffffff')
+    # mesas : plateaux rouges à strates
+    for x, y in [(212, 140), (238, 156), (258, 134), (226, 122)]:
+        c.blob(['.######.', '########', 'dddddddd', '########', 'dddddddd'], x, y, {'#': '#c06a3e', 'd': '#6a2a1a'})
+    # nécropole : tombes et stèles
+    for _ in range(50):
+        x, y = rnd.randint(244, 316), rnd.randint(78, 136)
+        if inside('necropolis', x, y):
+            c.blob(['.#.', '###', '#.#'], x, y, {'#': '#d8c8a8'})
+    # ruines : colonnes brisées
+    for _ in range(40):
+        x, y = rnd.randint(136, 246), rnd.randint(58, 106)
+        if inside('ruins', x, y):
+            c.blob(['##', '#.', '##', '##'], x, y, {'#': '#e0d0a0'})
+    # jardins suspendus : feuillages et lianes
+    for _ in range(90):
+        x, y = rnd.randint(48, 146), rnd.randint(30, 86)
+        if inside('gardens', x, y):
+            c.blob(['.##.', '####', '.ll.'], x, y, {'#': '#7ab84a' if rnd.random() < 0.6 else '#a8d860', 'l': '#2a3a1a'})
+    # mer de nuages et îles flottantes
+    for _ in range(40):
+        x, y = rnd.randint(100, 318), rnd.randint(6, 40)
+        if inside('clouds', x, y):
+            c.blob(['.###.', '#####'], x, y, {'#': '#ffffff'})
+    for x, y in [(150, 18), (250, 14), (290, 30)]:
+        c.blob(['.######.', '########', '.dddddd.', '..dddd..', '...dd...'], x, y, {'#': '#5a9a44', 'd': '#8a6a4a'})
+    # le soleil
+    c.blob(['..###..', '.#####.', '###O###', '#######', '###O###', '.#####.', '..###..'], 300, 52,
+           {'#': '#ffd060', 'O': '#fff0b0'})
+    frame(c)
+    return c.image()
+
+
 # Repères 5 × 5 à 5 × 6 (agrandis ×2 dans l'atlas), nommés dans packages/data (LANDMARKS).
 LANDMARKS = {
     'camp': (['..^..', '.###.', '#####', '#.#.#'], {'#': '#a05a3a', '^': '#ff8a2a'}),
@@ -309,6 +377,13 @@ LANDMARKS = {
     'tree': (['#.#.#', '.###.', '..#..', '..#..', '.###.'], {'#': '#8a6a8e'}),
     'crater': (['.....', '.#.#.', '#ooo#', '#ooo#', '.###.'], {'#': '#2a1014', 'o': '#ff8a2a'}),
     'obelisk': (['..#..', '.###.', '.#o#.', '.###.', '#####'], {'#': '#46305e', 'o': '#e8d8b0'}),
+    # chapitre 3
+    'dune': (['.....', '..##.', '.####', '#####', 'ooooo'], {'#': '#e0b060', 'o': '#8a5a2a'}),
+    'oasis': (['#.#.#', '.###.', '..#..', 'wwwww', '.www.'], {'#': '#4a8a3a', 'w': '#3a90a8'}),
+    'pyramid': (['..#..', '.###.', '.#o#.', '#####', '#####'], {'#': '#d8b070', 'o': '#2a1a10'}),
+    'mesa': (['.....', '.###.', '#####', 'ddddd', '#####'], {'#': '#c06a3e', 'd': '#6a2a1a'}),
+    'arch': (['#####', '##.##', '#...#', '#...#', '#...#'], {'#': '#5a9a44'}),
+    'sky': (['..o..', '.###.', '#####', '.ddd.', '..d..'], {'#': '#e0ecf6', 'o': '#ffd060', 'd': '#8a6a4a'}),
 }
 
 

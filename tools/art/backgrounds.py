@@ -457,7 +457,19 @@ ALL = {'ember_wastes': ember_wastes, 'drowned_halls': drowned_halls, 'thorn_maze
        'ash_caldera': tinted(ember_wastes, -12, 0.45, 0.7),      # caldeira : braise cendrée
        'frozen_abyss': tinted(sunken_spire, -25, 0.8, 0.65),     # abîme : flèche sombre
        'elder_swamp': tinted(thorn_maze, -30, 1.1, 0.75),        # marais ancestral
-       'eclipse_keep': tinted(cinder_citadel, 230, 0.7, 0.6)}    # éclipse : citadelle nocturne
+       'eclipse_keep': tinted(cinder_citadel, 230, 0.7, 0.6),    # éclipse : citadelle nocturne
+       # chapitre 3 : décors dérivés et carte du chapitre
+       'world_map_3': lambda: __import__('worldmap').world_map_3(),
+       'sun_dunes': tinted(ember_wastes, 30, 0.8, 1.2),          # dunes : braise dorée
+       'hidden_oasis': tinted(drowned_halls, -30, 1.0, 1.15),    # oasis : salles turquoise
+       'buried_temple': tinted(thorn_maze, 45, 0.6, 1.0),        # temple : ronces couleur grès
+       'glass_desert': tinted(ember_wastes, 160, 0.4, 1.25),     # désert de verre : braise vitrifiée
+       'storm_mesa': tinted(broken_crossing, 200, 0.7, 0.8),     # mesa : carrefour sous l'orage
+       'sand_necropolis': tinted(cinder_citadel, 40, 0.5, 0.95), # nécropole : citadelle ensablée
+       'sun_well': tinted(cinder_citadel, 25, 1.0, 1.2),         # puits du soleil : citadelle dorée
+       'mirage_palace': tinted(sunken_spire, 140, 0.8, 1.0),     # palais : flèche irisée
+       'hanging_gardens': tinted(verdant_crown, 15, 1.1, 1.1),   # jardins : couronne ensoleillée
+       'sky_citadel': tinted(sunken_spire, -15, 0.5, 1.3)}       # citadelle céleste : flèche pâle
 
 if __name__ == '__main__':
     import sys
