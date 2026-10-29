@@ -1332,17 +1332,17 @@
       {
         "enemies": ["ruin_sentinel", "thorn_witch", "ruin_sentinel"],
         "hpPct": 60,
-        "atkPct": 113
+        "atkPct": 105
       },
       {
         "enemies": ["ruin_sentinel", "mire_slime", "thorn_witch", "ruin_sentinel"],
         "hpPct": 47,
-        "atkPct": 113
+        "atkPct": 105
       },
       {
         "enemies": ["sand_colossus", "thorn_witch"],
         "hpPct": 55,
-        "atkPct": 113
+        "atkPct": 105
       }
     ],
     "rewards": {
@@ -1395,17 +1395,17 @@
       {
         "enemies": ["dune_raider", "ash_acolyte", "dune_raider", "cinder_fiend"],
         "hpPct": 97,
-        "atkPct": 109
+        "atkPct": 118
       },
       {
         "enemies": ["cinder_fiend", "dune_raider", "ruin_sentinel"],
         "hpPct": 113,
-        "atkPct": 109
+        "atkPct": 118
       },
       {
         "enemies": ["sun_sphinx", "dune_raider", "dune_raider"],
         "hpPct": 82,
-        "atkPct": 109
+        "atkPct": 118
       }
     ],
     "rewards": {
@@ -1515,17 +1515,17 @@
       {
         "enemies": ["ruin_sentinel", "moss_brute", "ruin_sentinel", "thorn_witch"],
         "hpPct": 70,
-        "atkPct": 183
+        "atkPct": 172
       },
       {
         "enemies": ["ruin_sentinel", "oasis_wraith", "dune_raider", "ruin_sentinel"],
         "hpPct": 79,
-        "atkPct": 183
+        "atkPct": 172
       },
       {
         "enemies": ["sand_colossus", "ruin_sentinel", "thorn_witch"],
         "hpPct": 64,
-        "atkPct": 183
+        "atkPct": 172
       }
     ],
     "rewards": {
@@ -1574,17 +1574,17 @@
       {
         "enemies": ["dune_raider", "cinder_fiend", "dune_raider", "ash_acolyte"],
         "hpPct": 88,
-        "atkPct": 165
+        "atkPct": 170
       },
       {
         "enemies": ["ash_acolyte", "dune_raider", "ruin_sentinel", "cinder_hound"],
         "hpPct": 91,
-        "atkPct": 165
+        "atkPct": 170
       },
       {
         "enemies": ["sun_sphinx", "dune_raider", "ash_acolyte"],
         "hpPct": 79,
-        "atkPct": 165
+        "atkPct": 170
       }
     ],
     "rewards": {
