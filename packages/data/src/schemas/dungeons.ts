@@ -46,6 +46,12 @@ export const LANDMARKS = [
   'salt',
   'pass',
   'throne',
+  'cairn',
+  'hut',
+  'forge',
+  'tree',
+  'crater',
+  'obelisk',
 ] as const;
 export const landmarkSchema = z.enum(LANDMARKS);
 

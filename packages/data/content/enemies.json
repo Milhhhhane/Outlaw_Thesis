@@ -934,5 +934,504 @@
         }
       ]
     }
+  },
+  {
+    "id": "frost_ghoul",
+    "element": "water",
+    "stats": {
+      "hp": 480,
+      "atk": 52,
+      "def": 22,
+      "vit": 100
+    },
+    "skills": [
+      {
+        "id": "ghoul_claw",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 95
+          }
+        ]
+      },
+      {
+        "id": "ghoul_chill",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "statMod",
+            "stat": "vit",
+            "percent": -20,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "ghoul_rime",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 55
+          },
+          {
+            "kind": "tempo",
+            "amount": 15
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "ghoul_claw",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "ghoul_chill",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "ghoul_claw",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "ghoul_rime",
+        "target": "auto"
+      }
+    ]
+  },
+  {
+    "id": "mire_slime",
+    "element": "nature",
+    "stats": {
+      "hp": 700,
+      "atk": 48,
+      "def": 32,
+      "vit": 84
+    },
+    "skills": [
+      {
+        "id": "slime_slap",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 95
+          }
+        ]
+      },
+      {
+        "id": "slime_ooze",
+        "slot": "a",
+        "targeting": "ally",
+        "effects": [
+          {
+            "kind": "heal",
+            "power": 90
+          }
+        ]
+      },
+      {
+        "id": "slime_glue",
+        "slot": "b",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 70
+          },
+          {
+            "kind": "statMod",
+            "stat": "atk",
+            "percent": -20,
+            "duration": 2
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "slime_slap",
+        "target": "first"
+      },
+      {
+        "skill": "slime_ooze",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "slime_slap",
+        "target": "first"
+      },
+      {
+        "skill": "slime_glue",
+        "target": "highest_atk"
+      }
+    ]
+  },
+  {
+    "id": "cinder_fiend",
+    "element": "fire",
+    "stats": {
+      "hp": 400,
+      "atk": 62,
+      "def": 16,
+      "vit": 116
+    },
+    "skills": [
+      {
+        "id": "fiend_jab",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
+      },
+      {
+        "id": "fiend_brand",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "status",
+            "status": "mark",
+            "duration": 2,
+            "power": 20
+          }
+        ]
+      },
+      {
+        "id": "fiend_pyre",
+        "slot": "b",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 150
+          },
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 2,
+            "power": 30
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "fiend_brand",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "fiend_jab",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "fiend_pyre",
+        "target": "lowest_hp"
+      }
+    ]
+  },
+  {
+    "id": "frost_maw",
+    "element": "water",
+    "boss": true,
+    "stats": {
+      "hp": 1300,
+      "atk": 57,
+      "def": 30,
+      "vit": 92
+    },
+    "skills": [
+      {
+        "id": "maw_bite",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 105
+          }
+        ]
+      },
+      {
+        "id": "maw_freeze",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 70
+          },
+          {
+            "kind": "status",
+            "status": "stun",
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "maw_blizzard",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 85
+          },
+          {
+            "kind": "statMod",
+            "stat": "vit",
+            "percent": -15,
+            "duration": 2
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "maw_bite",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "maw_freeze",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "maw_bite",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "maw_blizzard",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "maw_hoarfrost",
+      "triggers": [
+        {
+          "on": "turn_end",
+          "subject": "self",
+          "effects": [
+            {
+              "kind": "shield",
+              "target": "self",
+              "power": 40,
+              "duration": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "mire_troll",
+    "element": "nature",
+    "boss": true,
+    "stats": {
+      "hp": 1500,
+      "atk": 60,
+      "def": 28,
+      "vit": 86
+    },
+    "skills": [
+      {
+        "id": "troll_club",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 115
+          }
+        ]
+      },
+      {
+        "id": "troll_regrow",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "heal",
+            "power": 140
+          }
+        ]
+      },
+      {
+        "id": "troll_sludge",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 75
+          },
+          {
+            "kind": "status",
+            "status": "mark",
+            "duration": 2,
+            "power": 15
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "troll_club",
+        "target": "first"
+      },
+      {
+        "skill": "troll_sludge",
+        "target": "auto"
+      },
+      {
+        "skill": "troll_club",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "troll_regrow",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "troll_gorge",
+      "triggers": [
+        {
+          "on": "unit_down",
+          "subject": "enemy",
+          "effects": [
+            {
+              "kind": "heal",
+              "target": "self",
+              "power": 120
+            },
+            {
+              "kind": "tempo",
+              "target": "self",
+              "amount": -20
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "ash_titan",
+    "element": "fire",
+    "boss": true,
+    "stats": {
+      "hp": 1450,
+      "atk": 63,
+      "def": 27,
+      "vit": 98
+    },
+    "skills": [
+      {
+        "id": "titan_slam",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 110
+          }
+        ]
+      },
+      {
+        "id": "titan_kindle",
+        "slot": "a",
+        "targeting": "all_allies",
+        "effects": [
+          {
+            "kind": "statMod",
+            "stat": "atk",
+            "percent": 20,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "titan_cinders",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 80
+          },
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 2,
+            "power": 30
+          }
+        ]
+      },
+      {
+        "id": "titan_meteor",
+        "slot": "ult",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 230
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "titan_kindle",
+        "target": "auto"
+      },
+      {
+        "skill": "titan_slam",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "titan_cinders",
+        "target": "auto"
+      },
+      {
+        "skill": "titan_slam",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "titan_meteor",
+        "target": "lowest_hp"
+      }
+    ],
+    "passive": {
+      "id": "titan_slag",
+      "triggers": [
+        {
+          "on": "combat_start",
+          "effects": [
+            {
+              "kind": "shield",
+              "target": "self",
+              "power": 150,
+              "duration": 3
+            }
+          ]
+        }
+      ]
+    }
   }
 ]

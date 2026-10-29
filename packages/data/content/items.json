@@ -224,5 +224,432 @@
         }
       }
     ]
+  },
+  {
+    "id": "rime_locket",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "lowest_hp_enemy",
+          "stat": "vit",
+          "percent": -10,
+          "duration": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "frost_heart",
+    "rarity": "rare",
+    "stat": {
+      "stat": "def",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "shield",
+          "target": "lowest_hp_ally",
+          "power": 30,
+          "duration": 1
+        }
+      },
+      {
+        "type": "scale",
+        "field": "duration",
+        "mulPct": 50
+      }
+    ]
+  },
+  {
+    "id": "bog_lantern",
+    "rarity": "common",
+    "stat": {
+      "stat": "atk",
+      "pct": 3
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "heal",
+          "target": "self",
+          "power": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "mire_totem",
+    "rarity": "rare",
+    "stat": {
+      "stat": "hp",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_enemies",
+          "stat": "atk",
+          "percent": -8,
+          "duration": 1
+        }
+      },
+      {
+        "type": "limit",
+        "delta": 1
+      }
+    ]
+  },
+  {
+    "id": "forge_rivet",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "scale",
+        "field": "percent",
+        "mulPct": 30
+      }
+    ]
+  },
+  {
+    "id": "anvil_core",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "damage",
+          "target": "all_enemies",
+          "power": 12
+        }
+      },
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 15
+      }
+    ]
+  },
+  {
+    "id": "glacier_shard",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "shield",
+          "target": "other_allies",
+          "power": 15,
+          "duration": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "hoarfrost_ring",
+    "rarity": "rare",
+    "stat": {
+      "stat": "def",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "tempo",
+          "target": "all_enemies",
+          "amount": 8
+        }
+      },
+      {
+        "type": "threshold",
+        "delta": 10
+      }
+    ]
+  },
+  {
+    "id": "spore_pouch",
+    "rarity": "common",
+    "stat": {
+      "stat": "atk",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "lowest_hp_enemy",
+          "stat": "def",
+          "percent": -10,
+          "duration": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "heartwood_charm",
+    "rarity": "rare",
+    "stat": {
+      "stat": "hp",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "heal",
+          "target": "self",
+          "power": 25
+        }
+      },
+      {
+        "type": "limit",
+        "delta": 1
+      }
+    ]
+  },
+  {
+    "id": "river_stone",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "tempo",
+          "target": "lowest_hp_ally",
+          "amount": -8
+        }
+      }
+    ]
+  },
+  {
+    "id": "confluence_orb",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "vit",
+          "percent": 15,
+          "duration": 2
+        }
+      },
+      {
+        "type": "scale",
+        "field": "amount",
+        "mulPct": 30
+      }
+    ]
+  },
+  {
+    "id": "ash_veil",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "lowest_hp_enemy",
+          "status": "burn",
+          "duration": 1,
+          "power": 15
+        }
+      }
+    ]
+  },
+  {
+    "id": "magma_sigil",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 8
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "all_enemies",
+          "status": "burn",
+          "duration": 1,
+          "power": 10
+        }
+      },
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 20
+      }
+    ]
+  },
+  {
+    "id": "glacial_horn",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "other_allies",
+          "stat": "atk",
+          "percent": 8,
+          "duration": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "permafrost_plate",
+    "rarity": "rare",
+    "stat": {
+      "stat": "def",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "shield",
+          "target": "self",
+          "power": 50,
+          "duration": 2
+        }
+      },
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 15
+      }
+    ]
+  },
+  {
+    "id": "root_knot",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "atk",
+          "percent": 8,
+          "duration": 1
+        }
+      },
+      {
+        "type": "limit",
+        "delta": 1
+      }
+    ]
+  },
+  {
+    "id": "swamp_eye",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "all_enemies",
+          "status": "mark",
+          "duration": 1,
+          "power": 10
+        }
+      },
+      {
+        "type": "threshold",
+        "delta": 10
+      }
+    ]
+  },
+  {
+    "id": "dusk_ring",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 8
+    },
+    "mods": [
+      {
+        "type": "scale",
+        "field": "duration",
+        "mulPct": 30
+      }
+    ]
+  },
+  {
+    "id": "eclipse_shard",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_allies",
+          "stat": "vit",
+          "percent": 10,
+          "duration": 1
+        }
+      },
+      {
+        "type": "scale",
+        "field": "percent",
+        "mulPct": 25
+      }
+    ]
   }
 ]
