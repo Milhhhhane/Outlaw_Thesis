@@ -1,0 +1,214 @@
+/* Amis : à gauche les demandes (reçues puis envoyées), à droite la liste des amis avec l'ajout par
+   pseudo dans son en-tête. Chaque panneau défile, avec une indication, s'il déborde. */
+
+.friends__layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 10px;
+  height: 100%;
+}
+
+.friends__side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.friends__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.friends__scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Indication « plus bas » : visible tant qu'il reste du contenu sous le bord du panneau. */
+.friends__more {
+  flex: none;
+  margin: 2px 0 0;
+  color: var(--gold);
+  font-family: var(--text);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Barre de défilement toujours visible (pas de barre « fantôme » qui n'apparaît qu'au défilement) :
+   dorée sur fond sombre, comme le reste du cadre. */
+.friends__scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.friends__scroll::-webkit-scrollbar-track {
+  background: rgb(7 5 10 / 55%);
+}
+
+.friends__scroll::-webkit-scrollbar-thumb {
+  background: var(--gold);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .friends__scroll {
+    scrollbar-color: var(--gold) rgb(7 5 10 / 55%);
+    scrollbar-width: thin;
+  }
+}
+
+.friends__requests {
+  flex: 0 1 auto;
+}
+
+.friends__section + .friends__section {
+  margin-top: 6px;
+}
+
+.friends__heading {
+  margin: 0 0 4px;
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.friends__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.friends__head .friends__heading {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.friends__form {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.friends__input {
+  flex: 0 1 230px;
+  min-width: 0;
+  padding: 5px 8px;
+  background: var(--ink);
+  border: 2px solid var(--line);
+  color: var(--bone);
+  font: inherit;
+  font-family: var(--text);
+  font-size: 15px;
+}
+
+.friends__notice {
+  flex: none;
+  margin: 0 0 4px;
+  font-family: var(--text);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.friends__notice--ok {
+  color: var(--bone);
+}
+
+.friends__notice--error {
+  color: var(--danger);
+}
+
+.friends__rows {
+  display: grid;
+  /* Sans cela, la colonne prend la largeur du plus long pseudo et pousse les boutons dehors. */
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+  padding: 0;
+  font-family: var(--text);
+  font-size: 14px;
+  list-style: none;
+}
+
+.friends__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 2px 2px;
+  border-bottom: 1px solid rgb(74 63 87 / 60%);
+}
+
+.friends__row:last-child {
+  border-bottom: 0;
+}
+
+.friends__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.friends__line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.friends__pseudo {
+  overflow: hidden;
+  color: var(--gold);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friends__line .hint,
+.friends__who > .hint {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.friends__progress {
+  color: var(--bone);
+  font-size: 13px;
+}
+
+.friends__actions {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.friends__status {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin: 0;
+}
+
+.friends__auth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.friends__confirm {
+  max-width: 520px;
+}
+
+/* Entrée du camp, à côté des quêtes (barre du haut : le menu de droite est plein). */
+.hub__bar .hub__quests:has(+ .hub__friends) {
+  margin-right: 0;
+}
+
+.hub__friends {
+  margin-right: auto;
+  margin-left: 8px;
+}

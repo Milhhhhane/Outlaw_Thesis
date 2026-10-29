@@ -61,6 +61,27 @@ export const MIGRATIONS: readonly { readonly id: number; readonly sql: readonly 
       'CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)',
     ],
   },
+  {
+    // Amis : une ligne par paire, le plus petit identifiant en `user_a` (unicité de la paire).
+    id: 2,
+    sql: [
+      `CREATE TABLE IF NOT EXISTS friendships (
+        user_a INTEGER NOT NULL,
+        user_b INTEGER NOT NULL,
+        requested_by INTEGER NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('pending', 'accepted')),
+        created_at INTEGER NOT NULL,
+        accepted_at INTEGER,
+        PRIMARY KEY (user_a, user_b),
+        CHECK (user_a < user_b),
+        CHECK (requested_by IN (user_a, user_b))
+      )`,
+      // La clé primaire sert les recherches par `user_a` ; celles par `user_b` ont leur index.
+      'CREATE INDEX IF NOT EXISTS friendships_b ON friendships (user_b)',
+      // Plafond des demandes envoyées en attente.
+      'CREATE INDEX IF NOT EXISTS friendships_requester ON friendships (requested_by, status)',
+    ],
+  },
 ];
 
 const ready = new WeakSet<Database>();

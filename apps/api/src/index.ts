@@ -1,6 +1,7 @@
 import {
   credentialsSchema,
   deleteAccountSchema,
+  friendRequestSchema,
   MAX_SAVE_BYTES,
   passwordChangeSchema,
   passwordProblem,
@@ -9,7 +10,6 @@ import {
   registerSchema,
   savePutSchema,
   SESSION_MS,
-  type ApiError,
   type CloudSave,
   type Me,
   type SaveAck,
@@ -25,6 +25,18 @@ import {
 import type { z } from 'zod';
 import { accountDetail, isAdmin, listAccounts } from './admin';
 import { ensureSchema, type Database } from './db';
+import {
+  acceptFriend,
+  declineFriend,
+  exportFriends,
+  forgetFriends,
+  listFriends,
+  pendingFriends,
+  removeFriend,
+  requestFriend,
+  requestThrottleKey,
+} from './friends';
+import { HttpError, json, tooMany } from './http';
 import { allow, clear, fail, ipId, waitFor } from './throttle';
 
 export { PvpRoom } from './pvp-room';
@@ -85,29 +97,6 @@ interface Session {
   readonly user: UserRow;
   /** Cookie à renvoyer quand l'expiration glissante a été repoussée. */
   readonly refresh: string | null;
-}
-
-class HttpError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: ApiError,
-    readonly extra: Readonly<Record<string, unknown>> = {},
-    readonly headers: Readonly<Record<string, string>> = {},
-  ) {
-    super(code);
-  }
-}
-
-function json(status: number, body: unknown, headers: Record<string, string> = {}): Response {
-  return new Response(body === null ? null : JSON.stringify(body), {
-    status,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
-      ...headers,
-    },
-  });
 }
 
 function cookie(token: string): string {
@@ -180,11 +169,6 @@ async function session(request: Request, db: Database, now: number): Promise<Ses
     last_login_at: row.last_login_at,
   };
   return { tokenHash, user, refresh };
-}
-
-function tooMany(waitMs: number): HttpError {
-  const retryAfter = Math.ceil(waitMs / 1000);
-  return new HttpError(429, 'too_many', { retryAfter }, { 'Retry-After': String(retryAfter) });
 }
 
 /** Réponse « qui suis-je » ; le drapeau d'administration vient du secret du Worker, jamais du client. */
@@ -297,6 +281,8 @@ async function deleteAccount(request: Request, db: Database, s: Session, now: nu
     db.prepare('DELETE FROM saves WHERE user_id = ?').bind(s.user.id),
     db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(s.user.id),
     db.prepare('DELETE FROM throttle WHERE key = ?').bind(key),
+    // Les identifiants peuvent resservir (SQLite) : rien de l'ancien compte ne doit rester.
+    ...forgetFriends(db, s.user.id),
     db.prepare('DELETE FROM users WHERE id = ?').bind(s.user.id),
   ]);
   return json(204, null, { 'Set-Cookie': CLEAR_COOKIE });
@@ -346,14 +332,43 @@ async function putSave(request: Request, db: Database, s: Session, now: number) 
   return json(200, ack);
 }
 
+/** Compteurs de limite de débit liés au compte (les autres sont par empreinte d'adresse IP). */
+function accountCounterKeys(userId: number): Record<string, string> {
+  const id = String(userId);
+  return {
+    password: `password:${id}`,
+    pvpRooms: `pvp-create:${id}`,
+    pvpConnections: `pvp-ws:${id}`,
+    friendRequests: requestThrottleKey(userId),
+  };
+}
+
 async function exportData(db: Database, s: Session) {
   const { user } = s;
   const save = await cloudSave(db, user.id);
+  const counters: Record<string, unknown> = {};
+  for (const [name, key] of Object.entries(accountCounterKeys(user.id))) {
+    const row = await db
+      .prepare('SELECT count, window_start, blocked_until FROM throttle WHERE key = ?')
+      .bind(key)
+      .first<{ count: number; window_start: number; blocked_until: number }>();
+    if (row !== null) {
+      counters[name] = {
+        count: row.count,
+        windowStart: new Date(row.window_start).toISOString(),
+        blockedUntil: row.blocked_until > 0 ? new Date(row.blocked_until).toISOString() : null,
+      };
+    }
+  }
   const data = {
     pseudo: user.pseudo,
     createdAt: new Date(user.created_at).toISOString(),
     lastLoginAt: user.last_login_at === null ? null : new Date(user.last_login_at).toISOString(),
     save,
+    /** Amitiés et demandes d'ami (envoyées et reçues). */
+    friends: await exportFriends(db, user.id),
+    /** Compteurs de limite de débit du compte en cours (effacés après 24 h). */
+    counters,
   };
   return json(200, data, {
     'Content-Disposition': `attachment; filename="outlaw-thesis-${user.pseudo}.json"`,
@@ -433,6 +448,36 @@ async function pvpConnect(
   throw new HttpError(503, 'unavailable');
 }
 
+/* ------------------------------------------------------------------- Amis */
+
+/** L'autre compte est désigné par son pseudo (mêmes caractères qu'à l'inscription). */
+const FRIEND_ROUTE = /^\/api\/friends\/([A-Za-z0-9_-]{1,20})(?:\/(accept|decline))?$/;
+
+/** `/api/friends/<pseudo>[/accept|/decline]` ; null si la route n'est pas une route d'ami. */
+async function friendRoute(
+  request: Request,
+  db: Database,
+  s: Session,
+  path: string,
+  now: number,
+): Promise<Response | null> {
+  const match = FRIEND_ROUTE.exec(path);
+  if (match === null) return null;
+  const other = match[1] ?? '';
+  const action = match[2];
+  const me = s.user.id;
+  if (request.method === 'POST' && action === 'accept') {
+    return json(200, await acceptFriend(db, me, other, now));
+  }
+  if (request.method === 'POST' && action === 'decline') {
+    return json(200, await declineFriend(db, me, other));
+  }
+  if (request.method === 'DELETE' && action === undefined) {
+    return json(200, await removeFriend(db, me, other));
+  }
+  return null;
+}
+
 /* ------------------------------------------------------------ Administration */
 
 const ADMIN_ROUTE = /^\/api\/admin\/users(?:\/([0-9]{1,15}))?$/;
@@ -501,7 +546,25 @@ async function route(request: Request, env: Env, now: number): Promise<Response>
     case 'GET /api/account/export':
       response = await exportData(db, s);
       break;
+    case 'GET /api/friends':
+      response = json(200, await listFriends(db, s.user.id));
+      break;
+    case 'GET /api/friends/pending':
+      response = json(200, await pendingFriends(db, s.user.id));
+      break;
+    case 'POST /api/friends/requests': {
+      const { pseudo } = await body(request, friendRequestSchema);
+      const ack = await requestFriend(db, s.user, pseudo, now);
+      // 201 : une demande est créée ; 200 : la demande croisée devient une amitié.
+      response = json(ack.outcome === 'sent' ? 201 : 200, ack);
+      break;
+    }
     default: {
+      const friend = await friendRoute(request, db, s, url.pathname, now);
+      if (friend !== null) {
+        response = friend;
+        break;
+      }
       // Administration : un non-administrateur reçoit la réponse d'une route inconnue.
       const admin = request.method === 'GET' ? ADMIN_ROUTE.exec(url.pathname) : null;
       if (admin === null || !isAdmin(env.ADMIN_PSEUDOS, s.user.pseudo)) {

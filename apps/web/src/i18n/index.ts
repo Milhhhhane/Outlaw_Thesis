@@ -6,6 +6,7 @@ import awakening from './awakening.fr.json';
 import boss from './boss.fr.json';
 import chests from './chests.fr.json';
 import farm from './farm.fr.json';
+import friends from './friends.fr.json';
 import fr from './fr.json';
 import heroTexts from './heroes.fr.json';
 import loot from './loot.fr.json';
@@ -26,6 +27,7 @@ export type TextKey =
   | keyof typeof boss
   | keyof typeof chests
   | keyof typeof farm
+  | keyof typeof friends
   | keyof typeof heroTexts
   | keyof typeof loot
   | keyof typeof pvp
@@ -34,7 +36,7 @@ export type TextKey =
   | keyof typeof tiers
   | keyof typeof tower;
 
-/** Comptes (account.fr.json), administration (admin.fr.json), combat auto (auto.fr.json), éveil et sanctuaires (awakening.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), montée des sorts (spells.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), administration (admin.fr.json), combat auto (auto.fr.json), éveil et sanctuaires (awakening.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), amis (friends.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), montée des sorts (spells.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
@@ -44,6 +46,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...boss,
   ...chests,
   ...farm,
+  ...friends,
   ...heroTexts,
   ...loot,
   ...pvp,

@@ -36,7 +36,7 @@ export default defineConfig({
   projects: [
     {
       name: 'comptes',
-      testMatch: /(accounts|admin|pvp)\.spec\.ts/,
+      testMatch: /(accounts|admin|friends|pvp)\.spec\.ts/,
       use: {
         baseURL: `http://localhost:${String(apiPort)}`,
         viewport: { width: 1280, height: 720 },
@@ -45,23 +45,23 @@ export default defineConfig({
     {
       name: '1920x1080',
       // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|pvp|quests|boss)\.spec\.ts/,
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
       use: { viewport: { width: 1920, height: 1080 } },
     },
     {
       name: '1366x768',
       // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|pvp|quests|boss)\.spec\.ts/,
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
       use: { viewport: { width: 1366, height: 768 } },
     },
     {
       name: '1280x720',
-      testIgnore: /(accounts|admin|pvp)\.spec\.ts/,
+      testIgnore: /(accounts|admin|friends|pvp)\.spec\.ts/,
       use: { viewport: { width: 1280, height: 720 } },
     },
     {
       name: '844x390',
-      testIgnore: /(accounts|admin|pvp)\.spec\.ts/,
+      testIgnore: /(accounts|admin|friends|pvp)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',
@@ -71,7 +71,7 @@ export default defineConfig({
     {
       name: '390x844',
       // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|pvp|quests|boss)\.spec\.ts/,
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',

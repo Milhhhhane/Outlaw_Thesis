@@ -137,6 +137,10 @@
   ramené de 73–79 % à 18–20 % de l'or gagné en milieu de partie, début inchangé. Ouvert : en fin de
   partie l'or reste surtout dépensé en objets ; marché à stock tournant prévu.
 
+- Amis — base sociale : demandes par pseudo, liste, badge, résumé d'avancement des amis, export ;
+  limites de débit rendues atomiques. Ouvert : invitation PvP directe, blocage, expiration des
+  demandes.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

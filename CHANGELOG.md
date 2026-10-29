@@ -2,6 +2,23 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-29 — amis
+
+### Ajouté
+
+- Système d'amis (compte requis) : écran « Amis » au camp, ajout par pseudo, demandes reçues
+  (accepter, refuser) et envoyées (annuler), retrait avec confirmation, badge au camp. Un ami
+  voit le pseudo, l'activité au jour près et un résumé d'avancement (niveaux de l'équipe,
+  donjons terminés). Plafonds : 100 amis, 50 demandes envoyées en attente, 20 demandes par heure.
+  Routes `/api/friends…` par pseudo, aucun identifiant de compte exposé. Migration D1 n° 2.
+- Export « mes données » : amitiés, demandes et compteurs de débit du compte.
+
+### Corrigé
+
+- Limites de débit atomiques (`throttle.ts`) : des requêtes simultanées passaient outre
+  (250 demandes d'ami traitées au lieu de 20 ; inscriptions en rafale depuis une même adresse au-delà
+  de 5). Le sel journalier des adresses n'est plus tiré deux fois en parallèle.
+
 ## [Non publié] — 2026-10-29 — l'or paie les niveaux et les étoiles
 
 ### Modifié
