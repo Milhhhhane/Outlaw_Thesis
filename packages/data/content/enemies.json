@@ -1433,5 +1433,492 @@
         }
       ]
     }
+  },
+  {
+    "id": "dune_raider",
+    "element": "fire",
+    "stats": {
+      "hp": 430,
+      "atk": 60,
+      "def": 17,
+      "vit": 114
+    },
+    "skills": [
+      {
+        "id": "raider_slash",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
+      },
+      {
+        "id": "raider_sand",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 50
+          },
+          {
+            "kind": "statMod",
+            "stat": "atk",
+            "percent": -15,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "raider_ambush",
+        "slot": "b",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 140
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "raider_slash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "raider_sand",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "raider_slash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "raider_ambush",
+        "target": "lowest_hp"
+      }
+    ]
+  },
+  {
+    "id": "oasis_wraith",
+    "element": "water",
+    "stats": {
+      "hp": 470,
+      "atk": 53,
+      "def": 20,
+      "vit": 102
+    },
+    "skills": [
+      {
+        "id": "wraith_grasp",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 95
+          }
+        ]
+      },
+      {
+        "id": "wraith_veil",
+        "slot": "a",
+        "targeting": "all_allies",
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 35,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "wraith_drown",
+        "slot": "b",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 80
+          },
+          {
+            "kind": "tempo",
+            "amount": 20
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "wraith_grasp",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "wraith_drown",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "wraith_grasp",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "wraith_veil",
+        "target": "auto"
+      }
+    ]
+  },
+  {
+    "id": "ruin_sentinel",
+    "element": "nature",
+    "stats": {
+      "hp": 640,
+      "atk": 55,
+      "def": 34,
+      "vit": 88
+    },
+    "skills": [
+      {
+        "id": "sentinel_spear",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 100
+          }
+        ]
+      },
+      {
+        "id": "sentinel_brace",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 60,
+            "duration": 2
+          }
+        ]
+      },
+      {
+        "id": "sentinel_sweep",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "statMod",
+            "stat": "def",
+            "percent": -10,
+            "duration": 2
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "sentinel_spear",
+        "target": "first"
+      },
+      {
+        "skill": "sentinel_spear",
+        "target": "first"
+      },
+      {
+        "skill": "sentinel_brace",
+        "target": "auto"
+      },
+      {
+        "skill": "sentinel_sweep",
+        "target": "auto"
+      }
+    ]
+  },
+  {
+    "id": "sun_sphinx",
+    "element": "fire",
+    "boss": true,
+    "stats": {
+      "hp": 1550,
+      "atk": 62,
+      "def": 26,
+      "vit": 100
+    },
+    "skills": [
+      {
+        "id": "sphinx_claw",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 110
+          }
+        ]
+      },
+      {
+        "id": "sphinx_riddle",
+        "slot": "a",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 60
+          },
+          {
+            "kind": "status",
+            "status": "stun",
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "sphinx_flare",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 80
+          },
+          {
+            "kind": "status",
+            "status": "burn",
+            "duration": 2,
+            "power": 25
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "sphinx_claw",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "sphinx_riddle",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "sphinx_claw",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "sphinx_flare",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "sphinx_zenith",
+      "triggers": [
+        {
+          "on": "hp_crossed",
+          "subject": "self",
+          "thresholdPct": 50,
+          "effects": [
+            {
+              "kind": "statMod",
+              "target": "self",
+              "stat": "atk",
+              "percent": 25,
+              "duration": 3
+            },
+            {
+              "kind": "shield",
+              "target": "self",
+              "power": 80,
+              "duration": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "mirage_djinn",
+    "element": "water",
+    "boss": true,
+    "stats": {
+      "hp": 1100,
+      "atk": 56,
+      "def": 28,
+      "vit": 98
+    },
+    "skills": [
+      {
+        "id": "djinn_lash",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 105
+          }
+        ]
+      },
+      {
+        "id": "djinn_mirage",
+        "slot": "a",
+        "targeting": "all_allies",
+        "effects": [
+          {
+            "kind": "tempo",
+            "amount": -15
+          }
+        ]
+      },
+      {
+        "id": "djinn_tempest",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 75
+          },
+          {
+            "kind": "tempo",
+            "amount": 12
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "djinn_lash",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "djinn_tempest",
+        "target": "auto"
+      },
+      {
+        "skill": "djinn_lash",
+        "target": "highest_atk"
+      },
+      {
+        "skill": "djinn_mirage",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "djinn_spring",
+      "triggers": [
+        {
+          "on": "turn_start",
+          "subject": "self",
+          "effects": [
+            {
+              "kind": "heal",
+              "target": "lowest_hp_ally",
+              "power": 25
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "sand_colossus",
+    "element": "nature",
+    "boss": true,
+    "stats": {
+      "hp": 1450,
+      "atk": 61,
+      "def": 33,
+      "vit": 84
+    },
+    "skills": [
+      {
+        "id": "sandstone_fist",
+        "slot": "basic",
+        "targeting": "enemy",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 115
+          }
+        ]
+      },
+      {
+        "id": "sandstone_shell",
+        "slot": "a",
+        "targeting": "self",
+        "effects": [
+          {
+            "kind": "shield",
+            "power": 60,
+            "duration": 1
+          }
+        ]
+      },
+      {
+        "id": "sandstone_quake",
+        "slot": "b",
+        "targeting": "all_enemies",
+        "effects": [
+          {
+            "kind": "damage",
+            "power": 70
+          },
+          {
+            "kind": "statMod",
+            "stat": "vit",
+            "percent": -15,
+            "duration": 2
+          }
+        ]
+      }
+    ],
+    "script": [
+      {
+        "skill": "sandstone_fist",
+        "target": "first"
+      },
+      {
+        "skill": "sandstone_quake",
+        "target": "auto"
+      },
+      {
+        "skill": "sandstone_fist",
+        "target": "lowest_hp"
+      },
+      {
+        "skill": "sandstone_shell",
+        "target": "auto"
+      }
+    ],
+    "passive": {
+      "id": "sandstone_strata",
+      "triggers": [
+        {
+          "on": "hp_crossed",
+          "subject": "self",
+          "thresholdPct": 50,
+          "effects": [
+            {
+              "kind": "shield",
+              "target": "self",
+              "power": 100,
+              "duration": 2
+            },
+            {
+              "kind": "statMod",
+              "target": "self",
+              "stat": "def",
+              "percent": 15,
+              "duration": 2
+            }
+          ]
+        }
+      ]
+    }
   }
 ]

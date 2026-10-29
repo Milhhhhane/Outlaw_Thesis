@@ -1,5 +1,5 @@
 /**
- * pnpm --filter @outlaw/sim economy [--auto 58] [--seeds 20] [--runs 600]
+ * pnpm --filter @outlaw/sim economy [--auto 58] [--seeds 20] [--runs 800]
  *
  * Économie hors combat : un joueur modèle enchaîne des passages gagnants avec les vraies fonctions
  * du moteur (`completeDungeon`, `openChest`, `starUp`, `levelUp`, `upgradeItem`, `equip`), et on
@@ -604,7 +604,7 @@ export function essencePick(
 export function simulateEconomy(
   content: Content,
   seed: number,
-  maxRuns = 600,
+  maxRuns = 800,
   quests: QuestModel | null = null,
   awakening: AwakeningModel | null = null,
   route: ChapterRoute = 'parallel',
@@ -796,7 +796,7 @@ export interface EconomySummary {
 export function summarizeEconomy(
   content: Content,
   seeds: number,
-  maxRuns = 600,
+  maxRuns = 800,
   quests: QuestModel | null = null,
   route: ChapterRoute = 'parallel',
 ): EconomySummary {
@@ -977,7 +977,7 @@ function main(): void {
   const content = loadContent();
   printTables(content);
   const seeds = option('--seeds', 20);
-  const summary = summarizeEconomy(content, seeds, option('--runs', 600));
+  const summary = summarizeEconomy(content, seeds, option('--runs', 800));
   const f = (n: number | null): string =>
     n === null ? '   —  ' : `${n.toFixed(1).padStart(5)} (${(n / auto).toFixed(0)} tent.)`;
   console.log(
@@ -1029,7 +1029,7 @@ function main(): void {
     `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
   );
   // Route principale (lecture seule, comparaison) : le chapitre 2 après l'équipe au niveau 30.
-  const mainRoute = summarizeEconomy(content, seeds, option('--runs', 600), null, 'main');
+  const mainRoute = summarizeEconomy(content, seeds, option('--runs', 800), null, 'main');
   console.log(
     `Route principale (chapitre 2 après l'équipe au niveau 30) : ${(
       Object.keys(mainRoute.milestones) as (keyof typeof mainRoute.milestones)[]
@@ -1057,10 +1057,10 @@ function main(): void {
     content,
     summary,
     seeds,
-    option('--runs', 600),
+    option('--runs', 800),
     perDay > 0 ? [perDay] : [5, 10, 20],
   );
-  printBossEffect(content, summary, seeds, option('--runs', 600), perDay > 0 ? [perDay] : [5, 10]);
+  printBossEffect(content, summary, seeds, option('--runs', 800), perDay > 0 ? [perDay] : [5, 10]);
 }
 
 function printBossEffect(

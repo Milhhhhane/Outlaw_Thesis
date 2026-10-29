@@ -156,8 +156,13 @@ dépend que de l'ordre du fichier. **On n'insère jamais un donjon entre deux do
 chacun de ses donjons porte `opensAfter` = le donjon du chapitre 1 de niveau conseillé égal ou
 immédiatement inférieur, sauf les quatre premiers (niveaux 2 à 11), ouverts comme le cinquième
 après la Citadelle de cendre pour ne pas équiper l'équipe trop tôt (`docs/ECONOMY.md`,
-« Chapitre 2 »). Le chargement refuse un `opensAfter` inconnu et tout cycle de prérequis
-(explicites ou implicites : « cycle de déblocage : a → b → a »).
+« Chapitre 2 »). Le chapitre 3 (niveaux 3 à 30) suit la même règle un chapitre plus loin : chacun
+de ses donjons porte `opensAfter` = le donjon du chapitre 2 de même niveau conseillé, sauf les
+quatre premiers. Les Dunes ardentes (niveau 3) s'ouvrent après les Salles englouties (2ᵉ donjon du
+chapitre 1, niveau 4) ; l'Oasis cachée, le Temple enseveli et le Désert de verre (niveaux 6 à 11),
+comme la Mesa des orages (niveau 14), après le Bois pourrissant, 5ᵉ donjon du chapitre 2 et de
+niveau 14 (`docs/ECONOMY.md`, « Chapitre 3 »). Le chargement refuse un `opensAfter` inconnu et tout
+cycle de prérequis (explicites ou implicites : « cycle de déblocage : a → b → a »).
 
 `scene` (facultatif) : identifiant du décor de combat (`bg/<scene>.png`) si le donjon réutilise
 celui d'un autre ; sinon le décor porte l'identifiant du donjon.

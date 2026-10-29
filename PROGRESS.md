@@ -143,7 +143,12 @@
 - Chapitre 2 — 10 donjons parallèles au chapitre 1 (niveaux 2 à 30), ouverts par `opensAfter` ;
   économie tenue en CI sur la route parallèle. Marges serrées : équipe au niveau 30 (119 pour
   120), quêtes (14,7 % pour 15 %), premier éveil (97,6 pour 100), objets au maximum (152,1 pour
-  155). Prochain : chapitre 3.
+  155).
+- Chapitre 3 — 10 donjons désert/ruines/ciel (niveaux 3 à 30), ouverts après le chapitre 2 ;
+  simulation à 800 passages. Marges serrées : équipe au niveau 30 (116,9 pour 120, 119,6 sur
+  d'autres graines), essence avant le premier éveil (19,8 pour 20), quêtes (14,8 % pour 15 %).
+  Un 4ᵉ chapitre ouvert de la même façon casserait probablement « niveau 30 » : revoir alors
+  l'ouverture plutôt que les bornes.
 
 ## Reste à faire (hors code)
 

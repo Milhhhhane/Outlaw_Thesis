@@ -54,6 +54,13 @@ ENEMIES = {
     'frost_maw': ('big_demon', 200, 0.9, 1.05),   # démon bleu glacier
     'mire_troll': ('ogre', 250, 1.3, 0.9),        # peau brune, pagne indigo
     'ash_titan': ('big_demon', 20, 0.3, 0.45),    # démon gris cendre
+    # chapitre 3 : les derniers personnages libres de la planche, et trois gros monstres recolorés
+    'dune_raider': ('goblin', 270, 1.2, 1.25),     # gobelin vert → ocre des dunes
+    'oasis_wraith': ('zombie', 60, 1.0, 1.0),      # zombie → turquoise
+    'ruin_sentinel': ('skelet', 0, 1.0, 0.95),     # squelette des ruines
+    'sun_sphinx': ('big_demon', 40, 1.0, 1.2),     # démon doré
+    'mirage_djinn': ('big_zombie', 160, 1.1, 1.0), # mort-vivant violet
+    'sand_colossus': ('ogre', 320, 0.55, 1.15),     # ogre couleur grès
 }
 
 

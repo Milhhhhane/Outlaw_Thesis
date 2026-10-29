@@ -86,4 +86,32 @@ describe('carte : chapitres parallèles', () => {
       screen.getByRole('button', { name: new RegExp(`${names.dungeon('cinder_citadel')}, `) }),
     ).toBeInTheDocument();
   });
+
+  it('onglet du chapitre 3 : ses dix donjons sur sa carte, chacun verrouillé par son prérequis', async () => {
+    const third = content.dungeons.filter((d) => d.map.chapter === 3);
+    expect(third).toHaveLength(10);
+    const user = userEvent.setup();
+    const first = third[0]!;
+    const { container } = render(
+      <App version="test" initial={afterFirst()} start={{ name: 'map', dungeon: first.id }} />,
+    );
+    // Le chapitre du donjon choisi est affiché d'office, avec ses dix repères et neuf tronçons.
+    const tabs = screen.getByRole('tablist', { name: t('map.chapters') });
+    expect(within(tabs).getAllByRole('tab')).toHaveLength(3);
+    expect(within(tabs).getByRole('tab', { name: t('map.chapter', { n: 3 }) })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(container.querySelectorAll('.map__node')).toHaveLength(10);
+    expect(container.querySelectorAll('.map__path path')).toHaveLength(9);
+    // Rien du chapitre 3 n'est ouvert après les seules Landes de braise ; le verrou nomme le
+    // donjon à terminer (opensAfter).
+    expect(container.querySelectorAll('.map__node--locked')).toHaveLength(10);
+    const opener = dungeonPrerequisite(content, first.id)!;
+    expect(
+      screen.getByText(t('hub.dungeon.locked', { dungeon: names.dungeon(opener) })),
+    ).toBeInTheDocument();
+    await user.click(within(tabs).getByRole('tab', { name: t('map.chapter', { n: 2 }) }));
+    expect(container.querySelectorAll('.map__node')).toHaveLength(10);
+  });
 });

@@ -63,7 +63,7 @@ invocations) ; les copies n'en ont qu'un (améliorer, ou se dissoudre).
 
 ## Simulation : le joueur modèle
 
-`pnpm --filter @outlaw/sim economy [--auto 58] [--seeds 20] [--runs 600]` enchaîne des passages
+`pnpm --filter @outlaw/sim economy [--auto 58] [--seeds 20] [--runs 800]` enchaîne des passages
 **gagnants** avec les vraies fonctions du moteur (`completeDungeon`, `openChest`, `starUp`,
 `levelUpMax`, `upgradeItem`, `equip`) ; seul le butin est tiré (graine du profil), d'où la moyenne
 sur 20 graines. Les tentatives divisent par le taux de réussite d'Auto (58 %, `docs/BALANCE.md`).
@@ -511,4 +511,115 @@ objet porté devient le plus souvent le commun, plus vite au maximum. Il ne desc
 il retire la garantie « Premier passage rare » (`docs/DECISIONS.md`) au premier donjon du
 chapitre ; il n'est donc pas appliqué, et la borne est relevée à 155 (152,1 mesuré, 151,4 et 152,2
 sur d'autres graines). La référence `baseline.csv` est inchangée : l'ouverture ne joue sur aucun
+combat simulé.
+
+## Chapitre 3 (2026-10-29)
+
+Dix donjons de désert, de ruines et de ciel, parallèles aux deux premiers chapitres (niveaux 3 à
+30, voir `docs/BALANCE.md`, « Chapitre 3 »). Récompenses à l'échelle des donjons du chapitre 2 de
+niveau voisin (identiques à celles du donjon du chapitre 2 de même niveau pour les huit derniers) :
+
+| Donjon          | Niv. |   XP |   Or | Poussière | Butin (commun / rare)        | `opensAfter`  |
+| --------------- | ---: | ---: | ---: | --------- | ---------------------------- | ------------- |
+| sun_dunes       |    3 |  190 |  130 | 8 brute   | dune_bead / sunstone         | drowned_halls |
+| hidden_oasis    |    6 |  260 |  210 | 8 brute   | oasis_gourd / mirage_pearl   | rotwood       |
+| buried_temple   |    8 |  470 |  260 | 7 fine    | scarab_brooch / temple_idol  | rotwood       |
+| glass_desert    |   11 |  780 |  350 | 13 fine   | glass_bead / molten_lens     | rotwood       |
+| storm_mesa      |   14 | 1010 |  440 | 17 fine   | storm_feather / thunder_horn | rotwood       |
+| sand_necropolis |   18 | 1260 |  560 | 20 fine   | bone_amulet / tomb_seal      | twin_rivers   |
+| sun_well        |   22 | 1500 |  700 | 8 pure    | cinder_glass / solar_diadem  | ash_caldera   |
+| mirage_palace   |   25 | 1620 |  850 | 9 pure    | palace_veil / djinn_lamp     | frozen_abyss  |
+| hanging_gardens |   28 | 1900 | 1100 | 9 pure    | ivy_ring / hanging_bloom     | elder_swamp   |
+| sky_citadel     |   30 | 2400 | 1500 | 8 pure    | cloud_ring / zenith_orb      | eclipse_keep  |
+
+Coffres : la formule par niveau d'ennemis (`chests.dropLevels`). Paliers de poussière des objets
+(ceux du donjon d'origine) : 4 objets du palier 1, 8 du palier 2, 8 du palier 3, comme au chapitre
+2\. Rythme du farm (`pnpm --filter @outlaw/sim farm`) : 5,1 à 17,3 passages par pas, 89 pour le
+chapitre (chapitre 1 : 89, chapitre 2 : 90).
+
+### Horizon de simulation : 800 passages
+
+Le joueur modèle s'arrête au dernier jalon ou à l'horizon `maxRuns`. Avec 60 objets, la collection
+complète tombe vers le 655ᵉ passage gagnant (655,2 sur les graines 1 à 20 de la CI) : avec
+l'horizon de 600, les 20 parties s'arrêtaient avant (`unreached` 20/20) et cinq tests de la CI
+cassaient (`unreached` attendu à 0, collection complète attendue, comparaisons des quêtes et du
+boss, qui portent sur tous les jalons). L'horizon
+passe à **800** (`simulateEconomy`, `summarizeEconomy` et la CLI `economy`, déjà 800 pour l'éveil) ;
+il ne change aucun jalon atteint avant 600 (sans le chapitre 3, mêmes chiffres à 600 et à 800).
+
+### Ouverture et bornes (option B)
+
+**Ouverture retenue (option B)** : les Dunes ardentes s'ouvrent après les Salles englouties (2ᵉ
+donjon du chapitre 1, niveau 4) ; l'Oasis cachée, le Temple enseveli, le Désert de verre et la Mesa
+des orages après le Bois pourrissant (niveau 14) ; les cinq autres après le donjon du chapitre 2 de
+même niveau. Ouverture d'origine : les cinq premiers après le Bois pourrissant.
+
+Jalons et bornes (route `parallel` sauf mention, passages gagnants, graines 1 à 20 ; éveil : 5
+graines comme en CI ; horizon 800). « Collection complète » = les 60 objets :
+
+| Jalon ou borne                    | Avant (chapitre 2, option E) | Route `main`, option B | `parallel`, ouverture d'origine | **`parallel`, option B** | Borne CI        |
+| --------------------------------- | ---------------------------: | ---------------------: | ------------------------------: | -----------------------: | --------------- |
+| Premier objet au niveau maximum   |                          8,1 |                    8,1 |                             8,1 |                  **8,1** | 4 à 14          |
+| Première étoile                   |                         20,0 |                   20,0 |                            20,0 |                 **20,0** | 15 à 30         |
+| Équipe de 4 équipée (2 objets)    |                         44,0 |                   44,1 |                            44,0 |                 **41,4** | 25 à 55         |
+| Équipe de 4 au niveau 30          |                        119,0 |                  117,6 |                           118,3 |                **116,9** | 85 à 120        |
+| Équipe de 4 aux objets au maximum |                        152,1 |                  147,6 |                         155,8 ✗ |                **151,9** | 100 à 160 (155) |
+| Collection du chapitre 1          |                        288,1 |                  277,5 |                           291,3 |                **284,5** | 200 à 300       |
+| Collection complète               |               463,7 (40 obj) |                  683,9 |                           665,0 |                **655,2** | — (horizon 800) |
+| Grimoires des sorts d'un héros    |                         79,0 |                   74,5 |                            83,7 |                 **83,3** | 50 à 100        |
+| Grimoires des sorts de l'équipe   |                        160,3 |                  165,7 |                           162,1 |                **162,7** | 120 à 200       |
+| Réserve d'or : équipée / niv. 30  |                21,8 / 17,8 % |          20,2 / 17,7 % |                   21,8 / 21,0 % |        **16,5 / 20,5 %** | ≤ 25 %          |
+| Or dépensé en objets              |                       87,9 % |                 88,5 % |                          89,1 % |               **90,1 %** | > 75 %          |
+| Poussière pure dépensée           |                       77,7 % |                 78,5 % |                          79,3 % |               **79,4 %** | > 75 %          |
+| Fragments restants par héros      |                        236,7 |                  365,3 |                           355,8 |                **353,1** | > 72            |
+| Quêtes, 5 / 10 passages par jour  |                13,3 / 14,7 % |          13,3 / 13,9 % |                   14,7 / 14,7 % |        **14,8 / 11,1 %** | ≤ 15 %          |
+| Boss, 5 / 10 passages par jour    |                  7,5 / 4,3 % |            7,6 / 3,6 % |                     7,5 / 5,8 % |          **6,2 / 3,2 %** | ≤ 10 %          |
+| Éveil : premier héros             |                         97,6 |                   88,2 |                            97,0 |                 **93,8** | 60 à 100        |
+| Éveil : équipe                    |                        142,6 |                  137,2 |                           139,4 |                **134,4** | 110 à 170       |
+| Éveil : passages d'essence (1er)  |                         18,6 |                   13,8 |                            19,8 |                 **19,8** | ≤ 20            |
+| Éveil : équipe au niveau 30       |                        172,6 |                  172,4 |                           172,6 |                **169,8** | ≤ 177           |
+
+Avec l'ouverture d'origine et l'horizon de 600, s'ajoutaient `unreached` 20/20 et les quatre
+mesures des quêtes et du boss sans collection complète. Sur les graines 21 à 80 (hors CI),
+option B : objets au maximum 157,5, niveau 30 119,6, collection 291,1 ; ouverture d'origine :
+158,3, 119,8 et 290,4. Les marges les plus serrées : équipe au niveau 30 (116,9 pour 120 ; 119,6
+sur les graines 21 à 80), quêtes à 5 passages par jour (14,8 % pour 15 %), passages d'essence du
+premier éveil (19,8 pour 20), premier héros éveillé (93,8 pour 100).
+
+**« Objets au maximum » : borne relevée de 155 à 160.** À ce jalon, l'équipe porte les sept mêmes
+objets du chapitre 1 qu'au chapitre 2 et, en huitième, la Pierre de soleil (rare garanti du premier
+passage des Dunes ardentes, terminées pour la première fois vers le 9ᵉ passage) au lieu du premier
+objet de la Grève gelée. Le dernier objet porté à atteindre le maximum est toujours l'un des deux
+des Landes de braise (Braise éternelle 16 fois sur 20, Charme de braise 4 fois ; 41 et 19 fois sur
+les graines 21 à 80), jamais un objet des chapitres 2 et 3. Le joueur modèle termine les Landes à
+peu près autant de fois avant ce jalon qu'avec le seul chapitre 2 (14,8 contre 13,9 sur les
+graines 1 à 20 ; 13,2 contre 12,7 sur 21 à 80), mais il joue davantage ailleurs entre-temps : les
+chapitres 2 et 3 prennent 51,1 passages sur 151,9 (12,4 et 38,7) contre 46,0 sur 152,1 pour le
+seul chapitre 2 ; sur les graines 21 à 80, 49,3 sur 157,5 contre 42,5 sur 151,9. Sur les graines de
+la CI, le jalon ne recule pas (151,9 contre 152,1) ; sur les graines 21 à 80, il recule de 5,6
+passages (157,5 contre 151,9), au-delà de la borne de 155. Leviers du chapitre 3 essayés (graines 1
+à 20, et 21 à 80 quand c'est indiqué ; horizon 800, tout le reste inchangé) :
+
+| Réglage du chapitre 3                                     | Objets au maximum (1–20 / 21–80) | Autre borne cassée                                                        |
+| --------------------------------------------------------- | -------------------------------: | ------------------------------------------------------------------------- |
+| Ouverture d'origine (les cinq premiers après le Bois)     |                    155,8 / 158,3 | —                                                                         |
+| **Option B : Dunes après les Salles englouties (retenu)** |                **151,9 / 157,5** | —                                                                         |
+| Dunes après les Landes de braise                          |                    153,2 / 155,4 | quêtes à 5 passages par jour 16,6 % (≤ 15 %)                              |
+| Dunes après le Dédale de ronces                           |                    152,8 / 155,7 | — (premier héros éveillé 98,2 pour 100)                                   |
+| Dunes après la Citadelle de cendre                        |                            157,5 | —                                                                         |
+| Les cinq premiers après les Salles englouties             |                            159,1 | équipe équipée 17,1, réserve d'or 45,4 %, collection 306,1                |
+| Ouverture par niveau sur le chapitre 2 (sans exception)   |                            157,0 | quêtes à 5 passages par jour 19,0 %                                       |
+| Ouverture par niveau sur le chapitre 1                    |                            159,4 | premier objet 21,7, équipe équipée 14,1, réserve 55,5 %, collection 306,3 |
+| Option B, XP du chapitre 3 × 0,8                          |                    151,9 / 157,4 | — (graines 1 à 20 : jalons identiques à l'option B)                       |
+| Option B, XP du chapitre 3 × 1,2                          |                            155,3 | quêtes 15,7 %, passages d'essence 22,2 (≤ 20)                             |
+| Option B, poussière du chapitre 3 × 0,75                  |                    152,8 / 156,3 | — (niveau 30 : 120,5 sur les graines 21 à 80)                             |
+| Option B, or du chapitre 3 × 0,75                         |                    154,5 / 157,5 | poussière pure 72,5 %, quêtes 16,0 %, premier héros éveillé 100,4         |
+
+Parmi les leviers mesurés aussi sur les graines 21 à 80, aucun ne garde « objets au maximum » sous
+155 (155,4 au mieux, en cassant la borne des quêtes) ; les autres dépassent déjà 155 sur les
+graines de la CI. Parmi les réglages qui tiennent toutes les autres bornes (option B, Dunes après
+le Dédale de ronces, poussière × 0,75), l'option B donne la meilleure valeur sur les graines de la
+CI et ne touche à aucune récompense. La borne passe donc à **160**
+(151,9 mesuré sur les graines de la CI, 157,5 sur les graines 21 à 80). Aucune autre borne ne
+change. La référence `baseline.csv` est inchangée : ni l'ouverture ni l'horizon ne jouent sur un
 combat simulé.
