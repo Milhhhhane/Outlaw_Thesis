@@ -1021,6 +1021,10 @@ function main(): void {
   console.log(
     `  objets tombés ${l.items.drops.toFixed(0)} dont rares ${l.items.rares.toFixed(1)}, améliorations ${l.items.upgrades.toFixed(1)} (objets au maximum ${l.items.maxed.toFixed(1)}, niveau moyen des objets portés ${l.items.wornLevel.toFixed(2)}) ; coffres ${l.chests.toFixed(1)}, fragments ${l.fragments.toFixed(0)}`,
   );
+  const spell = spellMaxCost(content);
+  console.log(
+    `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
+  );
   // Route parallèle (lecture seule) : les deux chapitres joués dès qu'ils s'ouvrent.
   const parallel = summarizeEconomy(content, seeds, option('--runs', 600), null, 'parallel');
   console.log(
@@ -1034,10 +1038,6 @@ function main(): void {
         ? '—'
         : `${((100 * at.reserve) / at.earned).toFixed(0)} %`;
     })()}`,
-  );
-  const spell = spellMaxCost(content);
-  console.log(
-    `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
   );
   const awake = summarizeAwakening(content, seeds);
   const { awakening } = content.balance;
