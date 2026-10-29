@@ -1295,3 +1295,24 @@ héros au-dessus de la cible est remesuré sur trois fois plus d'équipes et l'�
 **Règles « tous éveillés » en CI, R1 sur 4 équipes** — Raison : R1 coûte surtout en duels ; sur
 les 12 équipes la mesure donnait 82 %, sur 4 elle donne 79 % (cible 70 %). R2 et « aucun héros
 indispensable » portent sur les 50 équipes.
+
+## L'or paie les niveaux et les étoiles
+
+**Un co-coût en or à chaque progression** — Contexte : l'or ne payait que l'amélioration des
+objets et le respec ; le joueur modèle en gardait 73 à 79 % en réserve en milieu de partie.
+Choix : comme le mana de Summoners War, le zel de Brave Frontier et l'argent de RAID, l'or paie
+chaque montée de niveau (`progression.levelGold`, round(2 × N^1,65)) et chaque étoile
+(`chests.starGold`, 600 puis 1 200). Raison : une monnaie de base utile partout reste rare et
+oblige à choisir entre monter un héros et améliorer un objet. Mesure : réserve 18 à 20 %, début
+de partie inchangé.
+
+**L'éveil coûte 1 000 or, pas 5 000** — Contexte : sans épargne, le joueur moyen dépense tout son
+or en niveaux et objets ; un éveil à 5 000 or reculait de +34 à +60 %, à 2 000 encore de +38,6 %.
+Choix : 1 000 or. Raison : l'or passe d'un gros achat ponctuel aux dépenses régulières, ce qui
+dépense plus d'or au total et tient toutes les cibles (aucun jalon à plus de +10 %). Écarté :
+coûts de niveau plus bas (réserve 57 à 62 %, l'or redevient inutile).
+
+**Le joueur modèle n'épargne pas pour l'éveil** — Le jeu ne demande nulle part de garder de l'or
+pour l'éveil et les badges du camp poussent à dépenser : une épargne dans le modèle décrirait un
+joueur expert et masquerait le vrai coût. Règle de vérification : avec des coûts en or nuls, le
+simulateur redonne exactement les chiffres d'avant.

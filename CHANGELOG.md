@@ -2,6 +2,26 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-29 — l'or paie les niveaux et les étoiles
+
+### Modifié
+
+- Chaque montée de niveau coûte de l'or en plus de l'XP et de la poussière : round(2 × N^1,65)
+  pour quitter le niveau N (2 au niveau 1, 89 au 10, 280 au 20, 518 au 29 ; 5 925 par héros de
+  1 à 30). Les étoiles coûtent 600 puis 1 200 or en plus des fragments. Coût affiché sur la
+  fiche du héros et l'écran Coffres, avec « Pas assez d'or : x sur y ».
+- L'éveil coûte 1 000 or au lieu de 5 000 : l'or passe d'un gros achat ponctuel aux dépenses
+  régulières.
+- Effet mesuré (joueur modèle, 20 graines) : or qui dort à l'équipe équipée 73 % → 20 % de l'or
+  gagné, au niveau 30 79 % → 18 % ; premier objet au maximum et première étoile inchangés,
+  niveau 30 +3,3 %, premier éveil +6,0 %, équipe éveillée −3,4 %. Détail dans
+  `docs/ECONOMY.md` et `docs/BALANCE.md`.
+
+### Ajouté
+
+- Simulateur d'économie : or en réserve et or gagné à chaque jalon ; borne CI sur « équipe au
+  niveau 30 avec l'éveil ».
+
 ## [Non publié] — 2026-10-28 — arbre des talents : liens lisibles
 
 ### Corrigé

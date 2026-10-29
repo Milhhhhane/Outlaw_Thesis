@@ -584,9 +584,10 @@ Lecture :
 - Un négatif veut dire « plus tard » : le joueur modèle dépense la poussière brute des succès en
   niveaux avant l'objet des Landes (premier objet au maximum 8,1 → 8,7). Effet de sa politique,
   sans conséquence pour un vrai joueur.
-- L'or des quêtes pèse 17 à 28 % de l'or des donjons : l'or ne sert qu'aux objets, il avance
-  surtout la collection. Ce n'est pas un raccourci de progression (niveaux et étoiles n'en
-  dépendent pas).
+- L'or des quêtes pèse 17 à 28 % de l'or des donjons. Au moment de cette mesure, l'or ne servait
+  qu'aux objets et avançait surtout la collection. Depuis que l'or paie aussi les niveaux et les
+  étoiles (section « L'or paie les niveaux et les étoiles »), il avance aussi le niveau 30 : les
+  quêtes le raccourcissent de 10,8 à 11,7 % (7,7 à 9,3 % avant), toujours sous la borne de 15 %.
 - Premier réglage essayé : 20 % par quête du jour et 60 % par quête de la semaine : même plafond
   (13,7 %, il vient des succès) mais niveau 30 à −10,4 % et or + 33 % à 5 passages par jour ;
   ramené à 15 / 50 pour garder de la marge.
@@ -769,10 +770,10 @@ au niveau 30 ; éveil : premier héros / équipe / niveau 30 avec l'éveil, avan
 
 | Réglage                                          | Jalons (écart)                      | Réserve         | Éveil (écart)                                       | Cibles        |
 | ------------------------------------------------ | ----------------------------------- | --------------- | --------------------------------------------------- | ------------- |
-| A : 2 × N^1,65, étoiles 600 / 1 200, éveil 5 000 | 0 / 0 / +0,3 / +3,3 / +3,9 / +5,1 % | 20 % / 18 %     | 129,8 (+60 %) / 183,5 (+34 %) / 159,3 (−1 %)        | éveil KO      |
+| A : 2 × N^1,65, étoiles 600 / 1 200, éveil 5 000 | 0 / 0 / +0,2 / +3,3 / +3,9 / +5,1 % | 20 % / 18 %     | 129,8 (+60 %) / 183,5 (+34 %) / 159,3 (−1 %)        | éveil KO      |
 | B : 0,5 × N^1,65, 200 / 400, éveil 5 000         | 0 / 0 / +0,1 / 0 / 0 / +0,7 %       | 57 % / 62 %     | 81,0 (0) / 146,7 (+7,5 %) / 161,4 (+0,4 %)          | réserve KO    |
 | B' : 1 × N^1,8, 400 / 800, éveil 5 000           | 0 / 0 / +0,1 / 0 / 0 / +3,9 %       | 37 % / 30 %     | 99,8 (+23 %) / 169,8 (+24 %) / 157,3 (−2 %)         | les deux KO   |
-| **C : A et éveil 1 000 (retenu)**                | 0 / 0 / +0,3 / +3,3 / +3,9 / +5,1 % | **20 % / 18 %** | **85,9 (+6,0 %) / 131,9 (−3,4 %) / 171,2 (+6,5 %)** | toutes tenues |
+| **C : A et éveil 1 000 (retenu)**                | 0 / 0 / +0,2 / +3,3 / +3,9 / +5,1 % | **20 % / 18 %** | **85,9 (+6,0 %) / 131,9 (−3,4 %) / 171,2 (+6,5 %)** | toutes tenues |
 
 Avec C : quêtes, raccourcissement maximal 13,3 % et 13,9 % (borne 15 %) ; boss 7,6 % et 3,6 %
 (borne 10 %). Bornes CI de l'éveil (5 graines) : 88,2 / 137,2 / 172,4, 13,8 passages d'essence
