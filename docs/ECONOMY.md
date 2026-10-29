@@ -408,3 +408,69 @@ jour et 13,9 % à 10 (avant : 13,1 et 13,7 ; borne 15 %) ; boss, 7,6 % et 3,6 % 
 (`tools/sim/test/economy.test.ts`) : au plus 25 % de l'or gagné en réserve à l'équipe équipée et
 au niveau 30 ; équipe au niveau 30 avec l'éveil ≤ 177 (5 graines). Justification des valeurs : `docs/BALANCE.md`, « L'or paie les
 niveaux et les étoiles ».
+
+## Chapitre 2 (2026-10-29)
+
+Dix donjons parallèles au chapitre 1 (niveaux 2 à 30, voir `docs/BALANCE.md`, « Chapitre 2 »),
+récompenses à l'échelle des donjons du chapitre 1 de niveau voisin (premier passage comme rejeu) :
+
+| Donjon        | Niv. |   XP |   Or | Poussière | Butin (commun / rare)           |
+| ------------- | ---: | ---: | ---: | --------- | ------------------------------- |
+| frost_strand  |    2 |  120 |  100 | 8 brute   | rime_locket / frost_heart       |
+| bog_mire      |    5 |  310 |  185 | 8 brute   | bog_lantern / mire_totem        |
+| ember_forge   |    8 |  470 |  260 | 7 fine    | forge_rivet / anvil_core        |
+| glacier_vault |   11 |  780 |  350 | 13 fine   | glacier_shard / hoarfrost_ring  |
+| rotwood       |   14 | 1010 |  440 | 17 fine   | spore_pouch / heartwood_charm   |
+| twin_rivers   |   18 | 1260 |  560 | 20 fine   | river_stone / confluence_orb    |
+| ash_caldera   |   22 | 1500 |  700 | 8 pure    | ash_veil / magma_sigil          |
+| frozen_abyss  |   25 | 1620 |  850 | 9 pure    | glacial_horn / permafrost_plate |
+| elder_swamp   |   28 | 1900 | 1100 | 9 pure    | root_knot / swamp_eye           |
+| eclipse_keep  |   30 | 2400 | 1500 | 8 pure    | dusk_ring / eclipse_shard       |
+
+Coffres : la formule par niveau d'ennemis (`chests.dropLevels`), comme au chapitre 1. Paliers de
+poussière des objets : 4 objets du palier 1, 8 du palier 2, 8 du palier 3 (chapitre 1 : 4, 6, 10).
+Poussière pure 8 à 9 (et non 10 à 12) : avec 12, le grind de la collection du chapitre 2 laissait
+dormir un tiers de la poussière pure (borne CI : les trois quarts dépensés ; mesuré 68 %, 76 %
+après). Rythme du farm (`pnpm --filter @outlaw/sim farm`) : 5,3 à 18,0 passages par pas, 92 pour le
+chapitre (89 pour le chapitre 1).
+
+### Route du joueur modèle
+
+Le joueur modèle a maintenant deux routes (`ChapterRoute` dans `tools/sim/src/economy.ts`) :
+
+- **`main`** (référence, bornes en CI) : le chapitre 1 est la route principale ; le chapitre 2 est
+  joué une fois l'équipe au niveau 30 (il en fait les dix premières victoires, puis le farme pour
+  sa collection, objets du chapitre 1 d'abord) ;
+- **`parallel`** (lecture seule, affichée par `economy`) : tout donjon ouvert à sa portée est joué,
+  dès l'ouverture.
+
+Jalons (passages gagnants, 20 graines). « Collection » = les 20 objets du chapitre 1, comme avant ;
+« collection complète » = les 40 :
+
+| Jalon                             | Avant (10 donjons) | Après, route `main` |  Écart | Route `parallel` |   Écart |
+| --------------------------------- | -----------------: | ------------------: | -----: | ---------------: | ------: |
+| Premier objet au niveau maximum   |                8,1 |                 8,1 |    0 % |             24,8 |  +206 % |
+| Première étoile                   |               20,0 |                20,0 |    0 % |             16,0 |   −20 % |
+| Équipe de 4 équipée (2 objets)    |               44,1 |                44,1 |    0 % |             12,2 |   −72 % |
+| Équipe de 4 au niveau 30          |              117,6 |               117,6 |    0 % |            112,7 |  −4,2 % |
+| Équipe de 4 aux objets au maximum |              127,5 |               137,2 | +7,6 % |            158,8 | +24,5 % |
+| Collection du chapitre 1          |              264,2 |               271,1 | +2,6 % |            309,5 | +17,1 % |
+| Collection complète (40 objets)   |                  — |               477,5 |      — |            455,8 |       — |
+| Grimoires des sorts de l'équipe   |              147,5 |               156,5 | +6,1 % |            151,3 |  +2,6 % |
+
+Route `main` : aucun jalon ne bouge de plus de 10 %. Les objets au maximum reculent de 7,6 % parce
+que les dix premières victoires du chapitre 2 passent avant le farm des copies (un donjon jamais
+terminé passe avant tout). Réserve d'or 20 % et 18 % aux jalons bornés, poussière pure dépensée
+à 76 %, quêtes : raccourcissement maximal 13,3 % et 13,9 % ; boss : 7,6 % ; éveil inchangé (85,9 /
+131,9 / 171,2). Toutes les bornes de `economy.test.ts` tiennent.
+
+**Route `parallel` : les bornes ne tiennent pas, et ce n'est pas un réglage.** Deux fois plus de
+donjons de bas niveau, c'est deux fois plus de premières victoires (rare garanti) : l'équipe est
+équipée au 12ᵉ passage au lieu du 44ᵉ (borne 25 à 55), l'or et la poussière s'étalent sur deux fois
+plus d'objets portés (premier objet au maximum au 25ᵉ passage, borne 14 ; réserve d'or 53 % à
+l'équipe équipée, borne 25 %), la fin de partie s'allonge (objets au maximum 159, borne 140 ;
+collection du chapitre 1 310, borne 300). Aucune valeur des récompenses du chapitre 2 ne corrige
+l'équipement précoce : il vient du nombre de donjons ouverts au niveau 2 à 8, fixé par la décision
+(un donjon du chapitre 2 s'ouvre avec celui du chapitre 1 de même niveau). C'est au propriétaire de
+dire laquelle des deux routes représente le joueur visé, et s'il faut alors retoucher les bornes
+ou l'ouverture du chapitre 2.
