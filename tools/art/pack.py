@@ -47,6 +47,13 @@ ENEMIES = {
     'pyre_tyrant': ('big_demon', 20, 1.1, 1.05),
     'tidal_hydra': ('ogre', 90, 1.0, 1.0),
     'grove_colossus': ('ogre', 0, 1.0, 1.0),
+    # chapitre 2 : personnages encore inutilisés de la planche, et trois gros monstres recolorés
+    'frost_ghoul': ('ice_zombie', 0, 1.0, 1.0),
+    'mire_slime': ('muddy', 60, 1.3, 1.0),        # vase brune → olive
+    'cinder_fiend': ('chort', 0, 1.0, 1.0),
+    'frost_maw': ('big_demon', 200, 0.9, 1.05),   # démon bleu glacier
+    'mire_troll': ('ogre', 250, 1.3, 0.9),        # peau brune, pagne indigo
+    'ash_titan': ('big_demon', 20, 0.3, 0.45),    # démon gris cendre
 }
 
 

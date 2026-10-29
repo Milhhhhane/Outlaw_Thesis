@@ -445,7 +445,19 @@ ALL = {'ember_wastes': ember_wastes, 'drowned_halls': drowned_halls, 'thorn_maze
        # fin de progression : décors dérivés
        'salt_flats': tinted(ember_wastes, 25, 0.35, 1.12),      # salines blêmes : braise délavée
        'obsidian_pass': tinted(cinder_citadel, -10, 0.9, 0.75),  # col d'obsidienne : citadelle plus sombre
-       'hollow_throne': tinted(drowned_halls, 60, 0.8, 0.85)}    # trône creux : salles violettes
+       'hollow_throne': tinted(drowned_halls, 60, 0.8, 0.85),    # trône creux : salles violettes
+       # chapitre 2 : décors dérivés et carte du chapitre
+       'world_map_2': lambda: __import__('worldmap').world_map_2(),
+       'frost_strand': tinted(drowned_halls, -10, 0.35, 1.25),   # grève gelée : salles pâlies
+       'bog_mire': tinted(thorn_maze, 25, 0.6, 0.7),             # tourbière : ronces boueuses
+       'ember_forge': tinted(cinder_citadel, 12, 1.15, 1.05),    # forge : citadelle chauffée
+       'glacier_vault': tinted(sunken_spire, 15, 0.35, 1.2),     # caveau glaciaire : flèche givrée
+       'rotwood': tinted(verdant_crown, 170, 0.7, 0.75),         # bois pourrissant : couronne violacée
+       'twin_rivers': tinted(broken_crossing, 100, 0.9, 1.0),    # confluent : carrefour verdi
+       'ash_caldera': tinted(ember_wastes, -12, 0.45, 0.7),      # caldeira : braise cendrée
+       'frozen_abyss': tinted(sunken_spire, -25, 0.8, 0.65),     # abîme : flèche sombre
+       'elder_swamp': tinted(thorn_maze, -30, 1.1, 0.75),        # marais ancestral
+       'eclipse_keep': tinted(cinder_citadel, 230, 0.7, 0.6)}    # éclipse : citadelle nocturne
 
 if __name__ == '__main__':
     import sys

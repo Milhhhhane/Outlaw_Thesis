@@ -1,4 +1,4 @@
-"""Carte du monde 320 × 180 : sept contrées peintes (biomes tramés, reliefs, eau, repères).
+"""Cartes du monde 320 × 180, une par chapitre : contrées peintes (biomes tramés, reliefs, eau).
 
 Chaque donjon porte sa position dans dungeons.json (champ map) ; le jeu
 pose par-dessus un petit bouton rond. Rendu déterministe.
@@ -30,10 +30,10 @@ def noise2(x, y, seed):
             + 0.5 * math.sin(x / 5 - y / 7 + r)) / 2.5
 
 
-def biome_at(x, y):
+def biome_at(x, y, biomes=None):
     """Biome dominant d'un pixel : distance elliptique bruitée au centre de chaque contrée."""
     best, score = None, 1e9
-    for name, b in BIOMES.items():
+    for name, b in (BIOMES if biomes is None else biomes).items():
         cx, cy = b['c']
         rx, ry = b['r']
         d = math.hypot((x - cx) / rx, (y - cy) / ry) + noise2(x, y, b['seed']) * 0.22
@@ -42,14 +42,16 @@ def biome_at(x, y):
     return best, score
 
 
-def world_map():
-    c = Canvas()
-    rnd = random.Random(77)
+def terrain(c, biomes, plain, ripple):
+    """Contrées tramées, eau à vaguelettes (`ripple(nom)` : leur couleur), rives et lisières.
+
+    Renvoie la contrée et la distance de chaque pixel, et le pinceau à trois tons.
+    """
     kind = [[None] * W for _ in range(H)]
     dist = [[0.0] * W for _ in range(H)]
     for y in range(H):
         for x in range(W):
-            name, d = biome_at(x, y)
+            name, d = biome_at(x, y, biomes)
             if d > 1.0:
                 name = None
             kind[y][x] = name
@@ -68,15 +70,15 @@ def world_map():
             name = kind[y][x]
             light = 0.5 + noise2(x * 1.3, y * 1.3, 11) * 0.35
             if name is None:
-                paint(x, y, PLAIN, light * 0.8)
+                paint(x, y, plain, light * 0.8)
                 continue
-            b = BIOMES[name]
+            b = biomes[name]
             if b.get('water'):
                 # eau : plus claire près des rives, rangées de vaguelettes
                 shore = max(0.0, min(1.0, (dist[y][x] - 0.55) * 2.2))
                 paint(x, y, b['cols'], 0.25 + shore * 0.6)
                 if (y + (x // 6)) % 7 == 0 and (x + y * 3) % 9 < 3 and shore < 0.8:
-                    c.put(x, y, '#6ac0e0' if name == 'lake' else '#4a90d9')
+                    c.put(x, y, ripple(name))
             else:
                 paint(x, y, b['cols'], light)
 
@@ -84,16 +86,37 @@ def world_map():
     for y in range(1, H - 1):
         for x in range(1, W - 1):
             name = kind[y][x]
-            here_water = name is not None and BIOMES[name].get('water', False)
+            here_water = name is not None and biomes[name].get('water', False)
             for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                 n = kind[y + dy][x + dx]
-                n_water = n is not None and BIOMES[n].get('water', False)
+                n_water = n is not None and biomes[n].get('water', False)
                 if here_water != n_water:
                     c.put(x, y, '#0c2234' if here_water else '#c8a470')
                     break
                 if n != name and not here_water and (x + y) % 3 == 0:
                     c.put(x, y, '#241a1a')
                     break
+    return kind, dist, paint
+
+
+def frame(c):
+    """Cadre déchiré et rose des vents."""
+    for y in range(H):
+        for x in range(W):
+            edge = min(x, y, W - 1 - x, H - 1 - y)
+            if edge < 3 + (noise2(x, y, 5) > 0.35) * 2:
+                c.put(x, y, '#120a10')
+            elif edge < 5:
+                c.put(x, y, '#2a1a1a' if (x + y) % 2 else '#120a10')
+    rose = ['....#....', '...###...', '..#.#.#..', '.#..#..#.', '#########', '.#..#..#.', '..#.#.#..', '...###...', '....#....']
+    c.blob(rose, 10, 8, {'#': '#e8d8b0'})
+    c.blob(['.#.', '###', '.#.'], 13, 11, {'#': '#e0643a'})
+
+
+def world_map():
+    c = Canvas()
+    rnd = random.Random(77)
+    kind, dist, paint = terrain(c, BIOMES, PLAIN, lambda name: '#6ac0e0' if name == 'lake' else '#4a90d9')
 
     # --- détails par contrée ---------------------------------------------------------------
     def tree(x, y, leaf, dark):
@@ -174,17 +197,96 @@ def world_map():
 
     # Les repères des donjons et le sentier sont dessinés par le jeu d'après dungeons.json
     # (sprites `landmark_*` de l'atlas) : la carte reste valable quand on ajoute un donjon.
-    # --- cadre déchiré et rose des vents ----------------------------------------------------
-    for y in range(H):
-        for x in range(W):
-            edge = min(x, y, W - 1 - x, H - 1 - y)
-            if edge < 3 + (noise2(x, y, 5) > 0.35) * 2:
-                c.put(x, y, '#120a10')
-            elif edge < 5:
-                c.put(x, y, '#2a1a1a' if (x + y) % 2 else '#120a10')
-    rose = ['....#....', '...###...', '..#.#.#..', '.#..#..#.', '#########', '.#..#..#.', '..#.#.#..', '...###...', '....#....']
-    c.blob(rose, 10, 8, {'#': '#e8d8b0'})
-    c.blob(['.#.', '###', '.#.'], 13, 11, {'#': '#e0643a'})
+    frame(c)
+    return c.image()
+
+
+# Chapitre 2 : la région parallèle (glaciers, tourbières, cendres, marais, plateau de l'éclipse).
+BIOMES_2 = {
+    'glacier': dict(c=(64, 112), r=(46, 34), cols=('#7890a8', '#a0b8cc', '#d8e6f0'), seed=21),
+    'bog': dict(c=(92, 162), r=(42, 22), cols=('#2a2e1a', '#3a4024', '#4e5630'), seed=22),
+    'ashland': dict(c=(150, 146), r=(40, 28), cols=('#3a3434', '#4e4644', '#6a5e58'), seed=23),
+    'rotwood': dict(c=(50, 50), r=(44, 30), cols=('#2a1e30', '#3a2a40', '#4e3a52'), seed=24),
+    'rivers': dict(c=(130, 28), r=(42, 13), cols=('#1e4466', '#2a5a80', '#3a7aa0'), seed=25, water=True),
+    'caldera': dict(c=(184, 74), r=(32, 26), cols=('#3e1a1a', '#5a2420', '#7a3428'), seed=26),
+    'frozen_sea': dict(c=(226, 150), r=(58, 26), cols=('#2a4a66', '#3a6a8a', '#5a8aaa'), seed=27, water=True),
+    'swamp': dict(c=(270, 100), r=(38, 30), cols=('#14301e', '#1e4228', '#2e5a34'), seed=28),
+    'eclipse': dict(c=(284, 34), r=(38, 26), cols=('#1e1430', '#2e2046', '#46305e'), seed=29),
+}
+PLAIN_2 = ('#2e2a30', '#3a3438', '#4a4044')
+
+
+def world_map_2():
+    c = Canvas()
+    rnd = random.Random(78)
+    kind, dist, paint = terrain(c, BIOMES_2, PLAIN_2, lambda name: '#a6e0ea' if name == 'frozen_sea' else '#6ac0e0')
+    inside = lambda name, x, y: 0 <= x < W and 0 <= y < H and kind[y][x] == name and dist[y][x] < 0.85
+
+    # glaciers : congères et crevasses bleutées
+    for _ in range(90):
+        x, y = rnd.randint(16, 112), rnd.randint(76, 146)
+        if inside('glacier', x, y):
+            if rnd.random() < 0.6:
+                c.blob(['.###.', '#####', 'ddddd'], x, y, {'#': '#f4f8fc', 'd': '#7890a8'})
+            else:
+                c.blob(['#..', '.#.', '..#'], x, y, {'#': '#4a6a8a'})
+    for x, y, size in [(24, 84, 5), (38, 78, 6), (92, 80, 4), (104, 74, 5)]:
+        c.blob(['.' * (size - 1 - i) + '#' * (2 * i + 1) + '.' * (size - 1 - i) for i in range(size)],
+               x, y, {'#': '#e8f0f8'})
+    # tourbières et marais : roseaux, flaques
+    for name, x0, x1, y0, y1, reed in [('bog', 50, 136, 140, 178, '#7a7a3a'), ('swamp', 234, 306, 72, 128, '#4a8a3a')]:
+        for _ in range(70):
+            x, y = rnd.randint(x0, x1), rnd.randint(y0, y1)
+            if inside(name, x, y):
+                if rnd.random() < 0.6:
+                    c.blob(['#.#', '#.#', '###'], x, y, {'#': reed})
+                else:
+                    c.blob(['.##.', '####'], x, y, {'#': '#1a2a24'})
+    # bois pourrissant : arbres morts violacés, champignons pâles
+    for _ in range(90):
+        x, y = rnd.randint(8, 96), rnd.randint(22, 80)
+        if inside('rotwood', x, y):
+            if rnd.random() < 0.7:
+                c.blob(['#.#.#', '.###.', '..#..', '..#..'], x, y, {'#': '#6a4a6e'})
+            else:
+                c.blob(['.##.', '####', '.ll.'], x, y, {'#': '#c8b4d0', 'l': '#2a1e30'})
+    # terres de cendre : dunes grises, braises
+    for _ in range(60):
+        x, y = rnd.randint(110, 196), rnd.randint(118, 176)
+        if inside('ashland', x, y):
+            if rnd.random() < 0.7:
+                c.blob(['..####..', '.#hhhh#.', 'll....ll'], x, y, {'#': '#8a7e78', 'h': '#8a7e78', 'l': '#241e1e'})
+            else:
+                c.put(x, y, '#ff8a2a')
+                c.put(x + 1, y, '#c0301a')
+    # la caldeira : cratère incandescent et coulées
+    c.blob(['....######....', '..##oooooo##..', '.#ooOOOOOOoo#.', '.#ooOOOOOOoo#.', '..##oooooo##..', '....######....'],
+           176, 66, {'#': '#2a1014', 'o': '#c0301a', 'O': '#ffb840'})
+    for _ in range(26):
+        x, y = rnd.randint(156, 214), rnd.randint(50, 98)
+        if inside('caldera', x, y):
+            for i in range(rnd.randint(3, 7)):
+                c.put(x + i, y + (i // 2) % 2, '#ff8a2a')
+    # mer gelée : banquise
+    for _ in range(40):
+        x, y = rnd.randint(170, 300), rnd.randint(124, 176)
+        if inside('frozen_sea', x, y):
+            c.blob(['.####.', '######', '.dddd.'], x, y, {'#': '#e8f0f8', 'd': '#8aa8c0'})
+    # deux rivières qui descendent du lac et se rejoignent au confluent
+    for x0, phase in [(96, 0.0), (150, 1.7)]:
+        for y in range(34, 116):
+            t = (y - 34) / 82
+            x = int(x0 + (118 - x0) * min(1.0, t * 1.6) + math.sin(y / 7 + phase) * 3)
+            if kind[y][x] is None or not BIOMES_2[kind[y][x]].get('water', False):
+                for dx in (0, 1):
+                    c.put(x + dx, y, '#2a5a80' if (x + y) % 3 else '#6ac0e0')
+    # plateau de l'éclipse : étoiles et croissant
+    for _ in range(50):
+        x, y = rnd.randint(250, 316), rnd.randint(8, 60)
+        if inside('eclipse', x, y):
+            c.put(x, y, '#e8d8f8' if rnd.random() < 0.5 else '#a080d0')
+    c.blob(['..###.', '.##...', '##....', '##....', '.##...', '..###.'], 300, 14, {'#': '#e8d8b0'})
+    frame(c)
     return c.image()
 
 
@@ -200,6 +302,13 @@ LANDMARKS = {
     'salt': (['.....', '#.#.#', '#####', '.ooo.', '.....'], {'#': '#e8e0d0', 'o': '#8aa0b0'}),
     'pass': (['..#..', '.###.', '##o##', '#.o.#', '#####'], {'#': '#2a2230', 'o': '#ff8a2a'}),
     'throne': (['#...#', '##.##', '#o.o#', '#####', '.#.#.'], {'#': '#5a3478', 'o': '#e2b440'}),
+    # chapitre 2
+    'cairn': (['..#..', '.###.', '..#..', '.###.', '#####'], {'#': '#d8e6f0'}),
+    'hut': (['..#..', '.###.', '#####', '#.o.#', '#.o.#'], {'#': '#6a5a3a', 'o': '#ffb840'}),
+    'forge': (['...##', '...#.', '####.', '#oo##', '#####'], {'#': '#4e4644', 'o': '#ff8a2a'}),
+    'tree': (['#.#.#', '.###.', '..#..', '..#..', '.###.'], {'#': '#8a6a8e'}),
+    'crater': (['.....', '.#.#.', '#ooo#', '#ooo#', '.###.'], {'#': '#2a1014', 'o': '#ff8a2a'}),
+    'obelisk': (['..#..', '.###.', '.#o#.', '.###.', '#####'], {'#': '#46305e', 'o': '#e8d8b0'}),
 }
 
 

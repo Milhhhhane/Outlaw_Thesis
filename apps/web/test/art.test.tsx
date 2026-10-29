@@ -25,6 +25,16 @@ describe('pixel art', () => {
     }
   });
 
+  it('chaque objet a son icône, chaque chapitre sa carte', () => {
+    for (const item of content.items) {
+      expect(SPRITES[`icon_item_${item.id}`], item.id).toBeDefined();
+    }
+    for (const chapter of new Set(content.dungeons.map((d) => d.map.chapter))) {
+      const board = chapter === 1 ? 'world_map' : `world_map_${String(chapter)}`;
+      expect(backgroundUrl(board), board).toMatch(new RegExp(`${board}\\b`));
+    }
+  });
+
   it('chaque donjon a son repère de carte dans l’atlas', () => {
     for (const dungeon of content.dungeons) {
       expect(SPRITES[`landmark_${dungeon.map.landmark}`], dungeon.id).toBeDefined();
