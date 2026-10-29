@@ -9,6 +9,7 @@ import {
   type HeroBuild,
 } from '@outlaw/engine';
 import { randomBuild, pickTeam } from './builds';
+import { chapterItems } from './chapters';
 import { lookahead } from './policy';
 import { createRng, type Rng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
@@ -17,7 +18,8 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  * Paliers de donjon : pour chaque donjon et chaque palier, des équipes jouables de `teamSize` héros tirées
  * au hasard (builds aléatoires) au niveau visé par le palier (celui des ennemis, borné au niveau
  * maximum) et avec l'équipement visé (`tierGear` : aucun objet au palier I, deux objets bruts au
- * palier II, deux objets au niveau maximum au dernier palier), jouées par la politique experte.
+ * palier II, deux objets au niveau maximum au dernier palier ; objets du chapitre du donjon), jouées
+ * par la politique experte.
  * Deux règles : chaque palier reste gagnable par l'expert (`targets.tiers.expertMin`), et un
  * palier n'est jamais nettement plus facile que le précédent du même donjon
  * (`targets.tiers.tolerance`).
@@ -32,13 +34,17 @@ export function tierGear(content: Content, tier: number): { items: number; upgra
   return { items: slots, upgrade: Math.round(((tier - 2) / steps) * maxUpgradeLevel) };
 }
 
-/** Deux objets distincts tirés au hasard, au niveau d'amélioration demandé. */
+/**
+ * Deux objets distincts tirés au hasard parmi le butin d'un chapitre (le premier par défaut : tour,
+ * boss de la semaine), au niveau d'amélioration demandé.
+ */
 export function randomItems(
   content: Content,
   gear: { items: number; upgrade: number },
   rng: Rng,
+  chapter = 1,
 ): HeroBuild['items'] {
-  const pool = content.items.map((i) => i.id);
+  const pool = chapterItems(content, chapter);
   const picked: string[] = [];
   while (picked.length < gear.items && pool.length > 0) {
     const id = rng.pick(pool);
@@ -72,7 +78,7 @@ export function tiers(content: Content, runs: number, seed: number): TiersReport
         const team = pickTeam(content, rng.shuffle(heroes), content.balance.progression.teamSize);
         const builds = team.map((hero) => ({
           ...randomBuild(content, hero, level, rng),
-          items: randomItems(content, gear, rng),
+          items: randomItems(content, gear, rng, dungeon.map.chapter),
         }));
         const party = compileTeam(content, builds, 'player', dungeon.modifier);
         let won = 0;

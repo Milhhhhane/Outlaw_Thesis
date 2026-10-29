@@ -17,8 +17,8 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  * Éveil en simulation.
  *
  * Écart de puissance (règle `targets.awakening.maxGapPoints`, en CI) : pour chaque héros, `runs`
- * équipes jouables qui le contiennent jouent chaque donjon où l'éveil est possible (niveau en
- * retard ≥ `awakening.minLevel`) avec `r2LevelGap` niveaux de retard, par le joueur moyen (la
+ * équipes jouables qui le contiennent jouent chaque donjon du chapitre 1 où l'éveil est possible
+ * (niveau en retard ≥ `awakening.minLevel`) avec `r2LevelGap` niveaux de retard, par le joueur moyen (la
  * mesure de « aucun héros indispensable », qui sépare les équipes) : une fois le héros non éveillé,
  * une fois éveillé, mêmes builds et même politique. L'écart est la différence de part de donjons
  * terminés, en points.
@@ -66,8 +66,10 @@ function measureHero(
   const woke: BattleOutcome[] = [];
   if (hero === undefined) return { plain, woke };
   const ids = content.heroes.map((h) => h.id);
+  // Chapitre 1 seulement : la mesure porte sur le héros, ses quatre donjons tardifs suffisent (et
+  // un nouveau chapitre ne change pas les lignes `awakening_*` de la référence).
   const dungeons = content.dungeons.filter(
-    (d) => d.recommendedLevel - targets.r2LevelGap >= awakening.minLevel,
+    (d) => d.map.chapter === 1 && d.recommendedLevel - targets.r2LevelGap >= awakening.minLevel,
   );
   dungeons.forEach((dungeon, d) => {
     const rng = createRng(seed + 977 * heroIndex + 31 * d);

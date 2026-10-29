@@ -11,25 +11,40 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  * aléatoires), au niveau conseillé et avec le retard de R2, jouées par la politique experte
  * (anticipation d'un coup) et par le joueur moyen (une décision sur quatre au hasard).
  * Les combats d'un donjon repartent à PV pleins : chacun est mesuré séparément.
+ * Taux moyens et courbe de difficulté : par chapitre (chaque chapitre a son enchaînement de
+ * niveaux, voir `chapters.ts`). `only` restreint la mesure à un chapitre (outils de réglage).
  */
 export interface PacingReport {
   readonly rows: ScenarioRow[];
   readonly problems: string[];
+  /** Moyennes sur tous les donjons mesurés. */
   readonly expertRate: number;
   readonly averageRate: number;
+  /** Moyennes par chapitre. */
+  readonly chapters: readonly {
+    readonly chapter: number;
+    readonly expertRate: number;
+    readonly averageRate: number;
+  }[];
 }
 
 type Kind = 'expert' | 'average';
 
-export function pacing(content: Content, runs: number, seed: number): PacingReport {
+export function pacing(content: Content, runs: number, seed: number, only?: number): PacingReport {
   const { targets } = content.balance;
   const { pacing: pace } = targets;
   const heroes = content.heroes.map((h) => h.id);
   const rows: ScenarioRow[] = [];
   const problems: string[] = [];
-  const clearRates: Record<Kind, number[]> = { expert: [], average: [] };
+  // Taux de réussite au niveau conseillé, par donjon mesuré (dans l'ordre du fichier).
+  const clearRates: Record<Kind, { id: string; chapter: number; rate: number }[]> = {
+    expert: [],
+    average: [],
+  };
 
+  // Index dans tout le fichier : les graines d'un donjon ne dépendent pas des autres chapitres.
   content.dungeons.forEach((dungeon, d) => {
+    if (only !== undefined && dungeon.map.chapter !== only) return;
     for (const [label, level] of [
       ['rec', dungeon.recommendedLevel],
       [`minus${targets.r2LevelGap}`, Math.max(1, dungeon.recommendedLevel - targets.r2LevelGap)],
@@ -73,7 +88,12 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
       for (const kind of ['expert', 'average'] as const) {
         const row = summarize(`pace_${dungeon.id}_${label}_${kind}`, clears[kind]);
         rows.push(row);
-        if (label === 'rec') clearRates[kind].push(row.winRate);
+        if (label === 'rec')
+          clearRates[kind].push({
+            id: dungeon.id,
+            chapter: dungeon.map.chapter,
+            rate: row.winRate,
+          });
         if (label !== 'rec' || kind !== 'expert') continue;
         // Durées : chaque combat, puis le donjon entier (combats gagnés de bout en bout).
         const max = d === 0 ? pace.firstDungeonMax : pace.dungeonMax;
@@ -101,29 +121,46 @@ export function pacing(content: Content, runs: number, seed: number): PacingRepo
     }
   });
 
-  const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
-  const expertRate = mean(clearRates.expert);
-  const averageRate = mean(clearRates.average);
+  const mean = (xs: readonly number[]): number =>
+    xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
   const band = (name: string, rate: number, [lo, hi]: readonly [number, number]): void => {
     if (rate < lo || rate > hi) {
       problems.push(`${name} : ${(rate * 100).toFixed(0)} % hors de ${lo * 100}-${hi * 100} %`);
     }
   };
-  band('expert au niveau conseillé', expertRate, targets.expertWinRate);
-  band('joueur moyen au niveau conseillé', averageRate, targets.averageWinRate);
-  // Courbe : facile au début, puis la difficulté monte sans redescendre brutalement.
-  const curve = targets.averageCurve;
-  clearRates.average.forEach((rate, i) => {
-    const id = content.dungeons[i]?.id ?? String(i);
-    if (i === 0 && rate < curve.first)
-      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.first * 100} %`);
-    if (rate < curve.last)
-      problems.push(`courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.last * 100} %`);
-    const prev = clearRates.average[i - 1];
-    if (prev !== undefined && rate > prev + curve.tolerance)
-      problems.push(
-        `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % plus facile que le précédent (${(prev * 100).toFixed(0)} %)`,
-      );
+  const measured = [...new Set(clearRates.expert.map((r) => r.chapter))];
+  const byChapter = measured.map((chapter) => {
+    const of = (kind: Kind) => clearRates[kind].filter((r) => r.chapter === chapter);
+    const expertRate = mean(of('expert').map((r) => r.rate));
+    const averageRate = mean(of('average').map((r) => r.rate));
+    // Chapitre 1 : messages d'origine ; les suivants sont nommés.
+    const where = chapter === 1 ? '' : ` (chapitre ${String(chapter)})`;
+    band(`expert au niveau conseillé${where}`, expertRate, targets.expertWinRate);
+    band(`joueur moyen au niveau conseillé${where}`, averageRate, targets.averageWinRate);
+    // Courbe : facile au début du chapitre, puis la difficulté monte sans redescendre brutalement.
+    const curve = targets.averageCurve;
+    of('average').forEach(({ id, rate }, i, list) => {
+      if (i === 0 && rate < curve.first)
+        problems.push(
+          `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.first * 100} %`,
+        );
+      if (rate < curve.last)
+        problems.push(
+          `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % < ${curve.last * 100} %`,
+        );
+      const prev = list[i - 1]?.rate;
+      if (prev !== undefined && rate > prev + curve.tolerance)
+        problems.push(
+          `courbe : ${id} (moyen) ${(rate * 100).toFixed(0)} % plus facile que le précédent (${(prev * 100).toFixed(0)} %)`,
+        );
+    });
+    return { chapter, expertRate, averageRate };
   });
-  return { rows, problems, expertRate, averageRate };
+  return {
+    rows,
+    problems,
+    expertRate: mean(clearRates.expert.map((r) => r.rate)),
+    averageRate: mean(clearRates.average.map((r) => r.rate)),
+    chapters: byChapter,
+  };
 }

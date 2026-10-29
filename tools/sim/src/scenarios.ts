@@ -8,6 +8,7 @@ import {
   type UnitDef,
 } from '@outlaw/engine';
 import { randomBuild } from './builds';
+import { chapterEnemies, chapterPrefix } from './chapters';
 import { greedy, lookahead } from './policy';
 import { createRng } from './rng';
 import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './run';
@@ -98,16 +99,22 @@ export function sprint0Scenarios(balance: Balance): ScenarioRow[] {
 export interface RandomRunOptions {
   readonly battles: number;
   readonly seed: number;
+  /** Chapitre dont les ennemis ordinaires forment les rencontres (1 par défaut). */
+  readonly chapter?: number;
 }
 
 /**
  * Sprint 1 : combats aléatoires mais reproductibles — niveau, ordre de l'équipe, talents
  * et rencontre tirés avec une graine fixe. Chaque combat est rejoué pour vérifier le journal.
+ * Les rencontres sont tirées parmi les ennemis ordinaires d'un chapitre (lignes `ch<n>_random_*`
+ * au-delà du premier) : un nouveau chapitre ajoute ses lignes sans changer celles des autres.
  */
 export function randomBattles(content: Content, options: RandomRunOptions): ScenarioRow[] {
   const rng = createRng(options.seed);
+  const chapter = options.chapter ?? 1;
+  const prefix = chapterPrefix(chapter);
   const heroes = content.heroes.map((hero) => hero.id);
-  const enemies = content.enemies.filter((enemy) => !enemy.boss).map((enemy) => enemy.id);
+  const enemies = chapterEnemies(content, chapter);
   const byBand = new Map<string, BattleOutcome[]>();
   const bySize = new Map<string, BattleOutcome[]>();
   const push = (map: Map<string, BattleOutcome[]>, key: string, outcome: BattleOutcome): void => {
@@ -127,10 +134,10 @@ export function randomBattles(content: Content, options: RandomRunOptions): Scen
     const band = Math.min(2, Math.floor((level - 1) / 10));
     push(
       byBand,
-      `random_level_${String(band * 10 + 1).padStart(2, '0')}_${band * 10 + 10}`,
+      `${prefix}random_level_${String(band * 10 + 1).padStart(2, '0')}_${band * 10 + 10}`,
       outcome,
     );
-    push(bySize, `random_${size}_enemies`, outcome);
+    push(bySize, `${prefix}random_${size}_enemies`, outcome);
   }
   const rows = (map: Map<string, BattleOutcome[]>): ScenarioRow[] =>
     [...map.entries()]
