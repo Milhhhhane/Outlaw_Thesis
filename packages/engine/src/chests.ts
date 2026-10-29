@@ -14,7 +14,8 @@ import {
  * profil (même profil, même tirage) et pondérés par la rareté des héros, avec des poids propres à
  * chaque coffre (un bronze ne donne jamais de légendaire, un or en donne souvent). Le héros ciblé
  * pèse `focusMultiplier` fois son poids : sa chance monte en proportion de sa rareté. Des fragments
- * invoquent un héros (coût selon sa rareté), ou paient l'étoile qui lève le plafond de niveau.
+ * invoquent un héros (coût selon sa rareté), ou paient, avec de l'or, l'étoile qui lève le plafond
+ * de niveau.
  * Fonctions pures : (profil, demande) → nouveau profil ou refus motivé.
  */
 
@@ -181,9 +182,20 @@ export function starCost(content: Content, hero: HeroProgress): number | null {
   return content.balance.chests.starCosts[heroStars(hero, content)] ?? null;
 }
 
+/** Or de l'étoile suivante du héros (payé avec ses fragments), ou null s'il n'y en a plus. */
+export function starGold(content: Content, hero: HeroProgress): number | null {
+  return content.balance.chests.starGold[heroStars(hero, content)] ?? null;
+}
+
+/** L'étoile suivante est payable tout de suite : héros débloqué au plafond, fragments et or. */
+export function canStarUp(content: Content, profile: Profile, heroId: string): boolean {
+  return starUp(content, profile, heroId).ok;
+}
+
 /**
- * Paie l'étoile qui lève le plafond de niveau. Seulement au plafond : dépenser avant n'avancerait
- * à rien, et le joueur sait toujours quand il le faut. L'XP gardée au plafond est utilisée aussitôt.
+ * Paie l'étoile qui lève le plafond de niveau, en fragments du héros et en or. Seulement au
+ * plafond : dépenser avant n'avancerait à rien, et le joueur sait toujours quand il le faut.
+ * L'XP gardée au plafond est utilisée aussitôt.
  */
 export function starUp(content: Content, profile: Profile, heroId: string): Outcome {
   const hero = profile.heroes[heroId];
@@ -193,9 +205,12 @@ export function starUp(content: Content, profile: Profile, heroId: string): Outc
   if (!atStarGate(hero, content)) return refuse('not_at_cap');
   const owned = profile.fragments[heroId] ?? 0;
   if (owned < cost) return refuse('not_enough_fragments');
+  const gold = starGold(content, hero) ?? 0;
+  if (profile.gold < gold) return refuse('not_enough_gold');
   const raised = { ...hero, stars: heroStars(hero, content) + 1 };
   return ok({
     ...profile,
+    gold: profile.gold - gold,
     fragments: { ...profile.fragments, [heroId]: owned - cost },
     heroes: { ...profile.heroes, [heroId]: raised },
     stats: countAction(profile.stats, { stars: 1 }),

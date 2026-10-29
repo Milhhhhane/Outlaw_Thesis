@@ -1,5 +1,5 @@
 import type { Profile } from '@outlaw/data';
-import { newProfile, xpToNext } from '@outlaw/engine';
+import { goldToNext, levelUpCost, newProfile, xpToNext } from '@outlaw/engine';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -20,12 +20,13 @@ function saved(): Profile {
   ).profile;
 }
 
-/** Pyra avec l'XP de deux niveaux en banque. */
-function banked(materials: Profile['materials']): Profile {
+/** Pyra avec l'XP de deux niveaux en banque (et 100 or, de quoi payer les deux par défaut). */
+function banked(materials: Profile['materials'], gold = 100): Profile {
   const profile = newProfile(content, 3);
   const pyra = profile.heroes.pyra!;
   return {
     ...profile,
+    gold,
     materials,
     heroes: {
       ...profile.heroes,
@@ -46,12 +47,14 @@ describe('monter de niveau', () => {
           level: 2,
           xp: 40,
           dust: t('dust.amount', { amount: 2, dust: dustName(1) }),
+          gold: goldToNext(1, content),
         }),
       ),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: t('hero.levelUp') }));
     expect(screen.getByText(t('hero.level', { level: 2 }), { exact: false })).toBeInTheDocument();
     expect(saved().materials).toEqual([8, 0, 0]);
+    expect(saved().gold).toBe(100 - goldToNext(1, content));
     await user.click(screen.getByRole('button', { name: t('hero.levelUp.max') }));
     expect(screen.getByText(t('hero.level', { level: 3 }), { exact: false })).toBeInTheDocument();
     expect(saved().heroes.pyra).toMatchObject({ level: 3, xp: 0 });
@@ -75,6 +78,65 @@ describe('monter de niveau', () => {
       screen.getByText(t('hero.levelUp.missingDust', { dust: dustName(1), have: 1, need: 2 })),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: t('hero.levelUp') })).toBeDisabled();
+  });
+
+  it('XP et poussière sans l’or : le coût en or est affiché, l’or manquant dit, le bouton grisé', () => {
+    const need = levelUpCost(content, banked([10, 0, 0]).heroes.pyra!)!.gold;
+    expect(need).toBeGreaterThan(0);
+    render(
+      <App
+        version="test"
+        initial={banked([10, 0, 0], need - 1)}
+        start={{ name: 'hero', id: 'pyra' }}
+      />,
+    );
+    expect(
+      screen.getByText(
+        t('hero.levelUp.cost', {
+          level: 2,
+          xp: 40,
+          dust: t('dust.amount', { amount: 2, dust: dustName(1) }),
+          gold: need,
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(t('hero.levelUp.missingGold', { have: need - 1, need })),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t('hero.levelUp') })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: t('hero.levelUp.max') })).toBeNull();
+  });
+
+  it('fiche au plafond : l’étoile affiche son or et reste grisée sans lui', async () => {
+    const user = userEvent.setup();
+    const base = newProfile(content, 3);
+    const level = content.balance.progression.levelsPerStar;
+    const gold = content.balance.chests.starGold[0] ?? 0;
+    const fragments = content.balance.chests.starCosts[0] ?? 0;
+    const atGate = (coins: number): Profile => ({
+      ...base,
+      gold: coins,
+      fragments: { pyra: fragments },
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level } },
+    });
+    const { unmount } = render(
+      <App version="test" initial={atGate(gold - 1)} start={{ name: 'hero', id: 'pyra' }} />,
+    );
+    expect(
+      screen.getByText(t('hero.gate.missingGold', { have: gold - 1, need: gold })),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t('hero.gate.buy') })).toBeDisabled();
+    unmount();
+    render(<App version="test" initial={atGate(gold)} start={{ name: 'hero', id: 'pyra' }} />);
+    expect(screen.getByText(t('hero.gate.gold', { gold }))).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: t('hero.gate.buy') }));
+    expect(saved().gold).toBe(0);
+    expect(saved().heroes.pyra).toMatchObject({ stars: 1 });
+  });
+
+  it('sans or, la galerie ne signale pas le niveau prêt', () => {
+    render(<App version="test" initial={banked([10, 0, 0], 0)} start={{ name: 'heroes' }} />);
+    expect(screen.queryByText(t('hero.levelUp.ready'))).toBeNull();
   });
 
   it('avec de quoi payer, la galerie signale le niveau prêt', () => {

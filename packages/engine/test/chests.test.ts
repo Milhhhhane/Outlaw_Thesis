@@ -16,7 +16,9 @@ import {
   sandboxProfile,
   setFocus,
   setLevel,
+  canStarUp,
   starCost,
+  starGold,
   starsForLevel,
   starUp,
   levelUpMax,
@@ -268,18 +270,37 @@ describe('invocation', () => {
 });
 
 describe('étoiles', () => {
-  const gate = (fragments: number): Profile =>
-    withFragments(at(base(), 'pyra', { level: 10, xp: xpToNext(10, content) }), {
+  // Au plafond du niveau 10, avec les fragments demandés et de l'or (2 000 par défaut).
+  const gate = (fragments: number, gold = 2000): Profile => ({
+    ...withFragments(at(base(), 'pyra', { level: 10, xp: xpToNext(10, content) }), {
       pyra: fragments,
-    });
+    }),
+    gold,
+  });
 
-  it('paie 10 fragments à la porte du niveau 10 et lève le plafond à 20', () => {
+  it('paie 10 fragments et 600 or à la porte du niveau 10 et lève le plafond à 20', () => {
     const hero = gate(0).heroes.pyra!;
     expect(starCost(content, hero)).toBe(10);
+    expect(starGold(content, hero)).toBe(600);
     const raised = value(starUp(content, gate(14), 'pyra'));
     expect(raised.fragments.pyra).toBe(4);
+    expect(raised.gold).toBe(2000 - 600);
     expect(raised.heroes.pyra).toMatchObject({ stars: 1, level: 10 });
     expect(levelCap(raised.heroes.pyra!, content)).toBe(20);
+  });
+
+  it('l’étoile se paie aussi en or : refus sans or, débit exact', () => {
+    const gold = starGold(content, gate(0).heroes.pyra!)!;
+    const short = gate(10, gold - 1);
+    expect(reason(starUp(content, short, 'pyra'))).toBe('not_enough_gold');
+    expect(canStarUp(content, short, 'pyra')).toBe(false);
+    // Rien n'est pris quand c'est refusé ; juste assez : l'or tombe à zéro.
+    expect(canStarUp(content, gate(10, gold), 'pyra')).toBe(true);
+    const paid = value(starUp(content, gate(10, gold), 'pyra'));
+    expect(paid.gold).toBe(0);
+    expect(paid.fragments.pyra).toBe(0);
+    // Les fragments d'abord : sans eux, le refus les nomme, même sans or.
+    expect(reason(starUp(content, gate(9, 0), 'pyra'))).toBe('not_enough_fragments');
   });
 
   it('l’étoile ne monte pas le niveau : l’XP en banque reste à payer', () => {
@@ -288,13 +309,17 @@ describe('étoiles', () => {
     expect(raised.heroes.pyra!.xp).toBe(gate(10).heroes.pyra!.xp);
   });
 
-  it('la deuxième étoile coûte 20 et il n’y en a pas de troisième au niveau 30', () => {
-    const level20 = at(base(), 'pyra', { level: 20, stars: 1, xp: 0 });
+  it('la deuxième étoile coûte 20 fragments et 1 200 or ; pas de troisième au niveau 30', () => {
+    const level20 = { ...at(base(), 'pyra', { level: 20, stars: 1, xp: 0 }), gold: 1500 };
+    expect(starGold(content, level20.heroes.pyra!)).toBe(1200);
     const second = value(starUp(content, withFragments(level20, { pyra: 25 }), 'pyra'));
     expect(second.fragments.pyra).toBe(5);
+    expect(second.gold).toBe(300);
     expect(second.heroes.pyra).toMatchObject({ stars: 2, level: 20 });
     const maxed = at(base(), 'pyra', { level: 30, stars: 2 });
     expect(starCost(content, maxed.heroes.pyra!)).toBeNull();
+    expect(starGold(content, maxed.heroes.pyra!)).toBeNull();
+    expect(canStarUp(content, { ...maxed, gold: 1e9 }, 'pyra')).toBe(false);
     expect(reason(starUp(content, withFragments(maxed, { pyra: 999 }), 'pyra'))).toBe('max_star');
   });
 

@@ -78,6 +78,11 @@ export const balanceSchema = z
       /** XP pour passer du niveau N au suivant : round(base × N ^ exponent). */
       xp: z.strictObject({ base: pos, exponent: pos }),
       /**
+       * Or pour passer du niveau N au suivant, payé avec l'XP et la poussière :
+       * round(base × N ^ exponent). La monnaie de base est un co-coût de chaque niveau.
+       */
+      levelGold: z.strictObject({ base: nonNeg, exponent: nonNeg }),
+      /**
        * Monter de niveau se paie : l'XP du niveau et de la poussière. `tierFrom[k]` est le premier
        * niveau (celui qu'on quitte) payé en poussière du palier k + 1 ; la quantité est
        * `dust[k] + dustPerLevel[k] × (niveau − tierFrom[k])`.
@@ -270,6 +275,8 @@ export const balanceSchema = z
       summonCosts: z.array(posInt).length(MAX_HERO_TIER),
       /** Fragments pour passer l'étoile 1, 2, 3… (une entrée par palier jusqu'au niveau maximum). */
       starCosts: z.array(posInt),
+      /** Or payé avec les fragments de chaque étoile (une entrée par étoile, comme `starCosts`). */
+      starGold: z.array(nonNegInt),
       /**
        * Le héros ciblé pèse ce multiple de son poids normal dans chaque coffre : sa chance monte en
        * proportion de sa rareté (un commun ciblé sort souvent, un légendaire ciblé reste rare).
@@ -447,6 +454,13 @@ export const balanceSchema = z
         code: 'custom',
         message: `starCosts doit avoir une entrée par palier (${String(stars)} attendues)`,
         path: ['chests', 'starCosts'],
+      });
+    }
+    if (b.chests.starGold.length !== stars) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `starGold doit avoir une entrée par palier (${String(stars)} attendues)`,
+        path: ['chests', 'starGold'],
       });
     }
     for (const end of [0, 1] as const) {

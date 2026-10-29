@@ -96,7 +96,22 @@ describe('balance.json', () => {
     raised.progression.maxLevel = 100;
     expect(balanceSchema.safeParse(raised).success).toBe(false);
     raised.chests.starCosts = Array.from({ length: 9 }, (_, i) => 10 * (i + 1));
+    expect(balanceSchema.safeParse(raised).success).toBe(false);
+    raised.chests.starGold = Array.from({ length: 9 }, (_, i) => 500 * (i + 1));
     expect(balanceSchema.safeParse(raised).success).toBe(true);
+  });
+
+  it('exige un coût en or par étoile et un coût en or de niveau positif ou nul', () => {
+    const short = clone(balanceJson);
+    short.chests.starGold = [600];
+    expect(balanceSchema.safeParse(short).success).toBe(false);
+    const negative = clone(balanceJson);
+    negative.progression.levelGold.base = -1;
+    expect(balanceSchema.safeParse(negative).success).toBe(false);
+    const free = clone(balanceJson);
+    free.progression.levelGold = { base: 0, exponent: 0 };
+    free.chests.starGold = [0, 0];
+    expect(balanceSchema.safeParse(free).success).toBe(true);
   });
 
   it('refuse deux paliers de coffre de même identifiant', () => {

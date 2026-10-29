@@ -6,11 +6,10 @@ import {
   type Profile,
   type TeamPreset,
 } from '@outlaw/data';
-import { chestCount, starCost } from './chests';
+import { canStarUp, chestCount } from './chests';
 import { talentPoints } from './compile';
 import { upgradeCost } from './items';
 import {
-  atStarGate,
   canLevelUp,
   energyAt,
   enterDungeon,
@@ -82,11 +81,11 @@ export function loadPreset(content: Content, profile: Profile, slot: number): Ou
 
 /** Ce qu'un héros attend du joueur. */
 export interface HeroTodo {
-  /** Un niveau est payable (XP et poussière, pas d'étoile en attente). */
+  /** Un niveau est payable (XP, poussière et or, pas d'étoile en attente). */
   readonly levelUp: boolean;
   /** Points de talent non placés. */
   readonly talents: number;
-  /** L'étoile suivante est payable (héros au plafond, assez de fragments). */
+  /** L'étoile suivante est payable (héros au plafond, assez de fragments et d'or). */
   readonly star: boolean;
 }
 
@@ -112,11 +111,10 @@ export function heroTodo(content: Content, profile: Profile, heroId: string): He
   if (hero === undefined || !profile.unlocked.includes(heroId)) {
     return { levelUp: false, talents: 0, star: false };
   }
-  const cost = starCost(content, hero);
   return {
     levelUp: canLevelUp(content, profile, hero),
     talents: Math.max(0, talentPoints(hero.level, content.balance) - hero.talents.length),
-    star: cost !== null && atStarGate(hero, content) && (profile.fragments[heroId] ?? 0) >= cost,
+    star: canStarUp(content, profile, heroId),
   };
 }
 

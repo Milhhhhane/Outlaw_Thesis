@@ -133,6 +133,10 @@
   paliers de dégâts payés une fois par semaine, accès depuis la tour, règles et effet économique
   en CI. Ouvert : l'équipement pèse peu sur les dégâts (voir DECISIONS) ; pas de classement.
 
+- Or utile — l'or paie chaque niveau et chaque étoile (éveil ramené à 1 000 or) ; or en réserve
+  ramené de 73–79 % à 18–20 % de l'or gagné en milieu de partie, début inchangé. Ouvert : en fin de
+  partie l'or reste surtout dépensé en objets ; marché à stock tournant prévu.
+
 ## Reste à faire (hors code)
 
 - Test humain d'un joueur extérieur (`docs/PLAYTEST.md`).

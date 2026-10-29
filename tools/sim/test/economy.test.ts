@@ -31,6 +31,12 @@ describe('économie : joueur modèle', () => {
       expect(profile.materials[tier]).toBe(earned - spent);
     }
     expect(ledger.gold.items).toBeLessThanOrEqual(ledger.gold.earned);
+    // L'or paie aussi les niveaux et les étoiles : la réserve est exactement gagné − dépensé.
+    expect(ledger.gold.levels).toBeGreaterThan(0);
+    expect(ledger.gold.stars).toBeGreaterThan(0);
+    const { items, levels, stars } = ledger.gold;
+    expect(profile.gold).toBe(ledger.gold.earned - items - levels - stars);
+    expect(a.goldAt.teamMaxLevel?.reserve).toBeLessThanOrEqual(a.goldAt.teamMaxLevel?.earned ?? 0);
     expect(profile.team.every((id) => profile.heroes[id]?.level === 30)).toBe(true);
   });
 
@@ -60,7 +66,7 @@ describe('économie : joueur modèle', () => {
   // qui demande du grind. Une valeur de balance.json ou de dungeons.json qui sort de ces bornes
   // casse la CI : la retoucher, c'est rouvrir le réglage et le justifier par un chiffre.
   it('jalons du joueur modèle dans les bornes du réglage (20 graines)', () => {
-    const { milestones: m, ledger, unreached } = summarizeEconomy(content, 20);
+    const { milestones: m, goldAt, ledger, unreached } = summarizeEconomy(content, 20);
     expect(unreached).toBe(0);
     const within = (value: number | null, lo: number, hi: number): void => {
       expect(value).not.toBeNull();
@@ -80,6 +86,14 @@ describe('économie : joueur modèle', () => {
     expect(ledger.teamFragmentsLeft).toBeGreaterThan(72);
     // L'or et la poussière pure servent : au moins les trois quarts de ce qui tombe est dépensé.
     expect(ledger.gold.items).toBeGreaterThan(0.75 * ledger.gold.earned);
+    // L'or est rare au milieu de partie (docs/ECONOMY.md, « L'or paie les niveaux et les
+    // étoiles ») : au plus un quart de l'or gagné reste en réserve quand l'équipe est équipée et
+    // quand elle atteint le niveau 30.
+    for (const key of ['teamEquipped', 'teamMaxLevel'] as const) {
+      const at = goldAt[key];
+      expect(at).not.toBeNull();
+      expect(at?.reserve ?? Infinity).toBeLessThanOrEqual(0.25 * (at?.earned ?? 0));
+    }
     const pure = (ledger.dust.levels[2] ?? 0) + (ledger.dust.items[2] ?? 0);
     expect(pure).toBeGreaterThan(
       0.75 * ((ledger.dust.earned[2] ?? 0) + (ledger.dust.salvage[2] ?? 0)),
@@ -112,6 +126,10 @@ describe('économie : joueur modèle', () => {
     expect(a.team ?? 0).toBeGreaterThanOrEqual(110);
     expect(a.team ?? 0).toBeLessThanOrEqual(170);
     expect(a.essenceRunsFirst ?? 0).toBeLessThanOrEqual(20);
+    // L'équipe au niveau 30 avec l'éveil (160,7 passages sur 20 graines avant le coût en or des
+    // niveaux) : au plus 10 % plus tard.
+    expect(a.teamMaxLevel).not.toBeNull();
+    expect(a.teamMaxLevel ?? Infinity).toBeLessThanOrEqual(177);
     // Rien à farmer tant que les donjons d'essence sont fermés.
     expect(essencePick(content, simulateEconomy(content, 1, 10).profile)).toBeNull();
   });

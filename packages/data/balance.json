@@ -63,6 +63,10 @@
       "base": 40,
       "exponent": 1.5
     },
+    "levelGold": {
+      "base": 2,
+      "exponent": 1.65
+    },
     "levelUp": {
       "tierFrom": [1, 8, 22],
       "dust": [2, 3, 5],
@@ -104,7 +108,7 @@
       { "type": "scale", "field": "amount", "mulPct": 20 },
       { "type": "scale", "field": "percent", "mulPct": 20 }
     ],
-    "cost": { "essences": [15, 10, 6], "gold": 5000 },
+    "cost": { "essences": [15, 10, 6], "gold": 1000 },
     "openAfter": "cinder_citadel",
     "drops": [3, 3, 2]
   },
@@ -205,6 +209,7 @@
   "chests": {
     "summonCosts": [10, 20, 40, 80],
     "starCosts": [10, 20],
+    "starGold": [600, 1200],
     "focusMultiplier": 12,
     "dropLevels": [1, 40],
     "tiers": [

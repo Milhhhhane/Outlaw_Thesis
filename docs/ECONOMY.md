@@ -5,8 +5,10 @@ jalon. Les valeurs vivent dans [`packages/data/balance.json`](../packages/data/b
 [`packages/data/content/dungeons.json`](../packages/data/content/dungeons.json) ; les chiffres de
 ce document sortent de `pnpm --filter @outlaw/sim economy` (`tools/sim/src/economy.ts`), à relancer
 après tout changement. Les tableaux « Ce qui tombe » et « Ce qui se dépense » et la partie
-« Audit » décrivent l'état **avant** réglage (2026-10-27) ; la dernière partie, « Après réglage »,
-donne les valeurs en vigueur (justifications chiffrées dans `docs/BALANCE.md`).
+« Audit » décrivent l'état **avant** réglage (2026-10-27), sauf les lignes niveaux et étoiles du
+tableau « Ce qui se dépense », à jour du coût en or (2026-10-29) ; « Après réglage » et les parties
+suivantes donnent les valeurs en vigueur à leur date (justifications chiffrées dans
+`docs/BALANCE.md`). Les jalons à jour sont dans la dernière partie.
 
 ## Ce qui tombe
 
@@ -41,20 +43,21 @@ Un passage gagnant d'un donjon donne, au premier passage comme au rejeu (`replay
 
 ## Ce qui se dépense
 
-| Dépense                 | Coût                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Niveau suivant          | XP = round(40 × N^1,5) ; poussière brute 2 (niveaux 1 à 7), fine 3 + 1 par niveau (8 à 21), pure 5 + 2 par niveau (22 à 29) (`levelUp`)        |
-| Niveaux 1 → 8 (1 héros) | 2 457 XP et 14 brute (56 pour quatre héros)                                                                                                    |
-| Niveaux 8 → 22          | 31 825 XP et 133 fine (532 pour quatre)                                                                                                        |
-| Niveaux 22 → 30         | 41 331 XP et 96 pure (384 pour quatre)                                                                                                         |
-| Étoile                  | 10 fragments du héros au niveau 10, 20 au niveau 20 (`starCosts`) ; sans elle, le niveau est plafonné                                          |
-| Invocation              | 10, 20, 40 ou 80 fragments d'un héros non possédé selon sa rareté (`summonCosts`)                                                              |
-| Améliorer un objet      | niveau 1 : 1 copie, 100 or, 5 poussière ; niveau 2 : 2 copies, 300 or, 8 ; niveau 3 : 3 copies, 800 or, 12 — poussière du palier de son donjon |
-| Objet au maximum        | 6 copies, 1 200 or, 25 poussière                                                                                                               |
-| Équipe équipée au max   | 8 objets : 48 copies, 9 600 or, 200 poussière                                                                                                  |
-| Respec                  | gratuit la première fois par héros, puis 20 or × niveau                                                                                        |
+| Dépense                 | Coût                                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Niveau suivant          | XP = round(40 × N^1,5) ; or = round(2 × N^1,65) (`levelGold`) ; poussière brute 2 (niveaux 1 à 7), fine 3 + 1 par niveau (8 à 21), pure 5 + 2 par niveau (22 à 29) (`levelUp`) |
+| Niveaux 1 → 8 (1 héros) | 2 457 XP, 156 or et 14 brute (624 or et 56 brute pour quatre héros)                                                                                                            |
+| Niveaux 8 → 22          | 31 825 XP, 2 406 or et 133 fine (9 624 or et 532 fine pour quatre)                                                                                                             |
+| Niveaux 22 → 30         | 41 331 XP, 3 363 or et 96 pure (13 452 or et 384 pure pour quatre)                                                                                                             |
+| Étoile                  | 10 fragments du héros et 600 or au niveau 10, 20 fragments et 1 200 or au niveau 20 (`starCosts`, `starGold`) ; sans elle, le niveau est plafonné                              |
+| Invocation              | 10, 20, 40 ou 80 fragments d'un héros non possédé selon sa rareté (`summonCosts`)                                                                                              |
+| Améliorer un objet      | niveau 1 : 1 copie, 100 or, 5 poussière ; niveau 2 : 2 copies, 300 or, 8 ; niveau 3 : 3 copies, 800 or, 12 — poussière du palier de son donjon                                 |
+| Objet au maximum        | 6 copies, 1 200 or, 25 poussière                                                                                                                                               |
+| Équipe équipée au max   | 8 objets : 48 copies, 9 600 or, 200 poussière                                                                                                                                  |
+| Respec                  | gratuit la première fois par héros, puis 20 or × niveau                                                                                                                        |
 
-L'or n'a que deux puits (améliorations et respec) ; la poussière en a deux (niveaux et
+Avant le 2026-10-29, l'or n'avait que deux puits (améliorations et respec) ; il paie maintenant
+aussi chaque niveau et chaque étoile (voir « L'or paie les niveaux et les étoiles »). La poussière en a deux (niveaux et
 améliorations), ce qui en fait la monnaie d'arbitrage ; les fragments en ont deux (étoiles et
 invocations) ; les copies n'en ont qu'un (améliorer, ou se dissoudre).
 
@@ -345,11 +348,63 @@ puits : les sanctuaires d'essence (ouverts après la Citadelle de cendre, premie
 | II                 |                 15 | 3 moyennes         |
 | III                |                 20 | 2 supérieures      |
 
-Éveil : 15 faibles, 10 moyennes, 6 supérieures de l'élément du héros et **5 000 or**, au niveau 20,
-une fois par héros, soit 5 + 4 + 3 = 12 passages d'essence par héros au plus court (rien d'autre ne
-tombe : ni XP, ni or, ni poussière, ni objet, ni coffre). Le joueur modèle (`economy`, voir
-`docs/BALANCE.md`) éveille son premier héros au **81ᵉ passage** (dont 14,7 d'essence) et son équipe
-au **137ᵉ** (47 passages d'essence en tout ; l'équipe de départ compte deux héros de feu). L'or de
-l'éveil (20 000 pour l'équipe) est un nouveau puits, 8 % de l'or gagné jusqu'à la collection.
+Éveil : 15 faibles, 10 moyennes, 6 supérieures de l'élément du héros et **1 000 or** (5 000 avant
+le 2026-10-29, voir « L'or paie les niveaux et les étoiles »), au niveau 20, une fois par héros,
+soit 5 + 4 + 3 = 12 passages d'essence par héros au plus court (rien d'autre ne tombe : ni XP, ni
+or, ni poussière, ni objet, ni coffre). Le joueur modèle (`economy`, voir `docs/BALANCE.md`)
+éveille son premier héros au **85,9ᵉ passage** (dont 15,2 d'essence) et son équipe au **131,9ᵉ**
+(47 passages d'essence en tout ; l'équipe de départ compte deux héros de feu) ; avant le coût en or
+des niveaux : 81,0 et 136,5.
 Les jalons sans éveil (tableaux plus haut) sont inchangés : le calculateur ne joue l'éveil que
 sur demande (`AwakeningModel`).
+
+## L'or paie les niveaux et les étoiles (2026-10-29)
+
+Demande du propriétaire : l'or ne servait à rien. Sur le modèle de Summoners War (mana), Brave
+Frontier (zel) ou RAID (argent), la monnaie de base devient un co-coût de chaque progression :
+
+- **niveau** : round(`levelGold.base` × N^`levelGold.exponent`) = round(2 × N^1,65) pour passer du
+  niveau N au suivant (2 or au niveau 1, 89 au 10, 280 au 20, 518 au 29 ; 5 925 or par héros de 1
+  à 30, 23 700 pour quatre), payé avec l'XP et la poussière (`levelUp`, `levelUpMax` qui s'arrête
+  au dernier niveau payable, refus `not_enough_gold`) ;
+- **étoile** : `chests.starGold` = 600 puis 1 200 or, avec les fragments (`starUp`, `canStarUp`).
+
+Le joueur modèle paie ces coûts avec les vraies fonctions du moteur, dans le même ordre (étoiles,
+objets, niveaux, l'éveil passant avant les objets) ; quand seul l'or manque, il farme le passage
+qui en rapporte le plus. Il n'épargne pas : comme un joueur moyen, il dépense son or dès qu'il peut.
+
+**Or de l'éveil 5 000 → 1 000.** Un joueur qui paie chaque niveau et chaque étoile ne réunit plus
+5 000 or d'un coup en milieu de partie : le premier éveil reculait de 81,0 à 129,8 passages et
+l'équipe éveillée de 136,5 à 183,5. L'or passe d'un gros achat ponctuel (20 000 pour l'équipe) aux
+dépenses régulières des niveaux et des étoiles (30 900 jusqu'au niveau 30) ; l'éveil garde un prix
+en or, à l'échelle d'une étoile. Tableau des essais dans `docs/BALANCE.md`.
+
+`pnpm --filter @outlaw/sim economy` donne maintenant, à chaque jalon, l'or **en réserve** (gagné −
+dépensé) et l'or gagné cumulé (moyenne des 20 graines) :
+
+| Jalon                             | Passages avant | Passages après |  Écart | Réserve / gagné avant   | Réserve / gagné après  |
+| --------------------------------- | -------------: | -------------: | -----: | ----------------------- | ---------------------- |
+| Premier objet au niveau maximum   |            8,1 |            8,1 |    0 % | 228 / 772 (30 %)        | 71 / 772 (9 %)         |
+| Première étoile                   |           20,0 |           20,0 |    0 % | 1 970 / 3 140 (63 %)    | 341 / 3 140 (11 %)     |
+| Équipe de 4 équipée (2 objets)    |           44,0 |           44,1 | +0,2 % | 6 331 / 8 699 (73 %)    | 1 760 / 8 719 (20 %)   |
+| Équipe de 4 au niveau 30          |          113,8 |          117,6 | +3,3 % | 38 017 / 48 269 (79 %)  | 8 849 / 50 073 (18 %)  |
+| Équipe de 4 aux objets au maximum |          122,7 |          127,5 | +3,9 % | 40 368 / 51 568 (78 %)  | 11 709 / 54 105 (22 %) |
+| Collection complète au maximum    |          251,3 |          264,2 | +5,1 % | 24 951 / 257 271 (10 %) | 13 700 / 276 920 (5 %) |
+
+Dispersion après (20 graines) : 6 à 15 / 20 / 37 à 56 / 110 à 126 / 117 à 144 / 245 à 299 passages ;
+réserve à l'équipe équipée 7 à 36 %, au niveau 30 14 à 24 %.
+
+Bilan jusqu'à la collection : or gagné 276 900, dépensé en objets 232 300, en niveaux 23 700, en
+étoiles 7 200. L'or reste surtout le prix des objets du palier 3 en fin de partie ; ce qui change,
+c'est le milieu : il n'y a plus 6 000 à 38 000 or qui dorment, chaque objet amélioré retarde un
+niveau. Les chiffres plus haut dans ce document (audit, « Après réglage ») datent d'avant ce
+changement et d'avant les dernières fonctions (coffres, éveil…) : les jalons en vigueur sont ceux
+de ce tableau.
+
+Effets mesurés sur les autres modèles : quêtes, raccourcissement maximal 13,3 % à 5 passages par
+jour et 13,9 % à 10 (avant : 13,1 et 13,7 ; borne 15 %) ; boss, 7,6 % et 3,6 % (borne 10 %) ;
+éveil (or de l'éveil à 1 000), premier héros 81,0 → 85,9 passages (+6,0 %), équipe éveillée
+136,5 → 131,9 (−3,4 %), équipe au niveau 30 avec l'éveil 160,7 → 171,2 (+6,5 %). Bornes en CI
+(`tools/sim/test/economy.test.ts`) : au plus 25 % de l'or gagné en réserve à l'équipe équipée et
+au niveau 30 ; équipe au niveau 30 avec l'éveil ≤ 177 (5 graines). Justification des valeurs : `docs/BALANCE.md`, « L'or paie les
+niveaux et les étoiles ».
