@@ -17,26 +17,24 @@ const today = Math.floor(Date.now() / DAY) * DAY;
 const list: FriendList = {
   friends: [
     {
-      id: 2,
       pseudo: 'Bruno',
       since: today - 10 * DAY,
       lastActiveDay: today,
       progress: { team: { min: 8, max: 12 }, dungeons: { cleared: 3, total: 10 } },
     },
     {
-      id: 3,
       pseudo: 'Carla',
       since: today - 20 * DAY,
       lastActiveDay: today - 3 * DAY,
       progress: { team: { min: 5, max: 5 }, dungeons: { cleared: 1, total: 10 } },
     },
-    { id: 4, pseudo: 'Dede', since: today - DAY, lastActiveDay: today - DAY, progress: null },
+    { pseudo: 'Dede', since: today - DAY, lastActiveDay: today - DAY, progress: null },
   ],
   received: [
-    { id: 5, pseudo: 'Emma', at: Date.now() - 1000 },
-    { id: 6, pseudo: 'Fanny', at: Date.now() - 2 * DAY },
+    { pseudo: 'Emma', at: Date.now() - 1000 },
+    { pseudo: 'Fanny', at: Date.now() - 2 * DAY },
   ],
-  sent: [{ id: 7, pseudo: 'Gaston', at: Date.now() - DAY }],
+  sent: [{ pseudo: 'Gaston', at: Date.now() - DAY }],
 };
 
 function reply(status: number, body: unknown): Response {
@@ -79,32 +77,32 @@ function stubApi(me: Me | null | undefined) {
       }
       current = {
         ...current,
-        sent: [{ id: 9, pseudo: 'Hugo_42', at: Date.now() }, ...current.sent],
+        sent: [{ pseudo: 'Hugo_42', at: Date.now() }, ...current.sent],
       };
       return Promise.resolve(reply(201, { outcome: 'sent', list: current }));
     }
-    if (method === 'POST' && url === '/api/friends/5/accept') {
+    if (method === 'POST' && url === '/api/friends/Emma/accept') {
       current = {
         ...current,
         friends: [
-          { id: 5, pseudo: 'Emma', since: Date.now(), lastActiveDay: today, progress: null },
+          { pseudo: 'Emma', since: Date.now(), lastActiveDay: today, progress: null },
           ...current.friends,
         ],
-        received: current.received.filter((r) => r.id !== 5),
+        received: current.received.filter((r) => r.pseudo !== 'Emma'),
       };
       return Promise.resolve(reply(200, current));
     }
-    if (method === 'POST' && url === '/api/friends/6/decline') {
-      current = { ...current, received: current.received.filter((r) => r.id !== 6) };
+    if (method === 'POST' && url === '/api/friends/Fanny/decline') {
+      current = { ...current, received: current.received.filter((r) => r.pseudo !== 'Fanny') };
       return Promise.resolve(reply(200, current));
     }
-    const removed = method === 'DELETE' ? /^\/api\/friends\/(\d+)$/.exec(url) : null;
+    const removed = method === 'DELETE' ? /^\/api\/friends\/([\w-]+)$/.exec(url) : null;
     if (removed !== null) {
-      const id = Number(removed[1]);
+      const pseudo = removed[1];
       current = {
         ...current,
-        friends: current.friends.filter((f) => f.id !== id),
-        sent: current.sent.filter((r) => r.id !== id),
+        friends: current.friends.filter((f) => f.pseudo !== pseudo),
+        sent: current.sent.filter((r) => r.pseudo !== pseudo),
       };
       return Promise.resolve(reply(200, current));
     }
@@ -221,9 +219,9 @@ describe('écran « Amis »', () => {
         'Hugo_42',
       ),
     ).toBeInTheDocument();
-    expect(calls).toContain('POST /api/friends/5/accept');
-    expect(calls).toContain('POST /api/friends/6/decline');
-    expect(calls).toContain('DELETE /api/friends/7');
+    expect(calls).toContain('POST /api/friends/Emma/accept');
+    expect(calls).toContain('POST /api/friends/Fanny/decline');
+    expect(calls).toContain('DELETE /api/friends/Gaston');
   });
 
   it('retire un ami seulement après confirmation', async () => {
@@ -250,7 +248,7 @@ describe('écran « Amis »', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('Carla')).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(calls).toContain('DELETE /api/friends/3');
+    expect(calls).toContain('DELETE /api/friends/Carla');
   });
 
   it('signale une erreur de chargement et permet de réessayer', async () => {

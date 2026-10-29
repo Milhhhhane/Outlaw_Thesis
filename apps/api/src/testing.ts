@@ -27,15 +27,17 @@ export class SqliteDatabase implements Database {
     };
   }
 
-  async batch(statements: Statement[]): Promise<unknown> {
+  batch(statements: Statement[]): Promise<unknown> {
     this.raw.exec('BEGIN');
     try {
-      for (const statement of statements) await statement.run();
+      // Sans `await` entre les instructions : rien d'autre ne s'intercale, comme dans un lot
+      // D1 (atomique). `run` exécute la requête tout de suite et lève l'erreur sur place.
+      for (const statement of statements) void statement.run();
       this.raw.exec('COMMIT');
     } catch (error) {
       this.raw.exec('ROLLBACK');
-      throw error;
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
     }
-    return null;
+    return Promise.resolve(null);
   }
 }

@@ -97,6 +97,33 @@ describe('limitation de débit', () => {
     expect((await api.register('Joueur5', GOOD, '198.51.100.1')).status).toBe(201);
   });
 
+  it('compte atomiquement les inscriptions simultanées d’une même adresse', async () => {
+    const api = server();
+    await api.call('GET', '/api/me');
+    const statuses = await Promise.all(
+      Array.from({ length: 50 }, (_, i) =>
+        api.register(`Rafale${String(i)}`).then((r) => r.status),
+      ),
+    );
+    expect(statuses.filter((s) => s === 201)).toHaveLength(5);
+    expect(statuses.filter((s) => s === 429)).toHaveLength(45);
+  });
+
+  it('compte chaque échec de connexion, même simultané', async () => {
+    const api = server();
+    await api.register('Bob_42');
+    const statuses = await Promise.all(
+      Array.from({ length: 12 }, () => api.login('Bob_42', 'xxxxxxxxxx').then((r) => r.status)),
+    );
+    expect(statuses.every((s) => s === 401)).toBe(true);
+    const row = api.db.raw
+      .prepare("SELECT count, blocked_until FROM throttle WHERE key = 'login:bob_42'")
+      .get() as { count: number; blocked_until: number };
+    expect(row.count).toBe(12);
+    // Sept échecs au-delà des cinq gratuits : 2⁷ s d'attente.
+    expect(row.blocked_until).toBe(api.now() + 128_000);
+  });
+
   it('ne garde aucune adresse IP en clair', async () => {
     const api = server();
     await api.login('Bob_42', 'xxxxxxxxxx');

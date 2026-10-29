@@ -203,9 +203,11 @@ export interface FriendProgress {
   readonly dungeons: { readonly cleared: number; readonly total: number };
 }
 
+/**
+ * Un ami. Les routes `/api/friends/<pseudo>/…` le désignent par son pseudo : aucun identifiant
+ * interne n'est montré à un autre compte.
+ */
 export interface Friend {
-  /** Identifiant du compte de l'ami (sert aux routes `/api/friends/<id>`). */
-  readonly id: number;
   readonly pseudo: string;
   /** Amis depuis (ms depuis 1970). */
   readonly since: number;
@@ -217,7 +219,6 @@ export interface Friend {
 
 /** Une demande en attente : seulement l'autre compte et la date de la demande. */
 export interface FriendRequest {
-  readonly id: number;
   readonly pseudo: string;
   readonly at: number;
 }
@@ -272,7 +273,7 @@ export type ApiError =
   | 'unavailable'
   /**
    * Amis : demande à soi-même, pseudo inconnu, déjà amis, déjà demandé, plafond d'amis atteint
-   * (le mien, ou celui de l'autre), plafond de demandes envoyées en attente.
+   * (le mien ; celui de l'autre, seulement à l'acceptation), plafond de demandes en attente.
    */
   | 'friend_self'
   | 'friend_unknown'

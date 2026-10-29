@@ -63,7 +63,6 @@ const PENDING_SENT = `(SELECT COUNT(*) FROM friendships
   WHERE requested_by = ? AND status = 'pending')`;
 
 interface ListRow {
-  id: number;
   pseudo: string;
   status: 'pending' | 'accepted';
   requested_by: number;
@@ -89,7 +88,7 @@ export async function listFriends(db: Database, me: number): Promise<FriendList>
   // pseudo dans les colonnes (la clé ne sert qu'au tri).
   const { results } = await db
     .prepare(
-      `SELECT u.id, u.pseudo, f.status, f.requested_by, f.created_at, f.accepted_at,
+      `SELECT u.pseudo, f.status, f.requested_by, f.created_at, f.accepted_at,
          CASE WHEN f.status = 'accepted' THEN s.data END AS data,
          CASE WHEN f.status = 'accepted' THEN ${ACTIVITY} END AS active_at
        FROM friendships f
@@ -106,7 +105,6 @@ export async function listFriends(db: Database, me: number): Promise<FriendList>
   for (const row of results) {
     if (row.status === 'accepted') {
       friends.push({
-        id: row.id,
         pseudo: row.pseudo,
         since: row.accepted_at ?? row.created_at,
         // Arrondi au jour (UTC) : l'heure de connexion d'un ami n'est jamais transmise.
@@ -115,7 +113,6 @@ export async function listFriends(db: Database, me: number): Promise<FriendList>
       });
     } else {
       (row.requested_by === me ? sent : received).push({
-        id: row.id,
         pseudo: row.pseudo,
         at: row.created_at,
       });
@@ -139,6 +136,22 @@ export async function pendingFriends(db: Database, me: number): Promise<FriendPe
     .bind(me, me, me)
     .first<FriendPending>();
   return { received: row?.received ?? 0 };
+}
+
+/** Identifiant du compte d'un pseudo (comparé comme à l'inscription) ; null si inconnu. */
+async function userId(db: Database, pseudo: string): Promise<number | null> {
+  const row = await db
+    .prepare('SELECT id FROM users WHERE pseudo_key = ?')
+    .bind(pseudoKey(pseudo.trim()))
+    .first<{ id: number }>();
+  return row?.id ?? null;
+}
+
+/** L'autre compte d'une route `/api/friends/<pseudo>/…` ; inconnu : 404, comme une paire absente. */
+async function otherOf(db: Database, pseudo: string): Promise<number> {
+  const id = await userId(db, pseudo);
+  if (id === null) throw new HttpError(404, 'not_found');
+  return id;
 }
 
 /** Les deux comptes doivent rester sous le plafond d'amis. */
@@ -178,12 +191,9 @@ export async function requestFriend(
   if (!(await allow(db, requestThrottleKey(me.id), FRIEND_REQUESTS_PER_HOUR, HOUR, now))) {
     throw tooMany(HOUR);
   }
-  const target = await db
-    .prepare('SELECT id FROM users WHERE pseudo_key = ?')
-    .bind(key)
-    .first<{ id: number }>();
+  const target = await userId(db, pseudo);
   if (target === null) throw new HttpError(404, 'friend_unknown');
-  const other = target.id;
+  const other = target;
   const existing = await relation(db, me.id, other);
   if (existing?.status === 'accepted') throw new HttpError(409, 'already_friends');
   if (existing !== null) {
@@ -192,34 +202,44 @@ export async function requestFriend(
     await accept(db, me.id, other, now);
     return { outcome: 'accepted', list: await listFriends(db, me.id) };
   }
-  await checkRoom(db, me.id, other);
+  // Seul mon plafond compte ici : celui de l'autre n'est vérifié qu'à l'acceptation, pour que la
+  // réponse ne dise pas à un inconnu combien d'amis a ce compte.
+  if ((await friendCount(db, me.id)) >= FRIENDS_MAX) throw new HttpError(409, 'friends_full');
   const [a, b] = pair(me.id, other);
+  // Les deux comptes doivent encore exister au moment de l'écriture : un compte supprimé entre la
+  // lecture et l'écriture ne laisse pas de ligne orpheline (un identifiant peut être redonné).
   const inserted = await db
     .prepare(
       `INSERT OR IGNORE INTO friendships (user_a, user_b, requested_by, status, created_at)
-       SELECT ?, ?, ?, 'pending', ? WHERE ${PENDING_SENT} < ?`,
+       SELECT ?, ?, ?, 'pending', ?
+       WHERE ${PENDING_SENT} < ?
+         AND EXISTS (SELECT 1 FROM users WHERE id = ?)
+         AND EXISTS (SELECT 1 FROM users WHERE id = ?)`,
     )
-    .bind(a, b, me.id, now, me.id, FRIEND_REQUESTS_PENDING_MAX)
+    .bind(a, b, me.id, now, me.id, FRIEND_REQUESTS_PENDING_MAX, me.id, other)
     .run();
   if (inserted.meta.changes === 0) {
-    // Plafond des demandes en attente, ou demande arrivée en même temps de l'autre côté.
+    // Plafond des demandes en attente, compte supprimé entre-temps, ou demande arrivée en même
+    // temps de l'autre côté.
     const pending = await db
       .prepare(`SELECT ${PENDING_SENT} AS n`)
       .bind(me.id)
       .first<{ n: number }>();
     if ((pending?.n ?? 0) >= FRIEND_REQUESTS_PENDING_MAX) throw new HttpError(409, 'requests_full');
+    if ((await userId(db, pseudo)) !== other) throw new HttpError(404, 'friend_unknown');
     throw new HttpError(409, 'conflict');
   }
   return { outcome: 'sent', list: await listFriends(db, me.id) };
 }
 
-/** `POST /api/friends/<id>/accept` : seulement le destinataire d'une demande en attente. */
+/** `POST /api/friends/<pseudo>/accept` : seulement le destinataire d'une demande en attente. */
 export async function acceptFriend(
   db: Database,
   me: number,
-  other: number,
+  pseudo: string,
   now: number,
 ): Promise<FriendList> {
+  const other = await otherOf(db, pseudo);
   const existing = await relation(db, me, other);
   if (existing?.status === 'accepted') throw new HttpError(409, 'already_friends');
   if (existing?.requested_by !== other) throw new HttpError(404, 'not_found');
@@ -227,8 +247,9 @@ export async function acceptFriend(
   return listFriends(db, me);
 }
 
-/** `POST /api/friends/<id>/decline` : le destinataire refuse ; la demande disparaît. */
-export async function declineFriend(db: Database, me: number, other: number): Promise<FriendList> {
+/** `POST /api/friends/<pseudo>/decline` : le destinataire refuse ; la demande disparaît. */
+export async function declineFriend(db: Database, me: number, pseudo: string): Promise<FriendList> {
+  const other = await otherOf(db, pseudo);
   const [a, b] = pair(me, other);
   const done = await db
     .prepare(
@@ -241,8 +262,9 @@ export async function declineFriend(db: Database, me: number, other: number): Pr
   return listFriends(db, me);
 }
 
-/** `DELETE /api/friends/<id>` : retirer un ami, ou annuler (ou refuser) une demande. */
-export async function removeFriend(db: Database, me: number, other: number): Promise<FriendList> {
+/** `DELETE /api/friends/<pseudo>` : retirer un ami, ou annuler (ou refuser) une demande. */
+export async function removeFriend(db: Database, me: number, pseudo: string): Promise<FriendList> {
+  const other = await otherOf(db, pseudo);
   const [a, b] = pair(me, other);
   const done = await db
     .prepare('DELETE FROM friendships WHERE user_a = ? AND user_b = ?')
@@ -250,6 +272,37 @@ export async function removeFriend(db: Database, me: number, other: number): Pro
     .run();
   if (done.meta.changes === 0) throw new HttpError(404, 'not_found');
   return listFriends(db, me);
+}
+
+/** Une amitié ou une demande, dans l'export des données du compte (`GET /api/account/export`). */
+export interface FriendExport {
+  readonly pseudo: string;
+  readonly status: 'pending' | 'accepted';
+  /** `sent` : c'est moi qui ai demandé ; `received` : l'autre. */
+  readonly direction: 'sent' | 'received';
+  readonly requestedAt: string;
+  readonly acceptedAt: string | null;
+}
+
+/** Toutes les lignes de `friendships` du compte, avec le pseudo de l'autre et les dates. */
+export async function exportFriends(db: Database, me: number): Promise<FriendExport[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT u.pseudo, f.status, f.requested_by, f.created_at, f.accepted_at
+       FROM friendships f
+       JOIN users u ON u.id = CASE WHEN f.user_a = ? THEN f.user_b ELSE f.user_a END
+       WHERE f.user_a = ? OR f.user_b = ?
+       ORDER BY f.created_at, u.pseudo_key`,
+    )
+    .bind(me, me, me)
+    .all<Omit<ListRow, 'data' | 'active_at'>>();
+  return results.map((row) => ({
+    pseudo: row.pseudo,
+    status: row.status,
+    direction: row.requested_by === me ? 'sent' : 'received',
+    requestedAt: new Date(row.created_at).toISOString(),
+    acceptedAt: row.accepted_at === null ? null : new Date(row.accepted_at).toISOString(),
+  }));
 }
 
 /** Suppression d'un compte : ses amitiés, ses demandes et son compteur de demandes. */

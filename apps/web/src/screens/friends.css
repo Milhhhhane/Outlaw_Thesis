@@ -1,4 +1,5 @@
-/* Amis : à gauche l'ajout et les demandes, à droite la liste des amis (qui défile au-delà du cadre). */
+/* Amis : à gauche les demandes (reçues puis envoyées), à droite la liste des amis avec l'ajout par
+   pseudo dans son en-tête. Chaque panneau défile, avec une indication, s'il déborde. */
 
 .friends__layout {
   display: grid;
@@ -15,17 +16,54 @@
 }
 
 .friends__panel {
+  display: flex;
+  flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
 }
 
-.friends__add {
+.friends__scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Indication « plus bas » : visible tant qu'il reste du contenu sous le bord du panneau. */
+.friends__more {
   flex: none;
+  margin: 2px 0 0;
+  color: var(--gold);
+  font-family: var(--text);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Barre de défilement toujours visible (pas de barre « fantôme » qui n'apparaît qu'au défilement) :
+   dorée sur fond sombre, comme le reste du cadre. */
+.friends__scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.friends__scroll::-webkit-scrollbar-track {
+  background: rgb(7 5 10 / 55%);
+}
+
+.friends__scroll::-webkit-scrollbar-thumb {
+  background: var(--gold);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .friends__scroll {
+    scrollbar-color: var(--gold) rgb(7 5 10 / 55%);
+    scrollbar-width: thin;
+  }
 }
 
 .friends__requests {
   flex: 0 1 auto;
+}
+
+.friends__section + .friends__section {
+  margin-top: 6px;
 }
 
 .friends__heading {
@@ -34,14 +72,30 @@
   font-size: 16px;
 }
 
+.friends__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.friends__head .friends__heading {
+  margin: 0;
+  white-space: nowrap;
+}
+
 .friends__form {
   display: flex;
+  flex: 1;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  min-width: 0;
 }
 
 .friends__input {
-  flex: 1;
+  flex: 0 1 230px;
   min-width: 0;
   padding: 5px 8px;
   background: var(--ink);
@@ -53,7 +107,8 @@
 }
 
 .friends__notice {
-  margin: 4px 0 0;
+  flex: none;
+  margin: 0 0 4px;
   font-family: var(--text);
   font-size: 13px;
   overflow-wrap: anywhere;

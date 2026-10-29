@@ -7,7 +7,7 @@ import {
   type FriendProgress,
   type FriendRequest,
 } from '@outlaw/accounts';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useAccount } from '../account/AccountProvider';
 import { api, type Result } from '../account/api';
 import { AuthWindow, PrivacyWindow } from '../account/windows';
@@ -60,6 +60,54 @@ export function errorText(result: Extract<Result<unknown>, { ok: false }>): stri
   return text === key ? t('friends.error.other') : text;
 }
 
+/**
+ * Panneau dont le contenu défile. Les barres de défilement peuvent être masquées (téléphones,
+ * navigateurs sans barre) : tant qu'il reste du contenu plus bas, une indication le dit.
+ */
+function ScrollPanel({
+  className,
+  label,
+  head,
+  children,
+}: {
+  readonly className: string;
+  readonly label: string;
+  /** En-tête fixe, au-dessus de la partie qui défile. */
+  readonly head?: ReactNode;
+  readonly children: ReactNode;
+}) {
+  const box = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const node = box.current;
+    if (node === null) return;
+    const measure = (): void => {
+      setMore(node.scrollHeight - node.clientHeight - node.scrollTop > 4);
+    };
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(node);
+    for (const child of Array.from(node.children)) observer?.observe(child);
+    node.addEventListener('scroll', measure, { passive: true });
+    return () => {
+      observer?.disconnect();
+      node.removeEventListener('scroll', measure);
+    };
+  }, [children]);
+  return (
+    <Panel className={`friends__panel ${className}`} label={label}>
+      {head}
+      <div ref={box} className="friends__scroll">
+        {children}
+      </div>
+      {more && (
+        <p className="friends__more" aria-hidden="true">
+          ▼ {t('friends.more')}
+        </p>
+      )}
+    </Panel>
+  );
+}
+
 type Notice = { readonly kind: 'ok' | 'error'; readonly text: string } | null;
 
 function Requests({
@@ -78,14 +126,14 @@ function Requests({
   readonly actions: (request: FriendRequest) => ReactNode;
 }) {
   return (
-    <Panel className="friends__panel friends__requests" label={title}>
+    <section className="friends__section" aria-label={title}>
       <h2 className="friends__heading">{title}</h2>
       {requests.length === 0 ? (
         <p className="hint">{empty}</p>
       ) : (
         <ul className="friends__rows" aria-busy={busy}>
           {requests.map((request) => (
-            <li key={request.id} className="friends__row">
+            <li key={request.pseudo} className="friends__row">
               <span className="friends__who">
                 <span className="friends__pseudo" title={request.pseudo}>
                   {request.pseudo}
@@ -97,7 +145,7 @@ function Requests({
           ))}
         </ul>
       )}
-    </Panel>
+    </section>
   );
 }
 
@@ -227,109 +275,120 @@ function FriendsPanel() {
     });
   };
 
+  const addForm = (
+    <form
+      className="friends__form"
+      aria-label={t('friends.add')}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void send();
+      }}
+    >
+      <input
+        className="friends__input"
+        aria-label={t('friends.add.label')}
+        placeholder={t('friends.add.label')}
+        value={pseudo}
+        maxLength={PSEUDO_MAX}
+        autoComplete="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        onChange={(event) => {
+          setPseudo(event.target.value);
+        }}
+      />
+      <Button type="submit" size="small" disabled={busy || pseudo.trim() === ''}>
+        {t('friends.add.go')}
+      </Button>
+    </form>
+  );
+
   return (
     <div className="friends__layout">
       <div className="friends__side">
-        <Panel className="friends__panel friends__add" label={t('friends.add')}>
-          <h2 className="friends__heading">{t('friends.add')}</h2>
-          <form
-            className="friends__form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void send();
-            }}
-          >
-            <input
-              className="friends__input"
-              aria-label={t('friends.add.label')}
-              placeholder={t('friends.add.label')}
-              value={pseudo}
-              maxLength={PSEUDO_MAX}
-              autoComplete="off"
-              autoCapitalize="none"
-              spellCheck={false}
-              onChange={(event) => {
-                setPseudo(event.target.value);
-              }}
-            />
-            <Button type="submit" size="small" disabled={busy || pseudo.trim() === ''}>
-              {t('friends.add.go')}
-            </Button>
-          </form>
-          {notice !== null && (
-            <p
-              className={`friends__notice friends__notice--${notice.kind}`}
-              role={notice.kind === 'error' ? 'alert' : 'status'}
-            >
-              {notice.text}
-            </p>
-          )}
-        </Panel>
-        <Requests
-          title={t('friends.received', { n: list.received.length })}
-          empty={t('friends.received.none')}
-          requests={list.received}
-          now={now}
-          busy={busy}
-          actions={(request) => (
-            <>
-              <Button
-                size="small"
-                disabled={busy}
-                aria-label={t('friends.accept.label', { pseudo: request.pseudo })}
-                onClick={() => {
-                  void act(() => api.acceptFriend(request.id));
-                }}
-              >
-                {t('friends.accept')}
-              </Button>
+        {/* Reçues et envoyées dans un seul panneau : il défile, avec une indication, s'il déborde. */}
+        <ScrollPanel className="friends__requests" label={t('friends.requests')}>
+          <Requests
+            title={t('friends.received', { n: list.received.length })}
+            empty={t('friends.received.none')}
+            requests={list.received}
+            now={now}
+            busy={busy}
+            actions={(request) => (
+              <>
+                <Button
+                  size="small"
+                  disabled={busy}
+                  aria-label={t('friends.accept.label', { pseudo: request.pseudo })}
+                  onClick={() => {
+                    void act(() => api.acceptFriend(request.pseudo));
+                  }}
+                >
+                  {t('friends.accept')}
+                </Button>
+                <Button
+                  variant="quiet"
+                  size="small"
+                  disabled={busy}
+                  aria-label={t('friends.decline.label', { pseudo: request.pseudo })}
+                  onClick={() => {
+                    void act(() => api.declineFriend(request.pseudo));
+                  }}
+                >
+                  {t('friends.decline')}
+                </Button>
+              </>
+            )}
+          />
+          <Requests
+            title={t('friends.sent', { n: list.sent.length })}
+            empty={t('friends.sent.none')}
+            requests={list.sent}
+            now={now}
+            busy={busy}
+            actions={(request) => (
               <Button
                 variant="quiet"
                 size="small"
                 disabled={busy}
-                aria-label={t('friends.decline.label', { pseudo: request.pseudo })}
+                aria-label={t('friends.cancel.label', { pseudo: request.pseudo })}
                 onClick={() => {
-                  void act(() => api.declineFriend(request.id));
+                  void act(() => api.removeFriend(request.pseudo));
                 }}
               >
-                {t('friends.decline')}
+                {t('friends.cancel')}
               </Button>
-            </>
-          )}
-        />
-        <Requests
-          title={t('friends.sent', { n: list.sent.length })}
-          empty={t('friends.sent.none')}
-          requests={list.sent}
-          now={now}
-          busy={busy}
-          actions={(request) => (
-            <Button
-              variant="quiet"
-              size="small"
-              disabled={busy}
-              aria-label={t('friends.cancel.label', { pseudo: request.pseudo })}
-              onClick={() => {
-                void act(() => api.removeFriend(request.id));
-              }}
-            >
-              {t('friends.cancel')}
-            </Button>
-          )}
-        />
+            )}
+          />
+        </ScrollPanel>
       </div>
-      <Panel
-        className="friends__panel friends__list"
+      <ScrollPanel
+        className="friends__list"
         label={t('friends.list', { n: list.friends.length })}
+        head={
+          <>
+            <div className="friends__head">
+              <h2 className="friends__heading">{t('friends.list', { n: list.friends.length })}</h2>
+              {addForm}
+            </div>
+            {notice !== null && (
+              <p
+                className={`friends__notice friends__notice--${notice.kind}`}
+                role={notice.kind === 'error' ? 'alert' : 'status'}
+              >
+                {notice.text}
+              </p>
+            )}
+          </>
+        }
       >
-        <h2 className="friends__heading">{t('friends.list', { n: list.friends.length })}</h2>
         {list.friends.length === 0 ? (
           <p className="hint">{t('friends.list.none')}</p>
         ) : (
           <ul className="friends__rows">
             {list.friends.map((friend) => (
               <FriendRow
-                key={friend.id}
+                key={friend.pseudo}
                 friend={friend}
                 now={now}
                 busy={busy}
@@ -340,7 +399,7 @@ function FriendsPanel() {
             ))}
           </ul>
         )}
-      </Panel>
+      </ScrollPanel>
       {removing !== null && (
         <Window
           title={t('friends.remove.title', { pseudo: removing.pseudo })}
@@ -354,8 +413,8 @@ function FriendsPanel() {
                 variant="danger"
                 disabled={busy}
                 onClick={() => {
-                  const id = removing.id;
-                  void act(() => api.removeFriend(id)).then(() => {
+                  const target = removing.pseudo;
+                  void act(() => api.removeFriend(target)).then(() => {
                     setRemoving(null);
                   });
                 }}

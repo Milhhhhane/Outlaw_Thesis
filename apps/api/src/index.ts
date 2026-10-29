@@ -28,11 +28,13 @@ import { ensureSchema, type Database } from './db';
 import {
   acceptFriend,
   declineFriend,
+  exportFriends,
   forgetFriends,
   listFriends,
   pendingFriends,
   removeFriend,
   requestFriend,
+  requestThrottleKey,
 } from './friends';
 import { HttpError, json, tooMany } from './http';
 import { allow, clear, fail, ipId, waitFor } from './throttle';
@@ -330,14 +332,43 @@ async function putSave(request: Request, db: Database, s: Session, now: number) 
   return json(200, ack);
 }
 
+/** Compteurs de limite de débit liés au compte (les autres sont par empreinte d'adresse IP). */
+function accountCounterKeys(userId: number): Record<string, string> {
+  const id = String(userId);
+  return {
+    password: `password:${id}`,
+    pvpRooms: `pvp-create:${id}`,
+    pvpConnections: `pvp-ws:${id}`,
+    friendRequests: requestThrottleKey(userId),
+  };
+}
+
 async function exportData(db: Database, s: Session) {
   const { user } = s;
   const save = await cloudSave(db, user.id);
+  const counters: Record<string, unknown> = {};
+  for (const [name, key] of Object.entries(accountCounterKeys(user.id))) {
+    const row = await db
+      .prepare('SELECT count, window_start, blocked_until FROM throttle WHERE key = ?')
+      .bind(key)
+      .first<{ count: number; window_start: number; blocked_until: number }>();
+    if (row !== null) {
+      counters[name] = {
+        count: row.count,
+        windowStart: new Date(row.window_start).toISOString(),
+        blockedUntil: row.blocked_until > 0 ? new Date(row.blocked_until).toISOString() : null,
+      };
+    }
+  }
   const data = {
     pseudo: user.pseudo,
     createdAt: new Date(user.created_at).toISOString(),
     lastLoginAt: user.last_login_at === null ? null : new Date(user.last_login_at).toISOString(),
     save,
+    /** Amitiés et demandes d'ami (envoyées et reçues). */
+    friends: await exportFriends(db, user.id),
+    /** Compteurs de limite de débit du compte en cours (effacés après 24 h). */
+    counters,
   };
   return json(200, data, {
     'Content-Disposition': `attachment; filename="outlaw-thesis-${user.pseudo}.json"`,
@@ -419,9 +450,10 @@ async function pvpConnect(
 
 /* ------------------------------------------------------------------- Amis */
 
-const FRIEND_ROUTE = /^\/api\/friends\/([0-9]{1,15})(?:\/(accept|decline))?$/;
+/** L'autre compte est désigné par son pseudo (mêmes caractères qu'à l'inscription). */
+const FRIEND_ROUTE = /^\/api\/friends\/([A-Za-z0-9_-]{1,20})(?:\/(accept|decline))?$/;
 
-/** `/api/friends/<id>[/accept|/decline]` ; null si la route n'est pas une route d'ami. */
+/** `/api/friends/<pseudo>[/accept|/decline]` ; null si la route n'est pas une route d'ami. */
 async function friendRoute(
   request: Request,
   db: Database,
@@ -431,7 +463,7 @@ async function friendRoute(
 ): Promise<Response | null> {
   const match = FRIEND_ROUTE.exec(path);
   if (match === null) return null;
-  const other = Number(match[1]);
+  const other = match[1] ?? '';
   const action = match[2];
   const me = s.user.id;
   if (request.method === 'POST' && action === 'accept') {

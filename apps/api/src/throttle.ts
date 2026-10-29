@@ -11,35 +11,42 @@ const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 const MAX_DELAY = 15 * 60 * 1000;
 
-interface Row {
-  count: number;
-  window_start: number;
-  blocked_until: number;
-}
-
-async function read(db: Database, key: string): Promise<Row | null> {
-  return db
-    .prepare('SELECT count, window_start, blocked_until FROM throttle WHERE key = ?')
-    .bind(key)
-    .first<Row>();
-}
-
-async function write(db: Database, key: string, row: Row, now: number): Promise<void> {
-  await db
+/**
+ * Compte une tentative en une seule requête (upsert atomique) et renvoie le nouveau compteur :
+ * deux requêtes simultanées ne peuvent pas lire la même valeur et écrire chacune « +1 ». Une
+ * fenêtre écoulée (plus de `windowMs` depuis son début) repart de 1 et efface l'attente.
+ */
+async function bump(
+  db: Database,
+  key: string,
+  windowMs: number,
+  now: number,
+): Promise<{ count: number; window_start: number }> {
+  const row = await db
     .prepare(
       `INSERT INTO throttle (key, count, window_start, blocked_until, updated_at)
-       VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT (key) DO UPDATE SET count = excluded.count,
-         window_start = excluded.window_start, blocked_until = excluded.blocked_until,
-         updated_at = excluded.updated_at`,
+       VALUES (?1, 1, ?2, 0, ?2)
+       ON CONFLICT (key) DO UPDATE SET
+         count = CASE WHEN ?2 - throttle.window_start > ?3 THEN 1 ELSE throttle.count + 1 END,
+         window_start = CASE WHEN ?2 - throttle.window_start > ?3 THEN ?2
+           ELSE throttle.window_start END,
+         blocked_until = CASE WHEN ?2 - throttle.window_start > ?3 THEN 0
+           ELSE throttle.blocked_until END,
+         updated_at = ?2
+       RETURNING count, window_start`,
     )
-    .bind(key, row.count, row.window_start, row.blocked_until, now)
-    .run();
+    .bind(key, now, windowMs)
+    .first<{ count: number; window_start: number }>();
+  // RETURNING renvoie toujours la ligne écrite.
+  return row ?? { count: 1, window_start: now };
 }
 
 /** Millisecondes restantes avant que la clé puisse réessayer (0 : libre). */
 export async function waitFor(db: Database, key: string, now: number): Promise<number> {
-  const row = await read(db, key);
+  const row = await db
+    .prepare('SELECT blocked_until FROM throttle WHERE key = ?')
+    .bind(key)
+    .first<{ blocked_until: number }>();
   return row === null ? 0 : Math.max(0, row.blocked_until - now);
 }
 
@@ -48,19 +55,25 @@ export async function waitFor(db: Database, key: string, now: number): Promise<n
  * échec suivant double l'attente (2 s, 4 s, 8 s… jusqu'à 15 min).
  */
 export async function fail(db: Database, key: string, free: number, now: number): Promise<void> {
-  const row = await read(db, key);
-  const fresh = row === null || now - row.window_start > HOUR;
-  const count = fresh ? 1 : row.count + 1;
+  const { count } = await bump(db, key, HOUR, now);
   const over = count - free;
-  const blocked_until = over > 0 ? now + Math.min(MAX_DELAY, 1000 * 2 ** over) : 0;
-  await write(db, key, { count, window_start: fresh ? now : row.window_start, blocked_until }, now);
+  if (over <= 0) return;
+  // Chaque échec calcule l'attente de son propre rang ; MAX garde la plus longue si deux
+  // échecs simultanés écrivent dans le désordre.
+  await db
+    .prepare('UPDATE throttle SET blocked_until = MAX(blocked_until, ?) WHERE key = ?')
+    .bind(now + Math.min(MAX_DELAY, 1000 * 2 ** over), key)
+    .run();
 }
 
 export async function clear(db: Database, key: string): Promise<void> {
   await db.prepare('DELETE FROM throttle WHERE key = ?').bind(key).run();
 }
 
-/** Compte une tentative ; faux si la clé a déjà fait `limit` tentatives dans la fenêtre. */
+/**
+ * Compte une tentative ; faux si la clé a déjà fait `limit` tentatives dans la fenêtre. Le
+ * compteur est incrémenté atomiquement : une rafale simultanée ne passe pas plus de `limit` fois.
+ */
 export async function allow(
   db: Database,
   key: string,
@@ -68,17 +81,8 @@ export async function allow(
   windowMs: number,
   now: number,
 ): Promise<boolean> {
-  const row = await read(db, key);
-  const fresh = row === null || now - row.window_start > windowMs;
-  const count = fresh ? 1 : row.count + 1;
-  if (count > limit) return false;
-  await write(
-    db,
-    key,
-    { count, window_start: fresh ? now : row.window_start, blocked_until: 0 },
-    now,
-  );
-  return true;
+  const { count } = await bump(db, key, windowMs, now);
+  return count <= limit;
 }
 
 /**
@@ -87,19 +91,24 @@ export async function allow(
  */
 export async function ipId(db: Database, ip: string, now: number): Promise<string> {
   const day = Math.floor(now / DAY);
-  const stored = await db.prepare("SELECT v FROM meta WHERE k = 'ip_salt'").first<{ v: string }>();
-  let salt = stored?.v.startsWith(`${day}:`) === true ? stored.v : null;
-  if (salt === null) {
-    salt = `${day}:${randomToken()}`;
+  const read = async () =>
+    (await db.prepare("SELECT v FROM meta WHERE k = 'ip_salt'").first<{ v: string }>())?.v ?? null;
+  let salt = await read();
+  if (salt?.startsWith(`${day}:`) !== true) {
+    // Le sel du jour n'est écrit que s'il manque encore : deux requêtes simultanées en début de
+    // journée finissent avec le même sel (sinon la même adresse aurait deux empreintes, donc deux
+    // compteurs). On relit celui qui a été gardé.
     await db.batch([
       db
         .prepare(
-          "INSERT INTO meta (k, v) VALUES ('ip_salt', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v",
+          `INSERT INTO meta (k, v) VALUES ('ip_salt', ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v
+           WHERE meta.v NOT LIKE ?`,
         )
-        .bind(salt),
+        .bind(`${day}:${randomToken()}`, `${day}:%`),
       db.prepare('DELETE FROM throttle WHERE updated_at < ?').bind(now - DAY),
       db.prepare('DELETE FROM sessions WHERE expires_at < ?').bind(now),
     ]);
+    salt = (await read()) ?? `${day}:`;
   }
   return sha256Hex(`${salt}|${ip}`).slice(0, 32);
 }

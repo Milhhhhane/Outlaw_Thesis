@@ -157,11 +157,11 @@ describe('demande et acceptation', () => {
     expect(sent.json?.list).toEqual({
       friends: [],
       received: [],
-      sent: [{ id: bruno.id, pseudo: 'Bruno', at: requestedAt }],
+      sent: [{ pseudo: 'Bruno', at: requestedAt }],
     });
     expect(await list(api, bruno.cookie)).toEqual({
       friends: [],
-      received: [{ id: alice.id, pseudo: 'Alice', at: requestedAt }],
+      received: [{ pseudo: 'Alice', at: requestedAt }],
       sent: [],
     });
     expect((await api.call('GET', '/api/friends/pending', { cookie: bruno.cookie })).json).toEqual({
@@ -172,21 +172,19 @@ describe('demande et acceptation', () => {
     });
 
     // L'auteur de la demande ne peut pas l'accepter lui-même.
-    const self = await api.call('POST', `/api/friends/${String(bruno.id)}/accept`, {
+    const self = await api.call('POST', `/api/friends/${bruno.pseudo}/accept`, {
       cookie: alice.cookie,
     });
     expect(self.status).toBe(404);
 
     api.advance(HOUR);
-    const accepted = await api.call('POST', `/api/friends/${String(alice.id)}/accept`, {
+    const accepted = await api.call('POST', `/api/friends/${alice.pseudo}/accept`, {
       cookie: bruno.cookie,
     });
     expect(accepted.status).toBe(200);
     const day = Math.floor(api.now() / DAY) * DAY;
     expect(accepted.json).toEqual({
-      friends: [
-        { id: alice.id, pseudo: 'Alice', since: api.now(), lastActiveDay: day, progress: null },
-      ],
+      friends: [{ pseudo: 'Alice', since: api.now(), lastActiveDay: day, progress: null }],
       received: [],
       sent: [],
     });
@@ -197,7 +195,7 @@ describe('demande et acceptation', () => {
       received: 0,
     });
     // Accepter une seconde fois : déjà amis.
-    const again = await api.call('POST', `/api/friends/${String(alice.id)}/accept`, {
+    const again = await api.call('POST', `/api/friends/${alice.pseudo}/accept`, {
       cookie: bruno.cookie,
     });
     expect(again.status).toBe(409);
@@ -235,7 +233,7 @@ describe('demande et acceptation', () => {
     expect((await ask(api, alice.cookie, 'Bruno')).status).toBe(201);
     await expectError('bruno', 409, 'already_requested');
     expect((await ask(api, alice.cookie, 'Carla')).status).toBe(201);
-    await api.call('POST', `/api/friends/${String(alice.id)}/accept`, { cookie: carla.cookie });
+    await api.call('POST', `/api/friends/${alice.pseudo}/accept`, { cookie: carla.cookie });
     await expectError('Carla', 409, 'already_friends');
     await expectError('Alice', 409, 'already_friends', carla);
     expect(bruno.id).toBeGreaterThan(0);
@@ -247,11 +245,11 @@ describe('demande et acceptation', () => {
     const bruno = await account(api, 'Bruno');
     await ask(api, alice.cookie, 'Bruno');
     // L'auteur ne peut pas « refuser » sa propre demande (il l'annule par DELETE).
-    const wrong = await api.call('POST', `/api/friends/${String(bruno.id)}/decline`, {
+    const wrong = await api.call('POST', `/api/friends/${bruno.pseudo}/decline`, {
       cookie: alice.cookie,
     });
     expect(wrong.status).toBe(404);
-    const declined = await api.call('POST', `/api/friends/${String(alice.id)}/decline`, {
+    const declined = await api.call('POST', `/api/friends/${alice.pseudo}/decline`, {
       cookie: bruno.cookie,
     });
     expect(declined.status).toBe(200);
@@ -267,20 +265,20 @@ describe('demande et acceptation', () => {
     const carla = await account(api, 'Carla');
     await ask(api, alice.cookie, 'Bruno');
     await ask(api, carla.cookie, 'Alice');
-    await api.call('POST', `/api/friends/${String(carla.id)}/accept`, { cookie: alice.cookie });
-    const cancelled = await api.call('DELETE', `/api/friends/${String(bruno.id)}`, {
+    await api.call('POST', `/api/friends/${carla.pseudo}/accept`, { cookie: alice.cookie });
+    const cancelled = await api.call('DELETE', `/api/friends/${bruno.pseudo}`, {
       cookie: alice.cookie,
     });
     expect(cancelled.status).toBe(200);
     expect((cancelled.json as { sent: Json[] }).sent).toEqual([]);
     expect((await list(api, bruno.cookie)).received).toEqual([]);
     // L'un ou l'autre peut retirer l'amitié.
-    const removed = await api.call('DELETE', `/api/friends/${String(alice.id)}`, {
+    const removed = await api.call('DELETE', `/api/friends/${alice.pseudo}`, {
       cookie: carla.cookie,
     });
     expect(removed.status).toBe(200);
     expect(await list(api, alice.cookie)).toEqual({ friends: [], received: [], sent: [] });
-    const twice = await api.call('DELETE', `/api/friends/${String(alice.id)}`, {
+    const twice = await api.call('DELETE', `/api/friends/${alice.pseudo}`, {
       cookie: carla.cookie,
     });
     expect(twice.status).toBe(404);
@@ -295,15 +293,15 @@ describe('demande et acceptation', () => {
     const intruder = await account(api, 'Intrus');
     await ask(api, alice.cookie, 'Bruno');
     await ask(api, alice.cookie, 'Carla');
-    await api.call('POST', `/api/friends/${String(alice.id)}/accept`, { cookie: carla.cookie });
+    await api.call('POST', `/api/friends/${alice.pseudo}/accept`, { cookie: carla.cookie });
     for (const [method, path] of [
-      ['POST', `/api/friends/${String(alice.id)}/accept`],
-      ['POST', `/api/friends/${String(bruno.id)}/accept`],
-      ['POST', `/api/friends/${String(alice.id)}/decline`],
-      ['DELETE', `/api/friends/${String(alice.id)}`],
-      ['DELETE', `/api/friends/${String(bruno.id)}`],
-      ['DELETE', `/api/friends/${String(carla.id)}`],
-      ['DELETE', `/api/friends/${String(intruder.id)}`],
+      ['POST', `/api/friends/${alice.pseudo}/accept`],
+      ['POST', `/api/friends/${bruno.pseudo}/accept`],
+      ['POST', `/api/friends/${alice.pseudo}/decline`],
+      ['DELETE', `/api/friends/${alice.pseudo}`],
+      ['DELETE', `/api/friends/${bruno.pseudo}`],
+      ['DELETE', `/api/friends/${carla.pseudo}`],
+      ['DELETE', `/api/friends/${intruder.pseudo}`],
     ] as const) {
       const res = await api.call(method, path, { cookie: intruder.cookie });
       expect(res.status).toBe(404);
@@ -315,32 +313,42 @@ describe('demande et acceptation', () => {
 });
 
 describe('plafonds et limite de débit', () => {
-  it(`plafonne à ${String(FRIENDS_MAX)} amis, des deux côtés, à la demande comme à l’acceptation`, async () => {
+  it(`plafonne à ${String(FRIENDS_MAX)} amis ; le plafond de l’autre n’est dit qu’à l’acceptation`, async () => {
     const api = server();
     const alice = await account(api, 'Alice');
     const bruno = await account(api, 'Bruno');
     const carla = await account(api, 'Carla');
-    // Carla demande Alice tant qu'Alice a de la place.
+    const dan = await account(api, 'Dan');
+    // Carla demande Alice, et Alice demande Dan, tant qu'Alice a de la place.
     await ask(api, carla.cookie, 'Alice');
+    await ask(api, alice.cookie, 'Dan');
     const extras = rawUsers(api, 'ami', FRIENDS_MAX);
     rawLinks(api, alice.id, extras, 'accepted');
     expect((await list(api, alice.cookie)).friends).toHaveLength(FRIENDS_MAX);
     const full = await ask(api, alice.cookie, 'Bruno');
     expect(full.status).toBe(409);
     expect(full.json?.error).toBe('friends_full');
-    const other = await ask(api, bruno.cookie, 'Alice');
-    expect(other.status).toBe(409);
-    expect(other.json?.error).toBe('friend_full');
-    const late = await api.call('POST', `/api/friends/${String(carla.id)}/accept`, {
+    // Un inconnu qui demande Alice reçoit la réponse d'une demande ordinaire : rien ne dit
+    // qu'elle a déjà cent amis.
+    const stranger = await ask(api, bruno.cookie, 'Alice');
+    expect(stranger.status).toBe(201);
+    expect(stranger.json?.outcome).toBe('sent');
+    const late = await api.call('POST', `/api/friends/${carla.pseudo}/accept`, {
       cookie: alice.cookie,
     });
     expect(late.status).toBe(409);
     expect(late.json?.error).toBe('friends_full');
+    // Dan, à qui Alice a demandé, l'apprend en acceptant.
+    const other = await api.call('POST', `/api/friends/${alice.pseudo}/accept`, {
+      cookie: dan.cookie,
+    });
+    expect(other.status).toBe(409);
+    expect(other.json?.error).toBe('friend_full');
     // Une place se libère : l'acceptation passe.
     api.db.raw
       .prepare('DELETE FROM friendships WHERE user_a = ? AND user_b = ?')
       .run(alice.id, extras[0] ?? 0);
-    const accepted = await api.call('POST', `/api/friends/${String(carla.id)}/accept`, {
+    const accepted = await api.call('POST', `/api/friends/${carla.pseudo}/accept`, {
       cookie: alice.cookie,
     });
     expect(accepted.status).toBe(200);
@@ -357,9 +365,22 @@ describe('plafonds et limite de débit', () => {
     expect(res.status).toBe(409);
     expect(res.json?.error).toBe('requests_full');
     // Une demande annulée libère une place.
-    const first = (await list(api, alice.cookie)).sent[0]?.id as number;
-    await api.call('DELETE', `/api/friends/${String(first)}`, { cookie: alice.cookie });
+    const first = (await list(api, alice.cookie)).sent[0]?.pseudo as string;
+    await api.call('DELETE', `/api/friends/${first}`, { cookie: alice.cookie });
     expect((await ask(api, alice.cookie, 'Bruno')).status).toBe(201);
+  });
+
+  it('compte atomiquement 50 demandes simultanées : 20 traitées, 30 refusées', async () => {
+    const api = server();
+    const alice = await account(api, 'Alice');
+    const statuses = await Promise.all(
+      Array.from({ length: 50 }, (_, i) =>
+        ask(api, alice.cookie, `Sonde${String(i)}`).then((r) => r.status),
+      ),
+    );
+    expect(statuses.filter((s) => s === 404)).toHaveLength(20);
+    expect(statuses.filter((s) => s === 429)).toHaveLength(30);
+    expect((await ask(api, alice.cookie, 'Encore')).status).toBe(429);
   });
 
   it('limite à 20 demandes par heure et par compte, réussies ou non', async () => {
@@ -393,8 +414,8 @@ describe('ce qu’un ami voit', () => {
     const carla = await account(api, 'Carla');
     await ask(api, bruno.cookie, 'Alice');
     await ask(api, carla.cookie, 'Alice');
-    await api.call('POST', `/api/friends/${String(bruno.id)}/accept`, { cookie: alice.cookie });
-    await api.call('POST', `/api/friends/${String(carla.id)}/accept`, { cookie: alice.cookie });
+    await api.call('POST', `/api/friends/${bruno.pseudo}/accept`, { cookie: alice.cookie });
+    await api.call('POST', `/api/friends/${carla.pseudo}/accept`, { cookie: alice.cookie });
     await account(api, 'Daniel').then((daniel) => ask(api, daniel.cookie, 'Alice'));
     await ask(api, alice.cookie, 'Bruno_Fort').then((res) => {
       expect(res.json?.error).toBe('already_friends');
@@ -420,12 +441,12 @@ describe('ce qu’un ami voit', () => {
     expect(carlaSeen?.lastActiveDay).toBe(Date.UTC(2026, 9, 27));
     for (const friend of body.friends) {
       expect(Object.keys(friend).sort()).toEqual(
-        ['id', 'lastActiveDay', 'progress', 'pseudo', 'since'].sort(),
+        ['lastActiveDay', 'progress', 'pseudo', 'since'].sort(),
       );
       expect((friend.lastActiveDay as number) % DAY).toBe(0);
     }
     for (const request of [...body.received, ...body.sent]) {
-      expect(Object.keys(request).sort()).toEqual(['at', 'id', 'pseudo']);
+      expect(Object.keys(request).sort()).toEqual(['at', 'pseudo']);
     }
     expect(body.received.map((r) => r.pseudo)).toEqual(['Daniel']);
 
@@ -464,7 +485,7 @@ describe('suppression de compte', () => {
     const carla = await account(api, 'Carla');
     const bruno = await account(api, 'Bruno');
     await ask(api, bruno.cookie, 'Alice');
-    await api.call('POST', `/api/friends/${String(bruno.id)}/accept`, { cookie: alice.cookie });
+    await api.call('POST', `/api/friends/${bruno.pseudo}/accept`, { cookie: alice.cookie });
     await ask(api, bruno.cookie, 'Carla');
     await ask(api, bruno.cookie, 'Personne');
     expect((await list(api, carla.cookie)).received).toHaveLength(1);
@@ -490,5 +511,87 @@ describe('suppression de compte', () => {
     const next = await account(api, 'Nouveau');
     expect(next.id).toBe(bruno.id);
     expect(await list(api, next.cookie)).toEqual({ friends: [], received: [], sent: [] });
+  });
+});
+
+describe('cohérence', () => {
+  it('une demande vers un compte supprimé entre la lecture et l’écriture ne laisse aucune ligne', async () => {
+    const api = server();
+    const alice = await account(api, 'Alice');
+    const bruno = await account(api, 'Bruno');
+    // Bruno disparaît juste avant l'écriture de la demande (suppression simultanée).
+    const prepare = api.db.prepare.bind(api.db);
+    api.db.prepare = (sql: string) => {
+      if (sql.includes('INSERT OR IGNORE INTO friendships')) {
+        api.db.raw.prepare('DELETE FROM users WHERE id = ?').run(bruno.id);
+      }
+      return prepare(sql);
+    };
+    const res = await ask(api, alice.cookie, 'Bruno');
+    expect(res.status).toBe(404);
+    expect(res.json?.error).toBe('friend_unknown');
+    expect(api.db.raw.prepare('SELECT COUNT(*) AS n FROM friendships').get()).toEqual({ n: 0 });
+  });
+
+  it('les routes désignent l’autre par son pseudo, sans distinction de casse', async () => {
+    const api = server();
+    const alice = await account(api, 'Alice');
+    const bruno = await account(api, 'Bruno');
+    await ask(api, alice.cookie, 'Bruno');
+    const res = await api.call('POST', '/api/friends/aLiCe/accept', { cookie: bruno.cookie });
+    expect(res.status).toBe(200);
+    const unknown = await api.call('DELETE', '/api/friends/Personne', { cookie: bruno.cookie });
+    expect(unknown.status).toBe(404);
+    expect(unknown.json).toEqual({ error: 'not_found' });
+    expect(JSON.stringify(res.json)).not.toMatch(/"id"/);
+  });
+});
+
+describe('export des données', () => {
+  it('contient les amitiés, les demandes envoyées et reçues, et les compteurs du compte', async () => {
+    const api = server();
+    const alice = await account(api, 'Alice');
+    const bruno = await account(api, 'Bruno');
+    const carla = await account(api, 'Carla');
+    await account(api, 'Dan');
+    const start = api.now();
+    await ask(api, bruno.cookie, 'Alice');
+    api.advance(1_000);
+    await api.call('POST', `/api/friends/${bruno.pseudo}/accept`, { cookie: alice.cookie });
+    api.advance(1_000);
+    await ask(api, alice.cookie, 'Dan');
+    await ask(api, alice.cookie, 'Personne');
+    await ask(api, carla.cookie, 'Alice');
+    const res = await api.call('GET', '/api/account/export', { cookie: alice.cookie });
+    expect(res.status).toBe(200);
+    const iso = (ms: number) => new Date(ms).toISOString();
+    expect(res.json?.friends).toEqual([
+      {
+        pseudo: 'Bruno',
+        status: 'accepted',
+        direction: 'received',
+        requestedAt: iso(start),
+        acceptedAt: iso(start + 1_000),
+      },
+      {
+        pseudo: 'Carla',
+        status: 'pending',
+        direction: 'received',
+        requestedAt: iso(start + 2_000),
+        acceptedAt: null,
+      },
+      {
+        pseudo: 'Dan',
+        status: 'pending',
+        direction: 'sent',
+        requestedAt: iso(start + 2_000),
+        acceptedAt: null,
+      },
+    ]);
+    expect(res.json?.counters).toEqual({
+      friendRequests: { count: 2, windowStart: iso(start + 2_000), blockedUntil: null },
+    });
+    const text = JSON.stringify(res.json);
+    for (const word of ['pw_hash', 'pseudo_key', 'token_hash']) expect(text).not.toContain(word);
   });
 });

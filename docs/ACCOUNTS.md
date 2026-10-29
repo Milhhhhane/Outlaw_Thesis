@@ -69,30 +69,41 @@ Base sociale : demandes par pseudo, acceptation, retrait. Ni chat, ni blocage, n
 `(user_a, user_b)` avec `user_a < user_b` (une seule ligne par paire, quel que soit le sens de la
 demande), index sur `user_b` et sur `(requested_by, status)`.
 
-| Route                            | Rôle                                                                                                                             |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/friends`               | `{ friends, received, sent }` : amis (`id`, `pseudo`, `since`, `lastActiveDay`, `progress`) et demandes (`id`, `pseudo`, `at`)   |
-| `GET /api/friends/pending`       | `{ received }` : nombre de demandes reçues (badge du camp ; aucune sauvegarde lue)                                               |
-| `POST /api/friends/requests`     | `{ pseudo }` : demande ; 201 `{ outcome: 'sent', list }`, ou 200 `{ outcome: 'accepted', list }` si l'autre m'avait déjà demandé |
-| `POST /api/friends/<id>/accept`  | accepter la demande reçue de `<id>` (le destinataire seulement) ; renvoie la liste                                               |
-| `POST /api/friends/<id>/decline` | refuser la demande reçue de `<id>` : la ligne est effacée ; renvoie la liste                                                     |
-| `DELETE /api/friends/<id>`       | retirer un ami, ou annuler une demande (l'un ou l'autre des deux comptes) ; renvoie la liste                                     |
+| Route                                | Rôle                                                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/friends`                   | `{ friends, received, sent }` : amis (`pseudo`, `since`, `lastActiveDay`, `progress`) et demandes (`pseudo`, `at`)               |
+| `GET /api/friends/pending`           | `{ received }` : nombre de demandes reçues (badge du camp ; aucune sauvegarde lue)                                               |
+| `POST /api/friends/requests`         | `{ pseudo }` : demande ; 201 `{ outcome: 'sent', list }`, ou 200 `{ outcome: 'accepted', list }` si l'autre m'avait déjà demandé |
+| `POST /api/friends/<pseudo>/accept`  | accepter la demande reçue de `<pseudo>` (le destinataire seulement) ; renvoie la liste                                           |
+| `POST /api/friends/<pseudo>/decline` | refuser la demande reçue de `<pseudo>` : la ligne est effacée (le demandeur voit sa demande disparaître) ; renvoie la liste      |
+| `DELETE /api/friends/<pseudo>`       | retirer un ami, ou annuler une demande (l'un ou l'autre des deux comptes) ; renvoie la liste                                     |
 
-- `<id>` est l'identifiant de l'**autre** compte. Seuls les deux comptes d'une paire peuvent agir
-  sur elle : pour un tiers, la paire n'existe pas (404 `not_found`).
+- `<pseudo>` est le pseudo de l'**autre** compte, comparé sans distinction de casse : aucun
+  identifiant interne (séquentiel) n'est montré à un autre compte. Seuls les deux comptes d'une
+  paire peuvent agir sur elle : pour un tiers, ou pour un pseudo inconnu, 404 `not_found`.
 - Session obligatoire (401), changement de mot de passe exigé respecté (403
   `must_change_password`), vérification d'`Origin` pour les modifications (403 `bad_origin`),
   réponses `Cache-Control: no-store`. Jamais de hash, de jeton ni de clé de pseudo.
 - Le pseudo demandé est comparé comme à l'inscription (`pseudo_key`, sans distinction de casse,
   espaces autour ignorés). Refus : `friend_self` (400), `friend_unknown` (404), `already_friends`,
   `already_requested` (409).
-- **Plafonds** (`packages/accounts`) : 100 amis par compte (`friends_full` pour le mien,
-  `friend_full` pour celui de l'autre, vérifiés à la demande et à l'acceptation), 50 demandes
-  envoyées en attente (`requests_full`). Les plafonds sont aussi dans la condition de l'écriture
-  SQL : deux requêtes simultanées ne les dépassent pas (la perdante reçoit 409 `conflict`).
+- **Plafonds** (`packages/accounts`) : 100 amis par compte, 50 demandes envoyées en attente
+  (`requests_full`). À la demande, seul **mon** plafond est vérifié (`friends_full`) : une demande à
+  un compte qui a déjà 100 amis reçoit la même réponse qu'une autre (201), pour ne rien révéler à
+  un inconnu. Le plafond de l'autre n'est dit qu'à l'acceptation (`friend_full`), donc à quelqu'un
+  qui a échangé une demande avec lui. Les plafonds sont aussi dans la condition de l'écriture SQL :
+  deux requêtes simultanées ne les dépassent pas (la perdante reçoit 409 `conflict`).
+- **Pas de ligne orpheline** : l'insertion d'une demande exige, dans la même requête, que les deux
+  comptes existent encore (`EXISTS`). Un compte supprimé entre la lecture et l'écriture donne
+  `friend_unknown`, et un identifiant redonné par SQLite n'hérite de rien.
 - **Limite de débit** : 20 demandes par compte et par heure, réussies ou non (clé
-  `friend-request:<id>` de `throttle`) : on ne peut pas tester l'existence de pseudos sans limite.
-  Au-delà : 429 `too_many`, `Retry-After: 3600`.
+  `friend-request:<id>` de `throttle`) : on ne peut pas tester l'existence de pseudos sans limite,
+  même en rafale (compteur atomique, voir « Limites de débit »). Au-delà : 429 `too_many`,
+  `Retry-After: 3600`.
+- **Export** (`GET /api/account/export`) : en plus du pseudo, des dates et de la sauvegarde,
+  `friends` (chaque amitié ou demande : pseudo de l'autre, `status`, `direction` `sent` ou
+  `received`, `requestedAt`, `acceptedAt`) et `counters` (compteurs de débit en cours liés au
+  compte : mot de passe, salons PvP, connexions PvP, demandes d'ami).
 - **Dernière activité** : la même que pour l'administration (création, connexion, sauvegarde,
   usage de session), **arrondie au jour UTC** (`lastActiveDay`, minuit en ms). Le tri des amis
   (jour décroissant, puis pseudo) n'en dit pas plus que le jour. L'écran écrit « aujourd'hui »,
@@ -115,7 +126,7 @@ demande), index sur `user_b` et sur `(requested_by, status)`.
 Le salon PvP se rejoint par code (`docs/PVP.md`). Une invitation directe se brancherait ainsi, sans
 changer le salon :
 
-1. `POST /api/friends/<id>/invite` (ami accepté seulement, sinon 404) : le Worker crée le salon
+1. `POST /api/friends/<pseudo>/invite` (ami accepté seulement, sinon 404) : le Worker crée le salon
    comme `POST /api/pvp/rooms` (même limite de débit) et enregistre `{ from, to, code, expires }`
    (nouvelle table `pvp_invites`, migration suivante, expiration courte : 10 min).
 2. `GET /api/friends` (ou `/pending`) renverrait les invitations reçues non expirées ; l'écran
@@ -135,6 +146,11 @@ changer le salon :
 
 Un pseudo inconnu et un mauvais mot de passe reçoivent la même réponse, dans le même temps (une
 vérification factice est faite pour un pseudo inconnu).
+
+Chaque compteur (`throttle.ts`) est incrémenté en **une seule requête** (`INSERT … ON CONFLICT DO
+UPDATE … RETURNING count`) : une rafale de requêtes simultanées ne peut pas lire la même valeur et
+passer plus de fois que la limite. Le sel du jour des empreintes d'adresse IP n'est écrit que s'il
+manque encore, puis relu : deux requêtes simultanées en début de journée ont la même empreinte.
 
 ## Mot de passe perdu : réinitialisation par le propriétaire
 

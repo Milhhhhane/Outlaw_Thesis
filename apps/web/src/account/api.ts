@@ -72,9 +72,13 @@ export const api = {
   friendsPending: () => call<FriendPending>('GET', '/api/friends/pending'),
   requestFriend: (pseudo: string) =>
     call<FriendRequestAck>('POST', '/api/friends/requests', { pseudo }),
-  acceptFriend: (id: number) => call<FriendList>('POST', `/api/friends/${String(id)}/accept`),
-  declineFriend: (id: number) => call<FriendList>('POST', `/api/friends/${String(id)}/decline`),
-  removeFriend: (id: number) => call<FriendList>('DELETE', `/api/friends/${String(id)}`),
+  /** L'autre compte est désigné par son pseudo (aucun identifiant interne n'est exposé). */
+  acceptFriend: (pseudo: string) =>
+    call<FriendList>('POST', `/api/friends/${encodeURIComponent(pseudo)}/accept`),
+  declineFriend: (pseudo: string) =>
+    call<FriendList>('POST', `/api/friends/${encodeURIComponent(pseudo)}/decline`),
+  removeFriend: (pseudo: string) =>
+    call<FriendList>('DELETE', `/api/friends/${encodeURIComponent(pseudo)}`),
 };
 
 /** Moyen de contact du créateur (`public/config.json`, champ `contact`, vide par défaut). */
