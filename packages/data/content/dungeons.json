@@ -1183,5 +1183,616 @@
       "chapter": 2
     },
     "opensAfter": "hollow_throne"
+  },
+  {
+    "id": "sun_dunes",
+    "element": "fire",
+    "recommendedLevel": 3,
+    "modifier": {
+      "id": "heat_haze",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "vit",
+                "percent": 15,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["dune_raider", "dune_raider"],
+        "hpPct": 233,
+        "atkPct": 75
+      },
+      {
+        "enemies": ["dune_raider", "oasis_wraith"],
+        "hpPct": 231,
+        "atkPct": 75
+      },
+      {
+        "enemies": ["sun_sphinx"],
+        "hpPct": 136,
+        "atkPct": 75
+      }
+    ],
+    "rewards": {
+      "xp": 190,
+      "gold": 130,
+      "materials": {
+        "tier": 1,
+        "amount": 8
+      }
+    },
+    "loot": ["dune_bead", "sunstone"],
+    "map": {
+      "x": 30,
+      "y": 150,
+      "landmark": "dune",
+      "chapter": 3
+    },
+    "opensAfter": "rotwood"
+  },
+  {
+    "id": "hidden_oasis",
+    "element": "water",
+    "recommendedLevel": 6,
+    "modifier": {
+      "id": "mirage_veil",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_taken",
+            "subject": "self",
+            "limit": {
+              "per": "combat",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "shield",
+                "target": "self",
+                "power": 60,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["oasis_wraith", "brine_crab", "oasis_wraith"],
+        "hpPct": 109,
+        "atkPct": 113
+      },
+      {
+        "enemies": ["tide_caller", "oasis_wraith", "dune_raider"],
+        "hpPct": 137,
+        "atkPct": 113
+      },
+      {
+        "enemies": ["mirage_djinn", "oasis_wraith"],
+        "hpPct": 129,
+        "atkPct": 113
+      }
+    ],
+    "rewards": {
+      "xp": 260,
+      "gold": 210,
+      "materials": {
+        "tier": 1,
+        "amount": 8
+      }
+    },
+    "loot": ["oasis_gourd", "mirage_pearl"],
+    "map": {
+      "x": 74,
+      "y": 128,
+      "landmark": "oasis",
+      "chapter": 3
+    },
+    "opensAfter": "rotwood"
+  },
+  {
+    "id": "buried_temple",
+    "element": "nature",
+    "recommendedLevel": 8,
+    "modifier": {
+      "id": "buried_wards",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "hp_crossed",
+            "subject": "self",
+            "thresholdPct": 30,
+            "effects": [
+              {
+                "kind": "heal",
+                "target": "self",
+                "power": 60
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["ruin_sentinel", "thorn_witch", "ruin_sentinel"],
+        "hpPct": 60,
+        "atkPct": 113
+      },
+      {
+        "enemies": ["ruin_sentinel", "mire_slime", "thorn_witch", "ruin_sentinel"],
+        "hpPct": 47,
+        "atkPct": 113
+      },
+      {
+        "enemies": ["sand_colossus", "thorn_witch"],
+        "hpPct": 55,
+        "atkPct": 113
+      }
+    ],
+    "rewards": {
+      "xp": 470,
+      "gold": 260,
+      "materials": {
+        "tier": 2,
+        "amount": 7
+      }
+    },
+    "loot": ["scarab_brooch", "temple_idol"],
+    "map": {
+      "x": 122,
+      "y": 152,
+      "landmark": "pyramid",
+      "chapter": 3
+    },
+    "opensAfter": "rotwood"
+  },
+  {
+    "id": "glass_desert",
+    "element": "fire",
+    "recommendedLevel": 11,
+    "modifier": {
+      "id": "sun_glare",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_dealt",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "other",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["dune_raider", "ash_acolyte", "dune_raider", "cinder_fiend"],
+        "hpPct": 97,
+        "atkPct": 109
+      },
+      {
+        "enemies": ["cinder_fiend", "dune_raider", "ruin_sentinel"],
+        "hpPct": 113,
+        "atkPct": 109
+      },
+      {
+        "enemies": ["sun_sphinx", "dune_raider", "dune_raider"],
+        "hpPct": 82,
+        "atkPct": 109
+      }
+    ],
+    "rewards": {
+      "xp": 780,
+      "gold": 350,
+      "materials": {
+        "tier": 2,
+        "amount": 13
+      }
+    },
+    "loot": ["glass_bead", "molten_lens"],
+    "map": {
+      "x": 170,
+      "y": 130,
+      "landmark": "salt",
+      "chapter": 3
+    },
+    "opensAfter": "rotwood"
+  },
+  {
+    "id": "storm_mesa",
+    "element": "water",
+    "recommendedLevel": 14,
+    "modifier": {
+      "id": "quicksand",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "damage_taken",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "tempo",
+                "target": "self",
+                "amount": 6
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["oasis_wraith", "tide_caller", "oasis_wraith", "frost_ghoul"],
+        "hpPct": 109,
+        "atkPct": 132
+      },
+      {
+        "enemies": ["brine_crab", "oasis_wraith", "dune_raider", "oasis_wraith"],
+        "hpPct": 97,
+        "atkPct": 132
+      },
+      {
+        "enemies": ["mirage_djinn", "tide_caller", "oasis_wraith"],
+        "hpPct": 113,
+        "atkPct": 132
+      }
+    ],
+    "rewards": {
+      "xp": 1010,
+      "gold": 440,
+      "materials": {
+        "tier": 2,
+        "amount": 17
+      }
+    },
+    "loot": ["storm_feather", "thunder_horn"],
+    "map": {
+      "x": 222,
+      "y": 150,
+      "landmark": "mesa",
+      "chapter": 3
+    },
+    "opensAfter": "rotwood"
+  },
+  {
+    "id": "sand_necropolis",
+    "element": "nature",
+    "recommendedLevel": 18,
+    "modifier": {
+      "id": "scarab_swarm",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "unit_down",
+            "subject": "ally",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 15,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["ruin_sentinel", "moss_brute", "ruin_sentinel", "thorn_witch"],
+        "hpPct": 70,
+        "atkPct": 183
+      },
+      {
+        "enemies": ["ruin_sentinel", "oasis_wraith", "dune_raider", "ruin_sentinel"],
+        "hpPct": 79,
+        "atkPct": 183
+      },
+      {
+        "enemies": ["sand_colossus", "ruin_sentinel", "thorn_witch"],
+        "hpPct": 64,
+        "atkPct": 183
+      }
+    ],
+    "rewards": {
+      "xp": 1260,
+      "gold": 560,
+      "materials": {
+        "tier": 2,
+        "amount": 20
+      }
+    },
+    "loot": ["bone_amulet", "tomb_seal"],
+    "map": {
+      "x": 274,
+      "y": 112,
+      "landmark": "obelisk",
+      "chapter": 3
+    },
+    "opensAfter": "twin_rivers"
+  },
+  {
+    "id": "sun_well",
+    "element": "fire",
+    "recommendedLevel": 22,
+    "modifier": {
+      "id": "scorching_sun",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "turn_start",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": -10,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["dune_raider", "cinder_fiend", "dune_raider", "ash_acolyte"],
+        "hpPct": 88,
+        "atkPct": 165
+      },
+      {
+        "enemies": ["ash_acolyte", "dune_raider", "ruin_sentinel", "cinder_hound"],
+        "hpPct": 91,
+        "atkPct": 165
+      },
+      {
+        "enemies": ["sun_sphinx", "dune_raider", "ash_acolyte"],
+        "hpPct": 79,
+        "atkPct": 165
+      }
+    ],
+    "rewards": {
+      "xp": 1500,
+      "gold": 700,
+      "materials": {
+        "tier": 3,
+        "amount": 8
+      }
+    },
+    "loot": ["cinder_glass", "solar_diadem"],
+    "map": {
+      "x": 222,
+      "y": 88,
+      "landmark": "crater",
+      "chapter": 3
+    },
+    "opensAfter": "ash_caldera"
+  },
+  {
+    "id": "mirage_palace",
+    "element": "water",
+    "recommendedLevel": 25,
+    "modifier": {
+      "id": "shifting_halls",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "turn_end",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "shield",
+                "target": "lowest_hp_ally",
+                "power": 20,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["oasis_wraith", "dune_raider", "oasis_wraith", "tide_caller"],
+        "hpPct": 111,
+        "atkPct": 145
+      },
+      {
+        "enemies": ["frost_ghoul", "oasis_wraith", "ruin_sentinel", "oasis_wraith"],
+        "atkPct": 145,
+        "hpPct": 97
+      },
+      {
+        "enemies": ["mirage_djinn", "tidal_hydra"],
+        "hpPct": 92,
+        "atkPct": 145
+      }
+    ],
+    "rewards": {
+      "xp": 1620,
+      "gold": 850,
+      "materials": {
+        "tier": 3,
+        "amount": 9
+      }
+    },
+    "loot": ["palace_veil", "djinn_lamp"],
+    "map": {
+      "x": 164,
+      "y": 74,
+      "landmark": "spire",
+      "chapter": 3
+    },
+    "opensAfter": "frozen_abyss"
+  },
+  {
+    "id": "hanging_gardens",
+    "element": "nature",
+    "recommendedLevel": 28,
+    "modifier": {
+      "id": "thin_air",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "spell_cast",
+            "subject": "self",
+            "slots": ["ult"],
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "def",
+                "percent": -15,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["dune_raider", "thorn_witch", "ruin_sentinel", "moss_brute"],
+        "hpPct": 95,
+        "atkPct": 262
+      },
+      {
+        "enemies": ["thorn_witch", "ruin_sentinel", "cinder_fiend", "thorn_witch"],
+        "atkPct": 262,
+        "hpPct": 100
+      },
+      {
+        "enemies": ["sand_colossus", "elder_bramble", "thorn_witch"],
+        "hpPct": 68,
+        "atkPct": 262
+      }
+    ],
+    "rewards": {
+      "xp": 1900,
+      "gold": 1100,
+      "materials": {
+        "tier": 3,
+        "amount": 9
+      }
+    },
+    "loot": ["ivy_ring", "hanging_bloom"],
+    "map": {
+      "x": 106,
+      "y": 52,
+      "landmark": "arch",
+      "chapter": 3
+    },
+    "opensAfter": "elder_swamp"
+  },
+  {
+    "id": "sky_citadel",
+    "element": "mixed",
+    "recommendedLevel": 30,
+    "modifier": {
+      "id": "zenith",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "vit",
+                "percent": 10,
+                "duration": 2
+              }
+            ]
+          }
+        },
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "def",
+                "percent": 20,
+                "duration": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["dune_raider", "oasis_wraith", "ruin_sentinel", "dune_raider"],
+        "hpPct": 90,
+        "atkPct": 230
+      },
+      {
+        "enemies": ["ruin_sentinel", "cinder_fiend", "oasis_wraith", "frost_ghoul"],
+        "hpPct": 91,
+        "atkPct": 230
+      },
+      {
+        "enemies": ["sun_sphinx", "mirage_djinn", "sand_colossus"],
+        "hpPct": 41,
+        "atkPct": 230
+      }
+    ],
+    "rewards": {
+      "xp": 2400,
+      "gold": 1500,
+      "materials": {
+        "tier": 3,
+        "amount": 8
+      }
+    },
+    "loot": ["cloud_ring", "zenith_orb"],
+    "map": {
+      "x": 178,
+      "y": 26,
+      "landmark": "sky",
+      "chapter": 3
+    },
+    "opensAfter": "eclipse_keep"
   }
 ]

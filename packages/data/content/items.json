@@ -651,5 +651,425 @@
         "mulPct": 25
       }
     ]
+  },
+  {
+    "id": "dune_bead",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "lowest_hp_enemy",
+          "stat": "atk",
+          "percent": -8,
+          "duration": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "sunstone",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "lowest_hp_enemy",
+          "status": "burn",
+          "duration": 2,
+          "power": 15
+        }
+      },
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 20
+      }
+    ]
+  },
+  {
+    "id": "oasis_gourd",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "heal",
+          "target": "lowest_hp_ally",
+          "power": 15
+        }
+      }
+    ]
+  },
+  {
+    "id": "mirage_pearl",
+    "rarity": "rare",
+    "stat": {
+      "stat": "def",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "shield",
+          "target": "self",
+          "power": 30,
+          "duration": 1
+        }
+      },
+      {
+        "type": "limit",
+        "delta": 1
+      }
+    ]
+  },
+  {
+    "id": "scarab_brooch",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "def",
+          "percent": 10,
+          "duration": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "temple_idol",
+    "rarity": "rare",
+    "stat": {
+      "stat": "hp",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_allies",
+          "stat": "def",
+          "percent": 6,
+          "duration": 1
+        }
+      },
+      {
+        "type": "threshold",
+        "delta": 10
+      }
+    ]
+  },
+  {
+    "id": "glass_bead",
+    "rarity": "common",
+    "stat": {
+      "stat": "atk",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 15
+      }
+    ]
+  },
+  {
+    "id": "molten_lens",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "damage",
+          "target": "lowest_hp_enemy",
+          "power": 20
+        }
+      },
+      {
+        "type": "scale",
+        "field": "percent",
+        "mulPct": 20
+      }
+    ]
+  },
+  {
+    "id": "storm_feather",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "tempo",
+          "target": "self",
+          "amount": -6
+        }
+      }
+    ]
+  },
+  {
+    "id": "thunder_horn",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "tempo",
+          "target": "all_enemies",
+          "amount": 6
+        }
+      },
+      {
+        "type": "scale",
+        "field": "amount",
+        "mulPct": 25
+      }
+    ]
+  },
+  {
+    "id": "bone_amulet",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "lowest_hp_enemy",
+          "stat": "def",
+          "percent": -8,
+          "duration": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "tomb_seal",
+    "rarity": "rare",
+    "stat": {
+      "stat": "def",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "shield",
+          "target": "all_allies",
+          "power": 15,
+          "duration": 1
+        }
+      },
+      {
+        "type": "limit",
+        "delta": 1
+      }
+    ]
+  },
+  {
+    "id": "cinder_glass",
+    "rarity": "common",
+    "stat": {
+      "stat": "atk",
+      "pct": 4
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "status",
+          "target": "lowest_hp_enemy",
+          "status": "burn",
+          "duration": 1,
+          "power": 12
+        }
+      }
+    ]
+  },
+  {
+    "id": "solar_diadem",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "self",
+          "stat": "atk",
+          "percent": 10,
+          "duration": 2
+        }
+      },
+      {
+        "type": "scale",
+        "field": "duration",
+        "mulPct": 30
+      }
+    ]
+  },
+  {
+    "id": "palace_veil",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "tempo",
+          "target": "lowest_hp_enemy",
+          "amount": 8
+        }
+      }
+    ]
+  },
+  {
+    "id": "djinn_lamp",
+    "rarity": "rare",
+    "stat": {
+      "stat": "hp",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "heal",
+          "target": "all_allies",
+          "power": 10
+        }
+      },
+      {
+        "type": "scale",
+        "field": "power",
+        "mulPct": 15
+      }
+    ]
+  },
+  {
+    "id": "ivy_ring",
+    "rarity": "common",
+    "stat": {
+      "stat": "def",
+      "pct": 5
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "heal",
+          "target": "self",
+          "power": 15
+        }
+      }
+    ]
+  },
+  {
+    "id": "hanging_bloom",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 6
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "other_allies",
+          "stat": "vit",
+          "percent": 8,
+          "duration": 1
+        }
+      },
+      {
+        "type": "threshold",
+        "delta": 10
+      }
+    ]
+  },
+  {
+    "id": "cloud_ring",
+    "rarity": "common",
+    "stat": {
+      "stat": "hp",
+      "pct": 8
+    },
+    "mods": [
+      {
+        "type": "scale",
+        "field": "duration",
+        "mulPct": 25
+      }
+    ]
+  },
+  {
+    "id": "zenith_orb",
+    "rarity": "rare",
+    "stat": {
+      "stat": "atk",
+      "pct": 7
+    },
+    "mods": [
+      {
+        "type": "addEffect",
+        "effect": {
+          "kind": "statMod",
+          "target": "all_allies",
+          "stat": "atk",
+          "percent": 6,
+          "duration": 1
+        }
+      },
+      {
+        "type": "scale",
+        "field": "percent",
+        "mulPct": 25
+      }
+    ]
   }
 ]
