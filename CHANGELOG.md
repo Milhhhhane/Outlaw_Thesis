@@ -12,6 +12,18 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
   plein quand le talent est pris ; le lien vers le rival d'un « ou » déjà choisi repasse en gris.
   Accolade sous les deux nœuds du « ou ». Test : un trait par prérequis, pour les 25 héros.
 
+## [Non publié] — 2026-10-28 — administration
+
+### Ajouté
+
+- Écran « Administration » au camp, réservé aux pseudos du secret Cloudflare `ADMIN_PSEUDOS`
+  (rien dans le dépôt ; secret absent = personne n'est admin) : liste paginée des comptes
+  (création, dernière connexion, dernière sauvegarde, dernière activité, sessions actives,
+  avancement résumé) et fiche par compte (héros, donjons). API `GET /api/admin/users[/<id>]` ;
+  un non-admin reçoit la même réponse 404 qu'une route inconnue. `/api/me` renvoie `admin`.
+- Page de confidentialité et `docs/ACCOUNTS.md` : ce que l'administrateur voit.
+  `docs/DEPLOY.md` : créer le secret (compte d'abord, secret ensuite).
+
 ## [Non publié] — 2026-10-28 — éveil des héros et sanctuaires d'essence
 
 ### Ajouté

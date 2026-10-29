@@ -30,6 +30,7 @@ import { EssenceRun } from './screens/EssenceRun';
 import { Essences } from './screens/Essences';
 import { Workshop } from './screens/Workshop';
 import { normalizeCode } from './pvp/api';
+import { Admin } from './screens/Admin';
 import { PvpMenu } from './pvp/PvpMenu';
 import { PvpRoom } from './pvp/PvpRoom';
 import { ProfileProvider } from './state/profile';
@@ -95,6 +96,8 @@ function Current({ route, go }: { readonly route: Route; readonly go: (r: Route)
       return <PvpMenu />;
     case 'pvp_room':
       return <PvpRoom code={route.code} />;
+    case 'admin':
+      return <Admin />;
   }
 }
 

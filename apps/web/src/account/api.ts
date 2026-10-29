@@ -1,4 +1,11 @@
-import type { CloudSave, Me, SaveAck, SaveEnvelope } from '@outlaw/accounts';
+import type {
+  AdminAccountDetail,
+  AdminAccountList,
+  CloudSave,
+  Me,
+  SaveAck,
+  SaveEnvelope,
+} from '@outlaw/accounts';
 
 /**
  * Appels à l'API des comptes (même origine que le jeu). Le cookie de session est HttpOnly : le
@@ -50,6 +57,13 @@ export const api = {
   putSave: (baseRev: number, save: SaveEnvelope) =>
     call<SaveAck>('PUT', '/api/save', { baseRev, save }),
   exportData: () => call<Record<string, unknown>>('GET', '/api/account/export'),
+  /** Administration (réservée aux administrateurs ; 404 pour les autres). */
+  adminAccounts: (limit: number, offset: number) =>
+    call<AdminAccountList>(
+      'GET',
+      `/api/admin/users?limit=${String(limit)}&offset=${String(offset)}`,
+    ),
+  adminAccount: (id: number) => call<AdminAccountDetail>('GET', `/api/admin/users/${String(id)}`),
 };
 
 /** Moyen de contact du créateur (`public/config.json`, champ `contact`, vide par défaut). */

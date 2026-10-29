@@ -118,6 +118,10 @@
   peut monter d'étage, règles de simulation en CI (`targets.tower`). Ouvert : pas de remise à zéro
   ni de récompense de rejeu ; courbe à confirmer au test humain.
 
+- Administration — écran réservé aux pseudos du secret `ADMIN_PSEUDOS` : comptes, activité,
+  avancement, fiche par compte. Reste au propriétaire : créer le secret dans Cloudflare
+  (`docs/DEPLOY.md`).
+
 - Éveil et sanctuaires d'essence — trois donjons d'essence (un par élément, paliers I à III,
   essences seulement), éveil une fois par héros (niveau 20, essences de son élément, or) : +4 %
   de stats et passif +20 % par une formule commune ; badge et liseré en combat. Mesuré : écart

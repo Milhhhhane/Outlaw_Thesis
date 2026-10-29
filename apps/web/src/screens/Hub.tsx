@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
+import { useAccount } from '../account/AccountProvider';
 import { SyncBadge } from '../account/windows';
 import { Button, Icon, RefusalToast, Resources } from '../game/ui';
 import { useEscape } from '../game/keys';
@@ -51,6 +52,9 @@ export function Hub() {
   const { go, openOptions, toggleTestMode } = useGame();
   const { profile, recovered } = useProfile();
   const test = profile.testMode;
+  // Administration : seulement si le serveur a dit « administrateur » (sinon l'entrée n'existe pas).
+  const account = useAccount();
+  const admin = account?.status === 'signed' && account.admin && !account.mustChangePassword;
   const todo = campTodo(content, profile);
   // Récompenses de quêtes et succès à réclamer (le profil passe au nouveau jour tout seul).
   const [now] = useState(() => Date.now());
@@ -150,6 +154,19 @@ export function Hub() {
         >
           {t('hub.demo')}
         </Button>
+        {admin && !test && (
+          <Button
+            variant="quiet"
+            size="small"
+            icon="stat"
+            title={t('admin.entry.hint')}
+            onClick={() => {
+              go({ name: 'admin' });
+            }}
+          >
+            {t('admin.entry')}
+          </Button>
+        )}
         {test && (
           <Button variant="primary" size="small" onClick={toggleTestMode}>
             {t('hub.menu.testExit')}

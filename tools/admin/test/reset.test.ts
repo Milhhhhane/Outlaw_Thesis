@@ -78,7 +78,7 @@ group('réinitialisation par le propriétaire', () => {
       401,
     );
     const login = await call('POST', '/api/login', { pseudo: 'Bob_42', password: temporary });
-    expect(login.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: true });
+    expect(login.json).toEqual({ pseudo: 'Bob_42', mustChangePassword: true, admin: false });
     expect((await call('GET', '/api/save', undefined, login.cookie)).status).toBe(403);
     const changed = await call(
       'POST',
