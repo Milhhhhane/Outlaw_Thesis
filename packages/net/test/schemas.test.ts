@@ -33,7 +33,8 @@ describe('schémas des unités compilées', () => {
       }
     }
     expect(checked).toBeGreaterThan(1000);
-  });
+    // 60 objets depuis le chapitre 3 : plusieurs milliers de compilations, lent sur la CI.
+  }, 60_000);
 
   it('acceptent deux objets sur un héros', () => {
     const items = content.items.slice(0, 2).map((item) => ({ id: item.id, upgrade: maxUpgrade }));

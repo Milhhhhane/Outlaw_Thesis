@@ -314,7 +314,7 @@ describe('équipe et énergie', () => {
 });
 
 describe('donjons et butin', () => {
-  it('récompenses : XP (repos réduit), or, matériaux, objet, ouverture du suivant', () => {
+  it('récompenses : XP (équipe seulement), or, matériaux, objet, ouverture du suivant', () => {
     let profile = value(setTeam(content, newProfile(content, 3), ['pyra', 'maree']));
     expect(dungeonOpen(content, profile, 'ember_wastes')).toBe(true);
     expect(dungeonOpen(content, profile, 'drowned_halls')).toBe(false);
@@ -326,7 +326,9 @@ describe('donjons et butin', () => {
       materials: { tier: 1, amount: 8 },
     });
     expect(first.report.xp.pyra).toEqual({ gained: 60, ready: true });
-    expect(first.report.xp.ronce).toEqual({ gained: 30, ready: false });
+    // Ronce, débloquée mais hors équipe, ne gagne rien et ne figure pas au bilan.
+    expect(first.report.xp.ronce).toBeUndefined();
+    expect(profile.heroes.ronce).toMatchObject({ level: 1, xp: 0 });
     expect(profile.heroes.pyra).toMatchObject({ level: 1, xp: 60 });
     expect(profile.items).toHaveLength(1);
     expect(profile.dungeons.ember_wastes).toEqual({ clears: 1, dry: 0, tier: 2 });

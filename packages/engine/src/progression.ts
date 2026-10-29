@@ -400,7 +400,10 @@ export interface DungeonReport {
   readonly tierUnlocked: number | null;
   /** Premier passage de ce palier du donjon. */
   readonly firstClear: boolean;
-  /** XP gagnée par héros ; `ready` : il a l'XP du niveau suivant (reste la poussière à payer). */
+  /**
+   * XP gagnée par héros de l'équipe (les autres n'en gagnent pas et n'y figurent pas) ; `ready` :
+   * il a l'XP du niveau suivant (reste la poussière à payer).
+   */
   readonly xp: Readonly<Record<string, { gained: number; ready: boolean }>>;
   readonly gold: number;
   readonly materials: { readonly tier: number; readonly amount: number };
@@ -432,7 +435,7 @@ export interface DungeonReport {
 }
 
 /**
- * Récompenses d'un donjon terminé à un palier : XP (au repos : taux réduit), or et poussière (plus
+ * Récompenses d'un donjon terminé à un palier : XP (équipe seulement), or et poussière (plus
  * avec la maîtrise du donjon et le palier), un objet de ce donjon (rare garanti au premier passage
  * du palier et au bout de N passages sans rare ici), coffre du palier, déblocage éventuel d'un
  * héros et du palier suivant. Un objet déjà possédé devient une copie.
@@ -460,14 +463,12 @@ export function completeDungeon(
     Math.round(n * factor(reward));
 
   const heroes = { ...profile.heroes };
+  // Seuls les héros de l'équipe qui a combattu gagnent de l'XP ; les autres n'en gagnent aucune.
   const xp: Record<string, { gained: number; ready: boolean }> = {};
   for (const id of profile.unlocked) {
     const hero = heroes[id];
-    if (hero === undefined) continue;
-    const gained = Math.round(
-      gain(dungeon.rewards.xp, 'xp') *
-        (profile.team.includes(id) ? 1 : balance.progression.restXpRate),
-    );
+    if (hero === undefined || !profile.team.includes(id)) continue;
+    const gained = gain(dungeon.rewards.xp, 'xp');
     heroes[id] = addXp(hero, gained, content);
     const cost = levelUpCost(content, heroes[id]);
     xp[id] = { gained, ready: cost !== null && heroes[id].xp >= cost.xp };

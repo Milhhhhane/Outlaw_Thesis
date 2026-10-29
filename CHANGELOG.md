@@ -2,6 +2,14 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-29 — XP réservée à l'équipe
+
+### Modifié
+
+- Seuls les héros qui ont combattu gagnent de l'XP. Les héros débloqués hors équipe ne reçoivent
+  plus 50 % de l'XP des donjons et n'apparaissent plus sur l'écran de récompenses. Paramètre
+  `restXpRate` retiré de `balance.json`.
+
 ## [Non publié] — 2026-10-29 — chapitre 3
 
 ### Ajouté

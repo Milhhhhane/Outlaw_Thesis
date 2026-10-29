@@ -27,8 +27,9 @@ Un passage gagnant d'un donjon donne, au premier passage comme au rejeu (`replay
 | obsidian_pass   |   29 | 2100 | 1250 | 10 pure   | or (8)             | obsidian_shard / obsidian_fang |
 | hollow_throne   |   30 | 2400 | 1500 | 12 pure   | or (8)             | hollow_seal / throne_relic     |
 
-- **XP** : chaque héros débloqué la reçoit, à 50 % (`restXpRate`) s'il n'est pas dans l'équipe.
-  Elle se met en banque : le niveau se paie (voir plus bas).
+- **XP** : seuls les héros de l'équipe qui a combattu la reçoivent ; un héros hors équipe n'en
+  gagne aucune (ni ici, ni dans la tour, le boss, les essences, les quêtes ou le PvP). Elle se met
+  en banque : le niveau se paie (voir plus bas).
 - **Or** : à tous les passages.
 - **Poussière** : trois paliers (brute, fine, pure), celui du donjon ; +10 % par rang de maîtrise
   (rangs à 5, 15, 40 et 100 victoires dans le donjon).

@@ -1,5 +1,5 @@
 import type { Profile } from '@outlaw/data';
-import { newProfile, type DungeonReport } from '@outlaw/engine';
+import { completeDungeon, newProfile, setTeam, type DungeonReport } from '@outlaw/engine';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -257,5 +257,23 @@ describe('récompenses : copies, maîtrise, Rejouer', () => {
     ).toBeInTheDocument();
     const cards = screen.getByRole('list', { name: t('reward.cards') });
     expect(within(cards).getAllByRole('listitem').length).toBeGreaterThan(3);
+  });
+
+  it('seule l’équipe qui a combattu a une carte d’XP, pas les héros au repos', () => {
+    const team = setTeam(content, newProfile(content, 3), ['pyra', 'maree']);
+    if (!team.ok) throw new Error(team.reason);
+    const won = completeDungeon(content, team.value, 'ember_wastes');
+    if (!won.ok) throw new Error(won.reason);
+    showRewards(won.value.report);
+    for (const hero of ['pyra', 'maree']) {
+      const gained = won.value.report.xp[hero]?.gained ?? 0;
+      expect(gained).toBeGreaterThan(0);
+      expect(
+        screen.getByText(t('reward.xp', { hero: names.hero(hero), xp: gained })),
+      ).toBeInTheDocument();
+    }
+    for (const hero of ['ronce', 'cendre'])
+      expect(screen.queryByText(new RegExp(`^${names.hero(hero)} : \\+`))).toBeNull();
+    expect(screen.getAllByText(t('reward.xpCard'))).toHaveLength(2);
   });
 });

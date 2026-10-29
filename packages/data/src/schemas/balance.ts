@@ -73,8 +73,6 @@ export const balanceSchema = z
       talentPointLevels: z.array(posInt).min(1),
       /** Niveaux de déblocage des 3 pages de talents. */
       pageUnlockLevels: z.array(posInt).length(3),
-      /** XP des héros au repos, en fraction du taux normal. */
-      restXpRate: z.number().min(0).max(1),
       /** XP pour passer du niveau N au suivant : round(base × N ^ exponent). */
       xp: z.strictObject({ base: pos, exponent: pos }),
       /**
