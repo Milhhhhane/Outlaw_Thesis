@@ -205,7 +205,7 @@ export function candidates(
       const sizeOf = (id: string): number => chests.tiers.find((t) => t.id === id)?.fragments ?? 0;
       const expected = odds.reduce((sum, o) => sum + (o.pct / 100) * sizeOf(o.chest), 0);
       const missing = 1 - odds.reduce((sum, o) => sum + o.pct / 100, 0);
-      const first = !tierCleared(profile, dungeon.id, tier) && dungeon.firstClearChest !== false;
+      const first = !tierCleared(profile, dungeon.id, tier);
       const fragments = expected + (first ? missing * sizeOf(chests.tiers[0]?.id ?? '') : 0);
       out.push({
         dungeon: dungeon.id,

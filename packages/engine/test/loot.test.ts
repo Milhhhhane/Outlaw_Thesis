@@ -138,32 +138,6 @@ describe('butin d’un passage', () => {
     });
   });
 
-  it('firstClearRare / firstClearChest à false : pas de rare ni de coffre garantis pour ce donjon', () => {
-    const base = content.dungeonById.get('ember_wastes')!;
-    const plain = { ...base, firstClearRare: false, firstClearChest: false };
-    const custom = {
-      ...content,
-      dungeons: content.dungeons.map((d) => (d.id === base.id ? plain : d)),
-    };
-    custom.dungeonById = new Map(custom.dungeons.map((d) => [d.id, d]));
-    // Sur 30 graines, la règle par défaut donne toujours le rare et un coffre au premier passage ;
-    // sans garantie, le commun (85 %) tombe le plus souvent et le coffre manque parfois.
-    let commons = 0;
-    let noChest = 0;
-    for (let seed = 1; seed <= 30; seed++) {
-      const profile = newProfile(content, seed);
-      const usual = value(completeDungeon(content, profile, base.id)).report;
-      expect(usual.item.item).toBe('eternal_ember');
-      expect(usual.chest).not.toBeNull();
-      const report = value(completeDungeon(custom, profile, base.id)).report;
-      expect(report.item.guaranteed).toBe(false);
-      if (report.item.item === 'ember_charm') commons++;
-      if (report.chest === null) noChest++;
-    }
-    expect(commons).toBeGreaterThan(15);
-    expect(noChest).toBeGreaterThan(5);
-  });
-
   it('seuls les objets du donjon tombent ; un objet déjà possédé devient une copie', () => {
     const dungeon = content.dungeonById.get('drowned_halls')!;
     let current = newProfile(content, 11);

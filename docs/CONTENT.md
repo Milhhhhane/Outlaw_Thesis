@@ -159,11 +159,6 @@ après la Citadelle de cendre pour ne pas équiper l'équipe trop tôt (`docs/EC
 « Chapitre 2 »). Le chargement refuse un `opensAfter` inconnu et tout cycle de prérequis
 (explicites ou implicites : « cycle de déblocage : a → b → a »).
 
-`firstClearRare` et `firstClearChest` (facultatifs, booléens) : garanties du premier passage de
-chaque palier pour ce donjon. Absents : la règle commune (`economy.loot.firstClearRare` pour le
-rare, un coffre de bronze au moins pour le coffre) ; `false` retire la garantie pour ce donjon
-seulement.
-
 `scene` (facultatif) : identifiant du décor de combat (`bg/<scene>.png`) si le donjon réutilise
 celui d'un autre ; sinon le décor porte l'identifiant du donjon.
 
