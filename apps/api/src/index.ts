@@ -23,6 +23,7 @@ import {
   verifyPassword,
 } from '@outlaw/accounts/hash';
 import type { z } from 'zod';
+import { accountDetail, isAdmin, listAccounts } from './admin';
 import { ensureSchema, type Database } from './db';
 import { allow, clear, fail, ipId, waitFor } from './throttle';
 
@@ -44,6 +45,11 @@ export interface Env {
   readonly DB: Database;
   readonly ASSETS?: { fetch(request: Request): Promise<Response> };
   readonly PVP?: RoomNamespace;
+  /**
+   * Secret Cloudflare (jamais dans le dépôt) : pseudos administrateurs séparés par des virgules.
+   * Absent ou vide : personne n'est administrateur. Voir docs/DEPLOY.md.
+   */
+  readonly ADMIN_PSEUDOS?: string;
 }
 
 const COOKIE = '__Host-session';
@@ -181,7 +187,12 @@ function tooMany(waitMs: number): HttpError {
   return new HttpError(429, 'too_many', { retryAfter }, { 'Retry-After': String(retryAfter) });
 }
 
-async function register(request: Request, db: Database, ip: string, now: number) {
+/** Réponse « qui suis-je » ; le drapeau d'administration vient du secret du Worker, jamais du client. */
+function meOf(env: Env, pseudo: string, mustChange: boolean): Me {
+  return { pseudo, mustChangePassword: mustChange, admin: isAdmin(env.ADMIN_PSEUDOS, pseudo) };
+}
+
+async function register(request: Request, env: Env, db: Database, ip: string, now: number) {
   const { pseudo, password } = await body(request, registerSchema);
   const problem = pseudoProblem(pseudo) ?? passwordProblem(password, pseudo);
   if (problem !== null) throw new HttpError(400, problem);
@@ -208,11 +219,10 @@ async function register(request: Request, db: Database, ip: string, now: number)
     .first<{ id: number }>();
   if (user === null) throw new HttpError(500, 'invalid');
   const token = await newSession(db, user.id, now);
-  const me: Me = { pseudo, mustChangePassword: false };
-  return json(201, me, { 'Set-Cookie': cookie(token) });
+  return json(201, meOf(env, pseudo, false), { 'Set-Cookie': cookie(token) });
 }
 
-async function login(request: Request, db: Database, ip: string, now: number) {
+async function login(request: Request, env: Env, db: Database, ip: string, now: number) {
   const { pseudo, password } = await body(request, credentialsSchema);
   const userKey = `login:${pseudoKey(pseudo)}`;
   const ipKey = `login-ip:${ip}`;
@@ -244,8 +254,9 @@ async function login(request: Request, db: Database, ip: string, now: number) {
   }
   await db.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').bind(now, user.id).run();
   const token = await newSession(db, user.id, now);
-  const me: Me = { pseudo: user.pseudo, mustChangePassword: user.must_change === 1 };
-  return json(200, me, { 'Set-Cookie': cookie(token) });
+  return json(200, meOf(env, user.pseudo, user.must_change === 1), {
+    'Set-Cookie': cookie(token),
+  });
 }
 
 async function changePassword(request: Request, db: Database, s: Session, now: number) {
@@ -422,6 +433,22 @@ async function pvpConnect(
   throw new HttpError(503, 'unavailable');
 }
 
+/* ------------------------------------------------------------ Administration */
+
+const ADMIN_ROUTE = /^\/api\/admin\/users(?:\/([0-9]{1,15}))?$/;
+
+async function adminRoute(
+  db: Database,
+  url: URL,
+  id: string | undefined,
+  now: number,
+): Promise<Response> {
+  if (id === undefined) return json(200, await listAccounts(db, url, now));
+  const detail = await accountDetail(db, Number(id), now);
+  if (detail === null) throw new HttpError(404, 'not_found');
+  return json(200, detail);
+}
+
 /** Routes accessibles pendant qu'un changement de mot de passe est exigé. */
 const ALLOWED_WHEN_LOCKED = new Set(['GET /api/me', 'POST /api/password', 'POST /api/logout']);
 
@@ -436,8 +463,9 @@ async function route(request: Request, env: Env, now: number): Promise<Response>
   await ensureSchema(db, now);
   const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
 
-  if (route === 'POST /api/register') return register(request, db, await ipId(db, ip, now), now);
-  if (route === 'POST /api/login') return login(request, db, await ipId(db, ip, now), now);
+  if (route === 'POST /api/register')
+    return register(request, env, db, await ipId(db, ip, now), now);
+  if (route === 'POST /api/login') return login(request, env, db, await ipId(db, ip, now), now);
 
   const s = await session(request, db, now);
   if (route === 'POST /api/logout') {
@@ -456,11 +484,9 @@ async function route(request: Request, env: Env, now: number): Promise<Response>
 
   let response: Response;
   switch (route) {
-    case 'GET /api/me': {
-      const me: Me = { pseudo: s.user.pseudo, mustChangePassword: s.user.must_change === 1 };
-      response = json(200, me);
+    case 'GET /api/me':
+      response = json(200, meOf(env, s.user.pseudo, s.user.must_change === 1));
       break;
-    }
     case 'POST /api/password':
       response = await changePassword(request, db, s, now);
       break;
@@ -475,8 +501,14 @@ async function route(request: Request, env: Env, now: number): Promise<Response>
     case 'GET /api/account/export':
       response = await exportData(db, s);
       break;
-    default:
-      throw new HttpError(404, 'not_found');
+    default: {
+      // Administration : un non-administrateur reçoit la réponse d'une route inconnue.
+      const admin = request.method === 'GET' ? ADMIN_ROUTE.exec(url.pathname) : null;
+      if (admin === null || !isAdmin(env.ADMIN_PSEUDOS, s.user.pseudo)) {
+        throw new HttpError(404, 'not_found');
+      }
+      response = await adminRoute(db, url, admin[1], now);
+    }
   }
   if (s.refresh !== null) response.headers.append('Set-Cookie', s.refresh);
   return response;

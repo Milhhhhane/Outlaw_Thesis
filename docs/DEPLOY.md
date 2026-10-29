@@ -16,7 +16,7 @@ déployé par **Workers Builds** (intégration Git de Cloudflare).
 | Commande de build         | `pnpm run build`                                |
 | Commande de déploiement   | `npx wrangler deploy` (valeur par défaut)       |
 | Dossier publié            | `apps/web/dist` (déclaré dans `wrangler.jsonc`) |
-| Variables d'environnement | aucune (aucun secret)                           |
+| Variables d'environnement | aucune ; un secret facultatif `ADMIN_PSEUDOS`   |
 | Base D1                   | `outlaw-thesis`, liaison `DB` (voir plus bas)   |
 | Version de Node           | lue dans `.node-version` (24)                   |
 | Version de pnpm           | lue dans `packageManager` de `package.json`     |
@@ -68,6 +68,38 @@ Si des erreurs 1102 (« Worker exceeded resource limits ») apparaissent à la c
 plan Workers Paid (30 s par défaut). Voir `docs/DECISIONS.md`.
 
 Réinitialiser un mot de passe : `docs/ACCOUNTS.md`.
+
+## Administration : secret `ADMIN_PSEUDOS` (facultatif)
+
+L'écran « Administration » du jeu (comptes, activité, avancement ; voir `docs/ACCOUNTS.md`)
+n'apparaît qu'aux pseudos listés dans le secret `ADMIN_PSEUDOS` du Worker. Ce secret n'est pas
+dans le dépôt : ni dans `vars`, ni dans `secrets.required` de `wrangler.jsonc` (ce dernier ferait
+échouer le déploiement tant que le secret manque). Sans lui, personne n'est administrateur et le
+jeu fonctionne normalement.
+
+1. **D'abord**, créer son compte dans le jeu en ligne avec le pseudo voulu. Dans l'autre ordre,
+   quelqu'un pourrait réserver ce pseudo entre-temps et devenir administrateur.
+2. **Ensuite**, créer le secret, au choix :
+   - tableau de bord Cloudflare → **Workers & Pages** → le Worker `outlaw-thesis` → **Settings** →
+     **Variables and Secrets** → **Add** ; type **Secret** (pas « Text » : une variable en clair
+     ajoutée au tableau de bord est effacée par le déploiement suivant) ; nom `ADMIN_PSEUDOS` ;
+     valeur : son pseudo ;
+   - ou, sur sa machine, à la racine du dépôt (connecté par `npx wrangler login`) :
+     `npx wrangler secret put ADMIN_PSEUDOS`, puis taper son pseudo.
+3. Recharger le jeu : le bouton « Administration » apparaît en pied du camp.
+
+Plusieurs administrateurs : pseudos séparés par des virgules (`Patron_Fictif,Autre`), sans
+distinction de casse. Retirer un administrateur : modifier ou supprimer le secret. Un compte
+administrateur supprimé libère son pseudo : retirer aussi ce pseudo du secret, sinon le premier qui
+le reprend devient administrateur.
+
+Le secret survit aux déploiements (Workers Builds lance `wrangler deploy`) : « Wrangler will not
+delete your secrets (encrypted environment variables) unless you run `wrangler secret delete <key>` »
+([source de vérité de la configuration](https://developers.cloudflare.com/workers/wrangler/configuration/#source-of-truth)).
+
+En local, `wrangler dev` lit `.dev.vars` (à ne jamais committer) ou `--var ADMIN_PSEUDOS:<pseudo>` ;
+les e2e passent `--var` (`apps/web/playwright.config.ts`), les tests du Worker passent la valeur
+directement (`apps/api/test/helpers.ts`).
 
 ## PvP (lot 11) : Durable Object
 

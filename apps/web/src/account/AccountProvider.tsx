@@ -100,6 +100,8 @@ export interface AccountApi {
   readonly status: AccountStatus;
   readonly pseudo: string | null;
   readonly mustChangePassword: boolean;
+  /** Administrateur du jeu, d'après le serveur (`/api/me`) : seul cas où l'entrée existe. */
+  readonly admin: boolean;
   readonly sync: SyncState;
   readonly decision: Decision | null;
   /** Date de la dernière modification locale (écran de conflit). */
@@ -139,6 +141,7 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
   const [status, setStatus] = useState<AccountStatus>('loading');
   const [pseudo, setPseudo] = useState<string | null>(null);
   const [mustChange, setMustChange] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [sync, setSync] = useState<SyncState>('synced');
   const [decision, setDecision] = useState<Decision | null>(null);
   const [generation, setGeneration] = useState(0);
@@ -237,10 +240,11 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
   );
 
   const signedIn = useCallback(
-    async (who: string, locked: boolean): Promise<void> => {
+    async (who: string, locked: boolean, isAdmin: boolean): Promise<void> => {
       live.current = { pseudo: who, blocked: locked };
       setPseudo(who);
       setMustChange(locked);
+      setAdmin(isAdmin);
       setStatus('signed');
       if (!locked) await link(who);
     },
@@ -254,8 +258,10 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
     });
     void api.me().then((result) => {
       if (!alive) return;
-      if (result.ok) void signedIn(result.value.pseudo, result.value.mustChangePassword);
-      else setStatus(result.error === 'offline' ? 'unavailable' : 'guest');
+      if (result.ok) {
+        const me = result.value;
+        void signedIn(me.pseudo, me.mustChangePassword, me.admin);
+      } else setStatus(result.error === 'offline' ? 'unavailable' : 'guest');
     });
     const online = (): void => void push();
     // En quittant la page, on tente d'envoyer ce qui attend encore.
@@ -293,7 +299,8 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
       async (who: string, password: string): Promise<ErrorInfo | null> => {
         const result = await call(who, password);
         if (!result.ok) return errorOf(result);
-        await signedIn(result.value.pseudo, result.value.mustChangePassword);
+        const me = result.value;
+        await signedIn(me.pseudo, me.mustChangePassword, me.admin);
         return null;
       };
     const signOut = (): void => {
@@ -302,6 +309,7 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
       writeMeta(null);
       setPseudo(null);
       setMustChange(false);
+      setAdmin(false);
       setDecision(null);
       setStatus('guest');
       reload();
@@ -310,6 +318,7 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
       status,
       pseudo,
       mustChangePassword: mustChange,
+      admin,
       sync,
       decision,
       localUpdatedAt,
@@ -325,7 +334,7 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
       changePassword: async (oldPassword, newPassword) => {
         const result = await api.changePassword(oldPassword, newPassword);
         if (!result.ok) return errorOf(result);
-        if (mustChange && pseudo !== null) await signedIn(pseudo, false);
+        if (mustChange && pseudo !== null) await signedIn(pseudo, false, admin);
         return null;
       },
       deleteAccount: async (password) => {
@@ -372,6 +381,7 @@ export function AccountProvider({ children }: { readonly children: ReactNode }) 
     status,
     pseudo,
     mustChange,
+    admin,
     sync,
     decision,
     localUpdatedAt,

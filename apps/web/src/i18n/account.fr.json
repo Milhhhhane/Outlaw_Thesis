@@ -67,6 +67,7 @@
   "privacy.what.title": "Ce qui est enregistré",
   "privacy.what.guest": "En invité : rien ne quitte ton appareil. La partie est gardée dans le stockage local du navigateur.",
   "privacy.what.account": "Avec un compte : ton pseudo, ton mot de passe sous forme hachée (scrypt : il ne peut pas être relu, même par le créateur), les dates de création et de dernière connexion, et ta sauvegarde de jeu (héros, objets, ressources, donjons terminés).",
+  "privacy.what.admin": "L'administrateur du jeu peut voir, pour chaque compte : le pseudo, les dates de création, de dernière connexion et de dernière sauvegarde, la date de dernière activité (déduite du dernier usage de la session, à un jour près), le nombre de sessions ouvertes et l'avancement dans le jeu (héros et niveaux, donjons, or, objets, succès). Il ne voit jamais le mot de passe.",
   "privacy.what.session": "Un cookie de session (nécessaire au fonctionnement, sans publicité ni suivi) te garde connecté 30 jours après ta dernière visite. Le serveur n'en garde qu'une empreinte.",
   "privacy.what.none": "Pas d'adresse e-mail, pas de nom réel, pas de moyen de paiement, aucun traceur publicitaire.",
   "privacy.logs.title": "Journaux techniques",

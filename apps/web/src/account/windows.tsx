@@ -185,6 +185,7 @@ export function PrivacyWindow({ onClose }: { readonly onClose: () => void }) {
             <>
               <p>{t('privacy.what.guest')}</p>
               <p>{t('privacy.what.account')}</p>
+              <p>{t('privacy.what.admin')}</p>
               <p>{t('privacy.what.session')}</p>
               <p>{t('privacy.what.none')}</p>
             </>
