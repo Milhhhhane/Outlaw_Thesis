@@ -1316,3 +1316,23 @@ coûts de niveau plus bas (réserve 57 à 62 %, l'or redevient inutile).
 pour l'éveil et les badges du camp poussent à dépenser : une épargne dans le modèle décrirait un
 joueur expert et masquerait le vrai coût. Règle de vérification : avec des coûts en or nuls, le
 simulateur redonne exactement les chiffres d'avant.
+
+## Amis
+
+**Une base sociale minimale, adressée par pseudo** — Choix : une ligne par paire de comptes
+(`friendships`, migration D1 n° 2), états `pending` / `accepted`, routes par pseudo et non par
+identifiant. Raison : les identifiants de compte sont séquentiels et révéleraient l'ordre
+d'inscription ; le pseudo est déjà public entre joueurs. Hors périmètre de cette base : chat,
+blocage, invitation PvP directe (comment la brancher : `docs/ACCOUNTS.md`).
+
+**Ce qu'un ami voit, et pas plus** — Pseudo, activité arrondie au jour UTC, résumé court
+(niveaux de l'équipe, donjons terminés) calculé côté serveur depuis la sauvegarde validée. Une
+demande ne montre que le pseudo et la date ; un compte déjà plein n'est pas révélé à un inconnu
+(la demande est acceptée comme les autres, le refus n'arrive qu'à l'acceptation). La page de
+confidentialité dit exactement cela, et l'export « mes données » contient les amitiés.
+
+**Les limites de débit sont atomiques** — Contexte : `allow()` lisait puis écrivait le compteur ;
+des requêtes simultanées passaient toutes (250 demandes d'ami traitées pour une limite de 20).
+Choix : un seul `INSERT … ON CONFLICT DO UPDATE … RETURNING` par tentative, pour toutes les
+limites (inscription, connexion, mot de passe, PvP, amis). Raison : une limite qui cède en rafale
+ne protège rien ; les limites en séquentiel sont inchangées (vérifié).
