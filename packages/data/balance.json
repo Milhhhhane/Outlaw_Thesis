@@ -108,7 +108,7 @@
       { "type": "scale", "field": "amount", "mulPct": 20 },
       { "type": "scale", "field": "percent", "mulPct": 20 }
     ],
-    "cost": { "essences": [15, 10, 6], "gold": 5000 },
+    "cost": { "essences": [15, 10, 6], "gold": 1000 },
     "openAfter": "cinder_citadel",
     "drops": [3, 3, 2]
   },

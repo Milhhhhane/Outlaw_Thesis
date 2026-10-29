@@ -705,13 +705,23 @@ joueur modèle de `economy` avec l'éveil (`AwakeningModel` : dès qu'un héros 
 niveau 20 et que les sanctuaires sont ouverts, il y passe tant qu'une qualité lui manque, au plus
 haut palier à sa portée ; l'éveil passe avant les objets pour l'or), 20 graines :
 
-| Réglage (niveau du palier I, coût faible / moyenne / supérieure) |    Premier héros | dont essence |     Équipe éveillée |
-| ---------------------------------------------------------------- | ---------------: | -----------: | ------------------: |
-| 14, 30 / 20 / 10 (premier jet, 5 graines)                        |            117,4 |         28,8 |               178,8 |
-| **10, 15 / 10 / 6 (retenu)**                                     | **81,0** (71–95) |     **14,7** | **136,5** (131–146) |
+| Réglage (niveau du palier I, coût faible / moyenne / supérieure)                                    |    Premier héros | dont essence |     Équipe éveillée |
+| --------------------------------------------------------------------------------------------------- | ---------------: | -----------: | ------------------: |
+| 14, 30 / 20 / 10 (premier jet, 5 graines)                                                           |            117,4 |         28,8 |               178,8 |
+| **10, 15 / 10 / 6 (retenu)**                                                                        | **81,0** (71–95) |     **14,7** | **136,5** (131–146) |
+| 10, 15 / 10 / 6, or de l'éveil 5 000 → **1 000** (avec l'or des niveaux et des étoiles, 2026-10-29) |         **85,9** |     **15,2** |           **131,9** |
 
-Repères : sans éveil, l'équipe atteint le niveau 30 au 113,8ᵉ passage et la collection au 251ᵉ ;
-avec, ces jalons reculent des 47 passages d'essence (160,7 et 306,2). Le premier héros s'éveille
+Repères (avant l'or des niveaux) : sans éveil, l'équipe atteint le niveau 30 au 113,8ᵉ passage et la
+collection au 251ᵉ ; avec, ces jalons reculent des 47 passages d'essence (160,7 et 306,2). Depuis
+le 2026-10-29 (or des niveaux et des étoiles, éveil à 1 000 or) : niveau 30 à 117,6 sans éveil,
+**171,2** avec.
+
+**Or de l'éveil 5 000 → 1 000 (2026-10-29).** Les niveaux et les étoiles se paient maintenant en or
+(section « L'or paie les niveaux et les étoiles ») : un joueur qui dépense son or au fil de l'eau ne
+réunit plus 5 000 or d'un coup en milieu de partie (premier éveil 129,8, équipe 183,5 : bornes CI
+100 et 170 dépassées). L'or passe d'un gros achat ponctuel aux dépenses régulières des niveaux et
+des étoiles ; à 2 000, le premier éveil restait à 112,3 (+38,6 %). À 1 000 : 85,9 (+6,0 %) / 131,9
+(−3,4 %) / équipe au niveau 30 avec l'éveil 171,2 (+6,5 %), toutes cibles tenues. Le premier héros s'éveille
 donc entre l'équipe équipée (44) et l'équipe au niveau 30, l'équipe juste avant le niveau 30 de
 l'équipe. Bornes en CI (`economy.test.ts`, 5 graines) : premier héros entre 60 et 100 passages,
 équipe entre 110 et 170, au plus 20 passages d'essence pour le premier.
@@ -748,3 +758,22 @@ objet au maximum et la première étoile de plus de 5 % ; bornes de `tools/sim/t
   attendent, l'équipe ouvre les donjons 6 à 10 un peu plus tard (Couronne verdoyante 85,2 → 89,6).
 - Leviers : `levelGold.exponent` (où tombe la pression : bas = début, haut = fin), `base`
   (pression générale), `starGold` (paliers 10 et 20). Bornes en CI : `economy.test.ts`.
+
+### Joueur modèle sans épargne : essais avec l'éveil (2026-10-29)
+
+Le joueur modèle n'épargne pas pour l'éveil (un joueur moyen ne garde pas un or que le jeu ne lui
+demande pas de garder) : il dépense dès qu'il peut. Avec l'or des niveaux, il ne réunit 5 000 or
+que lorsque niveaux et objets sont bloqués. Essais (20 graines ; jalons : premier objet, première
+étoile, équipe équipée, niveau 30, objets au maximum, collection ; réserve à l'équipe équipée /
+au niveau 30 ; éveil : premier héros / équipe / niveau 30 avec l'éveil, avant 81,0 / 136,5 / 160,7) :
+
+| Réglage                                          | Jalons (écart)                      | Réserve         | Éveil (écart)                                       | Cibles        |
+| ------------------------------------------------ | ----------------------------------- | --------------- | --------------------------------------------------- | ------------- |
+| A : 2 × N^1,65, étoiles 600 / 1 200, éveil 5 000 | 0 / 0 / +0,3 / +3,3 / +3,9 / +5,1 % | 20 % / 18 %     | 129,8 (+60 %) / 183,5 (+34 %) / 159,3 (−1 %)        | éveil KO      |
+| B : 0,5 × N^1,65, 200 / 400, éveil 5 000         | 0 / 0 / +0,1 / 0 / 0 / +0,7 %       | 57 % / 62 %     | 81,0 (0) / 146,7 (+7,5 %) / 161,4 (+0,4 %)          | réserve KO    |
+| B' : 1 × N^1,8, 400 / 800, éveil 5 000           | 0 / 0 / +0,1 / 0 / 0 / +3,9 %       | 37 % / 30 %     | 99,8 (+23 %) / 169,8 (+24 %) / 157,3 (−2 %)         | les deux KO   |
+| **C : A et éveil 1 000 (retenu)**                | 0 / 0 / +0,3 / +3,3 / +3,9 / +5,1 % | **20 % / 18 %** | **85,9 (+6,0 %) / 131,9 (−3,4 %) / 171,2 (+6,5 %)** | toutes tenues |
+
+Avec C : quêtes, raccourcissement maximal 13,3 % et 13,9 % (borne 15 %) ; boss 7,6 % et 3,6 %
+(borne 10 %). Bornes CI de l'éveil (5 graines) : 88,2 / 137,2 / 172,4, 13,8 passages d'essence
+(bornes 100, 170, 177, 20).

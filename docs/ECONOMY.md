@@ -348,12 +348,13 @@ puits : les sanctuaires d'essence (ouverts après la Citadelle de cendre, premie
 | II                 |                 15 | 3 moyennes         |
 | III                |                 20 | 2 supérieures      |
 
-Éveil : 15 faibles, 10 moyennes, 6 supérieures de l'élément du héros et **5 000 or**, au niveau 20,
-une fois par héros, soit 5 + 4 + 3 = 12 passages d'essence par héros au plus court (rien d'autre ne
-tombe : ni XP, ni or, ni poussière, ni objet, ni coffre). Le joueur modèle (`economy`, voir
-`docs/BALANCE.md`) éveille son premier héros au **81ᵉ passage** (dont 14,7 d'essence) et son équipe
-au **137ᵉ** (47 passages d'essence en tout ; l'équipe de départ compte deux héros de feu). L'or de
-l'éveil (20 000 pour l'équipe) est un nouveau puits, 8 % de l'or gagné jusqu'à la collection.
+Éveil : 15 faibles, 10 moyennes, 6 supérieures de l'élément du héros et **1 000 or** (5 000 avant
+le 2026-10-29, voir « L'or paie les niveaux et les étoiles »), au niveau 20, une fois par héros,
+soit 5 + 4 + 3 = 12 passages d'essence par héros au plus court (rien d'autre ne tombe : ni XP, ni
+or, ni poussière, ni objet, ni coffre). Le joueur modèle (`economy`, voir `docs/BALANCE.md`)
+éveille son premier héros au **85,9ᵉ passage** (dont 15,2 d'essence) et son équipe au **131,9ᵉ**
+(47 passages d'essence en tout ; l'équipe de départ compte deux héros de feu) ; avant le coût en or
+des niveaux : 81,0 et 136,5.
 Les jalons sans éveil (tableaux plus haut) sont inchangés : le calculateur ne joue l'éveil que
 sur demande (`AwakeningModel`).
 
@@ -369,9 +370,14 @@ Frontier (zel) ou RAID (argent), la monnaie de base devient un co-coût de chaqu
 - **étoile** : `chests.starGold` = 600 puis 1 200 or, avec les fragments (`starUp`, `canStarUp`).
 
 Le joueur modèle paie ces coûts avec les vraies fonctions du moteur, dans le même ordre (étoiles,
-objets, niveaux) ; quand seul l'or manque, il farme le passage qui en rapporte le plus. Avec
-l'éveil (`AwakeningModel`), il garde l'or de l'éveil (5 000) dès qu'un héros l'attend : sans cela
-les niveaux le dépensaient chaque passage et le premier éveil reculait au 131ᵉ passage.
+objets, niveaux, l'éveil passant avant les objets) ; quand seul l'or manque, il farme le passage
+qui en rapporte le plus. Il n'épargne pas : comme un joueur moyen, il dépense son or dès qu'il peut.
+
+**Or de l'éveil 5 000 → 1 000.** Un joueur qui paie chaque niveau et chaque étoile ne réunit plus
+5 000 or d'un coup en milieu de partie : le premier éveil reculait de 81,0 à 129,8 passages et
+l'équipe éveillée de 136,5 à 183,5. L'or passe d'un gros achat ponctuel (20 000 pour l'équipe) aux
+dépenses régulières des niveaux et des étoiles (30 900 jusqu'au niveau 30) ; l'éveil garde un prix
+en or, à l'échelle d'une étoile. Tableau des essais dans `docs/BALANCE.md`.
 
 `pnpm --filter @outlaw/sim economy` donne maintenant, à chaque jalon, l'or **en réserve** (gagné −
 dépensé) et l'or gagné cumulé (moyenne des 20 graines) :
@@ -396,8 +402,9 @@ changement et d'avant les dernières fonctions (coffres, éveil…) : les jalons
 de ce tableau.
 
 Effets mesurés sur les autres modèles : quêtes, raccourcissement maximal 13,3 % à 5 passages par
-jour et 13,9 % à 10 (avant : 13,1 et 13,7 ; borne 15 %) ; boss, 7,6 % et 2,5 % (borne 10 %) ;
-éveil, premier héros 81,0 → 93,7 passages, équipe éveillée 136,5 → 163,0 (bornes 100 et 170).
-Bornes en CI (`tools/sim/test/economy.test.ts`) : au plus 25 % de l'or gagné en réserve à
-l'équipe équipée et au niveau 30. Justification des valeurs : `docs/BALANCE.md`, « L'or paie les
+jour et 13,9 % à 10 (avant : 13,1 et 13,7 ; borne 15 %) ; boss, 7,6 % et 3,6 % (borne 10 %) ;
+éveil (or de l'éveil à 1 000), premier héros 81,0 → 85,9 passages (+6,0 %), équipe éveillée
+136,5 → 131,9 (−3,4 %), équipe au niveau 30 avec l'éveil 160,7 → 171,2 (+6,5 %). Bornes en CI
+(`tools/sim/test/economy.test.ts`) : au plus 25 % de l'or gagné en réserve à l'équipe équipée et
+au niveau 30 ; équipe au niveau 30 avec l'éveil ≤ 177 (5 graines). Justification des valeurs : `docs/BALANCE.md`, « L'or paie les
 niveaux et les étoiles ».

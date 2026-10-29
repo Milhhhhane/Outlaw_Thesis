@@ -37,7 +37,6 @@ import {
   equip,
   goldToNext,
   levelDust,
-  levelUp,
   levelUpCost,
   levelUpMax,
   masteryMaterialsFactor,
@@ -331,10 +330,9 @@ function equipAll(content: Content, profile: Profile): Profile {
 
 /**
  * Améliore les objets tant qu'un paiement est possible : ceux que porte l'équipe d'abord (le plus
- * de copies en réserve en premier), puis les autres (collection). `keep` : or à ne pas entamer
- * (gardé pour un éveil).
+ * de copies en réserve en premier), puis les autres (collection).
  */
-function upgradeItems(content: Content, profile: Profile, ledger: Ledger, keep = 0): Profile {
+function upgradeItems(content: Content, profile: Profile, ledger: Ledger): Profile {
   let current = profile;
   for (;;) {
     const worn = new Set(current.team.flatMap((id) => current.heroes[id]?.items ?? []));
@@ -346,7 +344,7 @@ function upgradeItems(content: Content, profile: Profile, ledger: Ledger, keep =
     for (const item of owned) {
       const before = current;
       const next = ok(upgradeItem(content, current, item.uid));
-      if (next === null || next.gold < keep) continue;
+      if (next === null) continue;
       ledger.gold.items += before.gold - next.gold;
       next.materials.forEach((m, tier) => {
         ledger.dust.items[tier] =
@@ -361,27 +359,15 @@ function upgradeItems(content: Content, profile: Profile, ledger: Ledger, keep =
   }
 }
 
-/**
- * Monte chaque héros de l'équipe autant que possible, du plus bas niveau au plus haut. `keep` : or
- * à ne pas entamer (gardé pour un éveil) ; sans réserve, `levelUpMax` d'un coup.
- */
-function levelTeam(content: Content, profile: Profile, ledger: Ledger, keep = 0): Profile {
+/** Monte chaque héros de l'équipe autant que possible, du plus bas niveau au plus haut. */
+function levelTeam(content: Content, profile: Profile, ledger: Ledger): Profile {
   let current = profile;
   const order = [...current.team].sort(
     (a, b) => (current.heroes[a]?.level ?? 1) - (current.heroes[b]?.level ?? 1),
   );
-  const raise = (from: Profile, heroId: string): Profile | null => {
-    if (keep <= 0) return ok(levelUpMax(content, from, heroId));
-    let raised: Profile | null = null;
-    for (;;) {
-      const next: Profile | null = ok(levelUp(content, raised ?? from, heroId));
-      if (next === null || next.gold < keep) return raised;
-      raised = next;
-    }
-  };
   for (const heroId of order) {
     const before = current;
-    const next = raise(current, heroId);
+    const next = ok(levelUpMax(content, current, heroId));
     if (next === null) continue;
     ledger.gold.levels += before.gold - next.gold;
     next.materials.forEach((m, tier) => {
@@ -610,12 +596,6 @@ export function simulateEconomy(
     if (woke.team === null && profile.team.every((id) => profile.heroes[id]?.awakened === true))
       woke.team = runs;
   };
-  // Or à garder pour l'éveil en attente (0 sans `AwakeningModel` ou sans héros à éveiller).
-  const awakeningGold = (): number => {
-    if (awakening === null) return 0;
-    const target = awakenTarget(content, profile);
-    return target === undefined ? 0 : (awakenCost(content, target)?.gold ?? 0);
-  };
   const ledger = emptyLedger();
   const firstClears: Record<string, number> = {};
   const { maxLevel, items: itemRules } = content.balance.progression;
@@ -677,18 +657,16 @@ export function simulateEconomy(
     profile = stars.profile;
     if (stars.starred && firstStar === null) firstStar = runs;
     profile = equipAll(content, profile);
-    // L'éveil passe avant les objets : sinon l'or partirait toujours en améliorations. Tant qu'un
-    // héros attend son éveil, son or est gardé : objets et niveaux ne paient qu'avec le reste.
+    // L'éveil passe avant les objets : sinon l'or partirait toujours en améliorations.
     tryAwaken();
-    const keep = awakeningGold();
-    profile = upgradeItems(content, profile, ledger, keep);
-    profile = levelTeam(content, profile, ledger, keep);
+    profile = upgradeItems(content, profile, ledger);
+    profile = levelTeam(content, profile, ledger);
     // Une étoile payée juste après un niveau : on retente une fois (le plafond vient de sauter).
     const again = starAll(content, profile, ledger);
     profile = again.profile;
     if (again.starred) {
       if (firstStar === null) firstStar = runs;
-      profile = levelTeam(content, profile, ledger, keep);
+      profile = levelTeam(content, profile, ledger);
     }
     // Les quêtes faites par les dépenses de ce passage (niveaux, objets, coffres) : réclamées
     // maintenant, dépensées au passage suivant.
