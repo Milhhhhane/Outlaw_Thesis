@@ -235,7 +235,26 @@
     "sablier_tick": "Tic",
     "sablier_tock": "Tac",
     "sablier_halt": "Arrêt",
-    "sablier_noon": "Midi pile"
+    "sablier_noon": "Midi pile",
+    "ghoul_claw": "Griffe gelée",
+    "ghoul_chill": "Frisson",
+    "ghoul_rime": "Bise",
+    "slime_slap": "Gifle de vase",
+    "slime_ooze": "Suintement",
+    "slime_glue": "Glu",
+    "fiend_jab": "Coup de tisonnier",
+    "fiend_brand": "Marque au fer",
+    "fiend_pyre": "Fournaise",
+    "maw_bite": "Morsure glaciale",
+    "maw_freeze": "Gel",
+    "maw_blizzard": "Blizzard",
+    "troll_club": "Gourdin",
+    "troll_regrow": "Repousse",
+    "troll_sludge": "Boue noire",
+    "titan_slam": "Écrasement",
+    "titan_kindle": "Attisement",
+    "titan_cinders": "Pluie de scories",
+    "titan_meteor": "Météore"
   },
   "passives": {
     "pyra_momentum": "Élan meurtrier",
@@ -278,7 +297,20 @@
     "sequoia_rings": "Cernes",
     "eden_greenthumb": "Main verte",
     "phenix_rebirth": "Cendre vive",
-    "sablier_gears": "Rouages"
+    "sablier_gears": "Rouages",
+    "maw_hoarfrost": "Givre tenace",
+    "troll_gorge": "Ripaille",
+    "titan_slag": "Carapace de scories",
+    "rime_coat": "Givre protecteur",
+    "quagmire": "Enlisement",
+    "stoked_rage": "Braises attisées",
+    "ice_heart": "Cœur de glace",
+    "mycelium": "Mycélium",
+    "fever": "Fièvre",
+    "cinder_wind": "Vent de cendres",
+    "black_ice": "Verglas",
+    "strangling_roots": "Racines étrangleuses",
+    "eclipse": "Éclipse"
   },
   "pages": {
     "pyra_page_execution": {
@@ -1196,7 +1228,13 @@
     "elder_bramble": "Ronce ancestrale",
     "pyre_tyrant": "Tyran du bûcher",
     "tidal_hydra": "Hydre des marées",
-    "grove_colossus": "Colosse du bosquet"
+    "grove_colossus": "Colosse du bosquet",
+    "frost_ghoul": "Goule de givre",
+    "mire_slime": "Limon des tourbes",
+    "cinder_fiend": "Diablotin des forges",
+    "frost_maw": "Gueule de givre",
+    "mire_troll": "Troll des tourbières",
+    "ash_titan": "Titan de cendre"
   },
   "items": {
     "ember_charm": "Charme de braise",
@@ -1218,7 +1256,27 @@
     "obsidian_fang": "Croc d'obsidienne",
     "throne_relic": "Relique du trône",
     "obsidian_shard": "Éclat d'obsidienne",
-    "hollow_seal": "Sceau creux"
+    "hollow_seal": "Sceau creux",
+    "rime_locket": "Médaillon de givre",
+    "frost_heart": "Cœur gelé",
+    "bog_lantern": "Lanterne des tourbes",
+    "mire_totem": "Totem du bourbier",
+    "forge_rivet": "Rivet de forge",
+    "anvil_core": "Cœur d'enclume",
+    "glacier_shard": "Éclat de glacier",
+    "hoarfrost_ring": "Anneau de frimas",
+    "spore_pouch": "Bourse de spores",
+    "heartwood_charm": "Charme de cœur-de-bois",
+    "river_stone": "Galet de rivière",
+    "confluence_orb": "Orbe du confluent",
+    "ash_veil": "Voile de cendre",
+    "magma_sigil": "Sceau de magma",
+    "glacial_horn": "Cor glaciaire",
+    "permafrost_plate": "Plastron de permafrost",
+    "root_knot": "Nœud de racines",
+    "swamp_eye": "Œil du marais",
+    "dusk_ring": "Bague du crépuscule",
+    "eclipse_shard": "Éclat d'éclipse"
   },
   "dungeons": {
     "ember_wastes": {
@@ -1260,6 +1318,46 @@
     "hollow_throne": {
       "name": "Trône creux",
       "text": "Le trône aspire votre réserve dès l'entrée. Trois colosses pour un dernier siège."
+    },
+    "frost_strand": {
+      "name": "Grève gelée",
+      "text": "Le givre couvre chaque ennemi d'un premier bouclier. Une gueule de glace garde la grève."
+    },
+    "bog_mire": {
+      "name": "Tourbière sombre",
+      "text": "La vase colle aux bottes : vos grands sorts vous ralentissent. Le troll se nourrit des chutes."
+    },
+    "ember_forge": {
+      "name": "Forge des braises",
+      "text": "Au premier coup reçu, chaque diablotin s'enrage. Frappez fort, ou pas du tout."
+    },
+    "glacier_vault": {
+      "name": "Caveau glaciaire",
+      "text": "À mi-vie, la glace se referme sur les gardiens. Gardez de quoi percer la carapace."
+    },
+    "rotwood": {
+      "name": "Bois pourrissant",
+      "text": "Le mycélium soigne les plus faibles à chaque tour. Abattez-les un par un, vite."
+    },
+    "twin_rivers": {
+      "name": "Confluent",
+      "text": "La fièvre gagne les deux rives : tout le monde frappe plus fort, eux plus encore."
+    },
+    "ash_caldera": {
+      "name": "Caldeira de cendre",
+      "text": "Un vent de cendres brûle le plus fragile à chaque tour ennemi. Le titan attise les siens."
+    },
+    "frozen_abyss": {
+      "name": "Abîme gelé",
+      "text": "Le verglas retarde quiconque lance son ultime. La gueule et l'hydre règnent sous la glace."
+    },
+    "elder_swamp": {
+      "name": "Marais ancestral",
+      "text": "Chaque coup reçu vous enlace de racines qui ralentissent. Deux colosses du marais au bout."
+    },
+    "eclipse_keep": {
+      "name": "Donjon de l'éclipse",
+      "text": "Quand l'un d'eux tombe, les autres se pressent et se protègent. Les trois maîtres de la région vous attendent."
     }
   }
 }
