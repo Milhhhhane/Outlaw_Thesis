@@ -9,8 +9,9 @@
  * d'Auto. Le seul hasard est celui du butin (graine du profil) : on moyenne sur plusieurs graines.
  *
  * Politique du joueur modèle (documentée dans `docs/ECONOMY.md`) :
- * - parmi les donjons ouverts (`dungeonOpen` du moteur ; ceux des chapitres suivants une fois
- *   l'équipe au niveau maximum, voir `ChapterRoute`) et leurs paliers ouverts dont le niveau visé
+ * - parmi les donjons ouverts (`dungeonOpen` du moteur, tous chapitres ; sur la route `main`,
+ *   ceux des chapitres suivants une fois l'équipe au niveau maximum, voir `ChapterRoute`) et leurs
+ *   paliers ouverts dont le niveau visé
  *   ne dépasse pas celui du plus faible héros, il farme celui qui rapporte le plus de ce qui lui
  *   manque pour monter ce héros (XP, poussière du palier demandé, fragments pour l'étoile), à
  *   égalité le plus avancé ;
@@ -165,10 +166,11 @@ export interface Candidate {
 
 /**
  * Route du joueur modèle entre les chapitres (régions parallèles, niveaux 1 à 30 chacune) :
- * - `main` (référence des bornes en CI) : le chapitre 1 est la route principale ; les chapitres
- *   suivants sont joués une fois l'équipe au niveau maximum (farm de fin de partie, collection) ;
- * - `parallel` : tout donjon ouvert est joué dès qu'il est à sa portée (lecture seule : voir
- *   `docs/ECONOMY.md`, deux fois plus de donjons de bas niveau avancent fortement l'équipement).
+ * - `parallel` (par défaut, référence des bornes en CI : le vrai joueur) : tout donjon ouvert est
+ *   joué dès qu'il est à sa portée ;
+ * - `main` (lecture seule, comparaison) : le chapitre 1 est la route principale ; les chapitres
+ *   suivants sont joués une fois l'équipe au niveau maximum (farm de fin de partie, collection).
+ * Voir `docs/ECONOMY.md`, « Chapitre 2 ».
  */
 export type ChapterRoute = 'main' | 'parallel';
 
@@ -181,7 +183,7 @@ export function teamLevel(profile: Profile): number {
 export function candidates(
   content: Content,
   profile: Profile,
-  route: ChapterRoute = 'main',
+  route: ChapterRoute = 'parallel',
 ): Candidate[] {
   const out: Candidate[] = [];
   const { chests } = content.balance;
@@ -285,7 +287,7 @@ function wantedOrigins(content: Content, profile: Profile): Set<string> {
 export function pickRun(
   content: Content,
   profile: Profile,
-  route: ChapterRoute = 'main',
+  route: ChapterRoute = 'parallel',
 ): Candidate {
   const level = teamLevel(profile);
   const all = candidates(content, profile, route);
@@ -605,7 +607,7 @@ export function simulateEconomy(
   maxRuns = 600,
   quests: QuestModel | null = null,
   awakening: AwakeningModel | null = null,
-  route: ChapterRoute = 'main',
+  route: ChapterRoute = 'parallel',
 ): EconomyRun {
   let profile = newProfile(content, seed);
   // Objet mutable : la fermeture `tryAwaken` le tient à jour.
@@ -796,7 +798,7 @@ export function summarizeEconomy(
   seeds: number,
   maxRuns = 600,
   quests: QuestModel | null = null,
-  route: ChapterRoute = 'main',
+  route: ChapterRoute = 'parallel',
 ): EconomySummary {
   const runs = Array.from({ length: seeds }, (_, i) =>
     simulateEconomy(content, i + 1, maxRuns, quests, null, route),
@@ -879,6 +881,7 @@ export function summarizeAwakening(
   content: Content,
   seeds: number,
   maxRuns = 800,
+  route: ChapterRoute = 'parallel',
 ): {
   first: number | null;
   team: number | null;
@@ -887,7 +890,7 @@ export function summarizeAwakening(
   teamMaxLevel: number | null;
 } {
   const runs = Array.from({ length: seeds }, (_, i) =>
-    simulateEconomy(content, i + 1, maxRuns, null, { on: true }),
+    simulateEconomy(content, i + 1, maxRuns, null, { on: true }, route),
   );
   const avg = (xs: readonly (number | null)[]): number | null => {
     const values = xs.filter((x): x is number => x !== null);
@@ -978,7 +981,7 @@ function main(): void {
   const f = (n: number | null): string =>
     n === null ? '   —  ' : `${n.toFixed(1).padStart(5)} (${(n / auto).toFixed(0)} tent.)`;
   console.log(
-    `Joueur modèle, ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
+    `Joueur modèle (route parallèle : chapitres joués dès leur ouverture), ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
   );
   // Or en réserve (gagné − dépensé) et or gagné cumulé au jalon, moyenne des graines.
   const g = (key: GoldMilestone): string => {
@@ -1025,15 +1028,15 @@ function main(): void {
   console.log(
     `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
   );
-  // Route parallèle (lecture seule) : les deux chapitres joués dès qu'ils s'ouvrent.
-  const parallel = summarizeEconomy(content, seeds, option('--runs', 600), null, 'parallel');
+  // Route principale (lecture seule, comparaison) : le chapitre 2 après l'équipe au niveau 30.
+  const mainRoute = summarizeEconomy(content, seeds, option('--runs', 600), null, 'main');
   console.log(
-    `Route parallèle (chapitres joués dès leur ouverture) : ${(
-      Object.keys(parallel.milestones) as (keyof typeof parallel.milestones)[]
+    `Route principale (chapitre 2 après l'équipe au niveau 30) : ${(
+      Object.keys(mainRoute.milestones) as (keyof typeof mainRoute.milestones)[]
     )
-      .map((key) => `${key} ${parallel.milestones[key]?.toFixed(1) ?? '—'}`)
+      .map((key) => `${key} ${mainRoute.milestones[key]?.toFixed(1) ?? '—'}`)
       .join(', ')} ; réserve d'or à l'équipe équipée ${(() => {
-      const at = parallel.goldAt.teamEquipped;
+      const at = mainRoute.goldAt.teamEquipped;
       return at === null || at.earned === 0
         ? '—'
         : `${((100 * at.reserve) / at.earned).toFixed(0)} %`;

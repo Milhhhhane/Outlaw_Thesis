@@ -630,7 +630,7 @@
       "landmark": "cairn",
       "chapter": 2
     },
-    "opensAfter": "ember_wastes"
+    "opensAfter": "cinder_citadel"
   },
   {
     "id": "bog_mire",
@@ -687,7 +687,7 @@
       "landmark": "hut",
       "chapter": 2
     },
-    "opensAfter": "drowned_halls"
+    "opensAfter": "cinder_citadel"
   },
   {
     "id": "ember_forge",
@@ -750,7 +750,7 @@
       "landmark": "forge",
       "chapter": 2
     },
-    "opensAfter": "thorn_maze"
+    "opensAfter": "cinder_citadel"
   },
   {
     "id": "glacier_vault",
@@ -809,7 +809,7 @@
       "landmark": "ruins",
       "chapter": 2
     },
-    "opensAfter": "thorn_maze"
+    "opensAfter": "cinder_citadel"
   },
   {
     "id": "rotwood",

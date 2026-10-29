@@ -33,7 +33,8 @@ describe('boss de la semaine (simulation)', () => {
   });
 
   // Économie (docs/ECONOMY.md) : même en payant tous les paliers de toutes les difficultés
-  // ouvertes chaque semaine (borne haute), aucun jalon n'arrive plus de 10 % plus tôt.
+  // ouvertes chaque semaine (borne haute), aucun jalon n'arrive plus de 10 % plus tôt (route
+  // parallèle, par défaut, comme les bornes de economy.test.ts).
   it('le boss ne raccourcit aucun jalon de plus de 10 % (5 et 10 passages par jour)', () => {
     const base = summarizeEconomy(content, 20);
     for (const perDay of [5, 10]) {

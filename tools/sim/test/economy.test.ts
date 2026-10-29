@@ -1,5 +1,5 @@
 import { loadContent } from '@outlaw/data';
-import { tierReached, tierTargetLevel } from '@outlaw/engine';
+import { dungeonPrerequisite, tierReached, tierTargetLevel } from '@outlaw/engine';
 import { describe, expect, it } from 'vitest';
 import {
   essencePick,
@@ -55,20 +55,28 @@ describe('économie : joueur modèle', () => {
     expect(pickRun(content, fresh2)).toMatchObject({ dungeon: 'drowned_halls', tier: 1 });
   });
 
-  it('chapitres parallèles : route principale d’abord, chapitre 2 farmé en fin de partie', () => {
+  it('chapitres parallèles : chapitre 2 joué dès son ouverture (route principale : en fin de partie)', () => {
     const second = content.dungeons.filter((d) => d.map.chapter === 2);
     expect(second.length).toBeGreaterThan(0);
-    const main = simulateEconomy(content, 2);
+    const main = simulateEconomy(content, 2, 600, null, null, 'main');
     const levelled = main.milestones.teamMaxLevel ?? Infinity;
     // Route principale : aucun donjon du chapitre 2 avant l'équipe au niveau 30, tous ensuite.
     for (const d of second)
       expect(main.milestones.firstClears[d.id] ?? 0).toBeGreaterThan(levelled);
     expect(main.milestones.collectionAll).not.toBeNull();
     expect(main.milestones.collectionAll ?? 0).toBeGreaterThan(main.milestones.collection ?? 0);
-    // Route parallèle : le chapitre 2 est joué dès qu'il s'ouvre (Grève gelée juste après les Landes).
-    const parallel = simulateEconomy(content, 2, 600, null, null, 'parallel');
-    const first = second[0]!;
-    expect(parallel.milestones.firstClears[first.id]).toBeLessThan(10);
+    // Route parallèle (par défaut) : chaque donjon du chapitre 2 après celui qui l'ouvre ; les
+    // quatre premiers (niveaux 2 à 11) s'ouvrent avec la Citadelle de cendre et passent juste
+    // après elle.
+    const parallel = simulateEconomy(content, 2);
+    const clears = parallel.milestones.firstClears;
+    for (const d of second)
+      expect(clears[d.id]).toBeGreaterThan(clears[dungeonPrerequisite(content, d.id) ?? ''] ?? 0);
+    const citadel = clears.cinder_citadel ?? 0;
+    for (const d of second.slice(0, 4)) {
+      expect(dungeonPrerequisite(content, d.id)).toBe('cinder_citadel');
+      expect(clears[d.id]).toBeLessThanOrEqual(citadel + 4);
+    }
     expect(parallel.milestones.collectionAll).not.toBeNull();
   });
 
@@ -81,7 +89,9 @@ describe('économie : joueur modèle', () => {
 
   // Cibles du réglage (docs/BALANCE.md, « Économie : réglage ») : un début rapide, un craft de fin
   // qui demande du grind. Une valeur de balance.json ou de dungeons.json qui sort de ces bornes
-  // casse la CI : la retoucher, c'est rouvrir le réglage et le justifier par un chiffre.
+  // casse la CI : la retoucher, c'est rouvrir le réglage et le justifier par un chiffre. Toutes les
+  // bornes de ce fichier et de boss.test.ts portent sur la route parallèle (par défaut : le vrai
+  // joueur, qui joue chaque chapitre dès son ouverture ; docs/ECONOMY.md, « Chapitre 2 »).
   it('jalons du joueur modèle dans les bornes du réglage (20 graines)', () => {
     const { milestones: m, goldAt, ledger, unreached } = summarizeEconomy(content, 20);
     expect(unreached).toBe(0);
@@ -94,7 +104,11 @@ describe('économie : joueur modèle', () => {
     within(m.firstStar, 15, 30);
     within(m.teamEquipped, 25, 55);
     within(m.teamMaxLevel, 85, 120);
-    within(m.teamMaxed, 100, 140);
+    // 155 (140 sur la seule route du chapitre 1) : sur la route parallèle, le chapitre 2 prend plus
+    // d'un quart des passages avant le niveau 30, donc les rares du chapitre 1 portés reçoivent
+    // leurs copies plus tard (152,1 mesuré ; aucun réglage du butin du chapitre 2 ne passe sous
+    // 140 sans casser une autre borne, voir docs/ECONOMY.md, « Chapitre 2 »).
+    within(m.teamMaxed, 100, 155);
     within(m.collection, 200, 300);
     // Montée des sorts (docs/BALANCE.md) : un héros au milieu de partie, l'équipe après ses objets.
     within(m.spellsOneHero, 50, 100);
@@ -133,7 +147,7 @@ describe('économie : joueur modèle', () => {
   });
 
   // Cible de l'éveil (docs/BALANCE.md, « Éveil ») : un héros vers le milieu de partie, l'équipe en
-  // fin de progression, passages d'essence compris.
+  // fin de progression, passages d'essence compris. Route parallèle, comme les jalons.
   it('éveil : premier héros vers le milieu de partie, équipe en fin de partie (5 graines)', () => {
     const a = summarizeAwakening(content, 5);
     expect(a.first).not.toBeNull();

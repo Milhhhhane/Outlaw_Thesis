@@ -17,7 +17,7 @@ afterEach(() => {
 
 const second = content.dungeons.filter((d) => d.map.chapter === 2);
 
-/** Landes de braise terminées : le premier donjon de chaque chapitre est ouvert. */
+/** Landes de braise terminées : le chapitre 2 est encore fermé. */
 function afterFirst(): Profile {
   return {
     ...newProfile(content, 3),
@@ -25,11 +25,25 @@ function afterFirst(): Profile {
   };
 }
 
+/** Citadelle de cendre terminée (et les trois d'avant) : les cinq premiers du chapitre 2 ouverts. */
+function afterCitadel(): Profile {
+  const cleared = { clears: 1, dry: 0, tier: 2 };
+  return {
+    ...newProfile(content, 3),
+    dungeons: {
+      ember_wastes: cleared,
+      drowned_halls: cleared,
+      thorn_maze: cleared,
+      cinder_citadel: cleared,
+    },
+  };
+}
+
 describe('carte : chapitres parallèles', () => {
   it('onglet du chapitre 2 : ses dix donjons, numérotés dans le chapitre, un chemin', async () => {
     const user = userEvent.setup();
     const { container } = render(
-      <App version="test" initial={afterFirst()} start={{ name: 'map' }} />,
+      <App version="test" initial={afterCitadel()} start={{ name: 'map' }} />,
     );
     const tabs = screen.getByRole('tablist', { name: t('map.chapters') });
     await user.click(within(tabs).getByRole('tab', { name: t('map.chapter', { n: 2 }) }));
@@ -47,8 +61,9 @@ describe('carte : chapitres parallèles', () => {
       `${t('map.step', { n: 1 })} : ${names.dungeon(second[0]!.id)}, ${t('map.next')}`,
     );
     expect(container.querySelectorAll('.map__path path')).toHaveLength(9);
-    // Le premier donjon du chapitre 2 s'ouvre après les Landes, le deuxième reste fermé.
-    expect(container.querySelectorAll('.map__node--locked')).toHaveLength(9);
+    // Les cinq premiers donjons du chapitre 2 s'ouvrent après la Citadelle, les cinq autres
+    // restent fermés.
+    expect(container.querySelectorAll('.map__node--locked')).toHaveLength(5);
   });
 
   it('un donjon verrouillé dit lequel termine pour l’ouvrir (opensAfter)', async () => {
@@ -56,7 +71,7 @@ describe('carte : chapitres parallèles', () => {
     const bog = second[1]!;
     render(<App version="test" initial={afterFirst()} start={{ name: 'map', dungeon: bog.id }} />);
     const opener = dungeonPrerequisite(content, bog.id)!;
-    expect(opener).toBe('drowned_halls');
+    expect(opener).toBe('cinder_citadel');
     expect(
       screen.getByText(t('hub.dungeon.locked', { dungeon: names.dungeon(opener) })),
     ).toBeInTheDocument();
@@ -68,7 +83,7 @@ describe('carte : chapitres parallèles', () => {
     );
     await user.click(screen.getByRole('tab', { name: t('map.chapter', { n: 1 }) }));
     expect(
-      screen.getByRole('button', { name: new RegExp(`${names.dungeon('drowned_halls')}, `) }),
+      screen.getByRole('button', { name: new RegExp(`${names.dungeon('cinder_citadel')}, `) }),
     ).toBeInTheDocument();
   });
 });
