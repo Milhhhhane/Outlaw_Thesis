@@ -4,13 +4,14 @@ Lot 8B. La monnaie du jeu est gratuite : aucun paiement, aucune donnée de paiem
 
 ## Ce que le serveur stocke (base D1 `outlaw-thesis`)
 
-| Table      | Contenu                                                                                                                      |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | pseudo, clé d'unicité (pseudo en minuscules), hash scrypt, drapeau `must_change`, dates de création et de dernière connexion |
-| `sessions` | empreinte SHA-256 du jeton de session (le jeton lui-même n'est jamais stocké), compte, dates                                 |
-| `saves`    | sauvegarde du jeu (JSON validé, 200 Ko au plus), révision `rev`, date                                                        |
-| `throttle` | compteurs de tentatives : par pseudo, ou par empreinte d'adresse IP salée du jour ; effacés après 24 h                       |
-| `meta`     | sel du jour pour les empreintes d'adresse IP (remplacé chaque jour, l'ancien est perdu)                                      |
+| Table         | Contenu                                                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`       | pseudo, clé d'unicité (pseudo en minuscules), hash scrypt, drapeau `must_change`, dates de création et de dernière connexion                                |
+| `sessions`    | empreinte SHA-256 du jeton de session (le jeton lui-même n'est jamais stocké), compte, dates                                                                |
+| `saves`       | sauvegarde du jeu (JSON validé, 200 Ko au plus), révision `rev`, date                                                                                       |
+| `friendships` | une ligne par paire de comptes (plus petit identifiant en `user_a`) : état `pending` ou `accepted`, auteur de la demande, dates de demande et d'acceptation |
+| `throttle`    | compteurs de tentatives : par pseudo, ou par empreinte d'adresse IP salée du jour ; effacés après 24 h                                                      |
+| `meta`        | sel du jour pour les empreintes d'adresse IP (remplacé chaque jour, l'ancien est perdu)                                                                     |
 
 Pas d'e-mail, pas de nom réel, pas de journal persistant (`observability` désactivé dans
 `wrangler.jsonc`, le Worker n'écrit que le type d'une erreur interne). La page « Confidentialité
@@ -20,6 +21,11 @@ L'administrateur du jeu peut voir, pour chaque compte, le pseudo, les dates de c
 dernière connexion et de dernière sauvegarde, la date de dernière activité (déduite du dernier
 usage de la session, à un jour près), le nombre de sessions ouvertes et l'avancement (voir
 « Administration » plus bas). La page de confidentialité le dit aussi.
+
+Un **ami** (demande acceptée) voit le pseudo, la date depuis laquelle vous êtes amis, le **jour**
+de la dernière activité (minuit UTC, jamais l'heure) et un résumé d'avancement court (niveaux
+extrêmes de l'équipe, donjons terminés / total). Une demande en attente ne montre que le pseudo et
+sa date. La page de confidentialité le dit aussi (voir « Amis » plus bas).
 
 ## Administration (lecture seule)
 
@@ -54,6 +60,69 @@ dépôt ; secret absent ou vide : personne n'est administrateur. Le créer : `do
 - Écran du jeu : bouton « Administration » en pied du camp, présent seulement si `/api/me` répond
   `admin: true` (`apps/web/src/screens/Admin.tsx`, textes `i18n/admin.fr.json`).
 
+## Amis
+
+Base sociale : demandes par pseudo, acceptation, retrait. Ni chat, ni blocage, ni notification
+(hors périmètre). Code : `apps/api/src/friends.ts` (routage dans `index.ts`), types partagés dans
+`packages/accounts` (`FriendList`…), écran `apps/web/src/screens/Friends.tsx`, textes
+`i18n/friends.fr.json`. Migration D1 n° 2 (`db.ts`) : table `friendships`, clé primaire
+`(user_a, user_b)` avec `user_a < user_b` (une seule ligne par paire, quel que soit le sens de la
+demande), index sur `user_b` et sur `(requested_by, status)`.
+
+| Route                            | Rôle                                                                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/friends`               | `{ friends, received, sent }` : amis (`id`, `pseudo`, `since`, `lastActiveDay`, `progress`) et demandes (`id`, `pseudo`, `at`)   |
+| `GET /api/friends/pending`       | `{ received }` : nombre de demandes reçues (badge du camp ; aucune sauvegarde lue)                                               |
+| `POST /api/friends/requests`     | `{ pseudo }` : demande ; 201 `{ outcome: 'sent', list }`, ou 200 `{ outcome: 'accepted', list }` si l'autre m'avait déjà demandé |
+| `POST /api/friends/<id>/accept`  | accepter la demande reçue de `<id>` (le destinataire seulement) ; renvoie la liste                                               |
+| `POST /api/friends/<id>/decline` | refuser la demande reçue de `<id>` : la ligne est effacée ; renvoie la liste                                                     |
+| `DELETE /api/friends/<id>`       | retirer un ami, ou annuler une demande (l'un ou l'autre des deux comptes) ; renvoie la liste                                     |
+
+- `<id>` est l'identifiant de l'**autre** compte. Seuls les deux comptes d'une paire peuvent agir
+  sur elle : pour un tiers, la paire n'existe pas (404 `not_found`).
+- Session obligatoire (401), changement de mot de passe exigé respecté (403
+  `must_change_password`), vérification d'`Origin` pour les modifications (403 `bad_origin`),
+  réponses `Cache-Control: no-store`. Jamais de hash, de jeton ni de clé de pseudo.
+- Le pseudo demandé est comparé comme à l'inscription (`pseudo_key`, sans distinction de casse,
+  espaces autour ignorés). Refus : `friend_self` (400), `friend_unknown` (404), `already_friends`,
+  `already_requested` (409).
+- **Plafonds** (`packages/accounts`) : 100 amis par compte (`friends_full` pour le mien,
+  `friend_full` pour celui de l'autre, vérifiés à la demande et à l'acceptation), 50 demandes
+  envoyées en attente (`requests_full`). Les plafonds sont aussi dans la condition de l'écriture
+  SQL : deux requêtes simultanées ne les dépassent pas (la perdante reçoit 409 `conflict`).
+- **Limite de débit** : 20 demandes par compte et par heure, réussies ou non (clé
+  `friend-request:<id>` de `throttle`) : on ne peut pas tester l'existence de pseudos sans limite.
+  Au-delà : 429 `too_many`, `Retry-After: 3600`.
+- **Dernière activité** : la même que pour l'administration (création, connexion, sauvegarde,
+  usage de session), **arrondie au jour UTC** (`lastActiveDay`, minuit en ms). Le tri des amis
+  (jour décroissant, puis pseudo) n'en dit pas plus que le jour. L'écran écrit « aujourd'hui »,
+  « hier », « il y a 3 j ».
+- **Résumé** (`progress`) : calculé par le Worker depuis la sauvegarde validée par le schéma du jeu,
+  avec le même code que l'administration (`saveProgress`, `progressOf`), réduit à
+  `{ team: { min, max } | null, dungeons: { cleared, total } }` ; `null` sans sauvegarde valide.
+- **Suppression du compte** (`DELETE /api/account`) : ses amitiés, ses demandes (envoyées et
+  reçues) et son compteur de demandes sont effacés dans la même transaction. SQLite peut redonner
+  l'identifiant d'un compte supprimé : un nouveau compte n'hérite de rien (testé).
+- **Coût** : `GET /api/friends` relit et valide la sauvegarde de chaque ami (0,26 à 0,46 ms
+  chacune, voir « Administration ») : jusqu'à environ 50 ms de processeur pour 100 amis, plus le
+  premier `loadContent()` d'une instance. C'est pourquoi le badge du camp passe par
+  `GET /api/friends/pending` (un simple `COUNT`) et que l'écran ne charge la liste qu'à l'ouverture.
+- Pas d'expiration des demandes en attente ni de plafond des demandes **reçues** : un compte ne
+  peut en envoyer que 50 en attente, et l'inscription est limitée par adresse IP.
+
+### Brancher l'invitation PvP (pas codé)
+
+Le salon PvP se rejoint par code (`docs/PVP.md`). Une invitation directe se brancherait ainsi, sans
+changer le salon :
+
+1. `POST /api/friends/<id>/invite` (ami accepté seulement, sinon 404) : le Worker crée le salon
+   comme `POST /api/pvp/rooms` (même limite de débit) et enregistre `{ from, to, code, expires }`
+   (nouvelle table `pvp_invites`, migration suivante, expiration courte : 10 min).
+2. `GET /api/friends` (ou `/pending`) renverrait les invitations reçues non expirées ; l'écran
+   Amis afficherait « Rejoindre » à côté de l'ami, qui mène à `{ name: 'pvp_room', code }`,
+   exactement comme le lien `#salon=CODE`.
+3. Retirer l'ami ou supprimer un compte efface ses invitations (même règle que `forgetFriends`).
+
 ## Limites de débit
 
 | Action                    | Règle                                                                                                                                          |
@@ -62,6 +131,7 @@ dépôt ; secret absent ou vide : personne n'est administrateur. Le créer : `do
 | Connexion                 | 30 tentatives par adresse IP sur 10 min                                                                                                        |
 | Échecs de connexion       | par pseudo : 5 gratuits par heure, puis attente doublée à chaque échec (2 s, 4 s… 15 min max) ; par adresse IP : 10 gratuits, même progression |
 | Mot de passe, suppression | 5 échecs gratuits par compte, puis même progression                                                                                            |
+| Demande d'ami             | 20 par compte et par heure, réussies ou non                                                                                                    |
 
 Un pseudo inconnu et un mauvais mot de passe reçoivent la même réponse, dans le même temps (une
 vérification factice est faite pour un pseudo inconnu).

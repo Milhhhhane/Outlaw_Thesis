@@ -1,9 +1,10 @@
 import { campTodo, claimableCount, dungeonOpen, type CampTodo } from '@outlaw/engine';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Diorama } from '../art/Diorama';
 import { content } from '../combat/session';
 import { useGame } from '../game/nav';
 import { useAccount } from '../account/AccountProvider';
+import { api } from '../account/api';
 import { SyncBadge } from '../account/windows';
 import { Button, Icon, RefusalToast, Resources } from '../game/ui';
 import { useEscape } from '../game/keys';
@@ -11,6 +12,7 @@ import { t, type TextKey } from '../i18n';
 import { useProfile } from '../state/profile';
 import { Intro } from './Intro';
 import './farm.css';
+import './friends.css';
 
 const ENTRIES: readonly {
   readonly route: 'map' | 'tower' | 'team' | 'heroes' | 'workshop' | 'chests' | 'pvp';
@@ -55,6 +57,19 @@ export function Hub() {
   // Administration : seulement si le serveur a dit « administrateur » (sinon l'entrée n'existe pas).
   const account = useAccount();
   const admin = account?.status === 'signed' && account.admin && !account.mustChangePassword;
+  // Amis : le badge compte les demandes reçues, d'après le serveur (compte connecté seulement).
+  const signed = account?.status === 'signed' && !account.mustChangePassword;
+  const [pending, setPending] = useState(0);
+  useEffect(() => {
+    if (!signed || test) return;
+    let alive = true;
+    void api.friendsPending().then((result) => {
+      if (alive && result.ok) setPending(result.value.received);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [signed, test]);
   const todo = campTodo(content, profile);
   // Récompenses de quêtes et succès à réclamer (le profil passe au nouveau jour tout seul).
   const [now] = useState(() => Date.now());
@@ -89,6 +104,26 @@ export function Hub() {
             {claims > 0 && (
               <span className="hub__badge" aria-label={t('hub.quests.badge', { n: claims })}>
                 {claims}
+              </span>
+            )}
+          </Button>
+        )}
+        {/* Amis : toujours là hors mode test ; en invité, l'écran explique qu'il faut un compte. */}
+        {!test && (
+          <Button
+            variant="quiet"
+            size="small"
+            icon="heal"
+            className="hub__friends"
+            title={t('hub.menu.friends.hint')}
+            onClick={() => {
+              go({ name: 'friends' });
+            }}
+          >
+            {t('hub.menu.friends')}
+            {signed && pending > 0 && (
+              <span className="hub__badge" aria-label={t('hub.friends.badge', { n: pending })}>
+                {pending}
               </span>
             )}
           </Button>

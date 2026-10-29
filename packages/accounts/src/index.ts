@@ -182,6 +182,66 @@ export interface AdminAccountDetail extends AdminAccount {
   readonly dungeons:
     readonly { readonly id: string; readonly clears: number; readonly tier: number }[] | null;
 }
+/**
+ * Amis (`/api/friends*`, voir docs/ACCOUNTS.md). Un ami voit le pseudo, la dernière activité au
+ * jour près et un résumé d'avancement court ; jamais de hash, de jeton ni de clé de pseudo.
+ */
+/** Amis acceptés au plus, par compte. */
+export const FRIENDS_MAX = 100;
+/** Demandes envoyées encore en attente, au plus, par compte. */
+export const FRIEND_REQUESTS_PENDING_MAX = 50;
+/** Demandes d'ami par compte et par heure (réussies ou non : pas de sondage des pseudos). */
+export const FRIEND_REQUESTS_PER_HOUR = 20;
+
+export const friendRequestSchema = z.strictObject({ pseudo: text });
+
+/** Avancement d'un ami, calculé par le serveur depuis sa sauvegarde validée. */
+export interface FriendProgress {
+  /** Niveaux extrêmes des héros de son équipe (null : équipe vide). */
+  readonly team: { readonly min: number; readonly max: number } | null;
+  /** Donjons terminés au moins une fois, sur le total du jeu. */
+  readonly dungeons: { readonly cleared: number; readonly total: number };
+}
+
+export interface Friend {
+  /** Identifiant du compte de l'ami (sert aux routes `/api/friends/<id>`). */
+  readonly id: number;
+  readonly pseudo: string;
+  /** Amis depuis (ms depuis 1970). */
+  readonly since: number;
+  /** Jour de la dernière activité : minuit UTC de ce jour (ms), jamais l'heure. */
+  readonly lastActiveDay: number;
+  /** null : pas de sauvegarde en ligne, ou sauvegarde illisible. */
+  readonly progress: FriendProgress | null;
+}
+
+/** Une demande en attente : seulement l'autre compte et la date de la demande. */
+export interface FriendRequest {
+  readonly id: number;
+  readonly pseudo: string;
+  readonly at: number;
+}
+
+export interface FriendList {
+  /** Le plus récemment actif d'abord (au jour près), puis par pseudo. */
+  readonly friends: readonly Friend[];
+  /** Demandes reçues, la plus récente d'abord. */
+  readonly received: readonly FriendRequest[];
+  /** Demandes envoyées, la plus récente d'abord. */
+  readonly sent: readonly FriendRequest[];
+}
+
+/** Réponse à une demande : envoyée, ou acceptée d'office (l'autre m'avait déjà demandé). */
+export interface FriendRequestAck {
+  readonly outcome: 'sent' | 'accepted';
+  readonly list: FriendList;
+}
+
+/** Badge du camp : demandes reçues en attente. */
+export interface FriendPending {
+  readonly received: number;
+}
+
 export interface CloudSave {
   readonly rev: number;
   readonly updatedAt: number | null;
@@ -209,4 +269,15 @@ export type ApiError =
   /** PvP : le code ne correspond à aucun salon, le salon est complet, ou le service n'est pas branché. */
   | 'room_not_found'
   | 'room_full'
-  | 'unavailable';
+  | 'unavailable'
+  /**
+   * Amis : demande à soi-même, pseudo inconnu, déjà amis, déjà demandé, plafond d'amis atteint
+   * (le mien, ou celui de l'autre), plafond de demandes envoyées en attente.
+   */
+  | 'friend_self'
+  | 'friend_unknown'
+  | 'already_friends'
+  | 'already_requested'
+  | 'friends_full'
+  | 'friend_full'
+  | 'requests_full';

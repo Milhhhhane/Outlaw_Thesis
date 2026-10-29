@@ -90,12 +90,19 @@ export function progressOf(content: Content, save: ReadSave): AdminProgress {
   };
 }
 
+/** Avancement d'une sauvegarde brute (texte de la table `saves`) ; null si absente ou invalide. */
+export function saveProgress(data: string | null): AdminProgress | null {
+  const save = readSave(data);
+  return save === null ? null : progressOf(gameContent(), save);
+}
+
 /**
  * Dernière activité : la plus récente de la création, de la connexion, de la sauvegarde et de
  * l'usage d'une session. Une session repousse son expiration au plus une fois par jour (index.ts) :
  * `expires_at − SESSION_MS` date donc son dernier usage à un jour près, sans écriture de plus.
+ * Alias attendus : `u` (users), `s` (saves) ; paramètre : SESSION_MS. Repris par friends.ts.
  */
-const ACTIVITY = `MAX(
+export const ACTIVITY = `MAX(
   u.created_at,
   COALESCE(u.last_login_at, 0),
   COALESCE(s.updated_at, 0),

@@ -33,6 +33,8 @@ export type Route =
   /** Duel en ligne : entrée du menu, puis un salon par son code. */
   | { readonly name: 'pvp' }
   | { readonly name: 'pvp_room'; readonly code: string }
+  /** Amis : demandes et liste (compte connecté ; en invité, l'écran explique). */
+  | { readonly name: 'friends' }
   /** Administration : comptes, activité et avancement (administrateurs seulement). */
   | { readonly name: 'admin' };
 

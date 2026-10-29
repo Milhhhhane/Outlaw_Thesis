@@ -2,6 +2,9 @@ import type {
   AdminAccountDetail,
   AdminAccountList,
   CloudSave,
+  FriendList,
+  FriendPending,
+  FriendRequestAck,
   Me,
   SaveAck,
   SaveEnvelope,
@@ -64,6 +67,14 @@ export const api = {
       `/api/admin/users?limit=${String(limit)}&offset=${String(offset)}`,
     ),
   adminAccount: (id: number) => call<AdminAccountDetail>('GET', `/api/admin/users/${String(id)}`),
+  /** Amis (compte connecté). Chaque modification renvoie la liste à jour. */
+  friends: () => call<FriendList>('GET', '/api/friends'),
+  friendsPending: () => call<FriendPending>('GET', '/api/friends/pending'),
+  requestFriend: (pseudo: string) =>
+    call<FriendRequestAck>('POST', '/api/friends/requests', { pseudo }),
+  acceptFriend: (id: number) => call<FriendList>('POST', `/api/friends/${String(id)}/accept`),
+  declineFriend: (id: number) => call<FriendList>('POST', `/api/friends/${String(id)}/decline`),
+  removeFriend: (id: number) => call<FriendList>('DELETE', `/api/friends/${String(id)}`),
 };
 
 /** Moyen de contact du créateur (`public/config.json`, champ `contact`, vide par défaut). */
