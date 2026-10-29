@@ -254,7 +254,25 @@
     "titan_slam": "Écrasement",
     "titan_kindle": "Attisement",
     "titan_cinders": "Pluie de scories",
-    "titan_meteor": "Météore"
+    "titan_meteor": "Météore",
+    "raider_slash": "Taillade",
+    "raider_sand": "Poignée de sable",
+    "raider_ambush": "Embuscade",
+    "wraith_grasp": "Étreinte humide",
+    "wraith_veil": "Voile d'eau",
+    "wraith_drown": "Noyade",
+    "sentinel_spear": "Coup de lance",
+    "sentinel_brace": "Garde de pierre",
+    "sentinel_sweep": "Balayage",
+    "sphinx_claw": "Griffe solaire",
+    "sphinx_riddle": "Énigme",
+    "sphinx_flare": "Éruption solaire",
+    "djinn_lash": "Fouet d'écume",
+    "djinn_mirage": "Mirage",
+    "djinn_tempest": "Tempête",
+    "sandstone_fist": "Poing de grès",
+    "sandstone_shell": "Carapace de grès",
+    "sandstone_quake": "Séisme"
   },
   "passives": {
     "pyra_momentum": "Élan meurtrier",
@@ -310,7 +328,20 @@
     "cinder_wind": "Vent de cendres",
     "black_ice": "Verglas",
     "strangling_roots": "Racines étrangleuses",
-    "eclipse": "Éclipse"
+    "eclipse": "Éclipse",
+    "sphinx_zenith": "Midi brûlant",
+    "djinn_spring": "Source vive",
+    "sandstone_strata": "Strates",
+    "heat_haze": "Brume de chaleur",
+    "mirage_veil": "Voile de mirage",
+    "buried_wards": "Glyphes enfouis",
+    "sun_glare": "Éblouissement",
+    "quicksand": "Sables mouvants",
+    "scarab_swarm": "Essaim de scarabées",
+    "scorching_sun": "Soleil de plomb",
+    "shifting_halls": "Salles mouvantes",
+    "thin_air": "Air raréfié",
+    "zenith": "Zénith"
   },
   "pages": {
     "pyra_page_execution": {
@@ -1234,7 +1265,13 @@
     "cinder_fiend": "Diablotin des forges",
     "frost_maw": "Gueule de givre",
     "mire_troll": "Troll des tourbières",
-    "ash_titan": "Titan de cendre"
+    "ash_titan": "Titan de cendre",
+    "dune_raider": "Pillard des dunes",
+    "oasis_wraith": "Spectre de l'oasis",
+    "ruin_sentinel": "Sentinelle des ruines",
+    "sun_sphinx": "Sphinx solaire",
+    "mirage_djinn": "Djinn des mirages",
+    "sand_colossus": "Colosse de grès"
   },
   "items": {
     "ember_charm": "Charme de braise",
@@ -1276,7 +1313,27 @@
     "root_knot": "Nœud de racines",
     "swamp_eye": "Œil du marais",
     "dusk_ring": "Bague du crépuscule",
-    "eclipse_shard": "Éclat d'éclipse"
+    "eclipse_shard": "Éclat d'éclipse",
+    "dune_bead": "Perle des dunes",
+    "sunstone": "Pierre de soleil",
+    "oasis_gourd": "Gourde de l'oasis",
+    "mirage_pearl": "Perle de mirage",
+    "scarab_brooch": "Broche scarabée",
+    "temple_idol": "Idole du temple",
+    "glass_bead": "Perle de verre",
+    "molten_lens": "Lentille fondue",
+    "storm_feather": "Plume d'orage",
+    "thunder_horn": "Corne de tonnerre",
+    "bone_amulet": "Amulette d'os",
+    "tomb_seal": "Sceau du tombeau",
+    "cinder_glass": "Verre de braise",
+    "solar_diadem": "Diadème solaire",
+    "palace_veil": "Voile du palais",
+    "djinn_lamp": "Lampe du djinn",
+    "ivy_ring": "Anneau de lierre",
+    "hanging_bloom": "Fleur suspendue",
+    "cloud_ring": "Bague des nuées",
+    "zenith_orb": "Orbe du zénith"
   },
   "dungeons": {
     "ember_wastes": {
@@ -1358,6 +1415,46 @@
     "eclipse_keep": {
       "name": "Donjon de l'éclipse",
       "text": "Quand l'un d'eux tombe, les autres se pressent et se protègent. Les trois maîtres de la région vous attendent."
+    },
+    "sun_dunes": {
+      "name": "Dunes ardentes",
+      "text": "La brume de chaleur presse les pillards dès l'entrée. Le sphinx garde la crête."
+    },
+    "hidden_oasis": {
+      "name": "Oasis cachée",
+      "text": "Le premier coup reçu par chaque ennemi se perd dans un mirage. Le djinn veille sur la source."
+    },
+    "buried_temple": {
+      "name": "Temple enseveli",
+      "text": "Sous 30 % de vie, un glyphe enfoui soigne chaque gardien une fois. Achevez-les d'un trait."
+    },
+    "glass_desert": {
+      "name": "Désert de verre",
+      "text": "Chaque coup ennemi vous éblouit et émousse votre riposte. Le sphinx règne sur le verre."
+    },
+    "storm_mesa": {
+      "name": "Mesa des orages",
+      "text": "Le sable mouvant vous retarde à chaque coup reçu. Ne restez pas exposés."
+    },
+    "sand_necropolis": {
+      "name": "Nécropole des sables",
+      "text": "Quand l'un d'eux tombe, l'essaim enrage les autres. Choisissez l'ordre de vos cibles."
+    },
+    "sun_well": {
+      "name": "Puits du soleil",
+      "text": "Le soleil de plomb affaiblit vos coups au début de chaque tour. Le sphinx attend au fond du puits."
+    },
+    "mirage_palace": {
+      "name": "Palais des mirages",
+      "text": "Les salles bougent : à chaque tour ennemi, le plus faible d'entre eux se protège. Le djinn et l'hydre gardent le trône d'eau."
+    },
+    "hanging_gardens": {
+      "name": "Jardins suspendus",
+      "text": "L'air raréfié fragilise quiconque lance son ultime. Le colosse et la ronce ancestrale tiennent le sommet."
+    },
+    "sky_citadel": {
+      "name": "Citadelle céleste",
+      "text": "Au zénith, vous partez plus vite mais leurs défenses se durcissent. Les trois maîtres des sables vous attendent."
     }
   }
 }
