@@ -1359,3 +1359,11 @@ tard et « objets au maximum » passe à 152,1. Aucun levier limité au chapitre
 140 (meilleur : 148,1 en retirant le rare garanti de la Grève gelée, contraire à « Premier passage
 rare »). Le propriétaire avait autorisé ce repli : borne relevée à 155, essais chiffrés dans
 `docs/ECONOMY.md`.
+
+**Chapitre 3 derrière le chapitre 2** — Choix (propriétaire) : les donjons du chapitre 3
+s'ouvrent après le chapitre 2 (les quatre bas niveaux après le Bois pourrissant, les cinq hauts
+après le donjon du chapitre 2 de même niveau), sauf les Dunes ardentes, après les Salles
+englouties. Horizon de simulation 800 passages ; borne « objets de l'équipe au maximum » à 160.
+Raison : meilleure ouverture mesurée (or et quêtes plus sains), et une borne qui tient aussi
+hors des graines de la CI (157,5) au lieu d'une borne tenue de justesse sur les seules graines
+de la CI. Chaque chapitre parallèle repousse ce jalon : au prochain, revoir l'ouverture.

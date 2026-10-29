@@ -1422,7 +1422,7 @@
     },
     "hidden_oasis": {
       "name": "Oasis cachée",
-      "text": "Le premier coup reçu par chaque ennemi se perd dans un mirage. Le djinn veille sur la source."
+      "text": "Touché une première fois, chaque ennemi s'enveloppe d'un mirage qui amortit les coups suivants. Le djinn veille sur la source."
     },
     "buried_temple": {
       "name": "Temple enseveli",

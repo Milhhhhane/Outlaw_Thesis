@@ -2,6 +2,22 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-29 — chapitre 3
+
+### Ajouté
+
+- Chapitre 3, désert, ruines et ciel : 10 donjons (niveaux conseillés 3 à 30), 6 ennemis dont 3
+  boss (Sphinx solaire, Djinn des mirages, Colosse de grès), 20 objets, une troisième carte du
+  monde et 6 repères. Les Dunes ardentes s'ouvrent après les Salles englouties, les quatre
+  suivants après le Bois pourrissant, les cinq derniers après le donjon du chapitre 2 de même
+  niveau.
+
+### Modifié
+
+- Simulation : horizon du joueur modèle porté de 600 à 800 passages (la collection de 60 objets
+  arrive vers le 655ᵉ). Borne « objets de l'équipe au maximum » relevée de 155 à 160 (151,9 sur
+  les graines de la CI, 157,5 sur 60 autres) : voir `docs/ECONOMY.md`, « Chapitre 3 ».
+
 ## [Non publié] — 2026-10-29 — chapitre 2
 
 ### Ajouté
