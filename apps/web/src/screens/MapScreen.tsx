@@ -1,6 +1,7 @@
 import { MAP_SIZE, type Dungeon } from '@outlaw/data';
 import {
   dungeonOpen,
+  dungeonPrerequisite,
   essencesOpen,
   lootRates,
   masteryNext,
@@ -49,8 +50,9 @@ const boardOf = (chapter: number): string =>
 /**
  * Carte : les donjons dans l'ordre, reliés par un sentier, chacun posé sur son repère ; la fiche
  * du donjon choisi dans le panneau de droite. Tout vient de dungeons.json (champ `map`) : ajouter
- * un donjon n'exige ni retouche de la carte ni code. Un chapitre = une carte ; les chapitres
- * s'affichent en onglets dès qu'il y en a plusieurs.
+ * un donjon n'exige ni retouche de la carte ni code. Un chapitre = une carte et un sentier (les
+ * donjons du chapitre dans l'ordre du fichier, numérotés dans le chapitre) ; les chapitres
+ * s'affichent en onglets dès qu'il y en a plusieurs. Le verrou suit `dungeonOpen` (`opensAfter`).
  */
 export function MapScreen({
   initial,
@@ -85,13 +87,16 @@ export function MapScreen({
   const chapters = [...new Set(content.dungeons.map((d) => d.map.chapter))].sort((a, b) => a - b);
   const [chapter, setChapter] = useState(dungeon?.map.chapter ?? 1);
   const shown = content.dungeons.filter((d) => d.map.chapter === chapter);
-  // Sentier : chaque tronçon relie un donjon au suivant (même chapitre) ; celui qui mène au
-  // prochain donjon à faire est animé.
-  const segments = content.dungeons.flatMap((d, i) => {
-    const prev = content.dungeons[i - 1];
-    if (prev === undefined || prev.map.chapter !== chapter || d.map.chapter !== chapter) return [];
-    return [{ key: d.id, d: segment(prev, d), next: d.id === next }];
+  // Prochaine étape du chapitre affiché : le premier de ses donjons ouverts pas encore terminé.
+  const nextHere = shown.find((d) => status(d.id) === 'open')?.id;
+  // Sentier du chapitre : chaque tronçon relie un donjon au suivant du même chapitre ; celui qui
+  // mène à la prochaine étape est animé.
+  const segments = shown.flatMap((d, i) => {
+    const prev = shown[i - 1];
+    if (prev === undefined) return [];
+    return [{ key: d.id, d: segment(prev, d), next: d.id === nextHere }];
   });
+  const opener = dungeon === undefined ? null : dungeonPrerequisite(content, dungeon.id);
   const teamLevel =
     profile.team.length === 0
       ? 0
@@ -160,8 +165,7 @@ export function MapScreen({
               </span>
             ))}
             <ol className="map__nodes">
-              {shown.map((d) => {
-                const index = content.dungeons.indexOf(d);
+              {shown.map((d, index) => {
                 const [x, y] = at(d);
                 const state = status(d.id);
                 return (
@@ -169,7 +173,7 @@ export function MapScreen({
                     key={d.id}
                     className={[
                       'map__node-wrap',
-                      d.id === next || d.id === selected ? 'map__node-wrap--named' : '',
+                      d.id === nextHere || d.id === selected ? 'map__node-wrap--named' : '',
                     ].join(' ')}
                     style={{ left: x, top: y }}
                   >
@@ -178,7 +182,7 @@ export function MapScreen({
                       className={[
                         'map__node',
                         `map__node--${state}`,
-                        d.id === next ? 'map__node--next' : '',
+                        d.id === nextHere ? 'map__node--next' : '',
                         d.id === selected ? 'map__node--on' : '',
                         `element-${d.element === 'mixed' ? 'mixed' : d.element}`,
                       ].join(' ')}
@@ -376,7 +380,8 @@ export function MapScreen({
             </div>
             {status(dungeon.id) === 'locked' ? (
               <p className="map__locked">
-                <Icon name="lock" /> {t('hub.dungeon.locked')}
+                <Icon name="lock" />{' '}
+                {t('hub.dungeon.locked', { dungeon: names.dungeon(opener ?? '') })}
               </p>
             ) : (
               <Button

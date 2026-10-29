@@ -139,7 +139,7 @@
   "hub.dungeon.recommended": "Niveau conseillé {level}",
   "hub.dungeon.clears": "Terminé {count} fois",
   "hub.dungeon.new": "Jamais terminé",
-  "hub.dungeon.locked": "Terminez le donjon précédent pour l'ouvrir",
+  "hub.dungeon.locked": "Terminez « {dungeon} » pour l'ouvrir",
   "hub.dungeon.enter": "Entrer",
   "hub.dungeon.modifier": "{side}, {text}",
   "hub.dungeon.loot": "Butin possible",

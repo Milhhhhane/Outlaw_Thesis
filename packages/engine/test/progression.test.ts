@@ -5,6 +5,7 @@ import {
   canLevelUp,
   completeDungeon,
   dungeonOpen,
+  dungeonPrerequisite,
   energyAt,
   enterDungeon,
   equip,
@@ -334,6 +335,53 @@ describe('donjons et butin', () => {
     expect(dungeonOpen(content, { ...profile, testMode: true }, 'thorn_maze')).toBe(true);
     expect(dungeonOpen(content, profile, 'nowhere')).toBe(false);
     expect(profileSchema.parse(profile)).toEqual(profile);
+  });
+
+  it('déblocage par opensAfter : seul le donjon cité compte, pas le précédent du fichier', () => {
+    const last = content.dungeons.at(-1)!;
+    const base = content.dungeonById.get('drowned_halls')!;
+    const parallel = {
+      ...base,
+      id: 'test_parallel',
+      opensAfter: 'ember_wastes',
+      map: { ...base.map, chapter: 9 },
+    };
+    const custom = { ...content, dungeons: [...content.dungeons, parallel] };
+    custom.dungeonById = new Map(custom.dungeons.map((d) => [d.id, d]));
+    const fresh = newProfile(custom, 3);
+    expect(dungeonPrerequisite(custom, 'test_parallel')).toBe('ember_wastes');
+    expect(dungeonOpen(custom, fresh, 'test_parallel')).toBe(false);
+    // Le précédent dans le fichier ne l'ouvre pas.
+    const afterLast = { ...fresh, dungeons: { [last.id]: { clears: 1, dry: 0, tier: 2 } } };
+    expect(dungeonOpen(custom, afterLast, 'test_parallel')).toBe(false);
+    const afterFirst = value(completeDungeon(custom, fresh, 'ember_wastes')).profile;
+    expect(dungeonOpen(custom, afterFirst, 'test_parallel')).toBe(true);
+    expect(dungeonOpen(custom, afterFirst, 'drowned_halls')).toBe(true);
+    expect(value(completeDungeon(custom, afterFirst, 'test_parallel')).report.firstClear).toBe(
+      true,
+    );
+    expect(dungeonPrerequisite(custom, 'ember_wastes')).toBeNull();
+    expect(dungeonPrerequisite(custom, 'nowhere')).toBeUndefined();
+  });
+
+  it('sauvegarde existante inchangée : sans opensAfter, le précédent du fichier ouvre le suivant', () => {
+    // Les donjons d'origine n'ont pas de prérequis explicite : leur ouverture ne change pas.
+    const original = content.dungeons.filter((d) => d.opensAfter === undefined);
+    expect(original.map((d) => d.id)).toEqual(content.dungeons.slice(0, 10).map((d) => d.id));
+    for (let cleared = 0; cleared <= original.length; cleared++) {
+      // Sauvegarde d'avant le chapitre 2 : les `cleared` premiers donjons terminés.
+      const save: Profile = {
+        ...newProfile(content, 3),
+        dungeons: Object.fromEntries(
+          original.slice(0, cleared).map((d) => [d.id, { clears: 1, dry: 0, tier: 2 }]),
+        ),
+      };
+      original.forEach((dungeon, i) => {
+        expect(dungeonOpen(content, save, dungeon.id), `${dungeon.id} après ${cleared}`).toBe(
+          i <= cleared,
+        );
+      });
+    }
   });
 
   it('déblocage d’un héros au niveau recommandé du donjon', () => {

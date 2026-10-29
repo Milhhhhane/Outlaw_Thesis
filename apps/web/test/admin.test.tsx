@@ -199,9 +199,9 @@ describe('entrée « Administration » du camp', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
-  it('affiche en entier la fiche d’un joueur de fin de partie (25 héros, 10 donjons au palier III)', async () => {
+  it('affiche en entier la fiche d’un joueur de fin de partie (25 héros, 20 donjons au palier III)', async () => {
     expect(veteran.heroes).toHaveLength(25);
-    expect(veteran.dungeons).toHaveLength(10);
+    expect(veteran.dungeons).toHaveLength(20);
     stubApi(
       { pseudo: 'Patron_Fictif', mustChangePassword: false, admin: true },
       { ...list, accounts: [veteran] },
@@ -226,7 +226,7 @@ describe('entrée « Administration » du camp', () => {
     // Chaque donjon : son nom, ses 40 victoires et le palier III, dans la même ligne.
     const dungeons = within(screen.getByRole('region', { name: t('admin.detail.dungeons') }));
     const dungeonRows = dungeons.getAllByRole('listitem');
-    expect(dungeonRows).toHaveLength(10);
+    expect(dungeonRows).toHaveLength(20);
     veteran.dungeons!.forEach((dungeon, i) => {
       const row = within(dungeonRows[i]!);
       expect(row.getByText(names.dungeon(dungeon.id))).toBeInTheDocument();

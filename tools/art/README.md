@@ -1,23 +1,23 @@
 # Pixel art
 
 Les décors, effets, icônes et habillages sont générés par ces scripts (Python 3, Pillow, NumPy) ;
-les personnages (25 héros, 12 ennemis) viennent d'un pack CC0 (voir `pack.py` et
+les personnages (25 héros, 18 ennemis) viennent d'un pack CC0 (voir `pack.py` et
 `third_party/0x72/`) :
 
-| Fichier          | Contenu                                                                |
-| ---------------- | ---------------------------------------------------------------------- |
-| `pix.py`         | moteur : formes, ombrage par rampes, ombres portées, contours, lueurs  |
-| `pal.py`         | rampes de couleurs partagées                                           |
-| `heroes.py`      | les 6 héros (64 × 64, tournés vers la droite, 2 images de repos)       |
-| `enemies.py`     | les 12 ennemis (64 × 64, boss en 96 × 96, tournés vers la gauche)      |
-| `fx.py`          | impacts, projectiles, auras, altérations, police 3 × 5                 |
-| `backgrounds.py` | un décor 320 × 180 par donjon                                          |
-| `ui.py`          | habillage des menus : fond, cadres bois, planche, corde, cuir, socles  |
-| `worldmap.py`    | carte du monde 320 × 180 : contrées, reliefs, eau, repères des donjons |
-| `pack.py`        | personnages du pack 0x72 : recoloration, armes des héros, coffres      |
-| `looks.py`       | coiffes et accessoires dessinés des héros, posés sur le pack           |
-| `export.py`      | écrit l'atlas, les décors, les cadres et `sprites.ts` dans le web      |
-| `scene.py`       | aperçu d'une scène complète, pour juger un réglage                     |
+| Fichier          | Contenu                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| `pix.py`         | moteur : formes, ombrage par rampes, ombres portées, contours, lueurs |
+| `pal.py`         | rampes de couleurs partagées                                          |
+| `heroes.py`      | les 6 héros (64 × 64, tournés vers la droite, 2 images de repos)      |
+| `enemies.py`     | les 12 ennemis (64 × 64, boss en 96 × 96, tournés vers la gauche)     |
+| `fx.py`          | impacts, projectiles, auras, altérations, police 3 × 5                |
+| `backgrounds.py` | un décor 320 × 180 par donjon (ou dérivé d'un autre par `tinted`)     |
+| `ui.py`          | habillage des menus : fond, cadres bois, planche, corde, cuir, socles |
+| `worldmap.py`    | une carte 320 × 180 par chapitre : contrées, reliefs, eau, repères    |
+| `pack.py`        | personnages du pack 0x72 : recoloration, armes des héros, coffres     |
+| `looks.py`       | coiffes et accessoires dessinés des héros, posés sur le pack          |
+| `export.py`      | écrit l'atlas, les décors, les cadres et `sprites.ts` dans le web     |
+| `scene.py`       | aperçu d'une scène complète, pour juger un réglage                    |
 
 Après une retouche : `python3 tools/art/export.py`, `pnpm prettier --write apps/web/src/art`, puis
 committer `apps/web/src/art/`. `export.py` refuse deux héros de même silhouette.

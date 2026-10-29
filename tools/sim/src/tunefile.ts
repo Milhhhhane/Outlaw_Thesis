@@ -38,3 +38,18 @@ export function writeTuning(dungeons: readonly Dungeon[]): void {
   });
   writeFileSync(DUNGEONS_FILE, `${JSON.stringify(raws, null, 2)}\n`);
 }
+
+/**
+ * Option `--chapter N` des outils de réglage : ne mesurer et ne retoucher que les donjons de ce
+ * chapitre (les autres restent tels quels). Renvoie aussi les arguments restants, dans l'ordre.
+ */
+export function chapterOption(argv: readonly string[]): {
+  chapter: number | undefined;
+  rest: string[];
+} {
+  const index = argv.indexOf('--chapter');
+  if (index < 0) return { chapter: undefined, rest: [...argv] };
+  const chapter = Number(argv[index + 1]);
+  if (!Number.isInteger(chapter) || chapter < 1) throw new Error('--chapter attend un entier ≥ 1');
+  return { chapter, rest: argv.filter((_, i) => i !== index && i !== index + 1) };
+}

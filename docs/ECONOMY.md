@@ -408,3 +408,107 @@ jour et 13,9 % à 10 (avant : 13,1 et 13,7 ; borne 15 %) ; boss, 7,6 % et 3,6 % 
 (`tools/sim/test/economy.test.ts`) : au plus 25 % de l'or gagné en réserve à l'équipe équipée et
 au niveau 30 ; équipe au niveau 30 avec l'éveil ≤ 177 (5 graines). Justification des valeurs : `docs/BALANCE.md`, « L'or paie les
 niveaux et les étoiles ».
+
+## Chapitre 2 (2026-10-29)
+
+Dix donjons parallèles au chapitre 1 (niveaux 2 à 30, voir `docs/BALANCE.md`, « Chapitre 2 »),
+récompenses à l'échelle des donjons du chapitre 1 de niveau voisin (premier passage comme rejeu) :
+
+| Donjon        | Niv. |   XP |   Or | Poussière | Butin (commun / rare)           |
+| ------------- | ---: | ---: | ---: | --------- | ------------------------------- |
+| frost_strand  |    2 |  120 |  100 | 8 brute   | rime_locket / frost_heart       |
+| bog_mire      |    5 |  310 |  185 | 8 brute   | bog_lantern / mire_totem        |
+| ember_forge   |    8 |  470 |  260 | 7 fine    | forge_rivet / anvil_core        |
+| glacier_vault |   11 |  780 |  350 | 13 fine   | glacier_shard / hoarfrost_ring  |
+| rotwood       |   14 | 1010 |  440 | 17 fine   | spore_pouch / heartwood_charm   |
+| twin_rivers   |   18 | 1260 |  560 | 20 fine   | river_stone / confluence_orb    |
+| ash_caldera   |   22 | 1500 |  700 | 8 pure    | ash_veil / magma_sigil          |
+| frozen_abyss  |   25 | 1620 |  850 | 9 pure    | glacial_horn / permafrost_plate |
+| elder_swamp   |   28 | 1900 | 1100 | 9 pure    | root_knot / swamp_eye           |
+| eclipse_keep  |   30 | 2400 | 1500 | 8 pure    | dusk_ring / eclipse_shard       |
+
+Coffres : la formule par niveau d'ennemis (`chests.dropLevels`), comme au chapitre 1. Paliers de
+poussière des objets : 4 objets du palier 1, 8 du palier 2, 8 du palier 3 (chapitre 1 : 4, 6, 10).
+Poussière pure 8 à 9 (et non 10 à 12) : avec 12, le grind de la collection du chapitre 2 laissait
+dormir un tiers de la poussière pure (borne CI : les trois quarts dépensés ; mesuré 68 %, 76 %
+après). Rythme du farm (`pnpm --filter @outlaw/sim farm`) : 5,3 à 18,0 passages par pas, 92 pour le
+chapitre (89 pour le chapitre 1).
+
+### Route du joueur modèle
+
+Le joueur modèle a deux routes (`ChapterRoute` dans `tools/sim/src/economy.ts`) :
+
+- **`parallel`** (par défaut, **référence des bornes en CI** : le vrai joueur) : tout donjon ouvert
+  à sa portée est joué dès l'ouverture ;
+- **`main`** (lecture seule, affichée par `economy` après le bilan) : le chapitre 1 est la route
+  principale ; le chapitre 2 est joué une fois l'équipe au niveau 30.
+
+**Ouverture retenue (option E)** : la Grève gelée, la Tourbière sombre, la Forge des braises et le
+Caveau glaciaire s'ouvrent après la Citadelle de cendre (4ᵉ donjon du chapitre 1, niveau 12), avec
+le Bois pourrissant ; les cinq autres gardent l'ouverture par niveau. Avec l'ouverture d'origine
+(chaque donjon après celui du chapitre 1 de même niveau), quatre donjons du chapitre 2 s'ouvraient
+dans les 15 premiers passages et chaque premier passage donnait un objet neuf : l'équipe était
+équipée au 12ᵉ passage (borne 25 à 55).
+
+Jalons et bornes (passages gagnants, 20 graines ; éveil : 5 graines comme en CI). « Collection » =
+les 20 objets du chapitre 1 ; « collection complète » = les 40 :
+
+| Jalon ou borne                    | Avant (10 donjons) |  Route `main` | `parallel`, ouverture d'origine | **`parallel`, option E** | Borne CI        |
+| --------------------------------- | -----------------: | ------------: | ------------------------------: | -----------------------: | --------------- |
+| Premier objet au niveau maximum   |                8,1 |           8,1 |                          24,8 ✗ |                  **8,1** | 4 à 14          |
+| Première étoile                   |               20,0 |          20,0 |                            16,0 |                 **20,0** | 15 à 30         |
+| Équipe de 4 équipée (2 objets)    |               44,1 |          44,1 |                          12,2 ✗ |                 **44,0** | 25 à 55         |
+| Équipe de 4 au niveau 30          |              117,6 |         117,6 |                           112,7 |                **119,0** | 85 à 120        |
+| Équipe de 4 aux objets au maximum |              127,5 |         137,2 |                         158,8 ✗ |                **152,1** | 100 à 155 (140) |
+| Collection du chapitre 1          |              264,2 |         271,1 |                         309,5 ✗ |                **288,1** | 200 à 300       |
+| Collection complète (40 objets)   |                  — |         477,5 |                           455,8 |                **463,7** | —               |
+| Grimoires des sorts d'un héros    |                  — |          74,5 |                            70,4 |                 **79,0** | 50 à 100        |
+| Grimoires des sorts de l'équipe   |              147,5 |         156,5 |                           151,3 |                **160,3** | 120 à 200       |
+| Réserve d'or : équipée / niv. 30  |        20 % / 18 % | 20,2 / 17,7 % |                 53,5 ✗ / 20,9 % |        **21,8 / 17,8 %** | ≤ 25 %          |
+| Or dépensé en objets              |                  — |        86,6 % |                          89,2 % |               **87,9 %** | > 75 %          |
+| Poussière pure dépensée           |                  — |        76,5 % |                          78,8 % |               **77,7 %** | > 75 %          |
+| Fragments restants par héros      |                  — |         245,1 |                           233,5 |                **236,7** | > 72            |
+| Quêtes, 5 / 10 passages par jour  |      13,3 / 13,9 % | 13,3 / 13,9 % |               15,1 ✗ / 16,4 ✗ % |        **13,3 / 14,7 %** | ≤ 15 %          |
+| Boss, 5 / 10 passages par jour    |        7,6 / 3,6 % |   7,6 / 3,6 % |                     7,2 / 6,9 % |          **7,5 / 4,3 %** | ≤ 10 %          |
+| Éveil : premier héros             |               88,2 |          88,2 |                            80,8 |                 **97,6** | 60 à 100        |
+| Éveil : équipe                    |              137,2 |         137,2 |                           124,8 |                **142,6** | 110 à 170       |
+| Éveil : passages d'essence (1er)  |               13,8 |          13,8 |                            17,4 |                 **18,6** | ≤ 20            |
+| Éveil : équipe au niveau 30       |              172,4 |         172,4 |                           164,4 |                **172,6** | ≤ 177           |
+
+Toutes les bornes de `economy.test.ts` et `boss.test.ts` portent sur la route `parallel` ; aucune
+n'a de sens réservé au chapitre 1 seul (la collection du chapitre 1 reste un jalon du vrai joueur).
+Les marges les plus serrées : équipe au niveau 30 (119,0 pour 120), quêtes à 10 passages par jour
+(14,7 % pour 15 %), premier héros éveillé (97,6 pour 100 ; 92,0 sur 20 graines).
+
+**« Objets au maximum » : borne relevée de 140 à 155.** L'équipe porte sept objets du chapitre 1
+(les deux des Landes de braise, des Salles englouties et du Dédale de ronces, le rare de la
+Citadelle de cendre) et le premier objet de la Grève gelée. Les derniers au maximum sont les rares
+du chapitre 1 (Braise éternelle, Sceau d'orage, Plume de phénix) : sur la route parallèle, le
+chapitre 2 prend plus d'un quart des passages avant le niveau 30 (graines 1 à 5 : 170 sur 600 ; le
+chapitre 1 en garde 430, contre 591 sur la route principale), et ces rares reçoivent leurs copies
+plus tard ; ce sont toujours les copies qui bloquent (jamais l'or ni la poussière). Même avec le
+huitième objet au maximum d'emblée, les sept objets du chapitre 1 finissent vers le 141ᵉ passage
+(graines 1 à 5). Leviers du chapitre 2 essayés (20 graines, tout le reste inchangé ; les champs
+`firstClearRare` / `firstClearChest` par donjon ont servi à ces essais puis ont été retirés, faute
+d'usage) :
+
+| Réglage du chapitre 2                                |     Objets au maximum | Autre borne cassée                      |
+| ---------------------------------------------------- | --------------------: | --------------------------------------- |
+| Aucun (option E seule, retenu)                       |                 152,1 | —                                       |
+| `firstClearRare: false` à la Grève gelée             |                 148,1 | —                                       |
+| idem, Tourbière / Forge / Caveau seuls               | 152,6 / 152,1 / 154,3 | —                                       |
+| idem, Grève + Tourbière + Caveau                     |                 146,9 | — (150,8 et 150,5 sur d'autres graines) |
+| idem, les quatre ouverts par la Citadelle            |                 148,1 | —                                       |
+| idem, les dix                                        |                 146,2 | poussière pure 71 % (> 75 %)            |
+| `firstClearChest: false`, les quatre / les dix       |         154,5 / 154,9 | niveau 30 : 120,3 / 120,5 (≤ 120)       |
+| les deux champs à `false`, les quatre / les dix      |         150,8 / 149,2 | —                                       |
+| rareté inversée à la Grève (Médaillon de givre rare) |                 152,8 | —                                       |
+
+Inverser les raretés ne change rien en moyenne (chaque donjon garde un commun et un rare : le
+chargement l'exige). Le seul effet réel est `firstClearRare: false` à la Grève gelée, environ 3 à 4
+passages (149,3 contre 151,4 sur les graines 21 à 40, 148,9 contre 152,2 sur 41 à 80) : le huitième
+objet porté devient le plus souvent le commun, plus vite au maximum. Il ne descend pas sous 140 et
+il retire la garantie « Premier passage rare » (`docs/DECISIONS.md`) au premier donjon du
+chapitre ; il n'est donc pas appliqué, et la borne est relevée à 155 (152,1 mesuré, 151,4 et 152,2
+sur d'autres graines). La référence `baseline.csv` est inchangée : l'ouverture ne joue sur aucun
+combat simulé.

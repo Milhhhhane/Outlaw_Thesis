@@ -41,7 +41,9 @@ source).
   teinte et agrandis ×2 par `tools/art/pack.py` ; les monstres sont retournés. Les 25 héros
   partagent les huit personnages héros de la planche (elfes, chevaliers, mages, lézards) ; 18
   d'entre eux portent une coiffe ou un accessoire dessiné pour le projet (`tools/art/looks.py`,
-  création originale) ; aucun nouveau fichier tiers. Les anciens personnages générés
+  création originale) ; aucun nouveau fichier tiers. Les six ennemis du chapitre 2 viennent de la
+  même planche (`ice_zombie`, `muddy`, `chort`, et `big_demon` et `ogre` recolorés), sans nouveau
+  fichier tiers. Les anciens personnages générés
   (`heroes.py`, `enemies.py`) ne sont plus utilisés.
 
 ## Données

@@ -574,5 +574,614 @@
       "y": 42,
       "landmark": "throne"
     }
+  },
+  {
+    "id": "frost_strand",
+    "element": "water",
+    "recommendedLevel": 2,
+    "modifier": {
+      "id": "rime_coat",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "shield",
+                "target": "self",
+                "power": 50,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["frost_ghoul", "brine_crab"],
+        "hpPct": 148,
+        "atkPct": 75
+      },
+      {
+        "enemies": ["tide_caller", "frost_ghoul"],
+        "hpPct": 187,
+        "atkPct": 75
+      },
+      {
+        "enemies": ["frost_maw"],
+        "hpPct": 154,
+        "atkPct": 75
+      }
+    ],
+    "rewards": {
+      "xp": 120,
+      "gold": 100,
+      "materials": {
+        "tier": 1,
+        "amount": 8
+      }
+    },
+    "loot": ["rime_locket", "frost_heart"],
+    "map": {
+      "x": 36,
+      "y": 132,
+      "landmark": "cairn",
+      "chapter": 2
+    },
+    "opensAfter": "cinder_citadel"
+  },
+  {
+    "id": "bog_mire",
+    "element": "nature",
+    "recommendedLevel": 5,
+    "modifier": {
+      "id": "quagmire",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "spell_cast",
+            "subject": "self",
+            "slots": ["b", "ult"],
+            "effects": [
+              {
+                "kind": "tempo",
+                "target": "self",
+                "amount": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["mire_slime", "moss_brute", "mire_slime"],
+        "hpPct": 77,
+        "atkPct": 150
+      },
+      {
+        "enemies": ["thorn_witch", "mire_slime", "thorn_witch"],
+        "hpPct": 99,
+        "atkPct": 150
+      },
+      {
+        "enemies": ["mire_troll", "mire_slime"],
+        "atkPct": 150
+      }
+    ],
+    "rewards": {
+      "xp": 310,
+      "gold": 185,
+      "materials": {
+        "tier": 1,
+        "amount": 8
+      }
+    },
+    "loot": ["bog_lantern", "mire_totem"],
+    "map": {
+      "x": 84,
+      "y": 150,
+      "landmark": "hut",
+      "chapter": 2
+    },
+    "opensAfter": "cinder_citadel"
+  },
+  {
+    "id": "ember_forge",
+    "element": "fire",
+    "recommendedLevel": 8,
+    "modifier": {
+      "id": "stoked_rage",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_taken",
+            "subject": "self",
+            "limit": {
+              "per": "combat",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 25,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["cinder_fiend", "cinder_hound", "cinder_fiend"],
+        "hpPct": 133,
+        "atkPct": 88
+      },
+      {
+        "enemies": ["ash_acolyte", "cinder_fiend", "cinder_hound", "cinder_fiend"],
+        "hpPct": 99,
+        "atkPct": 88
+      },
+      {
+        "enemies": ["ash_titan", "cinder_fiend"],
+        "hpPct": 95,
+        "atkPct": 88
+      }
+    ],
+    "rewards": {
+      "xp": 470,
+      "gold": 260,
+      "materials": {
+        "tier": 2,
+        "amount": 7
+      }
+    },
+    "loot": ["forge_rivet", "anvil_core"],
+    "map": {
+      "x": 136,
+      "y": 140,
+      "landmark": "forge",
+      "chapter": 2
+    },
+    "opensAfter": "cinder_citadel"
+  },
+  {
+    "id": "glacier_vault",
+    "element": "water",
+    "recommendedLevel": 11,
+    "modifier": {
+      "id": "ice_heart",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "hp_crossed",
+            "subject": "self",
+            "thresholdPct": 50,
+            "effects": [
+              {
+                "kind": "shield",
+                "target": "self",
+                "power": 80,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["frost_ghoul", "brine_crab", "frost_ghoul", "tide_caller"],
+        "hpPct": 81,
+        "atkPct": 158
+      },
+      {
+        "enemies": ["brine_crab", "frost_ghoul", "brine_crab"],
+        "hpPct": 86,
+        "atkPct": 158
+      },
+      {
+        "enemies": ["abyss_warden", "frost_ghoul", "frost_ghoul"],
+        "hpPct": 86,
+        "atkPct": 158
+      }
+    ],
+    "rewards": {
+      "xp": 780,
+      "gold": 350,
+      "materials": {
+        "tier": 2,
+        "amount": 13
+      }
+    },
+    "loot": ["glacier_shard", "hoarfrost_ring"],
+    "map": {
+      "x": 100,
+      "y": 96,
+      "landmark": "ruins",
+      "chapter": 2
+    },
+    "opensAfter": "cinder_citadel"
+  },
+  {
+    "id": "rotwood",
+    "element": "nature",
+    "recommendedLevel": 14,
+    "modifier": {
+      "id": "mycelium",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "turn_end",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "heal",
+                "target": "lowest_hp_ally",
+                "power": 12
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["moss_brute", "mire_slime", "thorn_witch", "mire_slime"],
+        "hpPct": 68,
+        "atkPct": 144
+      },
+      {
+        "enemies": ["thorn_witch", "mire_slime", "frost_ghoul", "thorn_witch"],
+        "hpPct": 86,
+        "atkPct": 144
+      },
+      {
+        "enemies": ["elder_bramble", "mire_slime", "mire_slime"],
+        "hpPct": 76,
+        "atkPct": 144
+      }
+    ],
+    "rewards": {
+      "xp": 1010,
+      "gold": 440,
+      "materials": {
+        "tier": 2,
+        "amount": 17
+      }
+    },
+    "loot": ["spore_pouch", "heartwood_charm"],
+    "map": {
+      "x": 52,
+      "y": 58,
+      "landmark": "tree",
+      "chapter": 2
+    },
+    "opensAfter": "cinder_citadel"
+  },
+  {
+    "id": "twin_rivers",
+    "element": "mixed",
+    "recommendedLevel": 18,
+    "modifier": {
+      "id": "fever",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 10,
+                "duration": 2
+              }
+            ]
+          }
+        },
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "combat_start",
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "self",
+                "stat": "atk",
+                "percent": 20,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["cinder_fiend", "frost_ghoul", "mire_slime", "cinder_fiend"],
+        "hpPct": 105,
+        "atkPct": 131
+      },
+      {
+        "enemies": ["frost_ghoul", "ash_acolyte", "mire_slime", "tide_caller"],
+        "hpPct": 99,
+        "atkPct": 131
+      },
+      {
+        "enemies": ["mire_troll", "frost_maw"],
+        "hpPct": 75,
+        "atkPct": 131
+      }
+    ],
+    "rewards": {
+      "xp": 1260,
+      "gold": 560,
+      "materials": {
+        "tier": 2,
+        "amount": 20
+      }
+    },
+    "loot": ["river_stone", "confluence_orb"],
+    "map": {
+      "x": 112,
+      "y": 42,
+      "landmark": "bridge",
+      "chapter": 2
+    },
+    "opensAfter": "sunken_spire"
+  },
+  {
+    "id": "ash_caldera",
+    "element": "fire",
+    "recommendedLevel": 22,
+    "modifier": {
+      "id": "cinder_wind",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "turn_start",
+            "subject": "self",
+            "effects": [
+              {
+                "kind": "status",
+                "target": "lowest_hp_enemy",
+                "status": "burn",
+                "duration": 1,
+                "power": 10
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["cinder_fiend", "ash_acolyte", "cinder_fiend", "cinder_hound"],
+        "hpPct": 120,
+        "atkPct": 142
+      },
+      {
+        "enemies": ["ash_acolyte", "cinder_fiend", "ash_acolyte", "mire_slime"],
+        "hpPct": 79,
+        "atkPct": 142
+      },
+      {
+        "enemies": ["ash_titan", "cinder_fiend", "ash_acolyte"],
+        "hpPct": 87,
+        "atkPct": 142
+      }
+    ],
+    "rewards": {
+      "xp": 1500,
+      "gold": 700,
+      "materials": {
+        "tier": 3,
+        "amount": 8
+      }
+    },
+    "loot": ["ash_veil", "magma_sigil"],
+    "map": {
+      "x": 176,
+      "y": 70,
+      "landmark": "crater",
+      "chapter": 2
+    },
+    "opensAfter": "verdant_crown"
+  },
+  {
+    "id": "frozen_abyss",
+    "element": "water",
+    "recommendedLevel": 25,
+    "modifier": {
+      "id": "black_ice",
+      "rules": [
+        {
+          "appliesTo": "heroes",
+          "trigger": {
+            "on": "spell_cast",
+            "subject": "self",
+            "slots": ["ult"],
+            "effects": [
+              {
+                "kind": "tempo",
+                "target": "self",
+                "amount": 25
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["frost_ghoul", "tide_caller", "frost_ghoul", "brine_crab"],
+        "hpPct": 101,
+        "atkPct": 154
+      },
+      {
+        "enemies": ["tide_caller", "frost_ghoul", "cinder_fiend", "tide_caller"],
+        "hpPct": 123,
+        "atkPct": 154
+      },
+      {
+        "enemies": ["frost_maw", "tidal_hydra"],
+        "hpPct": 83,
+        "atkPct": 154
+      }
+    ],
+    "rewards": {
+      "xp": 1620,
+      "gold": 850,
+      "materials": {
+        "tier": 3,
+        "amount": 9
+      }
+    },
+    "loot": ["glacial_horn", "permafrost_plate"],
+    "map": {
+      "x": 220,
+      "y": 130,
+      "landmark": "spire",
+      "chapter": 2
+    },
+    "opensAfter": "verdant_crown"
+  },
+  {
+    "id": "elder_swamp",
+    "element": "nature",
+    "recommendedLevel": 28,
+    "modifier": {
+      "id": "strangling_roots",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "damage_dealt",
+            "subject": "self",
+            "limit": {
+              "per": "turn",
+              "count": 1
+            },
+            "effects": [
+              {
+                "kind": "statMod",
+                "target": "other",
+                "stat": "vit",
+                "percent": -10,
+                "duration": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["mire_slime", "thorn_witch", "moss_brute", "mire_slime"],
+        "hpPct": 66,
+        "atkPct": 225
+      },
+      {
+        "enemies": ["moss_brute", "frost_ghoul", "thorn_witch", "moss_brute"],
+        "hpPct": 85,
+        "atkPct": 225
+      },
+      {
+        "enemies": ["mire_troll", "grove_colossus"],
+        "hpPct": 72,
+        "atkPct": 225
+      }
+    ],
+    "rewards": {
+      "xp": 1900,
+      "gold": 1100,
+      "materials": {
+        "tier": 3,
+        "amount": 9
+      }
+    },
+    "loot": ["root_knot", "swamp_eye"],
+    "map": {
+      "x": 268,
+      "y": 92,
+      "landmark": "gate",
+      "chapter": 2
+    },
+    "opensAfter": "salt_flats"
+  },
+  {
+    "id": "eclipse_keep",
+    "element": "mixed",
+    "recommendedLevel": 30,
+    "modifier": {
+      "id": "eclipse",
+      "rules": [
+        {
+          "appliesTo": "enemies",
+          "trigger": {
+            "on": "unit_down",
+            "subject": "ally",
+            "effects": [
+              {
+                "kind": "tempo",
+                "target": "self",
+                "amount": -15
+              },
+              {
+                "kind": "shield",
+                "target": "self",
+                "power": 40,
+                "duration": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "encounters": [
+      {
+        "enemies": ["cinder_fiend", "mire_slime", "frost_ghoul", "cinder_fiend"],
+        "hpPct": 89,
+        "atkPct": 172
+      },
+      {
+        "enemies": ["frost_ghoul", "thorn_witch", "cinder_fiend", "mire_slime"],
+        "hpPct": 85,
+        "atkPct": 172
+      },
+      {
+        "enemies": ["ash_titan", "frost_maw", "mire_troll"],
+        "hpPct": 55,
+        "atkPct": 172
+      }
+    ],
+    "rewards": {
+      "xp": 2400,
+      "gold": 1500,
+      "materials": {
+        "tier": 3,
+        "amount": 8
+      }
+    },
+    "loot": ["dusk_ring", "eclipse_shard"],
+    "map": {
+      "x": 284,
+      "y": 36,
+      "landmark": "obelisk",
+      "chapter": 2
+    },
+    "opensAfter": "hollow_throne"
   }
 ]

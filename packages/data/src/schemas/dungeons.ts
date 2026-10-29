@@ -46,6 +46,12 @@ export const LANDMARKS = [
   'salt',
   'pass',
   'throne',
+  'cairn',
+  'hut',
+  'forge',
+  'tree',
+  'crater',
+  'obelisk',
 ] as const;
 export const landmarkSchema = z.enum(LANDMARKS);
 
@@ -89,6 +95,11 @@ export const dungeonSchema = z.strictObject({
   /** Décor de combat (fichier `bg/<scene>.png`) ; par défaut, l'identifiant du donjon. */
   scene: idSchema.optional(),
   map: mapPlaceSchema,
+  /**
+   * Donjon à terminer pour ouvrir celui-ci. Absent : le précédent dans le fichier (règle d'origine,
+   * celle des sauvegardes du chapitre 1). Sert aux régions parallèles (chapitre 2).
+   */
+  opensAfter: idSchema.optional(),
   /** Héros débloqué en terminant ce donjon pour la première fois. */
   unlocksHero: idSchema.optional(),
 });

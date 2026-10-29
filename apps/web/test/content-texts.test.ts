@@ -23,6 +23,12 @@ describe('textes du contenu', () => {
     for (const enemy of content.enemies) {
       need(enemy.id in all.enemies, enemy.id);
       for (const skill of enemy.skills) need(skill.id in all.spells, skill.id);
+      if (enemy.passive) need(enemy.passive.id in all.passives, enemy.passive.id);
+    }
+    for (const item of content.items) need(item.id in all.items, item.id);
+    for (const dungeon of content.dungeons) {
+      need(dungeon.id in all.dungeons && names.dungeonText(dungeon.id) !== '', dungeon.id);
+      need(dungeon.modifier.id in all.passives, dungeon.modifier.id);
     }
     expect(missing).toEqual([]);
   });

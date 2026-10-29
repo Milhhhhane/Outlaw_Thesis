@@ -9,8 +9,10 @@
  * d'Auto. Le seul hasard est celui du butin (graine du profil) : on moyenne sur plusieurs graines.
  *
  * Politique du joueur modèle (documentée dans `docs/ECONOMY.md`) :
- * - parmi les donjons ouverts (ou à ouvrir) et leurs paliers ouverts dont le niveau visé ne
- *   dépasse pas celui du plus faible héros, il farme celui qui rapporte le plus de ce qui lui
+ * - parmi les donjons ouverts (`dungeonOpen` du moteur, tous chapitres ; sur la route `main`,
+ *   ceux des chapitres suivants une fois l'équipe au niveau maximum, voir `ChapterRoute`) et leurs
+ *   paliers ouverts dont le niveau visé
+ *   ne dépasse pas celui du plus faible héros, il farme celui qui rapporte le plus de ce qui lui
  *   manque pour monter ce héros (XP, poussière du palier demandé, fragments pour l'étoile), à
  *   égalité le plus avancé ;
  * - après chaque passage : il ouvre ses coffres (héros ciblé : celui de l'équipe le plus proche
@@ -33,6 +35,7 @@ import {
   bossUnlocked,
   completeBoss,
   completeDungeon,
+  dungeonOpen,
   enterBoss,
   equip,
   goldToNext,
@@ -73,8 +76,10 @@ export interface Milestones {
   readonly teamMaxLevel: number | null;
   /** Les deux objets de chaque héros de l'équipe au niveau maximum. */
   readonly teamMaxed: number | null;
-  /** Tous les objets du jeu possédés et au niveau maximum. */
+  /** Tous les objets du chapitre 1 possédés et au niveau maximum (la collection d'origine). */
   readonly collection: number | null;
+  /** Tous les objets du jeu, tous chapitres, possédés et au niveau maximum. */
+  readonly collectionAll: number | null;
   /** Grimoires gagnés de quoi monter tous les sorts d'un héros au maximum (non dépensés). */
   readonly spellsOneHero: number | null;
   /** Pareil pour les quatre héros de l'équipe. */
@@ -91,6 +96,7 @@ export const GOLD_MILESTONES = [
   'teamMaxLevel',
   'teamMaxed',
   'collection',
+  'collectionAll',
 ] as const;
 export type GoldMilestone = (typeof GOLD_MILESTONES)[number];
 
@@ -158,19 +164,39 @@ export interface Candidate {
   readonly fragments: number;
 }
 
+/**
+ * Route du joueur modèle entre les chapitres (régions parallèles, niveaux 1 à 30 chacune) :
+ * - `parallel` (par défaut, référence des bornes en CI : le vrai joueur) : tout donjon ouvert est
+ *   joué dès qu'il est à sa portée ;
+ * - `main` (lecture seule, comparaison) : le chapitre 1 est la route principale ; les chapitres
+ *   suivants sont joués une fois l'équipe au niveau maximum (farm de fin de partie, collection).
+ * Voir `docs/ECONOMY.md`, « Chapitre 2 ».
+ */
+export type ChapterRoute = 'main' | 'parallel';
+
 /** Niveau du plus faible héros de l'équipe. */
 export function teamLevel(profile: Profile): number {
   return Math.min(...profile.team.map((id) => profile.heroes[id]?.level ?? 1));
 }
 
 /** Les passages que le joueur modèle peut tenter : donjons ouverts ou à ouvrir, paliers ouverts. */
-export function candidates(content: Content, profile: Profile): Candidate[] {
+export function candidates(
+  content: Content,
+  profile: Profile,
+  route: ChapterRoute = 'parallel',
+): Candidate[] {
   const out: Candidate[] = [];
   const { chests } = content.balance;
-  for (const [i, dungeon] of content.dungeons.entries()) {
-    const previous = content.dungeons[i - 1];
-    const open = previous === undefined || (profile.dungeons[previous.id]?.clears ?? 0) > 0;
-    if (!open) break;
+  // Route « main » : les chapitres suivants attendent que l'équipe soit au niveau maximum.
+  const later =
+    route === 'parallel' ||
+    profile.team.every(
+      (id) => (profile.heroes[id]?.level ?? 1) >= content.balance.progression.maxLevel,
+    );
+  for (const dungeon of content.dungeons) {
+    // Ouverture du moteur : le précédent du fichier, ou `opensAfter` (chapitres parallèles).
+    if (!dungeonOpen(content, profile, dungeon.id)) continue;
+    if (dungeon.map.chapter > 1 && !later) continue;
     const rank = masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0);
     for (let tier = 1; tier <= tierReached(content, profile, dungeon.id); tier++) {
       // Fragments attendus : chance de chaque coffre × sa taille ; au premier passage, le reste de
@@ -230,22 +256,26 @@ export function blocker(
 
 /**
  * Donjons où il reste des copies à chercher : ceux des objets portés par l'équipe pas encore au
- * maximum, sinon ceux de tout objet (possédé ou non) pas encore au maximum (collection).
+ * maximum, sinon ceux de tout objet (possédé ou non) pas encore au maximum (collection), chapitre
+ * par chapitre : la collection du premier chapitre inachevé d'abord.
  */
 function wantedOrigins(content: Content, profile: Profile): Set<string> {
   const max = content.balance.progression.items.maxUpgradeLevel;
   const worn = new Set(profile.team.flatMap((id) => profile.heroes[id]?.items ?? []));
   const wornOrigins = new Set<string>();
-  const anyOrigins = new Set<string>();
+  const anyOrigins = new Map<number, Set<string>>();
   for (const item of content.items) {
     const owned = profile.items.find((o) => o.item === item.id);
     if (owned !== undefined && owned.upgrade >= max) continue;
     const origin = content.itemOrigin.get(item.id);
-    if (origin === undefined) continue;
-    anyOrigins.add(origin);
+    const chapter = content.dungeonById.get(origin ?? '')?.map.chapter;
+    if (origin === undefined || chapter === undefined) continue;
+    anyOrigins.set(chapter, (anyOrigins.get(chapter) ?? new Set<string>()).add(origin));
     if (owned !== undefined && worn.has(owned.uid)) wornOrigins.add(origin);
   }
-  return wornOrigins.size > 0 ? wornOrigins : anyOrigins;
+  if (wornOrigins.size > 0) return wornOrigins;
+  const first = Math.min(...anyOrigins.keys());
+  return anyOrigins.get(first) ?? new Set<string>();
 }
 
 /**
@@ -254,9 +284,13 @@ function wantedOrigins(content: Content, profile: Profile): Set<string> {
  * poussière du palier demandé, fragments, ou copies d'un objet porté une fois les niveaux finis —
  * et à égalité le plus avancé (niveau visé le plus haut, puis le plus d'or).
  */
-export function pickRun(content: Content, profile: Profile): Candidate {
+export function pickRun(
+  content: Content,
+  profile: Profile,
+  route: ChapterRoute = 'parallel',
+): Candidate {
   const level = teamLevel(profile);
-  const all = candidates(content, profile);
+  const all = candidates(content, profile, route);
   const reachable = all.filter((c) => c.level <= level);
   const need = blocker(content, profile);
   // Niveaux finis : il reste à farmer les copies des objets portés pas encore au maximum.
@@ -573,6 +607,7 @@ export function simulateEconomy(
   maxRuns = 600,
   quests: QuestModel | null = null,
   awakening: AwakeningModel | null = null,
+  route: ChapterRoute = 'parallel',
 ): EconomyRun {
   let profile = newProfile(content, seed);
   // Objet mutable : la fermeture `tryAwaken` le tient à jour.
@@ -605,6 +640,11 @@ export function simulateEconomy(
   let teamMaxLevel: number | null = null;
   let teamMaxed: number | null = null;
   let collection: number | null = null;
+  let collectionAll: number | null = null;
+  // Collection d'origine : les objets du chapitre 1.
+  const firstChapterItems = content.items.filter(
+    (item) => content.dungeonById.get(content.itemOrigin.get(item.id) ?? '')?.map.chapter === 1,
+  );
   let spellsOneHero: number | null = null;
   let spellsTeam: number | null = null;
   const goldAt: Partial<Record<GoldMilestone, GoldAt>> = {};
@@ -615,7 +655,7 @@ export function simulateEconomy(
   while (
     runs < maxRuns &&
     (teamMaxLevel === null ||
-      collection === null ||
+      collectionAll === null ||
       !allCleared() ||
       (awakening !== null && woke.team === null))
   ) {
@@ -632,7 +672,7 @@ export function simulateEconomy(
       tryAwaken();
       continue;
     }
-    const pick = pickRun(content, profile);
+    const pick = pickRun(content, profile, route);
     const won = winRun(content, profile, pick);
     if (won === null) break;
     runs += 1;
@@ -692,15 +732,14 @@ export function simulateEconomy(
       ),
     );
     if (teamMaxed === null && maxed) teamMaxed = runs;
-    if (
-      collection === null &&
-      content.items.every(
+    const maxedAll = (items: readonly { id: string }[]): boolean =>
+      items.every(
         (item) =>
           (profile.items.find((o) => o.item === item.id)?.upgrade ?? 0) >=
           itemRules.maxUpgradeLevel,
-      )
-    )
-      collection = runs;
+      );
+    if (collection === null && maxedAll(firstChapterItems)) collection = runs;
+    if (collectionAll === null && maxedAll(content.items)) collectionAll = runs;
     const reached: Record<GoldMilestone, number | null> = {
       firstMaxItem,
       firstStar,
@@ -708,6 +747,7 @@ export function simulateEconomy(
       teamMaxLevel,
       teamMaxed,
       collection,
+      collectionAll,
     };
     for (const key of GOLD_MILESTONES)
       if (reached[key] === runs && goldAt[key] === undefined)
@@ -730,6 +770,7 @@ export function simulateEconomy(
       teamMaxLevel,
       teamMaxed,
       collection,
+      collectionAll,
       spellsOneHero,
       spellsTeam,
       firstClears,
@@ -757,9 +798,10 @@ export function summarizeEconomy(
   seeds: number,
   maxRuns = 600,
   quests: QuestModel | null = null,
+  route: ChapterRoute = 'parallel',
 ): EconomySummary {
   const runs = Array.from({ length: seeds }, (_, i) =>
-    simulateEconomy(content, i + 1, maxRuns, quests),
+    simulateEconomy(content, i + 1, maxRuns, quests, null, route),
   );
   const pick = (key: keyof Omit<Milestones, 'firstClears'>): number | null => {
     const values = runs.map((r) => r.milestones[key]).filter((v): v is number => v !== null);
@@ -821,6 +863,7 @@ export function summarizeEconomy(
       teamMaxLevel: pick('teamMaxLevel'),
       teamMaxed: pick('teamMaxed'),
       collection: pick('collection'),
+      collectionAll: pick('collectionAll'),
       spellsOneHero: pick('spellsOneHero'),
       spellsTeam: pick('spellsTeam'),
     },
@@ -828,7 +871,7 @@ export function summarizeEconomy(
     goldAt,
     ledger,
     unreached: runs.filter(
-      (r) => r.milestones.teamMaxLevel === null || r.milestones.collection === null,
+      (r) => r.milestones.teamMaxLevel === null || r.milestones.collectionAll === null,
     ).length,
   };
 }
@@ -838,6 +881,7 @@ export function summarizeAwakening(
   content: Content,
   seeds: number,
   maxRuns = 800,
+  route: ChapterRoute = 'parallel',
 ): {
   first: number | null;
   team: number | null;
@@ -846,7 +890,7 @@ export function summarizeAwakening(
   teamMaxLevel: number | null;
 } {
   const runs = Array.from({ length: seeds }, (_, i) =>
-    simulateEconomy(content, i + 1, maxRuns, null, { on: true }),
+    simulateEconomy(content, i + 1, maxRuns, null, { on: true }, route),
   );
   const avg = (xs: readonly (number | null)[]): number | null => {
     const values = xs.filter((x): x is number => x !== null);
@@ -937,7 +981,7 @@ function main(): void {
   const f = (n: number | null): string =>
     n === null ? '   —  ' : `${n.toFixed(1).padStart(5)} (${(n / auto).toFixed(0)} tent.)`;
   console.log(
-    `Joueur modèle, ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
+    `Joueur modèle (route parallèle : chapitres joués dès leur ouverture), ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
   );
   // Or en réserve (gagné − dépensé) et or gagné cumulé au jalon, moyenne des graines.
   const g = (key: GoldMilestone): string => {
@@ -954,7 +998,8 @@ function main(): void {
     `  équipe de 4 au niveau ${String(content.balance.progression.maxLevel).padEnd(12)}: ${f(m.teamMaxLevel)}${g('teamMaxLevel')}`,
   );
   console.log(`  équipe de 4 aux objets au maximum  : ${f(m.teamMaxed)}${g('teamMaxed')}`);
-  console.log(`  collection complète au maximum     : ${f(m.collection)}${g('collection')}`);
+  console.log(`  collection du chapitre 1 au maximum: ${f(m.collection)}${g('collection')}`);
+  console.log(`  collection complète au maximum     : ${f(m.collectionAll)}${g('collectionAll')}`);
   console.log(`  grimoires des sorts d'un héros     : ${f(summary.milestones.spellsOneHero)}`);
   console.log(`  grimoires des sorts de l'équipe    : ${f(summary.milestones.spellsTeam)}`);
   if (summary.unreached > 0)
@@ -982,6 +1027,20 @@ function main(): void {
   const spell = spellMaxCost(content);
   console.log(
     `  grimoires gagnés ${l.grimoires.toFixed(1)} (un sort au maximum : ${String(spell.grimoires)} grimoires et ${String(spell.fragments)} fragments) ; fragments restants par héros de l'équipe ${l.teamFragmentsLeft.toFixed(1)}`,
+  );
+  // Route principale (lecture seule, comparaison) : le chapitre 2 après l'équipe au niveau 30.
+  const mainRoute = summarizeEconomy(content, seeds, option('--runs', 600), null, 'main');
+  console.log(
+    `Route principale (chapitre 2 après l'équipe au niveau 30) : ${(
+      Object.keys(mainRoute.milestones) as (keyof typeof mainRoute.milestones)[]
+    )
+      .map((key) => `${key} ${mainRoute.milestones[key]?.toFixed(1) ?? '—'}`)
+      .join(', ')} ; réserve d'or à l'équipe équipée ${(() => {
+      const at = mainRoute.goldAt.teamEquipped;
+      return at === null || at.earned === 0
+        ? '—'
+        : `${((100 * at.reserve) / at.earned).toFixed(0)} %`;
+    })()}`,
   );
   const awake = summarizeAwakening(content, seeds);
   const { awakening } = content.balance;

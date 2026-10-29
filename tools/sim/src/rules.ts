@@ -1,6 +1,7 @@
 import type { Content, Dungeon } from '@outlaw/data';
 import { compileTeam, type HeroBuild } from '@outlaw/engine';
 import { pickTeam, randomBuild } from './builds';
+import { chapterPrefix } from './chapters';
 import { runDungeon } from './dungeons';
 import { average, lookahead } from './policy';
 import { createRng } from './rng';
@@ -19,6 +20,8 @@ import { runBattle, summarize, type BattleOutcome, type ScenarioRow } from './ru
  *    mesure sépare les équipes, contrairement aux victoires au niveau conseillé, toutes à 100 %).
  * « Meilleur » et « pire » build : parmi `samples` builds tirés au hasard, classés par combats
  * gagnés dans le donjon puis par rapidité.
+ * Les règles se mesurent par chapitre (`options.chapter`, voir `chapters.ts`) : le score « aucun
+ * héros indispensable » d'une équipe porte sur les donjons d'un seul chapitre.
  */
 
 /** Toutes les équipes possibles : combinaisons de `teamSize` héros parmi ceux du jeu. */
@@ -78,11 +81,16 @@ export function sampleTeams(content: Content, count: number, seed: number): stri
 export type Dress = (builds: HeroBuild[]) => HeroBuild[];
 const asDrawn: Dress = (builds) => builds;
 
-/** Options des règles : builds transformés, nombre d'équipes de R1, préfixe des lignes. */
+/**
+ * Options des règles : builds transformés, nombre d'équipes de R1 (0 : pas de R1), préfixe des
+ * lignes, chapitre mesuré (1 par défaut ; les lignes des chapitres suivants prennent en plus le
+ * préfixe `ch<n>_`).
+ */
 export interface RulesOptions {
   readonly dress?: Dress;
   readonly r1Teams?: number;
   readonly prefix?: string;
+  readonly chapter?: number;
 }
 
 interface Ranked {
@@ -185,7 +193,8 @@ export function evaluateRules(
   const { targets } = content.balance;
   const dress = options.dress ?? asDrawn;
   const r1Teams = options.r1Teams ?? R1_TEAMS;
-  const prefix = options.prefix ?? '';
+  const chapter = options.chapter ?? 1;
+  const prefix = `${options.prefix ?? ''}${chapterPrefix(chapter)}`;
   const all = sampleTeams(content, TEAM_SAMPLE, seed);
   const duels: BattleOutcome[] = [];
   const r1Rows: ScenarioRow[] = [];
@@ -194,7 +203,9 @@ export function evaluateRules(
   const clears = new Map<string, number>();
   const tests = new Map<string, number>();
 
+  // Index dans tout le fichier : les graines d'un donjon ne dépendent pas des autres chapitres.
   content.dungeons.forEach((dungeon, d) => {
+    if (dungeon.map.chapter !== chapter) return;
     const level = dungeon.recommendedLevel;
     const behind = level - targets.r2LevelGap;
     const r2: BattleOutcome[] = [];
@@ -277,7 +288,7 @@ export function evaluateRules(
 
   return {
     rows: [
-      r1Row,
+      ...(duels.length > 0 ? [r1Row] : []),
       ...r1Rows,
       ...r2Rows,
       asRow(`${prefix}best_team`, best),
@@ -286,7 +297,11 @@ export function evaluateRules(
     ],
     viability: heroRows.map((h) => ({ hero: h.hero, best: h.within })),
     teams: all.length,
-    r1: { rate: r1Row.winRate, ok: r1Row.winRate >= targets.r1MinWinRate },
+    // Sans duel (R1 non mesurée pour ce chapitre), la règle n'a rien à refuser.
+    r1: {
+      rate: r1Row.winRate,
+      ok: duels.length === 0 || r1Row.winRate >= targets.r1MinWinRate,
+    },
     r2: { worst: r2Worst, ok: r2Worst > targets.r2MinWinRate },
     dispensable: { ...worstGap, ok: worstGap.gap <= targets.dispensableMaxGapPoints },
   };

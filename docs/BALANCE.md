@@ -778,3 +778,83 @@ au niveau 30 ; éveil : premier héros / équipe / niveau 30 avec l'éveil, avan
 Avec C : quêtes, raccourcissement maximal 13,3 % et 13,9 % (borne 15 %) ; boss 7,6 % et 3,6 %
 (borne 10 %). Bornes CI de l'éveil (5 graines) : 88,2 / 137,2 / 172,4, 13,8 passages d'essence
 (bornes 100, 170, 177, 20).
+
+## Chapitre 2 : région parallèle (2026-10-29)
+
+Dix donjons de plus, `map.chapter` 2, niveaux conseillés 2 à 30, chacun ouvert par `opensAfter`
+après un donjon du chapitre 1 (voir `docs/CONTENT.md`, « Ouverture ») : les cinq premiers (niveaux
+2 à 14) après la Citadelle de cendre (niveau 12), les cinq autres après le donjon du chapitre 1 de
+niveau égal ou immédiatement inférieur. Les niveaux 8 et 22 sont des étapes des deux chapitres :
+un pas de farm ne chevauche jamais deux paliers de poussière (`levelUp.tierFrom`).
+
+### Règles par chapitre
+
+Chaque chapitre est un enchaînement de niveaux 1 à 30 : les règles qui suivent un enchaînement se
+mesurent **chapitre par chapitre** (`tools/sim/src/chapters.ts`) :
+
+- **courbe de difficulté** (`targets.averageCurve`) : premier donjon de chaque chapitre ≥ 85 %,
+  jamais plus de 15 points plus facile que le donjon précédent **du même chapitre**, jamais sous
+  30 % ; bandes expert et joueur moyen (`expertWinRate`, `averageWinRate`) sur la moyenne de
+  chaque chapitre. Le plafond et le plancher propres au tout premier combat restent ceux des Landes ;
+- **R2 et « aucun héros indispensable »** : le score d'une équipe porte sur les donjons d'un seul
+  chapitre (lignes `ch2_r2_*`, `ch2_best_team*`, et `awake_ch2_*` pour la variante éveillée) ;
+- **R1** : non remesurée au chapitre 2. Elle juge des builds en duel à un niveau donné, sans le
+  donjon ; les niveaux du chapitre 1 (1 à 30) la couvrent déjà, et ses duels font l'essentiel du
+  temps de calcul ;
+- **paliers** : objets tirés dans le butin du chapitre du donjon (le chapitre 1 pour la tour et le
+  boss de la semaine) ; **combats aléatoires** : ennemis ordinaires du chapitre (`ch2_random_*`) ;
+- **écart de l'éveil** et **montée des sorts** : mesurés sur le chapitre 1 seulement (mesures du
+  héros, pas des donjons) ;
+- **rythme du farm** (`farm.test.ts`) : mêmes bornes pour chaque chapitre (5 à 18 passages par pas,
+  70 à 110 en tout).
+
+Ainsi le chapitre 2 n'a fait qu'**ajouter** 257 lignes à `baseline.csv` (aucune ligne existante
+modifiée). `pnpm sim:check` : environ 150 s de calcul (95 s avant).
+
+### Réglage
+
+`autotune --chapter 2` (durées) puis `tunecurve 6 48 --chapter 2` (difficulté), puis à la main :
+Caldeira de cendre combat 1 PV 106 → 120 (minimum de 7 actions sous le plancher de 8), ATK des
+salles retouchée pour les paliers (Confluent 137 → 131, Caldeira 164 → 142 : le palier II, avec
+deux objets, passait 15 à 20 points au-dessus du palier I), Tourbière 141 → 150 et Caveau 150 →
+158 pour garder la moyenne du joueur moyen dans sa bande, Donjon de l'éclipse 181 → 172 (marge sur
+le plancher de 30 %). Mesures de la référence (48 équipes, niveau conseillé ; R2 : 3 niveaux de
+retard ; paliers : expert I / II / III) :
+
+| Donjon              | Niv. | Élément | `opensAfter`   | Expert | Moyen |    R2 | Paliers     | Actions (combats) | ATK % | PV %        |
+| ------------------- | ---: | ------- | -------------- | -----: | ----: | ----: | ----------- | ----------------- | ----: | ----------- |
+| Grève gelée         |    2 | eau     | cinder_citadel |  100 % | 100 % |     — | 100/100/100 | 20 / 20 / 28      |    75 | 148/187/154 |
+| Tourbière sombre    |    5 | nature  | cinder_citadel |   94 % |  77 % |  88 % | 98/100/100  | 21 / 21 / 30      |   150 | 77/99/100   |
+| Forge des braises   |    8 | feu     | cinder_citadel |  100 % |  71 % |  96 % | 100/98/100  | 18 / 20 / 23      |    88 | 133/99/95   |
+| Caveau glaciaire    |   11 | eau     | cinder_citadel |   83 % |  60 % |  92 % | 88/92/92    | 21 / 22 / 28      |   158 | 81/86/86    |
+| Bois pourrissant    |   14 | nature  | cinder_citadel |   98 % |  60 % |  94 % | 96/94/94    | 21 / 23 / 27      |   144 | 68/86/76    |
+| Confluent           |   18 | mixte   | sunken_spire   |  100 % |  67 % | 100 % | 96/100/98   | 21 / 21 / 27      |   131 | 105/99/75   |
+| Caldeira de cendre  |   22 | feu     | verdant_crown  |   83 % |  65 % |  92 % | 79/90/88    | 21 / 18 / 25      |   142 | 120/79/87   |
+| Abîme gelé          |   25 | eau     | verdant_crown  |   73 % |  44 % |  92 % | 85/92/92    | 20 / 23 / 25      |   154 | 101/123/83  |
+| Marais ancestral    |   28 | nature  | salt_flats     |   75 % |  35 % |  94 % | 85/88/62    | 20 / 18 / 28      |   225 | 66/85/72    |
+| Donjon de l'éclipse |   30 | mixte   | hollow_throne  |   65 % |  40 % |  76 % | 75/83/56    | 20 / 19 / 31      |   172 | 89/85/55    |
+
+- Chapitre 2 : expert 87 %, joueur moyen 62 % au niveau conseillé (chapitre 1 : 90 % et 63 %) ;
+  R2 76 % sur le pire donjon (cible > 50 %), « aucun héros indispensable » 7 points ; tous
+  éveillés : R2 90 %, 4 points. Toutes les règles du chapitre 1 inchangées.
+- Courbe du joueur moyen : 100 / 77 / 71 / 60 / 60 / 67 / 65 / 44 / 35 / 40 %. Comme au chapitre 1,
+  la fin est plate (35–44 %) ; le Confluent (fièvre des deux côtés) remonte de 7 points.
+- La Grève gelée est une prise en main (deux ennemis par salle, ATK 75 %), comme les Landes ; ses PV
+  sont relevés (148 à 187 %) pour tenir les durées, car `autotune` ne lui applique pas le plancher
+  réduit du tout premier combat.
+- Les points les plus serrés : palier III du Donjon de l'éclipse (56 %, cible ≥ 50 %) et du Marais
+  ancestral (62 %) ; Donjon de l'éclipse 40 % pour le joueur moyen (plancher 30 %).
+
+### Économie : ouverture et bornes (option E)
+
+Les bornes économiques et d'éveil de la CI (`economy.test.ts`, `boss.test.ts`) portent sur la
+route **parallèle** du joueur modèle (chaque chapitre joué dès son ouverture). Avec l'ouverture par
+niveau, quatre donjons du chapitre 2 s'ouvraient dans les 15 premiers passages : équipe équipée au
+12ᵉ passage (borne 25 à 55), premier objet au maximum 24,8 (borne 14), réserve d'or 53 % (borne
+25 %), objets au maximum 158,8, collection 309,5, quêtes 16,4 %. Décaler la Grève gelée, la
+Tourbière, la Forge et le Caveau derrière la Citadelle de cendre (option E) remet tout dans les
+bornes (premier objet 8,1, équipe équipée 44,0, niveau 30 119,0, collection 288,1, réserve 22 % et
+18 %, quêtes 14,7 %, boss 7,5 %, éveil 97,6 / 142,6 / 172,6) sauf « objets au maximum » : 152,1.
+Aucun réglage du butin du chapitre 2 (garanties du premier passage par donjon, raretés) ne le ramène
+sous 140 (meilleur effet réel : 148,1) ; la borne passe de 140 à **155**. Chiffres, essais et
+cause : `docs/ECONOMY.md`, « Chapitre 2 ».

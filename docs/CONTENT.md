@@ -129,14 +129,35 @@ La maîtrise et la garantie du rare restent par donjon, tous paliers confondus. 
 
 `map` place le donjon sur la carte du monde : `x`, `y` en pixels de la carte native (320 × 180,
 `MAP_SIZE` dans `@outlaw/data`), `landmark` (sprite `landmark_<nom>` de l'atlas : `camp`,
-`ruins`, `gate`, `tower`, `spire`, `crown`, `bridge`, `salt`, `pass`, `throne`) et `chapter`
-(1 par défaut). L'image de la carte ne contient **aucun** repère ni chemin : l'écran les dessine
-depuis les données, dans l'ordre du fichier (le chemin relie chaque donjon au précédent). Deux
-donjons d'un même chapitre doivent être à plus de 24 px l'un de l'autre (vérifié au chargement).
+`ruins`, `gate`, `tower`, `spire`, `crown`, `bridge`, `salt`, `pass`, `throne`, `cairn`, `hut`,
+`forge`, `tree`, `crater`, `obelisk`) et `chapter` (1 par défaut). L'image de la carte ne contient
+**aucun** repère ni chemin : l'écran les dessine depuis les données, **un chemin par chapitre**
+(chaque donjon relié au précédent du même chapitre dans l'ordre du fichier, numérotés de 1 dans le
+chapitre). Deux donjons d'un même chapitre doivent être à plus de 24 px l'un de l'autre (vérifié au
+chargement).
 
 Un chapitre = une image de carte : `bg/world_map.png` pour le chapitre 1, `bg/world_map_<n>.png`
 pour les suivants (à ajouter dans `tools/art/backgrounds.py`). Les onglets de chapitre
 n'apparaissent que s'il y en a plusieurs.
+
+### Ouverture (`opensAfter`)
+
+Un donjon s'ouvre quand son **prérequis** est terminé (`dungeonPrerequisite`, `dungeonOpen` du
+moteur) :
+
+- `opensAfter` (facultatif) : identifiant du donjon à terminer ;
+- sans `opensAfter` : le donjon **précédent dans le fichier** (règle d'origine) ; le premier du
+  fichier est ouvert d'emblée.
+
+Les dix donjons du chapitre 1 n'ont pas de `opensAfter` : leur ouverture, donc les sauvegardes, ne
+dépend que de l'ordre du fichier. **On n'insère jamais un donjon entre deux donjons existants**
+(un donjon déjà terminé redeviendrait verrouillé) : un nouveau donjon va à la fin du fichier, avec
+`opensAfter` s'il ne suit pas le dernier. Le chapitre 2 est une région parallèle (niveaux 2 à 30) :
+chacun de ses donjons porte `opensAfter` = le donjon du chapitre 1 de niveau conseillé égal ou
+immédiatement inférieur, sauf les quatre premiers (niveaux 2 à 11), ouverts comme le cinquième
+après la Citadelle de cendre pour ne pas équiper l'équipe trop tôt (`docs/ECONOMY.md`,
+« Chapitre 2 »). Le chargement refuse un `opensAfter` inconnu et tout cycle de prérequis
+(explicites ou implicites : « cycle de déblocage : a → b → a »).
 
 `scene` (facultatif) : identifiant du décor de combat (`bg/<scene>.png`) si le donjon réutilise
 celui d'un autre ; sinon le décor porte l'identifiant du donjon.
@@ -199,14 +220,23 @@ pour replacer les paliers, puis les tests de `tools/sim` (règles et économie).
 1. Ennemis et boss dans `content/enemies.json` (un boss : `"boss": true`, seulement au 3e combat).
 2. Ses deux objets dans `content/items.json` (un commun, un rare) et leurs noms dans
    `content.fr.json`, puis leurs icônes `item_<id>` (masque 12 × 12 dans `tools/art/icons.py`).
-3. Le donjon dans `content/dungeons.json`, **à sa place dans l'ordre de progression** (l'ordre du
-   fichier est l'ordre du chemin) : élément, niveau conseillé, modificateur, 3 combats (avec
-   `hpPct` / `atkPct` si besoin), récompenses, `loot` (un commun et un rare, nouveaux), `map`
-   (`x`, `y`, `landmark`, `chapter`), `scene` si le décor est emprunté.
+3. Le donjon dans `content/dungeons.json`, **à la fin du fichier** (jamais entre deux donjons
+   existants, voir « Ouverture ») ; l'ordre du fichier est l'ordre du chemin de son chapitre :
+   élément, niveau conseillé, modificateur, 3 combats (avec `hpPct` / `atkPct` si besoin),
+   récompenses (à l'échelle des donjons de niveau voisin), `loot` (un commun et un rare,
+   nouveaux), `map` (`x`, `y`, `landmark`, `chapter`), `opensAfter` s'il ne s'ouvre pas après le
+   précédent du fichier, `scene` si le décor est emprunté. Un nouveau chapitre : sa carte
+   `bg/world_map_<n>.png` (`world_map_<n>` dans `tools/art/worldmap.py` et `backgrounds.py`).
 4. Les noms dans `content.fr.json` (donjon : nom et phrase d'ambiance ; modificateur : nom).
 5. Le décor de combat : une entrée dans `tools/art/backgrounds.py` (nouveau tableau ou `tinted`
    d'un existant) puis `python3 tools/art/export.py` ; ou `scene` vers un décor existant.
 6. Un nouveau repère si aucun ne convient : `LANDMARKS` dans `tools/art/worldmap.py` **et**
    `LANDMARKS` dans `packages/data/src/schemas/dungeons.ts`, puis export.
-7. `pnpm test` (textes, décor, repère, distances, butin vérifiés), puis `pnpm sim` et
-   `pnpm --filter @outlaw/sim curve` pour placer le donjon sur la courbe ; `pnpm sim --update` si la baseline change.
+7. `pnpm test` (textes, décor, icônes, repère, distances, butin, ouverture vérifiés), puis
+   `pnpm --filter @outlaw/sim curve --chapter <n>` pour placer le donjon sur la courbe de son
+   chapitre (`autotune` et `tunecurve` acceptent aussi `--chapter <n>` et ne touchent alors que
+   ce chapitre), `pnpm sim` pour les règles, `pnpm --filter @outlaw/sim farm` et `economy`. Les
+   lignes d'un chapitre au-delà du premier sont préfixées `ch<n>_` : ajouter un donjon ou un
+   chapitre ne fait qu'**ajouter** des lignes à `baseline.csv` ; une ligne existante qui change
+   est un changement d'équilibrage à justifier (`pnpm sim --update` sur décision du
+   propriétaire).

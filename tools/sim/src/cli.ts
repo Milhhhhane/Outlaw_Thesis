@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '@outlaw/data';
 import { toCsv } from './run';
+import { chapters } from './chapters';
 import { dungeonRows } from './dungeons';
 import { pacing } from './pacing';
 import { evaluateRules } from './rules';
@@ -30,7 +31,14 @@ const option = (name: string, fallback: number): number => {
 
 const content = loadContent();
 const started = performance.now();
+const chapterList = chapters(content);
+const later = chapterList.filter((c) => c !== 1);
+// Règles par chapitre (voir chapters.ts). R1 juge des builds en duel à un niveau, sans le donjon :
+// les niveaux du chapitre 1 (1 à 30) la couvrent, les chapitres suivants ne la remesurent pas.
 const rules = evaluateRules(content, option('--samples', 6), option('--seed', 1));
+const laterRules = later.map((chapter) =>
+  evaluateRules(content, option('--samples', 6), option('--seed', 1), { chapter, r1Teams: 0 }),
+);
 const pace = pacing(content, option('--pace-runs', 48), option('--seed', 1));
 const tier = tiers(content, option('--tier-runs', 48), option('--seed', 1));
 // 32 équipes par étage : 1 600 combats, une dizaine de secondes (sim:check doit rester rapide).
@@ -44,17 +52,33 @@ const awake = evaluateRules(content, option('--samples', 6), option('--seed', 1)
   r1Teams: 4,
   prefix: 'awake_',
 });
+const laterAwake = later.map((chapter) =>
+  evaluateRules(content, option('--samples', 6), option('--seed', 1), {
+    dress: awakenAll,
+    r1Teams: 0,
+    prefix: 'awake_',
+    chapter,
+  }),
+);
 const csv = toCsv([
   ...sprint0Scenarios(content.balance),
-  ...randomBattles(content, { battles: option('--battles', 1000), seed: option('--seed', 1) }),
+  ...chapterList.flatMap((chapter) =>
+    randomBattles(content, {
+      battles: option('--battles', 1000),
+      seed: option('--seed', 1),
+      chapter,
+    }),
+  ),
   ...dungeonRows(content, option('--runs', 40), option('--seed', 1)),
   ...rules.rows,
+  ...laterRules.flatMap((r) => r.rows),
   ...pace.rows,
   ...tier.rows,
   ...tower.rows,
   ...gap.rows,
   ...essence.rows,
   ...awake.rows,
+  ...laterAwake.flatMap((r) => r.rows),
 ]);
 const { targets } = content.balance;
 const verdicts: string[] = [
@@ -62,12 +86,24 @@ const verdicts: string[] = [
   `R2 ${rules.r2.ok ? 'tenue' : 'NON TENUE'} : pire donjon ${(rules.r2.worst * 100).toFixed(0)} % avec ${targets.r2LevelGap} niveaux de retard (cible > ${targets.r2MinWinRate * 100} %)`,
   `Aucun héros indispensable ${rules.dispensable.ok ? 'tenue' : 'NON TENUE'} : écart maximal ${rules.dispensable.gap.toFixed(0)} points (cible ≤ ${targets.dispensableMaxGapPoints})`,
 ];
+laterRules.forEach((r, i) => {
+  const where = `chapitre ${String(later[i] ?? '')}`;
+  verdicts.push(
+    `R2 (${where}) ${r.r2.ok ? 'tenue' : 'NON TENUE'} : pire donjon ${(r.r2.worst * 100).toFixed(0)} % avec ${targets.r2LevelGap} niveaux de retard (cible > ${targets.r2MinWinRate * 100} %)`,
+    `Aucun héros indispensable (${where}) ${r.dispensable.ok ? 'tenue' : 'NON TENUE'} : écart maximal ${r.dispensable.gap.toFixed(0)} points (cible ≤ ${targets.dispensableMaxGapPoints})`,
+  );
+});
 const viable = [...rules.viability].sort((a, b) => a.best - b.best);
 verdicts.push(
   `Meilleure équipe avec chaque héros : de ${(100 * (viable[0]?.best ?? 0)).toFixed(0)} % (${viable[0]?.hero ?? ''}) à ${(100 * (viable.at(-1)?.best ?? 0)).toFixed(0)} % (${viable.at(-1)?.hero ?? ''}), ${String(rules.teams)} équipes mesurées`,
 );
 verdicts.push(
-  `Rythme et difficulté ${pace.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert ${(pace.expertRate * 100).toFixed(0)} %, joueur moyen ${(pace.averageRate * 100).toFixed(0)} % au niveau conseillé`,
+  `Rythme et difficulté ${pace.problems.length === 0 ? 'tenus' : 'NON TENUS'} : ${pace.chapters
+    .map(
+      (c) =>
+        `chapitre ${String(c.chapter)} expert ${(c.expertRate * 100).toFixed(0)} %, joueur moyen ${(c.averageRate * 100).toFixed(0)} %`,
+    )
+    .join(' ; ')} au niveau conseillé`,
   ...pace.problems.map((p) => `  - ${p}`),
   `Paliers ${tier.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert par donjon et palier ${Object.entries(
     tier.rates,
@@ -82,6 +118,10 @@ verdicts.push(
   `Donjons d'essence ${essence.problems.length === 0 ? 'tenus' : 'NON TENUS'} : expert par palier ${essence.rates.map((e) => `${e.id} ${e.rates.map((r) => (r * 100).toFixed(0)).join('/')}`).join(', ')}`,
   ...essence.problems.map((p) => `  - ${p}`),
   `Tous éveillés : R1 ${awake.r1.ok ? 'tenue' : 'NON TENUE'} (${(awake.r1.rate * 100).toFixed(0)} %), R2 ${awake.r2.ok ? 'tenue' : 'NON TENUE'} (${(awake.r2.worst * 100).toFixed(0)} %), aucun héros indispensable ${awake.dispensable.ok ? 'tenue' : 'NON TENUE'} (${awake.dispensable.gap.toFixed(0)} points)`,
+  ...laterAwake.map(
+    (r, i) =>
+      `Tous éveillés (chapitre ${String(later[i] ?? '')}) : R2 ${r.r2.ok ? 'tenue' : 'NON TENUE'} (${(r.r2.worst * 100).toFixed(0)} %), aucun héros indispensable ${r.dispensable.ok ? 'tenue' : 'NON TENUE'} (${r.dispensable.gap.toFixed(0)} points)`,
+  ),
 );
 // « Aucun héros indispensable » est mesuré et affiché mais ne bloque pas : l'écart vient des
 // héros eux-mêmes, que ce lot ne doit pas toucher (voir docs/BALANCE.md).
@@ -95,7 +135,9 @@ const rulesOk =
   essence.problems.length === 0 &&
   awake.r1.ok &&
   awake.r2.ok &&
-  awake.dispensable.ok;
+  awake.dispensable.ok &&
+  laterRules.every((r) => r.r2.ok) &&
+  laterAwake.every((r) => r.r2.ok && r.dispensable.ok);
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (args.has('--check')) {

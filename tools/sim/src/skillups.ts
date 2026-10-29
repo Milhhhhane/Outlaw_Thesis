@@ -39,7 +39,9 @@ export function spellGap(
   const { targets, spellLevels } = content.balance;
   const all = sampleTeams(content, TEAM_SAMPLE, seed).slice(0, teamCount);
   const count = { late: [0, 0], rec: [0, 0], lateRuns: 0, recRuns: 0, duels: 0, duelWins: 0 };
+  // Chapitre 1 (index dans tout le fichier, comme les règles) : la mesure de référence.
   content.dungeons.forEach((dungeon, d) => {
+    if (dungeon.map.chapter !== 1) return;
     const behind = dungeon.recommendedLevel - targets.r2LevelGap;
     all.forEach((team, t) => {
       const rng = createRng(seed + 9000 * d + t);

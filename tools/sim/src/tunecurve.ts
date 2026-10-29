@@ -1,26 +1,32 @@
 /**
  * Outil de réglage (hors CI) : ajuste `atkPct` des combats de chaque donjon pour suivre la courbe
  * de difficulté cible (taux de réussite du joueur moyen au niveau conseillé, de `first` à `last`
- * en ligne droite), puis réécrit dungeons.json. Les PV (durée) ne bougent pas.
- * `pnpm --filter @outlaw/sim tunecurve [tours] [runs]`
+ * en ligne droite sur les donjons d'un même chapitre), puis réécrit dungeons.json. Les PV (durée)
+ * ne bougent pas. `--chapter N` : ne mesure et ne retouche que ce chapitre.
+ * `pnpm --filter @outlaw/sim tunecurve [tours] [runs] [--chapter N]`
  */
 import { loadContent, type Dungeon } from '@outlaw/data';
+import { chapterDungeons } from './chapters';
 import { pacing } from './pacing';
-import { readDungeons, writeTuning } from './tunefile';
+import { chapterOption, readDungeons, writeTuning } from './tunefile';
 
 const content = loadContent();
 const { first, last } = content.balance.targets.averageCurve;
+const { chapter, rest } = chapterOption(process.argv.slice(2));
 let dungeons: Dungeon[] = readDungeons();
-const rounds = Number(process.argv[2] ?? 4);
-const runs = Number(process.argv[3] ?? 32);
+const rounds = Number(rest[0] ?? 4);
+const runs = Number(rest[1] ?? 32);
 
 for (let round = 0; round < rounds; round++) {
   const tuned = { ...content, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
-  const report = pacing(tuned, runs, 1);
-  const n = dungeons.length;
+  const report = pacing(tuned, runs, 1, chapter);
   const line: string[] = [];
-  dungeons = dungeons.map((dungeon, d) => {
-    const target = first + ((last - first) * d) / Math.max(1, n - 1);
+  dungeons = dungeons.map((dungeon) => {
+    if (chapter !== undefined && dungeon.map.chapter !== chapter) return dungeon;
+    // Position dans son chapitre : chaque chapitre suit sa propre courbe.
+    const path = chapterDungeons(tuned, dungeon.map.chapter);
+    const d = path.findIndex((x) => x.id === dungeon.id);
+    const target = first + ((last - first) * d) / Math.max(1, path.length - 1);
     const rate =
       report.rows.find((r) => r.scenario === `pace_${dungeon.id}_rec_average`)?.winRate ?? 0;
     // Un écart de 10 points de réussite ≈ 6 % d'ATK ; on amortit pour ne pas osciller.
@@ -29,7 +35,7 @@ for (let round = 0; round < rounds; round++) {
       `${dungeon.id} ${(rate * 100).toFixed(0)}→${(target * 100).toFixed(0)} ×${factor.toFixed(2)}`,
     );
     if (Math.abs(rate - target) < 0.04) return dungeon;
-    // Le premier donjon doit rester AU MOINS aussi facile que sa cible : on ne le durcit jamais.
+    // Le premier donjon d'un chapitre doit rester AU MOINS aussi facile que sa cible.
     if (d === 0 && rate > target) return dungeon;
     return {
       ...dungeon,

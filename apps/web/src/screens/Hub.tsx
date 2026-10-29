@@ -77,9 +77,15 @@ export function Hub() {
   useEscape(() => {
     go({ name: 'title' });
   });
+  // Décor du camp : le donjon ouvert le plus avancé (plus haut niveau conseillé, à égalité le
+  // premier du fichier : les chapitres sont parallèles, le dernier du fichier n'est pas le plus loin).
   const scene =
-    [...content.dungeons].reverse().find((d) => dungeonOpen(content, profile, d.id))?.id ??
-    'ember_wastes';
+    content.dungeons
+      .filter((d) => dungeonOpen(content, profile, d.id))
+      .reduce<(typeof content.dungeons)[number] | undefined>(
+        (best, d) => (best === undefined || d.recommendedLevel > best.recommendedLevel ? d : best),
+        undefined,
+      )?.id ?? 'ember_wastes';
 
   return (
     <main className="hub">
