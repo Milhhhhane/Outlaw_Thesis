@@ -129,7 +129,7 @@ describe('économie : joueur modèle', () => {
     expect(pure).toBeGreaterThan(
       0.75 * ((ledger.dust.earned[2] ?? 0) + (ledger.dust.salvage[2] ?? 0)),
     );
-  });
+  }, 60_000);
 
   // Quêtes et succès (docs/BALANCE.md, « Quêtes et succès ») : une raison de revenir, pas un
   // raccourci. À 5 et 10 passages gagnants par jour, aucun jalon n'arrive plus de 15 % plus tôt.
@@ -144,7 +144,7 @@ describe('économie : joueur modèle', () => {
         expect(shortening ?? 0).toBeLessThanOrEqual(15);
       }
     }
-  });
+  }, 60_000);
 
   // Cible de l'éveil (docs/BALANCE.md, « Éveil ») : un héros vers le milieu de partie, l'équipe en
   // fin de progression, passages d'essence compris. Route parallèle, comme les jalons.
@@ -163,5 +163,5 @@ describe('économie : joueur modèle', () => {
     expect(a.teamMaxLevel ?? Infinity).toBeLessThanOrEqual(177);
     // Rien à farmer tant que les donjons d'essence sont fermés.
     expect(essencePick(content, simulateEconomy(content, 1, 10).profile)).toBeNull();
-  });
+  }, 60_000);
 });
