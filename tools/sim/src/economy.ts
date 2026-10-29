@@ -9,10 +9,11 @@
  * d'Auto. Le seul hasard est celui du butin (graine du profil) : on moyenne sur plusieurs graines.
  *
  * Politique du joueur modèle (documentée dans `docs/ECONOMY.md`) :
- * - parmi les donjons ouverts (tous chapitres : `dungeonOpen` du moteur) et leurs paliers ouverts
- *   dont le niveau visé ne dépasse pas celui du plus faible héros, il farme celui qui rapporte le
- *   plus de ce qui lui manque pour monter ce héros (XP, poussière du palier demandé, fragments
- *   pour l'étoile), à égalité le plus avancé ;
+ * - parmi les donjons ouverts (`dungeonOpen` du moteur ; ceux des chapitres suivants une fois
+ *   l'équipe au niveau maximum, voir `ChapterRoute`) et leurs paliers ouverts dont le niveau visé
+ *   ne dépasse pas celui du plus faible héros, il farme celui qui rapporte le plus de ce qui lui
+ *   manque pour monter ce héros (XP, poussière du palier demandé, fragments pour l'étoile), à
+ *   égalité le plus avancé ;
  * - après chaque passage : il ouvre ses coffres (héros ciblé : celui de l'équipe le plus proche
  *   de son plafond), paie l'étoile dès que possible, équipe tout objet neuf sur un emplacement
  *   libre de l'équipe, améliore d'abord les objets portés qu'il peut payer, puis monte les
@@ -162,18 +163,38 @@ export interface Candidate {
   readonly fragments: number;
 }
 
+/**
+ * Route du joueur modèle entre les chapitres (régions parallèles, niveaux 1 à 30 chacune) :
+ * - `main` (référence des bornes en CI) : le chapitre 1 est la route principale ; les chapitres
+ *   suivants sont joués une fois l'équipe au niveau maximum (farm de fin de partie, collection) ;
+ * - `parallel` : tout donjon ouvert est joué dès qu'il est à sa portée (lecture seule : voir
+ *   `docs/ECONOMY.md`, deux fois plus de donjons de bas niveau avancent fortement l'équipement).
+ */
+export type ChapterRoute = 'main' | 'parallel';
+
 /** Niveau du plus faible héros de l'équipe. */
 export function teamLevel(profile: Profile): number {
   return Math.min(...profile.team.map((id) => profile.heroes[id]?.level ?? 1));
 }
 
 /** Les passages que le joueur modèle peut tenter : donjons ouverts ou à ouvrir, paliers ouverts. */
-export function candidates(content: Content, profile: Profile): Candidate[] {
+export function candidates(
+  content: Content,
+  profile: Profile,
+  route: ChapterRoute = 'main',
+): Candidate[] {
   const out: Candidate[] = [];
   const { chests } = content.balance;
+  // Route « main » : les chapitres suivants attendent que l'équipe soit au niveau maximum.
+  const later =
+    route === 'parallel' ||
+    profile.team.every(
+      (id) => (profile.heroes[id]?.level ?? 1) >= content.balance.progression.maxLevel,
+    );
   for (const dungeon of content.dungeons) {
     // Ouverture du moteur : le précédent du fichier, ou `opensAfter` (chapitres parallèles).
     if (!dungeonOpen(content, profile, dungeon.id)) continue;
+    if (dungeon.map.chapter > 1 && !later) continue;
     const rank = masteryRank(content, profile.dungeons[dungeon.id]?.clears ?? 0);
     for (let tier = 1; tier <= tierReached(content, profile, dungeon.id); tier++) {
       // Fragments attendus : chance de chaque coffre × sa taille ; au premier passage, le reste de
@@ -261,9 +282,13 @@ function wantedOrigins(content: Content, profile: Profile): Set<string> {
  * poussière du palier demandé, fragments, ou copies d'un objet porté une fois les niveaux finis —
  * et à égalité le plus avancé (niveau visé le plus haut, puis le plus d'or).
  */
-export function pickRun(content: Content, profile: Profile): Candidate {
+export function pickRun(
+  content: Content,
+  profile: Profile,
+  route: ChapterRoute = 'main',
+): Candidate {
   const level = teamLevel(profile);
-  const all = candidates(content, profile);
+  const all = candidates(content, profile, route);
   const reachable = all.filter((c) => c.level <= level);
   const need = blocker(content, profile);
   // Niveaux finis : il reste à farmer les copies des objets portés pas encore au maximum.
@@ -580,6 +605,7 @@ export function simulateEconomy(
   maxRuns = 600,
   quests: QuestModel | null = null,
   awakening: AwakeningModel | null = null,
+  route: ChapterRoute = 'main',
 ): EconomyRun {
   let profile = newProfile(content, seed);
   // Objet mutable : la fermeture `tryAwaken` le tient à jour.
@@ -644,7 +670,7 @@ export function simulateEconomy(
       tryAwaken();
       continue;
     }
-    const pick = pickRun(content, profile);
+    const pick = pickRun(content, profile, route);
     const won = winRun(content, profile, pick);
     if (won === null) break;
     runs += 1;
@@ -770,9 +796,10 @@ export function summarizeEconomy(
   seeds: number,
   maxRuns = 600,
   quests: QuestModel | null = null,
+  route: ChapterRoute = 'main',
 ): EconomySummary {
   const runs = Array.from({ length: seeds }, (_, i) =>
-    simulateEconomy(content, i + 1, maxRuns, quests),
+    simulateEconomy(content, i + 1, maxRuns, quests, null, route),
   );
   const pick = (key: keyof Omit<Milestones, 'firstClears'>): number | null => {
     const values = runs.map((r) => r.milestones[key]).filter((v): v is number => v !== null);
@@ -993,6 +1020,20 @@ function main(): void {
   );
   console.log(
     `  objets tombés ${l.items.drops.toFixed(0)} dont rares ${l.items.rares.toFixed(1)}, améliorations ${l.items.upgrades.toFixed(1)} (objets au maximum ${l.items.maxed.toFixed(1)}, niveau moyen des objets portés ${l.items.wornLevel.toFixed(2)}) ; coffres ${l.chests.toFixed(1)}, fragments ${l.fragments.toFixed(0)}`,
+  );
+  // Route parallèle (lecture seule) : les deux chapitres joués dès qu'ils s'ouvrent.
+  const parallel = summarizeEconomy(content, seeds, option('--runs', 600), null, 'parallel');
+  console.log(
+    `Route parallèle (chapitres joués dès leur ouverture) : ${(
+      Object.keys(parallel.milestones) as (keyof typeof parallel.milestones)[]
+    )
+      .map((key) => `${key} ${parallel.milestones[key]?.toFixed(1) ?? '—'}`)
+      .join(', ')} ; réserve d'or à l'équipe équipée ${(() => {
+      const at = parallel.goldAt.teamEquipped;
+      return at === null || at.earned === 0
+        ? '—'
+        : `${((100 * at.reserve) / at.earned).toFixed(0)} %`;
+    })()}`,
   );
   const spell = spellMaxCost(content);
   console.log(

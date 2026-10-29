@@ -55,6 +55,23 @@ describe('économie : joueur modèle', () => {
     expect(pickRun(content, fresh2)).toMatchObject({ dungeon: 'drowned_halls', tier: 1 });
   });
 
+  it('chapitres parallèles : route principale d’abord, chapitre 2 farmé en fin de partie', () => {
+    const second = content.dungeons.filter((d) => d.map.chapter === 2);
+    expect(second.length).toBeGreaterThan(0);
+    const main = simulateEconomy(content, 2);
+    const levelled = main.milestones.teamMaxLevel ?? Infinity;
+    // Route principale : aucun donjon du chapitre 2 avant l'équipe au niveau 30, tous ensuite.
+    for (const d of second)
+      expect(main.milestones.firstClears[d.id] ?? 0).toBeGreaterThan(levelled);
+    expect(main.milestones.collectionAll).not.toBeNull();
+    expect(main.milestones.collectionAll ?? 0).toBeGreaterThan(main.milestones.collection ?? 0);
+    // Route parallèle : le chapitre 2 est joué dès qu'il s'ouvre (Grève gelée juste après les Landes).
+    const parallel = simulateEconomy(content, 2, 600, null, null, 'parallel');
+    const first = second[0]!;
+    expect(parallel.milestones.firstClears[first.id]).toBeLessThan(10);
+    expect(parallel.milestones.collectionAll).not.toBeNull();
+  });
+
   it('résume plusieurs graines', () => {
     const summary = summarizeEconomy(content, 2);
     expect(summary.seeds).toBe(2);

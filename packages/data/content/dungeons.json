@@ -601,17 +601,17 @@
     "encounters": [
       {
         "enemies": ["frost_ghoul", "brine_crab"],
-        "hpPct": 100,
+        "hpPct": 148,
         "atkPct": 75
       },
       {
         "enemies": ["tide_caller", "frost_ghoul"],
-        "hpPct": 100,
+        "hpPct": 187,
         "atkPct": 75
       },
       {
         "enemies": ["frost_maw"],
-        "hpPct": 100,
+        "hpPct": 154,
         "atkPct": 75
       }
     ],
@@ -659,18 +659,17 @@
     "encounters": [
       {
         "enemies": ["mire_slime", "moss_brute", "mire_slime"],
-        "hpPct": 80,
-        "atkPct": 106
+        "hpPct": 77,
+        "atkPct": 150
       },
       {
         "enemies": ["thorn_witch", "mire_slime", "thorn_witch"],
-        "hpPct": 80,
-        "atkPct": 106
+        "hpPct": 99,
+        "atkPct": 150
       },
       {
         "enemies": ["mire_troll", "mire_slime"],
-        "hpPct": 80,
-        "atkPct": 106
+        "atkPct": 150
       }
     ],
     "rewards": {
@@ -722,18 +721,18 @@
     "encounters": [
       {
         "enemies": ["cinder_fiend", "cinder_hound", "cinder_fiend"],
-        "hpPct": 85,
-        "atkPct": 120
+        "hpPct": 133,
+        "atkPct": 88
       },
       {
         "enemies": ["ash_acolyte", "cinder_fiend", "cinder_hound", "cinder_fiend"],
-        "hpPct": 85,
-        "atkPct": 120
+        "hpPct": 99,
+        "atkPct": 88
       },
       {
         "enemies": ["ash_titan", "cinder_fiend"],
-        "hpPct": 85,
-        "atkPct": 120
+        "hpPct": 95,
+        "atkPct": 88
       }
     ],
     "rewards": {
@@ -781,18 +780,18 @@
     "encounters": [
       {
         "enemies": ["frost_ghoul", "brine_crab", "frost_ghoul", "tide_caller"],
-        "hpPct": 85,
-        "atkPct": 112
+        "hpPct": 81,
+        "atkPct": 158
       },
       {
         "enemies": ["brine_crab", "frost_ghoul", "brine_crab"],
-        "hpPct": 85,
-        "atkPct": 112
+        "hpPct": 86,
+        "atkPct": 158
       },
       {
         "enemies": ["abyss_warden", "frost_ghoul", "frost_ghoul"],
-        "hpPct": 85,
-        "atkPct": 112
+        "hpPct": 86,
+        "atkPct": 158
       }
     ],
     "rewards": {
@@ -838,18 +837,18 @@
     "encounters": [
       {
         "enemies": ["moss_brute", "mire_slime", "thorn_witch", "mire_slime"],
-        "hpPct": 90,
-        "atkPct": 106
+        "hpPct": 68,
+        "atkPct": 144
       },
       {
         "enemies": ["thorn_witch", "mire_slime", "frost_ghoul", "thorn_witch"],
-        "hpPct": 90,
-        "atkPct": 106
+        "hpPct": 86,
+        "atkPct": 144
       },
       {
         "enemies": ["elder_bramble", "mire_slime", "mire_slime"],
-        "hpPct": 90,
-        "atkPct": 106
+        "hpPct": 76,
+        "atkPct": 144
       }
     ],
     "rewards": {
@@ -911,18 +910,18 @@
     "encounters": [
       {
         "enemies": ["cinder_fiend", "frost_ghoul", "mire_slime", "cinder_fiend"],
-        "hpPct": 80,
-        "atkPct": 110
+        "hpPct": 105,
+        "atkPct": 131
       },
       {
         "enemies": ["frost_ghoul", "ash_acolyte", "mire_slime", "tide_caller"],
-        "hpPct": 80,
-        "atkPct": 110
+        "hpPct": 99,
+        "atkPct": 131
       },
       {
         "enemies": ["mire_troll", "frost_maw"],
-        "hpPct": 80,
-        "atkPct": 110
+        "hpPct": 75,
+        "atkPct": 131
       }
     ],
     "rewards": {
@@ -970,18 +969,18 @@
     "encounters": [
       {
         "enemies": ["cinder_fiend", "ash_acolyte", "cinder_fiend", "cinder_hound"],
-        "hpPct": 80,
-        "atkPct": 150
+        "hpPct": 120,
+        "atkPct": 142
       },
       {
         "enemies": ["ash_acolyte", "cinder_fiend", "ash_acolyte", "mire_slime"],
-        "hpPct": 80,
-        "atkPct": 150
+        "hpPct": 79,
+        "atkPct": 142
       },
       {
         "enemies": ["ash_titan", "cinder_fiend", "ash_acolyte"],
-        "hpPct": 80,
-        "atkPct": 150
+        "hpPct": 87,
+        "atkPct": 142
       }
     ],
     "rewards": {
@@ -989,7 +988,7 @@
       "gold": 700,
       "materials": {
         "tier": 3,
-        "amount": 12
+        "amount": 8
       }
     },
     "loot": ["ash_veil", "magma_sigil"],
@@ -1028,18 +1027,18 @@
     "encounters": [
       {
         "enemies": ["frost_ghoul", "tide_caller", "frost_ghoul", "brine_crab"],
-        "hpPct": 80,
-        "atkPct": 170
+        "hpPct": 101,
+        "atkPct": 154
       },
       {
         "enemies": ["tide_caller", "frost_ghoul", "cinder_fiend", "tide_caller"],
-        "hpPct": 80,
-        "atkPct": 170
+        "hpPct": 123,
+        "atkPct": 154
       },
       {
         "enemies": ["frost_maw", "tidal_hydra"],
-        "hpPct": 80,
-        "atkPct": 170
+        "hpPct": 83,
+        "atkPct": 154
       }
     ],
     "rewards": {
@@ -1047,7 +1046,7 @@
       "gold": 850,
       "materials": {
         "tier": 3,
-        "amount": 10
+        "amount": 9
       }
     },
     "loot": ["glacial_horn", "permafrost_plate"],
@@ -1091,18 +1090,18 @@
     "encounters": [
       {
         "enemies": ["mire_slime", "thorn_witch", "moss_brute", "mire_slime"],
-        "hpPct": 85,
-        "atkPct": 210
+        "hpPct": 66,
+        "atkPct": 225
       },
       {
         "enemies": ["moss_brute", "frost_ghoul", "thorn_witch", "moss_brute"],
         "hpPct": 85,
-        "atkPct": 210
+        "atkPct": 225
       },
       {
         "enemies": ["mire_troll", "grove_colossus"],
-        "hpPct": 85,
-        "atkPct": 210
+        "hpPct": 72,
+        "atkPct": 225
       }
     ],
     "rewards": {
@@ -1154,18 +1153,18 @@
     "encounters": [
       {
         "enemies": ["cinder_fiend", "mire_slime", "frost_ghoul", "cinder_fiend"],
-        "hpPct": 85,
-        "atkPct": 220
+        "hpPct": 89,
+        "atkPct": 172
       },
       {
         "enemies": ["frost_ghoul", "thorn_witch", "cinder_fiend", "mire_slime"],
         "hpPct": 85,
-        "atkPct": 220
+        "atkPct": 172
       },
       {
         "enemies": ["ash_titan", "frost_maw", "mire_troll"],
-        "hpPct": 85,
-        "atkPct": 220
+        "hpPct": 55,
+        "atkPct": 172
       }
     ],
     "rewards": {
@@ -1173,7 +1172,7 @@
       "gold": 1500,
       "materials": {
         "tier": 3,
-        "amount": 12
+        "amount": 8
       }
     },
     "loot": ["dusk_ring", "eclipse_shard"],
