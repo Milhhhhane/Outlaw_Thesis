@@ -35,7 +35,9 @@ import {
   completeDungeon,
   enterBoss,
   equip,
+  goldToNext,
   levelDust,
+  levelUp,
   levelUpCost,
   levelUpMax,
   masteryMaterialsFactor,
@@ -43,6 +45,8 @@ import {
   newProfile,
   openChest,
   setFocus,
+  starCost,
+  starGold,
   starUp,
   chestOdds,
   achievementStatus,
@@ -80,9 +84,27 @@ export interface Milestones {
   readonly firstClears: Readonly<Record<string, number>>;
 }
 
+/** Jalons dont on suit l'or (ceux de la progression, pas les grimoires). */
+export const GOLD_MILESTONES = [
+  'firstMaxItem',
+  'firstStar',
+  'teamEquipped',
+  'teamMaxLevel',
+  'teamMaxed',
+  'collection',
+] as const;
+export type GoldMilestone = (typeof GOLD_MILESTONES)[number];
+
+/** Or à un jalon : en réserve (`profile.gold`) et gagné depuis le début (donjons et quêtes). */
+export interface GoldAt {
+  readonly reserve: number;
+  readonly earned: number;
+}
+
 /** Bilan des monnaies sur toute la partie modèle. */
 export interface Ledger {
-  readonly gold: { earned: number; items: number };
+  /** Or gagné (donjons), dépensé en objets, en niveaux et en étoiles. */
+  readonly gold: { earned: number; items: number; levels: number; stars: number };
   /** Par palier de poussière. */
   readonly dust: { earned: number[]; levels: number[]; items: number[]; salvage: number[] };
   fragments: number;
@@ -119,6 +141,8 @@ export interface AwakeningMilestones {
 export interface EconomyRun {
   readonly runs: number;
   readonly milestones: Milestones;
+  /** Or à chaque jalon atteint (absent : jalon jamais atteint). */
+  readonly goldAt: Readonly<Partial<Record<GoldMilestone, GoldAt>>>;
   readonly awakening: AwakeningMilestones;
   readonly ledger: Ledger;
   readonly profile: Profile;
@@ -178,20 +202,31 @@ export function candidates(content: Content, profile: Profile): Candidate[] {
   return out;
 }
 
-/** Ce qui empêche le plus faible héros de l'équipe de monter : XP, poussière (d'un palier), étoile, ou rien. */
+/**
+ * Ce qui empêche le plus faible héros de l'équipe de monter : XP, poussière (d'un palier), étoile
+ * (fragments), or (du niveau ou de l'étoile), ou rien.
+ */
 export function blocker(
   content: Content,
   profile: Profile,
-): { kind: 'xp' | 'dust' | 'star' | 'done'; dustTier: number } {
+): { kind: 'xp' | 'dust' | 'star' | 'gold' | 'done'; dustTier: number } {
   const lowest = [...profile.team].sort(
     (a, b) => (profile.heroes[a]?.level ?? 1) - (profile.heroes[b]?.level ?? 1),
   )[0];
   const hero = lowest === undefined ? undefined : profile.heroes[lowest];
   const cost = hero === undefined ? null : levelUpCost(content, hero);
-  if (hero === undefined || cost === null) return { kind: 'done', dustTier: 3 };
-  if (atStarGate(hero, content)) return { kind: 'star', dustTier: cost.dust.tier };
-  if (hero.xp < cost.xp) return { kind: 'xp', dustTier: cost.dust.tier };
-  return { kind: 'dust', dustTier: cost.dust.tier };
+  if (lowest === undefined || hero === undefined || cost === null)
+    return { kind: 'done', dustTier: 3 };
+  const dustTier = cost.dust.tier;
+  if (atStarGate(hero, content)) {
+    const fragments = (profile.fragments[lowest] ?? 0) >= (starCost(content, hero) ?? 0);
+    const gold = profile.gold >= (starGold(content, hero) ?? 0);
+    return { kind: fragments && !gold ? 'gold' : 'star', dustTier };
+  }
+  if (hero.xp < cost.xp) return { kind: 'xp', dustTier };
+  if ((profile.materials[dustTier - 1] ?? 0) < cost.dust.amount) return { kind: 'dust', dustTier };
+  if (profile.gold < cost.gold) return { kind: 'gold', dustTier };
+  return { kind: 'dust', dustTier };
 }
 
 /**
@@ -237,6 +272,8 @@ export function pickRun(content: Content, profile: Profile): Candidate {
         return c.dust.tier === need.dustTier ? c.dust.amount : 0;
       case 'star':
         return c.fragments;
+      case 'gold':
+        return c.gold;
       case 'done':
         return wanted.has(c.dungeon) ? 1 : 0;
     }
@@ -294,9 +331,10 @@ function equipAll(content: Content, profile: Profile): Profile {
 
 /**
  * Améliore les objets tant qu'un paiement est possible : ceux que porte l'équipe d'abord (le plus
- * de copies en réserve en premier), puis les autres (collection).
+ * de copies en réserve en premier), puis les autres (collection). `keep` : or à ne pas entamer
+ * (gardé pour un éveil).
  */
-function upgradeItems(content: Content, profile: Profile, ledger: Ledger): Profile {
+function upgradeItems(content: Content, profile: Profile, ledger: Ledger, keep = 0): Profile {
   let current = profile;
   for (;;) {
     const worn = new Set(current.team.flatMap((id) => current.heroes[id]?.items ?? []));
@@ -308,7 +346,7 @@ function upgradeItems(content: Content, profile: Profile, ledger: Ledger): Profi
     for (const item of owned) {
       const before = current;
       const next = ok(upgradeItem(content, current, item.uid));
-      if (next === null) continue;
+      if (next === null || next.gold < keep) continue;
       ledger.gold.items += before.gold - next.gold;
       next.materials.forEach((m, tier) => {
         ledger.dust.items[tier] =
@@ -323,16 +361,29 @@ function upgradeItems(content: Content, profile: Profile, ledger: Ledger): Profi
   }
 }
 
-/** Monte chaque héros de l'équipe autant que possible, du plus bas niveau au plus haut. */
-function levelTeam(content: Content, profile: Profile, ledger: Ledger): Profile {
+/**
+ * Monte chaque héros de l'équipe autant que possible, du plus bas niveau au plus haut. `keep` : or
+ * à ne pas entamer (gardé pour un éveil) ; sans réserve, `levelUpMax` d'un coup.
+ */
+function levelTeam(content: Content, profile: Profile, ledger: Ledger, keep = 0): Profile {
   let current = profile;
   const order = [...current.team].sort(
     (a, b) => (current.heroes[a]?.level ?? 1) - (current.heroes[b]?.level ?? 1),
   );
+  const raise = (from: Profile, heroId: string): Profile | null => {
+    if (keep <= 0) return ok(levelUpMax(content, from, heroId));
+    let raised: Profile | null = null;
+    for (;;) {
+      const next: Profile | null = ok(levelUp(content, raised ?? from, heroId));
+      if (next === null || next.gold < keep) return raised;
+      raised = next;
+    }
+  };
   for (const heroId of order) {
     const before = current;
-    const next = ok(levelUpMax(content, current, heroId));
+    const next = raise(current, heroId);
     if (next === null) continue;
+    ledger.gold.levels += before.gold - next.gold;
     next.materials.forEach((m, tier) => {
       ledger.dust.levels[tier] =
         (ledger.dust.levels[tier] ?? 0) + (before.materials[tier] ?? 0) - m;
@@ -370,7 +421,11 @@ function openAll(content: Content, profile: Profile, ledger: Ledger): Profile {
   return current;
 }
 
-function starAll(content: Content, profile: Profile): { profile: Profile; starred: boolean } {
+function starAll(
+  content: Content,
+  profile: Profile,
+  ledger: Ledger,
+): { profile: Profile; starred: boolean } {
   let current = profile;
   let starred = false;
   for (const heroId of current.team) {
@@ -378,6 +433,7 @@ function starAll(content: Content, profile: Profile): { profile: Profile; starre
     if (hero === undefined || !atStarGate(hero, content)) continue;
     const next = ok(starUp(content, current, heroId));
     if (next !== null) {
+      ledger.gold.stars += current.gold - next.gold;
       current = next;
       starred = true;
     }
@@ -390,7 +446,7 @@ const mean = (xs: readonly number[]): number =>
 
 function emptyLedger(): Ledger {
   return {
-    gold: { earned: 0, items: 0 },
+    gold: { earned: 0, items: 0, levels: 0, stars: 0 },
     dust: { earned: [0, 0, 0], levels: [0, 0, 0], items: [0, 0, 0], salvage: [0, 0, 0] },
     fragments: 0,
     chests: 0,
@@ -554,6 +610,12 @@ export function simulateEconomy(
     if (woke.team === null && profile.team.every((id) => profile.heroes[id]?.awakened === true))
       woke.team = runs;
   };
+  // Or à garder pour l'éveil en attente (0 sans `AwakeningModel` ou sans héros à éveiller).
+  const awakeningGold = (): number => {
+    if (awakening === null) return 0;
+    const target = awakenTarget(content, profile);
+    return target === undefined ? 0 : (awakenCost(content, target)?.gold ?? 0);
+  };
   const ledger = emptyLedger();
   const firstClears: Record<string, number> = {};
   const { maxLevel, items: itemRules } = content.balance.progression;
@@ -565,6 +627,7 @@ export function simulateEconomy(
   let collection: number | null = null;
   let spellsOneHero: number | null = null;
   let spellsTeam: number | null = null;
+  const goldAt: Partial<Record<GoldMilestone, GoldAt>> = {};
   const spellsCost = spellMaxCost(content).grimoires * SPELL_SLOTS.length;
   let runs = 0;
   const allCleared = (): boolean =>
@@ -610,20 +673,22 @@ export function simulateEconomy(
     if (questsOn) profile = claimAll(content, profile, now, ledger);
     if (quests?.boss === true) profile = bossAll(content, profile, now, ledger);
     profile = openAll(content, profile, ledger);
-    const stars = starAll(content, profile);
+    const stars = starAll(content, profile, ledger);
     profile = stars.profile;
     if (stars.starred && firstStar === null) firstStar = runs;
     profile = equipAll(content, profile);
-    // L'éveil passe avant les objets : sinon l'or partirait toujours en améliorations.
+    // L'éveil passe avant les objets : sinon l'or partirait toujours en améliorations. Tant qu'un
+    // héros attend son éveil, son or est gardé : objets et niveaux ne paient qu'avec le reste.
     tryAwaken();
-    profile = upgradeItems(content, profile, ledger);
-    profile = levelTeam(content, profile, ledger);
+    const keep = awakeningGold();
+    profile = upgradeItems(content, profile, ledger, keep);
+    profile = levelTeam(content, profile, ledger, keep);
     // Une étoile payée juste après un niveau : on retente une fois (le plafond vient de sauter).
-    const again = starAll(content, profile);
+    const again = starAll(content, profile, ledger);
     profile = again.profile;
     if (again.starred) {
       if (firstStar === null) firstStar = runs;
-      profile = levelTeam(content, profile, ledger);
+      profile = levelTeam(content, profile, ledger, keep);
     }
     // Les quêtes faites par les dépenses de ce passage (niveaux, objets, coffres) : réclamées
     // maintenant, dépensées au passage suivant.
@@ -658,6 +723,17 @@ export function simulateEconomy(
       )
     )
       collection = runs;
+    const reached: Record<GoldMilestone, number | null> = {
+      firstMaxItem,
+      firstStar,
+      teamEquipped,
+      teamMaxLevel,
+      teamMaxed,
+      collection,
+    };
+    for (const key of GOLD_MILESTONES)
+      if (reached[key] === runs && goldAt[key] === undefined)
+        goldAt[key] = { reserve: profile.gold, earned: ledger.gold.earned + ledger.quests.gold };
     if (spellsOneHero === null && ledger.grimoires >= spellsCost) spellsOneHero = runs;
     if (spellsTeam === null && ledger.grimoires >= spellsCost * profile.team.length)
       spellsTeam = runs;
@@ -680,6 +756,7 @@ export function simulateEconomy(
       spellsTeam,
       firstClears,
     },
+    goldAt,
     awakening: { ...woke },
     ledger,
     profile,
@@ -690,6 +767,8 @@ export interface EconomySummary {
   readonly seeds: number;
   readonly milestones: Record<keyof Omit<Milestones, 'firstClears'>, number | null>;
   readonly firstClears: Record<string, number>;
+  /** Or moyen à chaque jalon, sur les graines qui l'ont atteint (null : aucune). */
+  readonly goldAt: Record<GoldMilestone, GoldAt | null>;
   readonly ledger: Ledger;
   readonly unreached: number;
 }
@@ -719,6 +798,19 @@ export function summarizeEconomy(
   const avg = (get: (l: Ledger) => number): number => mean(runs.map((r) => get(r.ledger)));
   ledger.gold.earned = avg((l) => l.gold.earned);
   ledger.gold.items = avg((l) => l.gold.items);
+  ledger.gold.levels = avg((l) => l.gold.levels);
+  ledger.gold.stars = avg((l) => l.gold.stars);
+  const goldAt = {} as Record<GoldMilestone, GoldAt | null>;
+  for (const key of GOLD_MILESTONES) {
+    const values = runs.map((r) => r.goldAt[key]).filter((v): v is GoldAt => v !== undefined);
+    goldAt[key] =
+      values.length === 0
+        ? null
+        : {
+            reserve: mean(values.map((v) => v.reserve)),
+            earned: mean(values.map((v) => v.earned)),
+          };
+  }
   for (const tier of [0, 1, 2]) {
     ledger.dust.earned[tier] = avg((l) => l.dust.earned[tier] ?? 0);
     ledger.dust.levels[tier] = avg((l) => l.dust.levels[tier] ?? 0);
@@ -755,6 +847,7 @@ export function summarizeEconomy(
       spellsTeam: pick('spellsTeam'),
     },
     firstClears,
+    goldAt,
     ledger,
     unreached: runs.filter(
       (r) => r.milestones.teamMaxLevel === null || r.milestones.collection === null,
@@ -815,6 +908,7 @@ export function printTables(content: Content): void {
   for (const tier of [1, 2, 3]) {
     let xp = 0;
     let dust = 0;
+    let gold = 0;
     const levels: number[] = [];
     for (let level = 1; level < progression.maxLevel; level++) {
       const need = levelDust(content, level);
@@ -822,10 +916,11 @@ export function printTables(content: Content): void {
       levels.push(level);
       xp += xpToNext(level, content);
       dust += need.amount;
+      gold += goldToNext(level, content);
     }
     if (levels.length === 0) continue;
     console.log(
-      `  niveaux ${String(levels[0])}→${String((levels.at(-1) ?? 0) + 1)} : ${String(xp)} XP par héros, ${String(dust)} poussière T${String(tier)} par héros (${String(dust * team)} pour ${String(team)})`,
+      `  niveaux ${String(levels[0])}→${String((levels.at(-1) ?? 0) + 1)} : ${String(xp)} XP, ${String(gold)} or et ${String(dust)} poussière T${String(tier)} par héros (${String(gold * team)} or et ${String(dust * team)} poussière pour ${String(team)})`,
     );
   }
   const { upgradeCosts: costs, tierCostPct } = progression.items;
@@ -841,7 +936,7 @@ export function printTables(content: Content): void {
     );
   }
   console.log(
-    `  étoiles : ${chests.starCosts.join(' puis ')} fragments ; invocation : ${chests.summonCosts.join(' / ')} fragments selon la rareté ; respec : ${String(progression.respec.goldPerHeroLevel)} or × niveau après le premier`,
+    `  étoiles : ${chests.starCosts.map((n, i) => `${String(n)} fragments et ${String(chests.starGold[i] ?? 0)} or`).join(' puis ')} ; invocation : ${chests.summonCosts.join(' / ')} fragments selon la rareté ; respec : ${String(progression.respec.goldPerHeroLevel)} or × niveau après le premier`,
   );
   console.log(
     `  rare : poids ${String(economy.loot.weights.rare)} contre ${String(economy.loot.weights.common)} (+${String(economy.loot.mastery.rareWeightPerRank)} par rang de maîtrise), garanti au ${String(economy.loot.rarePity)}ᵉ passage sans rare ; dissolution ${String(economy.loot.salvage.common)}/${String(economy.loot.salvage.rare)} poussière`,
@@ -866,14 +961,22 @@ function main(): void {
   console.log(
     `Joueur modèle, ${summary.seeds} graines, tentatives à ${Math.round(auto * 100)} % :`,
   );
-  console.log(`  premier objet au niveau maximum    : ${f(summary.milestones.firstMaxItem)}`);
-  console.log(`  première étoile                    : ${f(summary.milestones.firstStar)}`);
-  console.log(`  équipe de 4 équipée (2 objets)     : ${f(summary.milestones.teamEquipped)}`);
+  // Or en réserve (gagné − dépensé) et or gagné cumulé au jalon, moyenne des graines.
+  const g = (key: GoldMilestone): string => {
+    const at = summary.goldAt[key];
+    if (at === null) return '';
+    const pct = at.earned === 0 ? 0 : (100 * at.reserve) / at.earned;
+    return ` ; or en réserve ${at.reserve.toFixed(0).padStart(6)} sur ${at.earned.toFixed(0).padStart(6)} gagnés (${pct.toFixed(0)} %)`;
+  };
+  const m = summary.milestones;
+  console.log(`  premier objet au niveau maximum    : ${f(m.firstMaxItem)}${g('firstMaxItem')}`);
+  console.log(`  première étoile                    : ${f(m.firstStar)}${g('firstStar')}`);
+  console.log(`  équipe de 4 équipée (2 objets)     : ${f(m.teamEquipped)}${g('teamEquipped')}`);
   console.log(
-    `  équipe de 4 au niveau ${String(content.balance.progression.maxLevel).padEnd(12)}: ${f(summary.milestones.teamMaxLevel)}`,
+    `  équipe de 4 au niveau ${String(content.balance.progression.maxLevel).padEnd(12)}: ${f(m.teamMaxLevel)}${g('teamMaxLevel')}`,
   );
-  console.log(`  équipe de 4 aux objets au maximum  : ${f(summary.milestones.teamMaxed)}`);
-  console.log(`  collection complète au maximum     : ${f(summary.milestones.collection)}`);
+  console.log(`  équipe de 4 aux objets au maximum  : ${f(m.teamMaxed)}${g('teamMaxed')}`);
+  console.log(`  collection complète au maximum     : ${f(m.collection)}${g('collection')}`);
   console.log(`  grimoires des sorts d'un héros     : ${f(summary.milestones.spellsOneHero)}`);
   console.log(`  grimoires des sorts de l'équipe    : ${f(summary.milestones.spellsTeam)}`);
   if (summary.unreached > 0)
@@ -887,7 +990,7 @@ function main(): void {
   const row = (xs: readonly number[]): string => xs.map((x) => x.toFixed(0).padStart(6)).join(' ');
   console.log('Bilan moyen jusqu’au dernier jalon :');
   console.log(
-    `  or gagné ${l.gold.earned.toFixed(0)}, dépensé en objets ${l.gold.items.toFixed(0)}`,
+    `  or gagné ${l.gold.earned.toFixed(0)}, dépensé en objets ${l.gold.items.toFixed(0)}, en niveaux ${l.gold.levels.toFixed(0)}, en étoiles ${l.gold.stars.toFixed(0)}`,
   );
   console.log(
     `  poussière (brute, fine, pure) gagnée ${row(l.dust.earned)} + dissoute ${row(l.dust.salvage)}`,

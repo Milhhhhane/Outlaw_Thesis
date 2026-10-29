@@ -4,6 +4,7 @@ import {
   levelUpCost,
   newProfile,
   starCost,
+  starGold,
   summarizeSeries,
   upgradeCost,
   type DungeonReport,
@@ -437,9 +438,11 @@ describe('badges du camp', () => {
     const cost = levelUpCost(content, pyra)!;
     const item = content.dungeons[0]!.loot[0]!;
     const upgrade = upgradeCost(content, item, 0)!;
+    // Chaque badge lit son propre coût : l'or couvre le plus cher des trois (niveau, étoile, objet).
+    const gold = Math.max(upgrade.gold, cost.gold, starGold(content, ronce)!);
     const profile: Profile = {
       ...base,
-      gold: upgrade.gold,
+      gold,
       materials: [cost.dust.amount + upgrade.materials.amount, 0, 0],
       heroes: { ...base.heroes, ronce, pyra: { ...pyra, xp: cost.xp } },
       fragments: { ronce: starCost(content, ronce)! },

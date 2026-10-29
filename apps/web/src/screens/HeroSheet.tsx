@@ -5,6 +5,7 @@ import {
   setAwakened,
   atStarGate,
   canLevelUp,
+  canStarUp,
   compileHero,
   equip,
   heroBuild,
@@ -18,6 +19,7 @@ import {
   setUpgrade,
   spellPowerPct,
   starCost,
+  starGold,
   starUp,
   takeTalent,
   talentPoints,
@@ -598,6 +600,7 @@ export function HeroSheet({
   const gate = atStarGate(hero, content);
   const cost = levelUpCost(content, hero);
   const gateCost = starCost(content, hero);
+  const gateGold = starGold(content, hero) ?? 0;
   const fragments = profile.fragments[heroId] ?? 0;
 
   return (
@@ -640,6 +643,7 @@ export function HeroSheet({
                     amount: cost.dust.amount,
                     dust: dustName(cost.dust.tier),
                   }),
+                  gold: cost.gold,
                 })}
               </p>
               {hero.xp >= cost.xp &&
@@ -650,6 +654,13 @@ export function HeroSheet({
                       have: profile.materials[cost.dust.tier - 1] ?? 0,
                       need: cost.dust.amount,
                     })}
+                  </p>
+                )}
+              {hero.xp >= cost.xp &&
+                (profile.materials[cost.dust.tier - 1] ?? 0) >= cost.dust.amount &&
+                profile.gold < cost.gold && (
+                  <p className="hint">
+                    {t('hero.levelUp.missingGold', { have: profile.gold, need: cost.gold })}
                   </p>
                 )}
               <Button
@@ -679,7 +690,7 @@ export function HeroSheet({
               <p>{t('hero.gate', { level: hero.level })}</p>
               <Button
                 size="small"
-                disabled={fragments < gateCost}
+                disabled={!canStarUp(content, profile, heroId)}
                 onClick={() => {
                   apply(starUp(content, profile, heroId));
                 }}
@@ -687,6 +698,13 @@ export function HeroSheet({
                 {t('hero.gate.buy')}
               </Button>
               <p className="hint">{t('hero.gate.count', { have: fragments, cost: gateCost })}</p>
+              {gateGold > 0 && (
+                <p className="hint">
+                  {profile.gold < gateGold
+                    ? t('hero.gate.missingGold', { have: profile.gold, need: gateGold })
+                    : t('hero.gate.gold', { gold: gateGold })}
+                </p>
+              )}
             </div>
           )}
           <p className="sheet__thesis">{names.heroThesis(heroId)}</p>

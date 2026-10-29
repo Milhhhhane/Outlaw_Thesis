@@ -8,6 +8,7 @@ import {
   energyAt,
   enterDungeon,
   equip,
+  goldToNext,
   heroBuild,
   levelDust,
   levelDustTier,
@@ -101,9 +102,11 @@ describe('profil', () => {
 });
 
 describe('XP et niveaux', () => {
-  const dust = (profile: Profile, materials: Profile['materials']): Profile => ({
+  // Poussière donnée, et de l'or en suffisance (le coût en or a son propre test).
+  const dust = (profile: Profile, materials: Profile['materials'], gold = 1000): Profile => ({
     ...profile,
     materials,
+    gold,
   });
 
   it('l’XP se met en banque, le niveau se paie en XP et en poussière du palier', () => {
@@ -113,7 +116,7 @@ describe('XP et niveaux', () => {
     const hero = base.heroes.pyra!;
     // Rien ne monte tout seul, quelle que soit l'XP.
     expect(addXp(hero, 10 ** 6, content)).toEqual({ ...hero, xp: 10 ** 6 });
-    expect(levelUpCost(content, hero)).toEqual({ xp: 40, dust: { tier: 1, amount: 2 } });
+    expect(levelUpCost(content, hero)).toEqual({ xp: 40, dust: { tier: 1, amount: 2 }, gold: 2 });
     expect(levelDustTier(content, 7)).toBe(1);
     expect(levelDustTier(content, 8)).toBe(2);
     expect(levelDustTier(content, 22)).toBe(3);
@@ -124,19 +127,67 @@ describe('XP et niveaux', () => {
     expect(levelDust(content, 22)).toEqual({ tier: 3, amount: 5 });
     expect(levelDust(content, 29)).toEqual({ tier: 3, amount: 19 });
 
-    const banked = { ...base, heroes: { ...base.heroes, pyra: { ...hero, xp: 40 + 113 + 5 } } };
+    const banked = {
+      ...base,
+      gold: 1000,
+      heroes: { ...base.heroes, pyra: { ...hero, xp: 40 + 113 + 5 } },
+    };
     expect(reason(levelUp(content, banked, 'pyra'))).toBe('not_enough_materials');
     expect(reason(levelUp(content, dust(base, [9, 0, 0]), 'pyra'))).toBe('not_enough_xp');
     expect(canLevelUp(content, dust(banked, [9, 0, 0]), banked.heroes.pyra)).toBe(true);
     const once = value(levelUp(content, dust(banked, [9, 0, 0]), 'pyra'));
     expect(once.heroes.pyra).toMatchObject({ level: 2, xp: 113 + 5 });
     expect(once.materials).toEqual([7, 0, 0]);
+    expect(once.gold).toBe(1000 - 2);
     // « Au maximum » : deux niveaux possibles, le troisième manque d'XP.
     const twice = value(levelUpMax(content, dust(banked, [9, 0, 0]), 'pyra'));
     expect(twice.heroes.pyra).toMatchObject({ level: 3, xp: 5 });
     expect(twice.materials).toEqual([5, 0, 0]);
+    expect(twice.gold).toBe(1000 - 2 - 6);
     expect(reason(levelUpMax(content, twice, 'pyra'))).toBe('not_enough_xp');
     expect(reason(levelUp(content, base, 'nope'))).toBe('locked_hero');
+  });
+
+  it('le niveau se paie aussi en or : refus sans or, débit exact', () => {
+    expect(goldToNext(1, content)).toBe(2);
+    expect(goldToNext(10, content)).toBe(89);
+    expect(goldToNext(29, content)).toBe(518);
+    const base = newProfile(content);
+    const ready = (gold: number): Profile => ({
+      ...base,
+      gold,
+      materials: [99, 99, 99],
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 4, xp: 10 ** 6 } },
+    });
+    const cost = levelUpCost(content, ready(0).heroes.pyra!)!;
+    expect(cost.gold).toBe(20);
+    // XP et poussière suffisent, l'or manque d'une pièce.
+    expect(reason(levelUp(content, ready(cost.gold - 1), 'pyra'))).toBe('not_enough_gold');
+    expect(canLevelUp(content, ready(cost.gold - 1), ready(0).heroes.pyra!)).toBe(false);
+    expect(reason(levelUpMax(content, ready(cost.gold - 1), 'pyra'))).toBe('not_enough_gold');
+    // Juste assez : le niveau est payé, l'or tombe à zéro.
+    expect(canLevelUp(content, ready(cost.gold), ready(0).heroes.pyra!)).toBe(true);
+    const paid = value(levelUp(content, ready(cost.gold), 'pyra'));
+    expect(paid.heroes.pyra!.level).toBe(5);
+    expect(paid.gold).toBe(0);
+  });
+
+  it('« au maximum » s’arrête au dernier niveau payable en or', () => {
+    const base = newProfile(content);
+    // Niveaux 4 → 5 → 6 payables (20 + 28), pas le suivant (38) : il reste 10 pièces.
+    const gold = goldToNext(4, content) + goldToNext(5, content) + 10;
+    expect(goldToNext(6, content)).toBeGreaterThan(10);
+    const profile: Profile = {
+      ...base,
+      gold,
+      materials: [99, 99, 99],
+      heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: 4, xp: 10 ** 6 } },
+    };
+    const raised = value(levelUpMax(content, profile, 'pyra'));
+    expect(raised.heroes.pyra!.level).toBe(6);
+    expect(raised.gold).toBe(10);
+    expect(raised.materials).toEqual([99 - 2 - 2, 99, 99]);
+    expect(reason(levelUpMax(content, raised, 'pyra'))).toBe('not_enough_gold');
   });
 
   it('plafond d’étoile et niveau maximum', () => {

@@ -107,24 +107,47 @@ describe('écran des coffres', () => {
     expect(screen.getByText(t('chests.target.none'))).toBeInTheDocument();
   });
 
-  it('au plafond de niveau : l’étoile coûte des fragments, puis le plafond monte', async () => {
-    const user = userEvent.setup();
+  /** Pyra au plafond du niveau 10, avec les fragments de l'étoile et `gold` or. */
+  function atGate(gold: number): Profile {
     const base = newProfile(content, 11);
     const cost = content.balance.chests.starCosts[0] ?? 0;
     const cap = content.balance.progression.levelsPerStar;
-    const initial: Profile = {
+    return {
       ...base,
+      gold,
       fragments: { pyra: cost },
       heroes: { ...base.heroes, pyra: { ...base.heroes.pyra!, level: cap, xp: 0 } },
     };
-    render(<App version="test" initial={initial} start={{ name: 'chests' }} />);
+  }
+
+  it('au plafond de niveau : l’étoile coûte des fragments et de l’or, puis le plafond monte', async () => {
+    const user = userEvent.setup();
+    const cap = content.balance.progression.levelsPerStar;
+    const gold = content.balance.chests.starGold[0] ?? 0;
+    render(<App version="test" initial={atGate(gold + 5)} start={{ name: 'chests' }} />);
 
     expect(
-      within(row('pyra')).getByText(t('chests.hero.gate', { level: cap })),
+      within(row('pyra')).getByText(
+        `${t('chests.hero.gate', { level: cap })} · ${t('chests.star.gold', { gold })}`,
+      ),
     ).toBeInTheDocument();
     await user.click(within(row('pyra')).getByRole('button', { name: t('chests.star') }));
     expect(within(row('pyra')).getByText(/étoiles 1 \//)).toBeInTheDocument();
     expect(within(row('pyra')).queryByRole('button', { name: t('chests.star') })).toBeNull();
+    expect(screen.getByText(t('hub.gold', { gold: 5 }))).toBeInTheDocument();
+  });
+
+  it('fragments réunis sans l’or : l’or manquant est dit, le bouton grisé', () => {
+    const cap = content.balance.progression.levelsPerStar;
+    const gold = content.balance.chests.starGold[0] ?? 0;
+    expect(gold).toBeGreaterThan(0);
+    render(<App version="test" initial={atGate(gold - 1)} start={{ name: 'chests' }} />);
+    expect(
+      within(row('pyra')).getByText(
+        `${t('chests.hero.gate', { level: cap })} · ${t('chests.star.missingGold', { have: gold - 1, need: gold })}`,
+      ),
+    ).toBeInTheDocument();
+    expect(within(row('pyra')).getByRole('button', { name: t('chests.star') })).toBeDisabled();
   });
 });
 

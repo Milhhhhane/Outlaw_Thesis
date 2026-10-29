@@ -144,9 +144,15 @@ export function xpToNext(level: number, content: Content): number {
   return Math.round(base * level ** exponent);
 }
 
+/** Or pour passer du niveau `level` au suivant (co-coût du niveau, avec l'XP et la poussière). */
+export function goldToNext(level: number, content: Content): number {
+  const { base, exponent } = content.balance.progression.levelGold;
+  return Math.round(base * level ** exponent);
+}
+
 /**
  * Ajoute de l'XP à la banque du héros. Elle ne monte pas le niveau : c'est le joueur qui paie
- * chaque niveau (`levelUp`), en XP et en poussière. Au niveau maximum, rien n'est gardé.
+ * chaque niveau (`levelUp`), en XP, en poussière et en or. Au niveau maximum, rien n'est gardé.
  */
 export function addXp(hero: HeroProgress, amount: number, content: Content): HeroProgress {
   if (hero.level >= content.balance.progression.maxLevel) return { ...hero, xp: 0 };
@@ -170,22 +176,31 @@ export function levelDust(content: Content, level: number): { tier: number; amou
 export interface LevelUpCost {
   readonly xp: number;
   readonly dust: { readonly tier: number; readonly amount: number };
+  readonly gold: number;
 }
 
 /** Coût du niveau suivant, ou null au niveau maximum. */
 export function levelUpCost(content: Content, hero: HeroProgress): LevelUpCost | null {
   if (hero.level >= content.balance.progression.maxLevel) return null;
-  return { xp: xpToNext(hero.level, content), dust: levelDust(content, hero.level) };
+  return {
+    xp: xpToNext(hero.level, content),
+    dust: levelDust(content, hero.level),
+    gold: goldToNext(hero.level, content),
+  };
 }
 
-/** Le héros a ce qu'il faut (XP, poussière, pas d'étoile en attente) pour monter d'un niveau. */
+/** Le héros a ce qu'il faut (XP, poussière, or, pas d'étoile en attente) pour monter d'un niveau. */
 export function canLevelUp(content: Content, profile: Profile, hero: HeroProgress): boolean {
   const cost = levelUpCost(content, hero);
   if (cost === null || atStarGate(hero, content)) return false;
-  return hero.xp >= cost.xp && (profile.materials[cost.dust.tier - 1] ?? 0) >= cost.dust.amount;
+  return (
+    hero.xp >= cost.xp &&
+    (profile.materials[cost.dust.tier - 1] ?? 0) >= cost.dust.amount &&
+    profile.gold >= cost.gold
+  );
 }
 
-/** Monte un héros d'un niveau contre son XP et de la poussière. */
+/** Monte un héros d'un niveau contre son XP, de la poussière et de l'or. */
 export function levelUp(content: Content, profile: Profile, heroId: string): Outcome {
   const hero = profile.heroes[heroId];
   if (hero === undefined || !profile.unlocked.includes(heroId)) return refuse('locked_hero');
@@ -195,19 +210,24 @@ export function levelUp(content: Content, profile: Profile, heroId: string): Out
   if (hero.xp < cost.xp) return refuse('not_enough_xp');
   const tier = cost.dust.tier - 1;
   if ((profile.materials[tier] ?? 0) < cost.dust.amount) return refuse('not_enough_materials');
+  if (profile.gold < cost.gold) return refuse('not_enough_gold');
   const materials: Profile['materials'] = [...profile.materials];
   materials[tier] = (materials[tier] ?? 0) - cost.dust.amount;
   const level = hero.level + 1;
   const xp = level >= content.balance.progression.maxLevel ? 0 : hero.xp - cost.xp;
   return ok({
     ...profile,
+    gold: profile.gold - cost.gold,
     materials,
     heroes: { ...profile.heroes, [heroId]: { ...hero, level, xp } },
     stats: countAction(profile.stats, { levels: 1 }),
   });
 }
 
-/** Monte un héros autant de niveaux que l'XP et la poussière le permettent (au moins un). */
+/**
+ * Monte un héros autant de niveaux que l'XP, la poussière et l'or le permettent (au moins un) :
+ * s'arrête au dernier niveau payable, le refus du premier niveau est renvoyé tel quel.
+ */
 export function levelUpMax(content: Content, profile: Profile, heroId: string): Outcome {
   let current = levelUp(content, profile, heroId);
   if (!current.ok) return current;

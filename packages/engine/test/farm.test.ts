@@ -23,6 +23,7 @@ import {
   savePreset,
   seriesNext,
   starCost,
+  starGold,
   summarizeSeries,
   talentPoints,
   upgradeCost,
@@ -169,9 +170,9 @@ describe('choses à faire au camp', () => {
     });
   });
 
-  it('niveau payable : XP et poussière, pas l’un sans l’autre', () => {
+  it('niveau payable : XP, poussière et or, aucun sans les autres', () => {
     const cost = levelUpCost(content, base().heroes.pyra!)!;
-    const xpOnly = withHero(base(), 'pyra', { xp: cost.xp });
+    const xpOnly = { ...withHero(base(), 'pyra', { xp: cost.xp }), gold: cost.gold };
     expect(campTodo(content, xpOnly).levelUp).toBe(0);
     const materials: Profile['materials'] = [0, 0, 0];
     materials[cost.dust.tier - 1] = cost.dust.amount;
@@ -179,6 +180,10 @@ describe('choses à faire au camp', () => {
     expect(campTodo(content, both).levelUp).toBe(1);
     expect(heroTodo(content, both, 'pyra').levelUp).toBe(true);
     expect(heroTodo(content, both, 'maree').levelUp).toBe(false);
+    // XP et poussière, mais une pièce d'or de moins : pas de badge.
+    expect(cost.gold).toBeGreaterThan(0);
+    expect(campTodo(content, { ...both, gold: cost.gold - 1 }).levelUp).toBe(0);
+    expect(heroTodo(content, { ...both, gold: cost.gold - 1 }, 'pyra').levelUp).toBe(false);
   });
 
   it('talents à placer : les points libres de chaque héros débloqué', () => {
@@ -190,11 +195,16 @@ describe('choses à faire au camp', () => {
     expect(heroTodo(content, profile, 'pyra').talents).toBe(points);
   });
 
-  it('étoile payable : au plafond et avec assez de fragments', () => {
-    const atCap = withHero(base(), 'ronce', { level: 10 });
+  it('étoile payable : au plafond, avec assez de fragments et d’or', () => {
+    const gold = starGold(content, withHero(base(), 'ronce', { level: 10 }).heroes.ronce!)!;
+    const atCap = { ...withHero(base(), 'ronce', { level: 10 }), gold };
     const cost = starCost(content, atCap.heroes.ronce!)!;
     expect(campTodo(content, { ...atCap, fragments: { ronce: cost - 1 } }).stars).toBe(0);
     expect(campTodo(content, { ...atCap, fragments: { ronce: cost } }).stars).toBe(1);
+    // Les fragments sans l'or : pas de badge.
+    const poor = { ...atCap, gold: gold - 1, fragments: { ronce: cost } };
+    expect(campTodo(content, poor).stars).toBe(0);
+    expect(heroTodo(content, poor, 'ronce').star).toBe(false);
     // Pas au plafond : rien à payer, même avec les fragments.
     expect(campTodo(content, { ...base(), fragments: { ronce: cost } }).stars).toBe(0);
     // Au niveau maximum, plus d'étoile.

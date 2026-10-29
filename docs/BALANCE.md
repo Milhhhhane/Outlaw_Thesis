@@ -715,3 +715,36 @@ avec, ces jalons reculent des 47 passages d'essence (160,7 et 306,2). Le premier
 donc entre l'équipe équipée (44) et l'équipe au niveau 30, l'équipe juste avant le niveau 30 de
 l'équipe. Bornes en CI (`economy.test.ts`, 5 graines) : premier héros entre 60 et 100 passages,
 équipe entre 110 et 170, au plus 20 passages d'essence pour le premier.
+
+## L'or paie les niveaux et les étoiles
+
+Valeurs : `progression.levelGold` (base 2, exposant 1,65 : round(2 × N^1,65) pour quitter le niveau
+N) et `chests.starGold` (600, 1 200). Mesure : `pnpm --filter @outlaw/sim economy`, 20 graines
+(tableau complet avant / après dans `docs/ECONOMY.md`, même titre).
+
+Cibles du brief : or en réserve ≤ 25 % de l'or gagné aux jalons « équipe de 4 équipée » (73 % avant)
+et « équipe de 4 au niveau 30 » (79 % avant) ; aucun jalon ne recule de plus de 10 %, le premier
+objet au maximum et la première étoile de plus de 5 % ; bornes de `tools/sim/test` tenues.
+
+| Réglage essayé (base ^ exposant, étoiles) | 1ᵉʳ objet | 1ʳᵉ étoile | Équipée (réserve) | Niveau 30 (réserve) | Collection | Verdict                      |
+| ----------------------------------------- | --------: | ---------: | ----------------- | ------------------- | ---------: | ---------------------------- |
+| 10 ^ 2, 500 / 3 000 (premier jet)         |     +79 % |     +242 % | +194 % (3 %)      | jamais              |     jamais | bien trop cher               |
+| 3 ^ 1,5, 500 / 2 000                      |    +5,6 % |     +1,8 % | −0,3 % (21 %)     | +9,2 % (18 %)       |     +4,9 % | début trop lent              |
+| 2 ^ 2, 500 / 2 000                        |       0 % |      +15 % | +14 % (5 %)       | +75 % (1 %)         |      +28 % | fin trop chère               |
+| 1,5 ^ 1,5, 500 / 1 500                    |       0 % |        0 % | +0,1 % (36 %)     | −0,1 % (39 %)       |     +2,9 % | trop peu de réserve dépensée |
+| 2 ^ 1,6, 700 / 1 500                      |       0 % |        0 % | +2,2 % (19 %)     | +3,3 % (21 %)       |     +4,7 % | quêtes à 15,5 % (borne 15 %) |
+| 2 ^ 1,6, 600 / 1 500                      |       0 % |        0 % | +0,1 % (22 %)     | +3,2 % (22 %)       |     +4,1 % | tient, éveil d'équipe à 166  |
+| **2 ^ 1,65, 600 / 1 200 (retenu)**        |   **0 %** |    **0 %** | **+0,2 % (20 %)** | **+3,3 % (18 %)**   | **+5,1 %** | tient, le plus de marge      |
+
+- Le début reste rapide parce que l'exposant est élevé : les niveaux 1 à 7 coûtent 156 or par
+  héros (624 pour l'équipe) quand le premier objet du palier 1 en coûte 440 ; à base 2,5 et plus,
+  ou exposant bas (1,2), le premier objet au maximum reculait de 5,6 à 10 %.
+- La première étoile (600) est prise sur une réserve de 1 970 or au 20ᵉ passage : elle ne recule
+  pas. Au-delà de 700, l'équipe équipée recule (étoiles des héros 2 à 4) et les quêtes, qui donnent
+  28 % d'or en plus, raccourcissent ce jalon au-delà de 15 %.
+- La seconde étoile (1 200) est plus chère que la première mais reste sous le prix d'un niveau
+  d'objet du palier 3 (2 000) : à 2 000 et plus, le niveau 30 reculait de 5 à 10 %.
+- Le recul du niveau 30 (+3,3 %) vient du milieu de partie : quand l'or manque, les niveaux
+  attendent, l'équipe ouvre les donjons 6 à 10 un peu plus tard (Couronne verdoyante 85,2 → 89,6).
+- Leviers : `levelGold.exponent` (où tombe la pression : bas = début, haut = fin), `base`
+  (pression générale), `starGold` (paliers 10 et 20). Bornes en CI : `economy.test.ts`.

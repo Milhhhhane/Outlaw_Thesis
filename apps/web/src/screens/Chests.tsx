@@ -1,5 +1,6 @@
 import {
   atStarGate,
+  canStarUp,
   chestCount,
   chestRarityRates,
   chestSize,
@@ -8,6 +9,7 @@ import {
   openChest,
   setFocus,
   starCost,
+  starGold,
   starUp,
   summonCost,
   summonHero,
@@ -129,9 +131,16 @@ function Reveal({
               const summon = summonCost(content, hero);
               const cost = state === undefined ? summon : starCost(content, state);
               const ready =
-                state === undefined
-                  ? owned >= summon
-                  : atStarGate(state, content) && cost !== null && owned >= cost;
+                state === undefined ? owned >= summon : canStarUp(content, profile, hero);
+              // Fragments de l'étoile réunis, mais pas son or : on le dit.
+              const gold = state === undefined ? null : starGold(content, state);
+              const needGold =
+                state !== undefined &&
+                !ready &&
+                atStarGate(state, content) &&
+                cost !== null &&
+                owned >= cost &&
+                gold !== null;
               return (
                 <li
                   key={hero}
@@ -150,6 +159,8 @@ function Reveal({
                       <span className="chest-reveal__ready">
                         {unlocked ? t('chests.reveal.gate') : t('chests.reveal.ready')}
                       </span>
+                    ) : needGold ? (
+                      <span className="hint">{t('chests.reveal.needGold', { gold })}</span>
                     ) : (
                       <span className="hint">{t('chests.reveal.owned', { n: owned })}</span>
                     )}
@@ -280,6 +291,7 @@ export function Chests() {
               const gate = unlocked && atStarGate(hero, content);
               const summon = summonCost(content, def.id);
               const cost = unlocked ? starCost(content, hero) : summon;
+              const gold = unlocked ? (starGold(content, hero) ?? 0) : 0;
               const target = profile.focus === def.id;
               const pcts = chests.tiers.map(
                 (tier) => rates[tier.id]?.find((r) => r.hero === def.id)?.pct ?? 0,
@@ -308,7 +320,11 @@ export function Chests() {
                       {!unlocked
                         ? t('chests.hero.locked')
                         : gate
-                          ? t('chests.hero.gate', { level: hero.level })
+                          ? `${t('chests.hero.gate', { level: hero.level })} · ${
+                              profile.gold < gold
+                                ? t('chests.star.missingGold', { have: profile.gold, need: gold })
+                                : t('chests.star.gold', { gold })
+                            }`
                           : t('chests.hero.line', {
                               level: hero.level,
                               stars: heroStars(hero, content),
@@ -355,7 +371,7 @@ export function Chests() {
                     ) : gate ? (
                       <Button
                         size="small"
-                        disabled={cost === null || owned < cost}
+                        disabled={!canStarUp(content, profile, def.id)}
                         onClick={() => {
                           apply(starUp(content, profile, def.id));
                         }}
@@ -387,6 +403,8 @@ export function Chests() {
             {t('chests.rules', {
               summon: chests.summonCosts.join(' / '),
               levels: content.balance.progression.levelsPerStar,
+              stars: chests.starCosts.join(' / '),
+              gold: chests.starGold.join(' / '),
             })}
           </p>
         </Panel>
