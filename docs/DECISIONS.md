@@ -132,8 +132,8 @@ le précédent est terminé (tout est ouvert en mode test). Raison : une route l
 Étendu par le chapitre 2 (voir « Chapitres parallèles »).
 
 **Récompenses** — Contexte : farm et héros au repos. Choix : premier passage complet, rejeu ×
-`replayRewardRate` (1 pour l'instant) ; XP à 50 % pour les héros débloqués hors équipe ; un objet
-par donjon. Raison : le rapport ; réglable sans code.
+`replayRewardRate` (1 pour l'instant) ; un objet par donjon. Raison : le rapport ; réglable sans
+code. L'XP des héros hors équipe (50 % au départ) est retirée : voir « XP réservée à l'équipe ».
 
 **Héros débloqué** — Contexte : un héros 4 à 6 rejoint au milieu de la progression. Choix : il
 arrive au niveau recommandé du donjon qui le débloque. Raison : utilisable tout de suite.
@@ -1367,3 +1367,12 @@ englouties. Horizon de simulation 800 passages ; borne « objets de l'équipe au
 Raison : meilleure ouverture mesurée (or et quêtes plus sains), et une borne qui tient aussi
 hors des graines de la CI (157,5) au lieu d'une borne tenue de justesse sur les seules graines
 de la CI. Chaque chapitre parallèle repousse ce jalon : au prochain, revoir l'ouverture.
+
+## Progression
+
+**XP réservée à l'équipe qui a combattu** — Contexte : les héros débloqués hors équipe recevaient
+50 % de l'XP de chaque donjon (`restXpRate`). Choix (propriétaire) : seuls les héros qui ont
+combattu gagnent de l'XP, dans tous les modes ; le paramètre est retiré plutôt que mis à 0.
+Raison : un héros progresse en jouant ; un réglage figé à 0 laisserait croire qu'on peut le
+remonter. Effet : un héros invoqué arrive au niveau 1 et ne monte qu'en combattant ; bornes de
+simulation inchangées (le joueur modèle ne change pas d'équipe).
