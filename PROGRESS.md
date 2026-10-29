@@ -140,6 +140,10 @@
 - Amis — base sociale : demandes par pseudo, liste, badge, résumé d'avancement des amis, export ;
   limites de débit rendues atomiques. Ouvert : invitation PvP directe, blocage, expiration des
   demandes.
+- Chapitre 2 — 10 donjons parallèles au chapitre 1 (niveaux 2 à 30), ouverts par `opensAfter` ;
+  économie tenue en CI sur la route parallèle. Marges serrées : équipe au niveau 30 (119 pour
+  120), quêtes (14,7 % pour 15 %), premier éveil (97,6 pour 100), objets au maximum (152,1 pour
+  155). Prochain : chapitre 3.
 
 ## Reste à faire (hors code)
 

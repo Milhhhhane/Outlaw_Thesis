@@ -129,6 +129,7 @@ l'échec invite à changer de build plutôt qu'à punir.
 
 **Ouverture des donjons** — Contexte : 7 donjons en progression. Choix : un donjon s'ouvre quand
 le précédent est terminé (tout est ouvert en mode test). Raison : une route lisible.
+Étendu par le chapitre 2 (voir « Chapitres parallèles »).
 
 **Récompenses** — Contexte : farm et héros au repos. Choix : premier passage complet, rejeu ×
 `replayRewardRate` (1 pour l'instant) ; XP à 50 % pour les héros débloqués hors équipe ; un objet
@@ -1336,3 +1337,25 @@ des requêtes simultanées passaient toutes (250 demandes d'ami traitées pour u
 Choix : un seul `INSERT … ON CONFLICT DO UPDATE … RETURNING` par tentative, pour toutes les
 limites (inscription, connexion, mot de passe, PvP, amis). Raison : une limite qui cède en rafale
 ne protège rien ; les limites en séquentiel sont inchangées (vérifié).
+
+## Chapitres parallèles
+
+**Le chapitre 2 s'ouvre à côté du chapitre 1, pas après** — Contexte : « beaucoup plus de
+donjons » sans allonger la route unique ni relever le niveau maximal. Choix : chaque donjon d'un
+nouveau chapitre cite par `opensAfter` le donjon du chapitre 1 qui l'ouvre ; aucun donjon n'est
+inséré entre deux donjons existants ; `baseline.csv` ne reçoit que des lignes nouvelles.
+Raison : plus de variété à chaque niveau, et les héros invoqués plus tard ont où monter.
+
+**Début du chapitre 2 après la Citadelle de cendre** — Contexte : ouverts au même niveau que le
+chapitre 1, quatre donjons du chapitre 2 s'ouvraient dans les 15 premiers passages ; chaque
+premier passage donnant un objet neuf, l'équipe était équipée vers le 12ᵉ passage (borne 25 à 55) et l'or dormait (53 %). Choix (propriétaire, option E) : les donjons de niveau 2 à 14 du
+chapitre 2 s'ouvrent après la Citadelle de cendre. Raison : seule option qui tient toutes les
+bornes sauf une, sans toucher au chapitre 1 ; une nouvelle région après un peu de progression.
+
+**Bornes mesurées sur le joueur parallèle ; « objets au maximum » à 155** — Choix : les bornes
+économiques et d'éveil de la CI portent sur la route qui joue les deux chapitres. Le chapitre 2
+prend environ 170 des 600 premiers passages ; les rares du chapitre 1 reçoivent leurs copies plus
+tard et « objets au maximum » passe à 152,1. Aucun levier limité au chapitre 2 ne descend sous
+140 (meilleur : 148,1 en retirant le rare garanti de la Grève gelée, contraire à « Premier passage
+rare »). Le propriétaire avait autorisé ce repli : borne relevée à 155, essais chiffrés dans
+`docs/ECONOMY.md`.

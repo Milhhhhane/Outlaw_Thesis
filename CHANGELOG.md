@@ -2,6 +2,25 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-29 — chapitre 2
+
+### Ajouté
+
+- Chapitre 2, une région parallèle au chapitre 1 : 10 donjons (niveaux conseillés 2 à 30), 6
+  ennemis dont 3 boss, 20 objets, une seconde carte du monde avec ses repères. La carte affiche un
+  sentier par chapitre ; un donjon fermé nomme le donjon à terminer pour l'ouvrir.
+- Champ de contenu `opensAfter` : un donjon s'ouvre après le donjon cité. Le chargement refuse un
+  donjon inconnu et tout cycle de prérequis.
+
+### Modifié
+
+- Les 5 premiers donjons du chapitre 2 (niveaux 2 à 14) s'ouvrent après la Citadelle de cendre ;
+  les 5 autres après le donjon du chapitre 1 de niveau égal ou juste inférieur.
+- Les récompenses des quêtes suivent le donjon terminé le plus haut, tous chapitres confondus.
+- Simulation : mesures par chapitre ; les bornes économiques et d'éveil portent sur la route
+  « parallèle » (le joueur qui joue les deux chapitres dès qu'ils s'ouvrent). Borne « objets de
+  l'équipe au maximum » relevée de 140 à 155 passages (152,1 mesuré) : voir `docs/ECONOMY.md`.
+
 ## [Non publié] — 2026-10-29 — amis
 
 ### Ajouté

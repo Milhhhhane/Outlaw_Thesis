@@ -783,7 +783,7 @@ Avec C : quêtes, raccourcissement maximal 13,3 % et 13,9 % (borne 15 %) ; boss 
 
 Dix donjons de plus, `map.chapter` 2, niveaux conseillés 2 à 30, chacun ouvert par `opensAfter`
 après un donjon du chapitre 1 (voir `docs/CONTENT.md`, « Ouverture ») : les cinq premiers (niveaux
-2 à 14) après la Citadelle de cendre (niveau 11), les cinq autres après le donjon du chapitre 1 de
+2 à 14) après la Citadelle de cendre (niveau 12), les cinq autres après le donjon du chapitre 1 de
 niveau égal ou immédiatement inférieur. Les niveaux 8 et 22 sont des étapes des deux chapitres :
 un pas de farm ne chevauche jamais deux paliers de poussière (`levelUp.tierFrom`).
 
@@ -855,6 +855,6 @@ niveau, quatre donjons du chapitre 2 s'ouvraient dans les 15 premiers passages :
 Tourbière, la Forge et le Caveau derrière la Citadelle de cendre (option E) remet tout dans les
 bornes (premier objet 8,1, équipe équipée 44,0, niveau 30 119,0, collection 288,1, réserve 22 % et
 18 %, quêtes 14,7 %, boss 7,5 %, éveil 97,6 / 142,6 / 172,6) sauf « objets au maximum » : 152,1.
-Aucun réglage du butin du chapitre 2 (`firstClearRare`, `firstClearChest`, raretés) ne le ramène
+Aucun réglage du butin du chapitre 2 (garanties du premier passage par donjon, raretés) ne le ramène
 sous 140 (meilleur effet réel : 148,1) ; la borne passe de 140 à **155**. Chiffres, essais et
 cause : `docs/ECONOMY.md`, « Chapitre 2 ».

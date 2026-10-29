@@ -444,7 +444,7 @@ Le joueur modèle a deux routes (`ChapterRoute` dans `tools/sim/src/economy.ts`)
   principale ; le chapitre 2 est joué une fois l'équipe au niveau 30.
 
 **Ouverture retenue (option E)** : la Grève gelée, la Tourbière sombre, la Forge des braises et le
-Caveau glaciaire s'ouvrent après la Citadelle de cendre (4ᵉ donjon du chapitre 1, niveau 11), avec
+Caveau glaciaire s'ouvrent après la Citadelle de cendre (4ᵉ donjon du chapitre 1, niveau 12), avec
 le Bois pourrissant ; les cinq autres gardent l'ouverture par niveau. Avec l'ouverture d'origine
 (chaque donjon après celui du chapitre 1 de même niveau), quatre donjons du chapitre 2 s'ouvraient
 dans les 15 premiers passages et chaque premier passage donnait un objet neuf : l'équipe était
@@ -488,7 +488,9 @@ chapitre 2 prend plus d'un quart des passages avant le niveau 30 (graines 1 à 5
 chapitre 1 en garde 430, contre 591 sur la route principale), et ces rares reçoivent leurs copies
 plus tard ; ce sont toujours les copies qui bloquent (jamais l'or ni la poussière). Même avec le
 huitième objet au maximum d'emblée, les sept objets du chapitre 1 finissent vers le 141ᵉ passage
-(graines 1 à 5). Leviers du chapitre 2 essayés (20 graines, tout le reste inchangé) :
+(graines 1 à 5). Leviers du chapitre 2 essayés (20 graines, tout le reste inchangé ; les champs
+`firstClearRare` / `firstClearChest` par donjon ont servi à ces essais puis ont été retirés, faute
+d'usage) :
 
 | Réglage du chapitre 2                                |     Objets au maximum | Autre borne cassée                      |
 | ---------------------------------------------------- | --------------------: | --------------------------------------- |

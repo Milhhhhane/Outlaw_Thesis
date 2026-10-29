@@ -157,8 +157,8 @@ describe('économie : joueur modèle', () => {
     expect(a.team ?? 0).toBeGreaterThanOrEqual(110);
     expect(a.team ?? 0).toBeLessThanOrEqual(170);
     expect(a.essenceRunsFirst ?? 0).toBeLessThanOrEqual(20);
-    // L'équipe au niveau 30 avec l'éveil (160,7 passages sur 20 graines avant le coût en or des
-    // niveaux) : au plus 10 % plus tard.
+    // L'équipe au niveau 30 avec l'éveil : borne fixée à 177 sur la route principale (160,7 passages
+    // sur 20 graines avant le coût en or des niveaux, + 10 %) ; route parallèle : 172,6.
     expect(a.teamMaxLevel).not.toBeNull();
     expect(a.teamMaxLevel ?? Infinity).toBeLessThanOrEqual(177);
     // Rien à farmer tant que les donjons d'essence sont fermés.
