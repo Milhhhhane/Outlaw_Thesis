@@ -55,6 +55,9 @@ jobs:
       - name: Taille du bundle
         run: pnpm size
 
+      - name: Polices servies en fichiers (CSP font-src self)
+        run: pnpm fonts
+
       - name: Navigateur des tests de bout en bout
         if: runner.os == 'Linux'
         run: pnpm --filter @outlaw/web exec playwright install --with-deps chromium
