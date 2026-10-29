@@ -858,3 +858,72 @@ bornes (premier objet 8,1, équipe équipée 44,0, niveau 30 119,0, collection 2
 Aucun réglage du butin du chapitre 2 (garanties du premier passage par donjon, raretés) ne le ramène
 sous 140 (meilleur effet réel : 148,1) ; la borne passe de 140 à **155**. Chiffres, essais et
 cause : `docs/ECONOMY.md`, « Chapitre 2 ».
+
+## Chapitre 3 : désert, ruines et ciel (2026-10-29)
+
+Dix donjons de plus, `map.chapter` 3 (carte `world_map_3`), niveaux conseillés 3 à 30, six ennemis
+nouveaux (`dune_raider`, `oasis_wraith`, `ruin_sentinel`, `sun_sphinx`, `mirage_djinn`,
+`sand_colossus`) mêlés à des ennemis des deux premiers chapitres. Ouverture par `opensAfter` (voir
+`docs/CONTENT.md`, « Ouverture ») : les Dunes ardentes (niveau 3) après les Salles englouties
+(niveau 4, chapitre 1) ; l'Oasis cachée, le Temple enseveli, le Désert de verre et la Mesa des
+orages (niveaux 6 à 14) après le Bois pourrissant (niveau 14, chapitre 2) ; les cinq autres après
+le donjon du chapitre 2 de même niveau. Les niveaux 8 et 22 restent des étapes du chapitre : un pas
+de farm ne chevauche jamais deux paliers de poussière.
+
+### Règles par chapitre
+
+Les règles du chapitre 2 (« Chapitre 2 », « Règles par chapitre ») s'appliquent telles quelles au
+chapitre 3 : courbe de difficulté, bandes expert et joueur moyen, R2 et « aucun héros
+indispensable » mesurées sur ses seuls donjons (lignes `ch3_r2_*`, `ch3_best_team*`,
+`awake_ch3_*`), paliers avec le butin du chapitre, combats aléatoires avec ses ennemis ordinaires
+(`ch3_random_*`), R1, écart de l'éveil et montée des sorts non remesurés, rythme du farm aux mêmes
+bornes. Le chapitre 3 n'a fait qu'**ajouter** 257 lignes à `baseline.csv` (aucune ligne existante
+modifiée).
+
+### Réglage
+
+Dernières retouches (commit « Règle les combats du chapitre 3 »), ATK des salles : Temple enseveli
+113 → 105 et Nécropole des sables 183 → 172 (adoucis), Désert de verre 109 → 118 et Puits du soleil
+165 → 170. Mesures de la référence (48 équipes, niveau conseillé ; R2 : 3 niveaux de retard ;
+paliers : expert I / II / III) :
+
+| Donjon               | Niv. | Élément | `opensAfter`  | Expert | Moyen |    R2 | Paliers     | Actions (combats) | ATK % | PV %        |
+| -------------------- | ---: | ------- | ------------- | -----: | ----: | ----: | ----------- | ----------------- | ----: | ----------- |
+| Dunes ardentes       |    3 | feu     | drowned_halls |  100 % | 100 % |     — | 100/100/100 | 21 / 22 / 27      |    75 | 233/231/136 |
+| Oasis cachée         |    6 | eau     | rotwood       |  100 % |  67 % | 100 % | 98/100/100  | 21 / 21 / 26      |   113 | 109/137/129 |
+| Temple enseveli      |    8 | nature  | rotwood       |   94 % |  79 % |  96 % | 96/98/94    | 21 / 21 / 24      |   105 | 60/47/55    |
+| Désert de verre      |   11 | feu     | rotwood       |   90 % |  48 % |  90 % | 92/90/88    | 22 / 20 / 28      |   118 | 97/113/82   |
+| Mesa des orages      |   14 | eau     | rotwood       |   96 % |  58 % |  94 % | 98/96/90    | 21 / 21 / 28      |   132 | 109/97/113  |
+| Nécropole des sables |   18 | nature  | twin_rivers   |   94 % |  71 % |  94 % | 96/88/96    | 19 / 19 / 25      |   172 | 70/79/64    |
+| Puits du soleil      |   22 | feu     | ash_caldera   |   83 % |  46 % |  86 % | 90/79/77    | 19 / 22 / 28      |   170 | 88/91/79    |
+| Palais des mirages   |   25 | eau     | frozen_abyss  |   90 % |  56 % |  92 % | 81/90/79    | 22 / 21 / 28      |   145 | 111/97/92   |
+| Jardins suspendus    |   28 | nature  | elder_swamp   |   92 % |  50 % |  90 % | 90/69/67    | 20 / 19 / 28      |   262 | 95/100/68   |
+| Citadelle céleste    |   30 | mixte   | eclipse_keep  |   88 % |  42 % |  92 % | 88/79/58    | 19 / 18 / 25      |   230 | 90/91/41    |
+
+- Chapitre 3 : expert 93 %, joueur moyen 62 % au niveau conseillé (chapitre 1 : 90 % et 63 % ;
+  chapitre 2 : 87 % et 62 %) ; R2 86 % sur le pire donjon (Puits du soleil, cible > 50 %),
+  « aucun héros indispensable » 4 points ; tous éveillés : R2 90 %, 6 points. Toutes les règles des
+  chapitres 1 et 2 inchangées.
+- Courbe du joueur moyen : 100 / 67 / 79 / 48 / 58 / 71 / 46 / 56 / 50 / 42 %. Les remontées les
+  plus fortes (Temple enseveli après l'Oasis, Nécropole après la Mesa) font 12,5 points (tolérance
+  15).
+- Les Dunes ardentes sont une prise en main (ATK 75 %), comme les Landes et la Grève gelée, avec des
+  PV relevés (136 à 233 %).
+- Les points les plus serrés : palier III de la Citadelle céleste (58 %, cible ≥ 50 %) et des
+  Jardins suspendus (67 %) ; Citadelle céleste 42 % pour le joueur moyen (plancher 30 %).
+- Rythme du farm (`pnpm --filter @outlaw/sim farm`) : 5,1 à 17,3 passages par pas, 89 pour le
+  chapitre (bornes : 5 à 18, 70 à 110).
+
+### Économie : ouverture et bornes (option B)
+
+Les bornes économiques et d'éveil de la CI portent sur la route parallèle. Avec le chapitre 3
+(60 objets), la collection complète tombe vers le 655ᵉ passage : l'horizon du joueur modèle passe
+de 600 à **800** passages (`maxRuns`), sans effet sur les jalons atteints avant 600. Avec
+l'ouverture d'origine (les cinq premiers donjons après le Bois pourrissant), toutes les bornes
+tenaient à l'horizon 800 sauf « objets au maximum » : 155,8 (borne 155). Ouvrir les Dunes ardentes
+après les Salles englouties (option B) le ramène à 151,9 sur les graines de la CI (premier objet
+8,1, équipe équipée 41,4, niveau 30 116,9, collection 284,5, réserve d'or 16,5 % et 20,5 %, quêtes
+14,8 % et 11,1 %, boss 6,2 % et 3,2 %, éveil 93,8 / 134,4 / 169,8), mais 157,5 sur les graines 21
+à 80 ; aucun levier du chapitre 3 essayé ne le garde sous 155 sur ces graines. La borne passe de
+155 à **160** ; aucune autre ne change. Chiffres, essais et cause : `docs/ECONOMY.md`,
+« Chapitre 3 ».

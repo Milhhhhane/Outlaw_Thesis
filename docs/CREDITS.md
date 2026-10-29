@@ -43,8 +43,9 @@ source).
   d'entre eux portent une coiffe ou un accessoire dessiné pour le projet (`tools/art/looks.py`,
   création originale) ; aucun nouveau fichier tiers. Les six ennemis du chapitre 2 viennent de la
   même planche (`ice_zombie`, `muddy`, `chort`, et `big_demon` et `ogre` recolorés), sans nouveau
-  fichier tiers. Les anciens personnages générés
-  (`heroes.py`, `enemies.py`) ne sont plus utilisés.
+  fichier tiers. Les six ennemis du chapitre 3 aussi (`goblin`, `zombie`, `big_demon`, `big_zombie`
+  et `ogre` recolorés, `skelet` à peine assombri), sans nouveau fichier tiers. Les anciens
+  personnages générés (`heroes.py`, `enemies.py`) ne sont plus utilisés.
 
 ## Données
 

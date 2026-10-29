@@ -38,7 +38,7 @@ describe('boss de la semaine (simulation)', () => {
   it('le boss ne raccourcit aucun jalon de plus de 10 % (5 et 10 passages par jour)', () => {
     const base = summarizeEconomy(content, 20);
     for (const perDay of [5, 10]) {
-      const withBoss = summarizeEconomy(content, 20, 600, { perDay, noQuests: true, boss: true });
+      const withBoss = summarizeEconomy(content, 20, 800, { perDay, noQuests: true, boss: true });
       expect(withBoss.unreached).toBe(0);
       expect(withBoss.ledger.boss.claims).toBeGreaterThan(0);
       expect(withBoss.ledger.quests.claims).toBe(0);

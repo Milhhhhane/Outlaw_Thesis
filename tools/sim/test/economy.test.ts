@@ -55,13 +55,15 @@ describe('économie : joueur modèle', () => {
     expect(pickRun(content, fresh2)).toMatchObject({ dungeon: 'drowned_halls', tier: 1 });
   });
 
-  it('chapitres parallèles : chapitre 2 joué dès son ouverture (route principale : en fin de partie)', () => {
+  it('chapitres parallèles : chapitres 2 et 3 joués dès leur ouverture (route principale : en fin de partie)', () => {
     const second = content.dungeons.filter((d) => d.map.chapter === 2);
+    const third = content.dungeons.filter((d) => d.map.chapter === 3);
     expect(second.length).toBeGreaterThan(0);
-    const main = simulateEconomy(content, 2, 600, null, null, 'main');
+    expect(third).toHaveLength(10);
+    const main = simulateEconomy(content, 2, 800, null, null, 'main');
     const levelled = main.milestones.teamMaxLevel ?? Infinity;
-    // Route principale : aucun donjon du chapitre 2 avant l'équipe au niveau 30, tous ensuite.
-    for (const d of second)
+    // Route principale : aucun donjon des chapitres 2 et 3 avant l'équipe au niveau 30, tous ensuite.
+    for (const d of [...second, ...third])
       expect(main.milestones.firstClears[d.id] ?? 0).toBeGreaterThan(levelled);
     expect(main.milestones.collectionAll).not.toBeNull();
     expect(main.milestones.collectionAll ?? 0).toBeGreaterThan(main.milestones.collection ?? 0);
@@ -77,6 +79,17 @@ describe('économie : joueur modèle', () => {
       expect(dungeonPrerequisite(content, d.id)).toBe('cinder_citadel');
       expect(clears[d.id]).toBeLessThanOrEqual(citadel + 4);
     }
+    // Chapitre 3 : chaque donjon après celui qui l'ouvre. Les Dunes ardentes (niveau 3) s'ouvrent
+    // avec les Salles englouties, les quatre suivants (niveaux 6 à 14) avec le Bois pourrissant,
+    // les cinq derniers chacun avec un donjon du chapitre 2 (docs/CONTENT.md).
+    for (const d of third)
+      expect(clears[d.id]).toBeGreaterThan(clears[dungeonPrerequisite(content, d.id) ?? ''] ?? 0);
+    expect(dungeonPrerequisite(content, 'sun_dunes')).toBe('drowned_halls');
+    for (const d of third.slice(1, 5)) expect(dungeonPrerequisite(content, d.id)).toBe('rotwood');
+    for (const d of third.slice(5))
+      expect(content.dungeonById.get(dungeonPrerequisite(content, d.id) ?? '')?.map.chapter).toBe(
+        2,
+      );
     expect(parallel.milestones.collectionAll).not.toBeNull();
   });
 
@@ -104,11 +117,12 @@ describe('économie : joueur modèle', () => {
     within(m.firstStar, 15, 30);
     within(m.teamEquipped, 25, 55);
     within(m.teamMaxLevel, 85, 120);
-    // 155 (140 sur la seule route du chapitre 1) : sur la route parallèle, le chapitre 2 prend plus
-    // d'un quart des passages avant le niveau 30, donc les rares du chapitre 1 portés reçoivent
-    // leurs copies plus tard (152,1 mesuré ; aucun réglage du butin du chapitre 2 ne passe sous
-    // 140 sans casser une autre borne, voir docs/ECONOMY.md, « Chapitre 2 »).
-    within(m.teamMaxed, 100, 155);
+    // 160 (155 avec deux chapitres, 140 sur la seule route du chapitre 1) : sur la route parallèle,
+    // les chapitres 2 et 3 prennent une bonne part des passages avant le niveau 30, donc les rares
+    // du chapitre 1 portés reçoivent leurs copies plus tard. Mesuré avec le chapitre 3 : 151,9 sur
+    // les graines 1–20 de la CI, 157,5 sur les graines 21–80 ; 160 garde une marge sur d'autres
+    // graines (voir docs/ECONOMY.md, « Chapitre 2 » et « Chapitre 3 »).
+    within(m.teamMaxed, 100, 160);
     within(m.collection, 200, 300);
     // Montée des sorts (docs/BALANCE.md) : un héros au milieu de partie, l'équipe après ses objets.
     within(m.spellsOneHero, 50, 100);
@@ -136,7 +150,7 @@ describe('économie : joueur modèle', () => {
   it('les quêtes ne raccourcissent aucun jalon de plus de 15 % (5 et 10 passages par jour)', () => {
     const base = summarizeEconomy(content, 20);
     for (const perDay of [5, 10]) {
-      const withQuests = summarizeEconomy(content, 20, 600, { perDay });
+      const withQuests = summarizeEconomy(content, 20, 800, { perDay });
       expect(withQuests.unreached).toBe(0);
       expect(withQuests.ledger.quests.claims).toBeGreaterThan(0);
       for (const shortening of Object.values(questEffect(base, withQuests))) {
