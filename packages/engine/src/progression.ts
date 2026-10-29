@@ -483,7 +483,8 @@ export function completeDungeon(
   const isRare = (id: string): boolean => content.itemById.get(id)?.rarity === 'rare';
   let guaranteed = false;
   const mustBeRare =
-    (firstClear && lootRules.firstClearRare) || progress.dry + 1 >= lootRules.rarePity;
+    (firstClear && (dungeon.firstClearRare ?? lootRules.firstClearRare)) ||
+    progress.dry + 1 >= lootRules.rarePity;
   if (!isRare(item) && mustBeRare) {
     const rares = table.filter((e) => isRare(e.item));
     const reroll = nextRandom(seed);
@@ -519,7 +520,13 @@ export function completeDungeon(
   // modeste au premier passage du palier ; tiré après le butin, qui ne bouge pas.
   const chestRoll = nextRandom(seed);
   seed = chestRoll.seed;
-  const chest = rollChest(content, dungeon, tier, chestRoll.value, firstClear);
+  const chest = rollChest(
+    content,
+    dungeon,
+    tier,
+    chestRoll.value,
+    firstClear && dungeon.firstClearChest !== false,
+  );
 
   const materials: Profile['materials'] = [...profile.materials];
   const dustTier = dungeon.rewards.materials.tier - 1;

@@ -356,7 +356,7 @@ export function MapScreen({
                   </span>
                 ))}
                 {!tierCleared(profile, dungeon.id, tier) &&
-                  content.balance.economy.loot.firstClearRare && (
+                  (dungeon.firstClearRare ?? content.balance.economy.loot.firstClearRare) && (
                     <span className="hint"> · {t('map.firstRare')}</span>
                   )}
               </p>

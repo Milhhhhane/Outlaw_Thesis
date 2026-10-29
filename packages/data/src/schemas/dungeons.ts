@@ -100,6 +100,12 @@ export const dungeonSchema = z.strictObject({
    * celle des sauvegardes du chapitre 1). Sert aux régions parallèles (chapitre 2).
    */
   opensAfter: idSchema.optional(),
+  /**
+   * Garanties du premier passage de chaque palier : le rare (`economy.loot.firstClearRare` par
+   * défaut) et un coffre (toujours par défaut). `false` les retire pour ce donjon seulement.
+   */
+  firstClearRare: z.boolean().optional(),
+  firstClearChest: z.boolean().optional(),
   /** Héros débloqué en terminant ce donjon pour la première fois. */
   unlocksHero: idSchema.optional(),
 });
