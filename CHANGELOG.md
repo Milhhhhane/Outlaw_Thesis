@@ -2,6 +2,18 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-31 — éveil lisible
+
+### Modifié
+
+- Onglet Éveil de la fiche de héros : un tableau donne, pour le niveau, chaque essence et l'or, ce
+  que vous avez, ce qu'il faut, et ce qui manque (coche ou croix, pas la couleur seule). Pour
+  chaque essence, il indique où la gagner : palier du sanctuaire, essences par victoire, victoires
+  encore à faire, palier fermé et ce qui l'ouvre. Une phrase dit ce qui bloque (« Il vous manque 9
+  essences faibles, 10 moyennes et 6 supérieures de nature. ») ; elle sert aussi de description au
+  bouton grisé. « Possible au niveau 20 » devient « 20 / 20, atteint ». Les règles de l'éveil ne
+  changent pas.
+
 ## [Non publié] — 2026-10-29 — XP réservée à l'équipe
 
 ### Modifié
