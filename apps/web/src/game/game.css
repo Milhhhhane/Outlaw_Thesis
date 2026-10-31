@@ -779,10 +779,40 @@ button:disabled {
   padding: 4px 6px;
 }
 
-.team__slots {
+/* Aide d'une ligne sous les emplacements (au-dessus, les sprites qui débordent la cacheraient) ;
+   elle reste la première dans le document, pour les lecteurs d'écran. */
+.team__lineup {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 2px;
+  min-height: 0;
+}
+
+.team__lineup > .team__slots {
+  grid-row: 1;
+}
+
+.team__help {
+  grid-row: 2;
+  margin: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Comme sur la scène : la place 1 (devant) à droite, face aux ennemis, puis vers la gauche. */
+.team__slots {
+  display: flex;
+  flex-direction: row-reverse;
   gap: 12px;
+  min-height: 0;
+}
+
+.team__slots > .team__slot {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .team__slot {
@@ -846,15 +876,85 @@ button:disabled {
   font-size: 13px;
 }
 
-.team__remove {
-  position: absolute;
-  top: 2px;
-  right: 6px;
-  color: var(--bone-muted);
+.team__slot:not(.team__slot--empty) {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
-.team__slot:hover .team__remove {
+.team__slot--dragged {
+  cursor: grabbing;
+  opacity: 0.55;
+}
+
+.team__slot--over {
+  outline: 2px dashed var(--gold);
+  outline-offset: -2px;
+}
+
+/* Place sur la scène : dans le cadre du bas, à l'écart du sprite qui déborde vers le haut. */
+.team__pos {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  background: rgb(7 5 10 / 80%);
+  color: var(--gold);
+  font-size: 11px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.team__slot--empty .team__pos {
+  bottom: -8px;
+}
+
+.team__remove,
+.team__move {
+  position: absolute;
+  padding: 0 4px;
+  border: 0;
+  background: rgb(7 5 10 / 70%);
+  color: var(--bone-muted);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.team__remove {
+  top: -12px;
+  right: -10px;
+}
+
+.team__remove:hover,
+.team__remove:focus-visible {
   color: #ffb4a8;
+}
+
+/* Flèches de part et d'autre du héros : vers la gauche on recule, vers la droite on avance. */
+.team__move {
+  top: 30px;
+  min-width: 22px;
+  min-height: 26px;
+}
+
+.team__move--back {
+  left: -10px;
+}
+
+.team__move--front {
+  right: -10px;
+}
+
+.team__move:hover:not(:disabled),
+.team__move:focus-visible {
+  color: var(--gold);
+}
+
+.team__move:disabled {
+  visibility: hidden;
 }
 
 .team__roster {

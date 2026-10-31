@@ -2,6 +2,7 @@ import {
   dungeonOpen,
   FARM_RUNS,
   heroBuild,
+  moveInTeam,
   setLevel,
   setTeam,
   tierOpen,
@@ -17,6 +18,7 @@ import { useGame } from '../game/nav';
 import { useOptions } from '../game/options';
 import { Rarity } from '../game/Rarity';
 import { Button, Choice, Panel, Screen, Stepper } from '../game/ui';
+import { useSlotDrag } from '../game/useSlotDrag';
 import { dungeonTitle, names, t, tk } from '../i18n';
 import { Presets } from './Presets';
 import { shareUrl } from '../save/share';
@@ -29,9 +31,19 @@ const runsText = (runs: FarmRuns): string =>
 const runsLong = (runs: FarmRuns): string =>
   runs === 'energy' ? t('farm.runs.energy.long') : t('farm.runs.n', { n: runs });
 
+/** Étiquette d'une place, comme sur la scène : la 1 devant (face aux ennemis), la dernière derrière. */
+function placeLabel(slot: number, size: number): string {
+  const n = slot + 1;
+  if (slot === 0 && size > 0) return t('team.pos.front', { n });
+  if (slot === size - 1 && size > 1) return t('team.pos.back', { n });
+  return t('team.pos', { n });
+}
+
 /**
  * Composition : `teamSize` emplacements et les équipes enregistrées, les héros débloqués en
  * dessous (triés et filtrés). Avant un donjon : le nombre de passages joués d'affilée en Auto.
+ * Les emplacements sont rangés comme sur la scène de combat : la place 1 (emplacement 0, devant)
+ * à droite, face aux ennemis ; un héros change de place par glisser-déposer ou par ses flèches.
  */
 export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly tier?: number }) {
   const { go } = useGame();
@@ -55,7 +67,12 @@ export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly ti
       : [...profile.team, id];
     apply(setTeam(content, profile, team));
   };
-  const full = profile.team.length >= MAX_TEAM;
+  const move = (from: number, to: number): void => {
+    apply(moveInTeam(content, profile, from, to, 'swap'));
+  };
+  const { drag, bind } = useSlotDrag(move);
+  const size = profile.team.length;
+  const full = size >= MAX_TEAM;
   const link = test
     ? shareUrl(
         profile.team.map((id) => heroBuild(profile, id)),
@@ -79,45 +96,100 @@ export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly ti
       className="team"
     >
       <div className="team__top">
-        <div className="team__slots">
-          {Array.from({ length: MAX_TEAM }, (_, slot) => {
-            const id = profile.team[slot];
-            if (id === undefined) {
+        <div className="team__lineup">
+          <p className="team__help hint" title={`${t('team.help')} ${t('team.drag')}`}>
+            {t('team.help')}
+          </p>
+          <div className="team__slots" role="list" aria-label={t('team.slots')}>
+            {Array.from({ length: MAX_TEAM }, (_, slot) => {
+              const id = profile.team[slot];
+              const label = placeLabel(slot, size);
+              const dropClass = drag?.over === slot ? ' team__slot--over' : '';
+              if (id === undefined) {
+                return (
+                  <div
+                    key={slot}
+                    role="listitem"
+                    className={`team__slot team__slot--empty${dropClass}`}
+                    data-slot={slot}
+                    {...bind(slot)}
+                  >
+                    <span className="team__pos">{label}</span>
+                    <span>{t('team.slot.empty')}</span>
+                    <span className="hint">{t('team.slot.hint')}</span>
+                  </div>
+                );
+              }
+              const def = content.heroById.get(id);
+              const hero = names.hero(id);
               return (
-                <div key={slot} className="team__slot team__slot--empty">
-                  <span>{t('team.slot.empty')}</span>
-                  <span className="hint">{t('team.slot.hint')}</span>
+                <div
+                  key={id}
+                  role="listitem"
+                  aria-label={t('team.slot.label', { place: label, hero })}
+                  className={[
+                    'team__slot',
+                    `element-${def?.element ?? 'fire'}`,
+                    `rarity-${String(def?.tier ?? 1)}`,
+                    drag?.from === slot ? 'team__slot--dragged' : '',
+                    dropClass,
+                  ].join(' ')}
+                  title={t('team.drag')}
+                  data-slot={slot}
+                  data-hero={id}
+                  {...bind(slot)}
+                >
+                  <PixelSprite name="pedestal" className="pedestal" />
+                  <span className="team__pos">{label}</span>
+                  <span className="team__sprite">
+                    <HeroSprite name={id} idle />
+                  </span>
+                  <span className="team__name">
+                    {hero} <Rarity tier={def?.tier ?? 1} short />
+                  </span>
+                  <span className="team__meta">
+                    {t('hub.level', { level: profile.heroes[id]?.level ?? 1 })} ·{' '}
+                    {tk(`element.${def?.element ?? 'fire'}`)}
+                  </span>
+                  <button
+                    type="button"
+                    className="team__remove"
+                    aria-label={t('team.remove', { hero })}
+                    onClick={() => {
+                      toggle(id);
+                    }}
+                  >
+                    ✕
+                  </button>
+                  {/* La place 1 est à droite : avancer pointe vers la droite, reculer vers la gauche. */}
+                  <button
+                    type="button"
+                    className="team__move team__move--back"
+                    aria-label={t('team.backward', { hero })}
+                    title={t('team.backward', { hero })}
+                    disabled={slot === size - 1}
+                    onClick={() => {
+                      move(slot, slot + 1);
+                    }}
+                  >
+                    ◀
+                  </button>
+                  <button
+                    type="button"
+                    className="team__move team__move--front"
+                    aria-label={t('team.forward', { hero })}
+                    title={t('team.forward', { hero })}
+                    disabled={slot === 0}
+                    onClick={() => {
+                      move(slot, slot - 1);
+                    }}
+                  >
+                    ▶
+                  </button>
                 </div>
               );
-            }
-            const def = content.heroById.get(id);
-            return (
-              <button
-                key={id}
-                type="button"
-                className={`team__slot element-${def?.element ?? 'fire'} rarity-${String(def?.tier ?? 1)}`}
-                aria-label={t('team.remove', { hero: names.hero(id) })}
-                onClick={() => {
-                  toggle(id);
-                }}
-              >
-                <PixelSprite name="pedestal" className="pedestal" />
-                <span className="team__sprite">
-                  <HeroSprite name={id} idle />
-                </span>
-                <span className="team__name">
-                  {names.hero(id)} <Rarity tier={def?.tier ?? 1} short />
-                </span>
-                <span className="team__meta">
-                  {t('hub.level', { level: profile.heroes[id]?.level ?? 1 })} ·{' '}
-                  {tk(`element.${def?.element ?? 'fire'}`)}
-                </span>
-                <span className="team__remove" aria-hidden="true">
-                  ✕
-                </span>
-              </button>
-            );
-          })}
+            })}
+          </div>
         </div>
         <Presets />
       </div>

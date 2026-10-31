@@ -189,6 +189,7 @@ describe('altérations', () => {
       spell: 'e_basic',
       slot: 'basic',
       targets: ['h'],
+      rule: 'first',
       stunned: false,
     });
     let result = cast(state, 'bash', 'e');

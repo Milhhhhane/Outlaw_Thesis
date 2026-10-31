@@ -32,6 +32,7 @@ export type Refusal =
   | 'max_upgrade'
   | 'bad_slot'
   | 'bad_team'
+  | 'bad_position'
   | 'unknown_dungeon'
   | 'no_energy'
   | 'test_only'
@@ -345,6 +346,37 @@ export function setTeam(content: Content, profile: Profile, team: readonly strin
     return refuse('bad_team');
   if (team.some((id) => !profile.unlocked.includes(id))) return refuse('locked_hero');
   return ok({ ...profile, team: [...team] });
+}
+
+/**
+ * Change la place d'un héros dans l'équipe (l'emplacement 0 est devant, face aux ennemis).
+ * `move` : le héros de `from` s'insère à `to`, les autres se décalent ; `swap` : il échange sa
+ * place avec celui de `to`. Vers un emplacement libre (`to` au-delà de l'équipe), le héros passe
+ * en dernier et les autres se décalent, quel que soit le mode. Le résultat repasse par les
+ * contrôles de `setTeam`.
+ */
+export function moveInTeam(
+  content: Content,
+  profile: Profile,
+  from: number,
+  to: number,
+  mode: 'move' | 'swap' = 'move',
+): Outcome {
+  const team = profile.team;
+  const size = content.balance.progression.teamSize;
+  const inRange = (n: number, max: number): boolean => Number.isInteger(n) && n >= 0 && n < max;
+  if (!inRange(from, team.length) || !inRange(to, size)) return refuse('bad_position');
+  const dest = Math.min(to, team.length - 1);
+  const hero = team.slice(from, from + 1);
+  const next = [...team];
+  if (mode === 'swap' && to < team.length) {
+    next.splice(from, 1, ...team.slice(dest, dest + 1));
+    next.splice(dest, 1, ...hero);
+  } else {
+    next.splice(from, 1);
+    next.splice(dest, 0, ...hero);
+  }
+  return setTeam(content, profile, next);
 }
 
 /** Énergie disponible à l'instant `now` (régénération jusqu'au plafond). */

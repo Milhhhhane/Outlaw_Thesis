@@ -1376,3 +1376,10 @@ combattu gagnent de l'XP, dans tous les modes ; le paramètre est retiré plutô
 Raison : un héros progresse en jouant ; un réglage figé à 0 laisserait croire qu'on peut le
 remonter. Effet : un héros invoqué arrive au niveau 1 et ne monte qu'en combattant ; bornes de
 simulation inchangées (le joueur modèle ne change pas d'équipe).
+
+**Ordre de l'équipe montré comme sur la scène** — Contexte : un testeur ne voyait pas qu'on peut
+choisir l'ordre des héros ni à quoi il sert. Choix : l'écran d'équipe affiche les places de
+droite à gauche (place 1 « Devant », face aux ennemis ; le dernier « Derrière »), flèches pour
+déplacer d'une place, glisser-déposer = échange de deux places, refus `bad_position` hors bornes ;
+l'intention ennemie annonce sa règle de cible. Raison : l'ordre compte (certains ennemis frappent
+le premier ou le dernier), il doit se lire là où on le règle et là où il agit.
