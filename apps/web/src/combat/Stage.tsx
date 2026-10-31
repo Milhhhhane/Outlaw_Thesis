@@ -171,7 +171,7 @@ function Actor(props: {
     unit.awakened === true ? `actor--awakened awakened--${unit.element}` : '',
   ].join(' ');
   return (
-    <div className={className} style={style} data-unit={unit.id}>
+    <div className={className} style={style} data-unit={unit.id} data-kind={unit.kind}>
       <span className="actor__shadow" style={{ top: info.bottom - 2 }} />
       <span className="actor__body">
         <span key={pulse?.key ?? 0} className={pulseClass}>

@@ -14,6 +14,15 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une
   bouton grisé. « Possible au niveau 20 » devient « 20 / 20, atteint ». Les règles de l'éveil ne
   changent pas.
 
+## [Non publié] — 2026-10-31 — ordre de l'équipe
+
+### Modifié
+
+- Écran d'équipe : les places s'affichent comme sur la scène (place 1 à droite, face aux
+  ennemis, étiquetée « Devant » ; le dernier héros « Derrière »). Flèches ◀ ▶ pour avancer ou
+  reculer un héros, glisser-déposer pour échanger deux places, bouton ✕ pour retirer.
+- Combat : l'intention ennemie dit qui elle vise (« vise le héros de devant / de derrière »).
+
 ## [Non publié] — 2026-10-29 — XP réservée à l'équipe
 
 ### Modifié

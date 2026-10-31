@@ -44,14 +44,14 @@ export default defineConfig({
     },
     {
       name: '1920x1080',
-      // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
+      // Quêtes, boss et ordre de l'équipe : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss|team-order)\.spec\.ts/,
       use: { viewport: { width: 1920, height: 1080 } },
     },
     {
       name: '1366x768',
-      // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
+      // Quêtes, boss et ordre de l'équipe : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss|team-order)\.spec\.ts/,
       use: { viewport: { width: 1366, height: 768 } },
     },
     {
@@ -70,8 +70,8 @@ export default defineConfig({
     },
     {
       name: '390x844',
-      // Quêtes et boss : un test court, à 1280 × 720 et 844 × 390 seulement.
-      testIgnore: /(accounts|admin|friends|pvp|quests|boss)\.spec\.ts/,
+      // Quêtes, boss et ordre de l'équipe : un test court, à 1280 × 720 et 844 × 390 seulement.
+      testIgnore: /(accounts|admin|friends|pvp|quests|boss|team-order)\.spec\.ts/,
       use: {
         ...devices['iPhone 13'],
         defaultBrowserType: 'chromium',

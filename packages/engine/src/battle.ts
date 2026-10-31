@@ -445,6 +445,7 @@ export function enemyIntent(state: BattleState, unitId: string): Intent | null {
     spell: spell.id,
     slot: spell.slot,
     targets: targets.map((t) => t.def.id),
+    rule,
     stunned: unit.statuses.some((status) => status.kind === 'stun'),
   };
 }

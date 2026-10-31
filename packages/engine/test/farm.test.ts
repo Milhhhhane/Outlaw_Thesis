@@ -16,6 +16,7 @@ import {
   heroTodo,
   levelUpCost,
   loadPreset,
+  moveInTeam,
   newProfile,
   presetMissing,
   presetSlots,
@@ -99,6 +100,17 @@ describe('équipes enregistrées', () => {
     const saved = value(savePreset(content, { ...base(), team: ['ronce', 'pyra'] }, 2, 'R'));
     const loaded = value(loadPreset(content, { ...saved, team: ['maree'] }, 2));
     expect(loaded.team).toEqual(['ronce', 'pyra']);
+  });
+
+  it('garde l’ordre de l’équipe (la place de chaque héros compte en combat)', () => {
+    const ordered = value(
+      moveInTeam(content, { ...base(), team: ['pyra', 'maree', 'ronce'] }, 2, 0),
+    );
+    expect(ordered.team).toEqual(['ronce', 'pyra', 'maree']);
+    const saved = value(savePreset(content, ordered, 0, 'Ronce devant'));
+    expect(saved.presets[0]?.team).toEqual(['ronce', 'pyra', 'maree']);
+    const loaded = value(loadPreset(content, { ...saved, team: ['maree', 'pyra', 'ronce'] }, 0));
+    expect(loaded.team).toEqual(['ronce', 'pyra', 'maree']);
   });
 
   it('refuse un emplacement vide ou inconnu', () => {

@@ -79,7 +79,7 @@ describe('rareté des héros', () => {
       name: t('team.remove', { hero: names.hero(legendary.id) }),
     });
     expect(
-      slots.some((b) => b.classList.contains('team__slot') && b.classList.contains('rarity-4')),
+      slots.some((b) => b.closest('.team__slot')?.classList.contains('rarity-4') === true),
     ).toBe(true);
     expect(document.querySelectorAll('.roster__card.rarity-4')).toHaveLength(1);
     team.unmount();
