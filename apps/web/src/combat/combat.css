@@ -1201,8 +1201,10 @@
 
 .hud__intent {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 0 4px;
   max-width: 100px;
   margin-bottom: 2px;
   padding: 1px 4px;
@@ -1215,6 +1217,13 @@
   line-height: 1.1;
   text-align: center;
   text-shadow: none;
+}
+
+/* Règle « devant / derrière » : un mot sous la cible, sur sa propre ligne. */
+.hud__rule {
+  flex-basis: 100%;
+  color: #ffe6a8;
+  font-size: 10px;
 }
 
 .hud--down {

@@ -315,6 +315,8 @@ export interface Intent {
   readonly spell: string;
   readonly slot: SpellSlot;
   readonly targets: readonly string[];
+  /** Règle de cible du script (`first` : l'unité de devant, `last` : celle de derrière…). */
+  readonly rule: EnemyTargetRule;
   /** L'unité est étourdie : cette action sera reportée. */
   readonly stunned: boolean;
 }

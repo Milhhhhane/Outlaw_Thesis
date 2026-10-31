@@ -74,13 +74,39 @@ function signed(n: number): string {
   return n > 0 ? `+${n}` : `−${Math.abs(n)}`;
 }
 
-function intentText(intent: Intent, unitId: string, nameOf: (id: string) => string): string {
+type SideOf = (id: string) => UnitDef['side'] | undefined;
+
+/**
+ * Règle de cible « devant / derrière » du script, dite en clair (héros adverse ou allié du lanceur) ;
+ * null pour les autres règles. `short` : un mot, pour la bulle au-dessus de l'ennemi.
+ */
+function ruleText(
+  intent: Intent,
+  side: UnitDef['side'],
+  sideOf: SideOf,
+  short = false,
+): string | null {
+  const { rule } = intent;
+  if (rule !== 'first' && rule !== 'last') return null;
+  if (short) return t(`combat.intent.short.${rule}`);
+  const ally = intent.targets.some((id) => sideOf(id) === side);
+  return t(ally ? `combat.intent.rule.${rule}.ally` : `combat.intent.rule.${rule}`);
+}
+
+function intentText(
+  intent: Intent,
+  unit: Pick<UnitView, 'id' | 'side'>,
+  nameOf: (id: string) => string,
+  sideOf: SideOf,
+): string {
   if (intent.stunned) return t('combat.intent.stunned', { spell: names.spell(intent.spell) });
-  if (intent.targets.length > 0 && intent.targets.every((id) => id !== unitId)) {
-    return t('combat.intent.targets', {
-      spell: names.spell(intent.spell),
-      targets: joinNames(intent.targets.map(nameOf)),
-    });
+  if (intent.targets.length > 0 && intent.targets.every((id) => id !== unit.id)) {
+    const spell = names.spell(intent.spell);
+    const targets = joinNames(intent.targets.map(nameOf));
+    const rule = ruleText(intent, unit.side, sideOf);
+    return rule === null
+      ? t('combat.intent.targets', { spell, targets })
+      : t('combat.intent.rule', { spell, targets, rule });
   }
   return t('combat.intent', { spell: names.spell(intent.spell) });
 }
@@ -91,11 +117,13 @@ function UnitHud({
   intent,
   active,
   nameOf,
+  sideOf,
 }: {
   readonly unit: UnitView;
   readonly intent: Intent | null;
   readonly active: boolean;
   readonly nameOf: (id: string) => string;
+  readonly sideOf: SideOf;
 }) {
   const { x, head } = anchorOf(unit);
   const hpPct = Math.max(0, Math.round((unit.hp / unit.maxHp) * 100));
@@ -112,13 +140,16 @@ function UnitHud({
       style={{ left: x, top: head - 4 }}
     >
       {intent !== null && unit.alive && (
-        <span className="hud__intent" title={intentText(intent, unit.id, nameOf)}>
+        <span className="hud__intent" title={intentText(intent, unit, nameOf, sideOf)}>
           <Icon name={intent.stunned ? 'stun' : 'damage'} />
           {intent.stunned
             ? names.spell(intent.spell)
             : intent.targets.length > 0 && intent.targets.every((id) => id !== unit.id)
               ? `→ ${joinNames(intent.targets.map(nameOf))}`
               : names.spell(intent.spell)}
+          {!intent.stunned && ruleText(intent, unit.side, sideOf, true) !== null && (
+            <span className="hud__rule">{ruleText(intent, unit.side, sideOf, true)}</span>
+          )}
         </span>
       )}
       <span className="hud__name">
@@ -168,6 +199,7 @@ function unitDetail(
   def: UnitDef | undefined,
   intent: Intent | null,
   nameOf: (id: string) => string,
+  sideOf: SideOf,
 ): string[] {
   const lines = [
     unit.alive ? t('combat.hp', { hp: unit.hp, max: unit.maxHp }) : t('combat.down'),
@@ -187,7 +219,7 @@ function unitDetail(
       `${t('combat.passive', { name: names.passive(passive.source) })} : ${describeTrigger(passive.trigger)}`,
     );
   }
-  if (intent !== null && unit.alive) lines.push(intentText(intent, unit.id, nameOf));
+  if (intent !== null && unit.alive) lines.push(intentText(intent, unit, nameOf, sideOf));
   return lines;
 }
 
@@ -252,6 +284,7 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
     const def = defOf(id);
     return def ? names.unit(def.kind) : id;
   };
+  const sideOf: SideOf = (id) => defOf(id)?.side;
   const intents = new Map(
     view.units
       .filter((u) => u.side === 'enemy' && pvp === undefined)
@@ -358,11 +391,15 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
       <>
         <p className="detail__name">{names.unit(hovered.kind)}</p>
         <ul>
-          {unitDetail(hovered, defOf(hovered.id), intents.get(hovered.id) ?? null, nameOf).map(
-            (line, i) => (
-              <li key={i}>{line}</li>
-            ),
-          )}
+          {unitDetail(
+            hovered,
+            defOf(hovered.id),
+            intents.get(hovered.id) ?? null,
+            nameOf,
+            sideOf,
+          ).map((line, i) => (
+            <li key={i}>{line}</li>
+          ))}
         </ul>
       </>
     );
@@ -452,7 +489,13 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
           const isFirst = unit.id === firstTargetId;
           return (
             <div key={unit.id}>
-              <UnitHud unit={unit} intent={intent} active={unit.id === active} nameOf={nameOf} />
+              <UnitHud
+                unit={unit}
+                intent={intent}
+                active={unit.id === active}
+                nameOf={nameOf}
+                sideOf={sideOf}
+              />
               <button
                 ref={isFirst ? firstTarget : undefined}
                 type="button"
@@ -461,7 +504,7 @@ export function CombatView({ onExit, title, pass, scene, finish, battle, pvp }: 
                 aria-label={
                   targetable
                     ? t('combat.target', { unit: names.unit(unit.kind) })
-                    : `${t('combat.details', { unit: names.unit(unit.kind) })}. ${unitDetail(unit, defOf(unit.id), intent, nameOf).join('. ')}`
+                    : `${t('combat.details', { unit: names.unit(unit.kind) })}. ${unitDetail(unit, defOf(unit.id), intent, nameOf, sideOf).join('. ')}`
                 }
                 aria-disabled={!targetable}
                 tabIndex={targetable ? 0 : -1}

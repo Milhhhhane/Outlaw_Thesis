@@ -13,7 +13,12 @@
 /* Les emplacements tiennent dans leurs 150 px : la barre de tri passe juste dessous et le vivier
    garde une rangée entière (le sprite déborde vers le haut, comme les armes). */
 .team__top .team__sprite {
-  height: 66px;
+  height: 52px;
+}
+
+/* Un peu plus petits qu'ailleurs : la ligne d'aide prend sa place sous les emplacements. */
+.team__top .team__sprite > .hero-sprite {
+  transform: scale(2);
 }
 
 .team__roster .gbtn--ghost {

@@ -22,6 +22,7 @@ import {
   SANDBOX_COPIES,
   sandboxProfile,
   setLevel,
+  moveInTeam,
   setTeam,
   setUpgrade,
   starterHeroes,
@@ -292,6 +293,51 @@ describe('équipe et énergie', () => {
     expect(setTeam(content, profile, [])).toEqual({ ok: false, reason: 'bad_team' });
     expect(setTeam(content, profile, ['pyra', 'pyra'])).toEqual({ ok: false, reason: 'bad_team' });
     expect(setTeam(content, profile, ['ghost'])).toEqual({ ok: false, reason: 'locked_hero' });
+  });
+
+  it('change la place d’un héros : déplacement, échange, bornes et refus', () => {
+    const profile = newProfile(content);
+    const [a, b, c, d] = profile.team;
+    expect(profile.team).toHaveLength(4);
+    // Déplacement : le héros s'insère, les autres se décalent ; vers l'avant comme vers l'arrière.
+    expect(value(moveInTeam(content, profile, 3, 0)).team).toEqual([d, a, b, c]);
+    expect(value(moveInTeam(content, profile, 0, 2)).team).toEqual([b, c, a, d]);
+    // Échange : seuls les deux héros changent de place.
+    expect(value(moveInTeam(content, profile, 3, 0, 'swap')).team).toEqual([d, b, c, a]);
+    expect(value(moveInTeam(content, profile, 1, 2, 'swap')).team).toEqual([a, c, b, d]);
+    // Un pas vers l'avant ou l'arrière : déplacer et échanger reviennent au même.
+    expect(value(moveInTeam(content, profile, 1, 0)).team).toEqual(
+      value(moveInTeam(content, profile, 1, 0, 'swap')).team,
+    );
+    // Sur place : rien ne change ; le profil reçu n'est jamais modifié.
+    expect(value(moveInTeam(content, profile, 2, 2)).team).toEqual([a, b, c, d]);
+    expect(profile.team).toEqual([a, b, c, d]);
+    // Emplacement libre : le héros passe en dernier.
+    const two = value(setTeam(content, profile, ['pyra', 'maree']));
+    expect(value(moveInTeam(content, two, 0, 3)).team).toEqual(['maree', 'pyra']);
+    expect(value(moveInTeam(content, two, 0, 3, 'swap')).team).toEqual(['maree', 'pyra']);
+    const three = value(setTeam(content, profile, ['pyra', 'maree', 'ronce']));
+    expect(value(moveInTeam(content, three, 0, 3, 'swap')).team).toEqual([
+      'maree',
+      'ronce',
+      'pyra',
+    ]);
+    // Bornes : `from` dans l'équipe, `to` dans les emplacements, entiers positifs.
+    for (const [from, to] of [
+      [-1, 0],
+      [2, 0],
+      [0, -1],
+      [0, 4],
+      [0.5, 1],
+      [0, 1.5],
+    ] as const) {
+      expect(moveInTeam(content, two, from, to)).toEqual({ ok: false, reason: 'bad_position' });
+    }
+    // Les contrôles de setTeam s'appliquent toujours.
+    expect(moveInTeam(content, { ...profile, unlocked: [a ?? ''] }, 0, 1)).toEqual({
+      ok: false,
+      reason: 'locked_hero',
+    });
   });
 
   it('l’énergie existe mais ne coûte rien dans le MVP', () => {
