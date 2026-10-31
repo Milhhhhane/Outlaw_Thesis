@@ -1,7 +1,7 @@
 import type { Hero, TalentNode } from '@outlaw/data';
 import {
   awaken,
-  awakenCost,
+  awakenStatus,
   setAwakened,
   atStarGate,
   canLevelUp,
@@ -23,12 +23,16 @@ import {
   starUp,
   takeTalent,
   talentPoints,
+  tierNumeral,
   unlockedPages,
   xpToNext,
+  type AwakenNeed,
+  type AwakenStatus,
+  type EssenceSource,
   type HeroBuild,
   type UnitDef,
 } from '@outlaw/engine';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { HeroSprite } from '../art/HeroSprite';
 import { PixelSprite } from '../art/Pixel';
 import { content } from '../combat/session';
@@ -36,7 +40,7 @@ import { Rarity } from '../game/Rarity';
 import { BOARD, treeLayout, type Point } from '../game/talentTree';
 import { Button, Icon, Panel, Screen, Stepper, Tabs, Window } from '../game/ui';
 import { describeItem, describeNode, describeSpell, describeTrigger } from '../i18n/describe';
-import { dustName, names, t, tk } from '../i18n';
+import { dustName, joinNames, names, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
 import { UpgradePips } from './Workshop';
 import { Glossed } from '../game/Glossed';
@@ -504,25 +508,27 @@ function ItemSlots({ heroId }: { readonly heroId: string }) {
 }
 
 /**
- * Fiche d'un héros en un écran : portrait à gauche, onglets à droite. Tout ce qui est affiché
- * vient de l'unité compilée par le moteur (talents et objets compris).
- */
-/**
- * Éveil d'un héros : effets (formule commune de `balance.awakening`), coût en essences de son
- * élément et en or, condition de niveau ; en mode test, une case l'active sans rien payer.
+ * Éveil d'un héros : effets (formule commune de `balance.awakening`), puis chaque condition
+ * (niveau, essences de son élément par qualité, or) avec ce que le joueur a, ce qui manque et, pour
+ * les essences, le palier du sanctuaire qui les donne ; tout vient de `awakenStatus`. Bouton grisé :
+ * une phrase dit ce qui manque et le décrit. En mode test, une case l'active sans rien payer.
  */
 function AwakeningPanel({ heroId }: { readonly heroId: string }) {
   const { profile, apply } = useProfile();
+  const reasonId = useId();
   const hero = profile.heroes[heroId];
-  const cost = awakenCost(content, heroId);
-  if (hero === undefined || cost === null) return null;
+  const status = awakenStatus(content, profile, heroId);
+  if (hero === undefined || status === null) return null;
   const { awakening } = content.balance;
   const effects = [
     t('awakening.stats', { pct: awakening.statPct }),
     ...describeItem({ id: 'awakening', rarity: 'common', mods: awakening.mods }),
   ];
-  const [low, mid, high] = profile.essences[cost.element];
-  const element = tk(`essence.of.${cost.element}`);
+  const element = tk(`essence.of.${status.element}`);
+  const reason = awakenMissingText(status);
+  const blocked = reason !== '';
+  // Sanctuaires fermés : la même raison pour les trois paliers, dite une fois sous le tableau.
+  const closed = status.essences.map((e) => e.source?.lock).find((l) => l?.kind === 'dungeon');
   return (
     <div className="sheet__awakening">
       <p>
@@ -535,27 +541,50 @@ function AwakeningPanel({ heroId }: { readonly heroId: string }) {
       {hero.awakened && <p className="hint">{t('awakening.done')}</p>}
       {!hero.awakened && !profile.testMode && (
         <>
-          <p>
-            {t('awakening.cost', {
-              essences: t('awakening.cost.essences', {
-                low: cost.essences[0],
-                mid: cost.essences[1],
-                high: cost.essences[2],
-                element,
-              }),
-              gold: cost.gold,
-            })}
-          </p>
+          <table className="awakening__needs">
+            <caption>{t('awakening.needs', { element })}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{t('awakening.col.what')}</th>
+                <th scope="col">{t('awakening.col.have')}</th>
+                <th scope="col">{t('awakening.col.state')}</th>
+                <th scope="col">{t('awakening.col.where')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <NeedRow label={t('awakening.row.level')} need={status.level} met="reached" />
+              {status.essences.map((e) => (
+                <NeedRow
+                  key={e.quality}
+                  label={t('awakening.row.essence', {
+                    quality: tk(`awakening.quality.${String(e.quality)}`),
+                  })}
+                  need={e}
+                  met="enough"
+                  where={essenceWhere(e.source)}
+                />
+              ))}
+              <NeedRow label={t('awakening.row.gold')} need={status.gold} met="enough" />
+            </tbody>
+          </table>
           <p className="hint">
-            {t('awakening.have', { low, mid, high, element, gold: profile.gold })}
+            {t('awakening.where', {
+              element,
+              sanctuary: tk(`essence.name.${status.element}`),
+            })}
+            {closed?.kind === 'dungeon' &&
+              ` ${t('awakening.where.locked', { dungeon: names.dungeon(closed.dungeon) })}`}
           </p>
-          <p className={hero.level >= cost.minLevel ? 'hint' : 'warn'}>
-            {t('awakening.level', { level: cost.minLevel })}
-          </p>
-          <p className="hint">{t('awakening.where')}</p>
+          {blocked && (
+            <p id={reasonId} className="awakening__reason">
+              <Icon name="lock" /> {reason}
+            </p>
+          )}
           <Button
             size="small"
             disabled={!awaken(content, profile, heroId).ok}
+            aria-describedby={blocked ? reasonId : undefined}
+            title={blocked ? reason : undefined}
             onClick={() => {
               apply(awaken(content, profile, heroId));
             }}
@@ -580,6 +609,83 @@ function AwakeningPanel({ heroId }: { readonly heroId: string }) {
   );
 }
 
+/** Une condition de l'éveil : « 6 / 15 », remplie (coche) ou « manque 9 » (croix), où l'obtenir. */
+function NeedRow({
+  label,
+  need,
+  met,
+  where,
+}: {
+  readonly label: string;
+  readonly need: AwakenNeed;
+  readonly met: 'reached' | 'enough';
+  readonly where?: string;
+}) {
+  const missing = need.missing > 0;
+  return (
+    <tr className={missing ? 'awakening__row--missing' : 'awakening__row--met'}>
+      <th scope="row">{label}</th>
+      <td>{t('awakening.count', { have: need.have, need: need.need })}</td>
+      <td>
+        <Icon name={missing ? 'close' : 'check'} />{' '}
+        {missing ? t('awakening.state.missing', { n: need.missing }) : tk(`awakening.state.${met}`)}
+      </td>
+      <td>{where}</td>
+    </tr>
+  );
+}
+
+/** Palier du sanctuaire qui donne une qualité d'essence, victoires à faire et ce qui l'ouvre. */
+function essenceWhere(source: EssenceSource | null): string {
+  if (source === null) return t('awakening.source.none');
+  const parts = [t('awakening.source', { tier: tierNumeral(source.tier), amount: source.amount })];
+  if (source.runs > 0)
+    parts.push(tk(`awakening.source.runs${source.runs > 1 ? '' : '.one'}`, { runs: source.runs }));
+  if (source.lock?.kind === 'tier')
+    parts.push(t('awakening.lock.tier', { tier: tierNumeral(source.lock.tier) }));
+  if (source.lock?.kind === 'dungeon') parts.push(t('awakening.lock.dungeon'));
+  return parts.join(' · ');
+}
+
+/**
+ * Ce qui bloque l'éveil, en phrases (vide : rien) : « Il vous manque 9 essences faibles, 10 moyennes
+ * et 6 supérieures de nature. », le niveau requis, l'or manquant. Lu dans `status.missing`.
+ */
+export function awakenMissingText(status: AwakenStatus): string {
+  const essences = status.missing.flatMap((m) => {
+    if (m.kind !== 'essence') return [];
+    const one = m.amount > 1 ? '' : '.one';
+    const quality = tk(`awakening.quality.${String(m.quality)}${one}`);
+    return [{ n: m.amount, quality, one }];
+  });
+  const sentences = status.missing.flatMap((m, i) => {
+    switch (m.kind) {
+      case 'level':
+        return [t('awakening.missing.level', { need: status.level.need, have: status.level.have })];
+      case 'gold':
+        return [t('awakening.missing.gold', { n: m.amount })];
+      case 'essence':
+        // Une seule phrase pour les trois qualités, à la place de la première.
+        if (status.missing.findIndex((x) => x.kind === 'essence') !== i) return [];
+        return [
+          t('awakening.missing.essences', {
+            list: joinNames(
+              essences.map((e, j) =>
+                j === 0 ? tk(`awakening.missing.first${e.one}`, e) : t('awakening.missing.next', e),
+              ),
+            ),
+            element: tk(`essence.of.${status.element}`),
+          }),
+        ];
+    }
+  });
+  return sentences.join(' ');
+}
+
+/**
+ * Fiche d'un héros en un écran : portrait à gauche, onglets à droite. Tout ce qui est affiché
+ * vient de l'unité compilée par le moteur (talents et objets compris).
+ */
 export function HeroSheet({
   heroId,
   onBack,

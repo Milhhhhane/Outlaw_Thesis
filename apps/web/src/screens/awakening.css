@@ -132,3 +132,60 @@
   filter: drop-shadow(1px 0 0 var(--element)) drop-shadow(-1px 0 0 var(--element))
     drop-shadow(0 -1px 0 var(--element)) drop-shadow(0 0 3px var(--element));
 }
+
+/* Conditions de l'éveil : une ligne par condition, coche ou croix et texte (pas la couleur seule). */
+.awakening__needs {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.awakening__needs caption {
+  padding-bottom: 2px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.awakening__needs th,
+.awakening__needs td {
+  padding: 2px 6px 2px 0;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.awakening__needs thead th {
+  color: var(--bone-muted);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 400;
+  border-bottom: 1px solid var(--line);
+}
+
+.awakening__needs tbody th {
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.awakening__needs td:nth-child(2),
+.awakening__needs td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.awakening__needs td:last-child {
+  color: var(--bone-muted);
+  font-size: 12px;
+}
+
+.awakening__row--met td:nth-child(3) {
+  color: var(--heal);
+}
+
+.awakening__row--missing td:nth-child(3) {
+  color: #ffb4a8;
+  font-weight: 700;
+}
+
+.awakening__reason {
+  color: #ffb4a8;
+  font-size: 14px;
+}

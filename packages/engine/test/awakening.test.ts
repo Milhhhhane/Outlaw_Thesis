@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   awaken,
   awakenCost,
+  awakenStatus,
   completeEssence,
   enterEssence,
   essenceDrop,
@@ -162,5 +163,100 @@ describe('éveil : coût et conditions', () => {
     expect(parsed.essences.water).toEqual([0, 0, 0]);
     expect(parsed.essenceDungeons).toEqual({});
     expect(parsed.heroes.pyra?.awakened).toBe(false);
+  });
+});
+
+describe('éveil : ce qui manque et où l’obtenir', () => {
+  /** Cas signalé par un joueur : héros de nature niveau 20, essences 6 / 0 / 0, 31 185 or, palier II ouvert. */
+  const player = (): Profile => {
+    const base = opened();
+    return {
+      ...base,
+      gold: 31185,
+      essences: { ...base.essences, nature: [6, 0, 0] },
+      essenceDungeons: { essence_nature: { clears: 2, tier: 2 } },
+      heroes: { ...base.heroes, ronce: { ...base.heroes.ronce!, level: rules.minLevel } },
+    };
+  };
+
+  it('cas du joueur : niveau atteint, or suffisant, refus pour les seules essences manquantes', () => {
+    const p = player();
+    expect(content.heroById.get('ronce')?.element).toBe('nature');
+    expect(reason(awaken(content, p, 'ronce'))).toBe('not_enough_essences');
+    const status = awakenStatus(content, p, 'ronce')!;
+    expect(status.element).toBe('nature');
+    expect(status.level).toEqual({ need: rules.minLevel, have: rules.minLevel, missing: 0 });
+    expect(status.gold).toEqual({ need: rules.cost.gold, have: 31185, missing: 0 });
+    const [low, mid, high] = rules.cost.essences;
+    expect(status.essences.map((e) => [e.quality, e.need, e.have, e.missing])).toEqual([
+      [1, low, 6, low - 6],
+      [2, mid, 0, mid],
+      [3, high, 0, high],
+    ]);
+    expect(status.missing).toEqual([
+      { kind: 'essence', quality: 1, amount: low - 6 },
+      { kind: 'essence', quality: 2, amount: mid },
+      { kind: 'essence', quality: 3, amount: high },
+    ]);
+    // Où : le sanctuaire de nature, palier k pour la qualité k ; le III s'ouvre en gagnant le II.
+    const [d1, d2, d3] = rules.drops;
+    expect(status.essences.map((e) => e.source)).toEqual([
+      {
+        dungeon: 'essence_nature',
+        tier: 1,
+        amount: d1,
+        runs: Math.ceil((low - 6) / d1),
+        lock: null,
+      },
+      { dungeon: 'essence_nature', tier: 2, amount: d2, runs: Math.ceil(mid / d2), lock: null },
+      {
+        dungeon: 'essence_nature',
+        tier: 3,
+        amount: d3,
+        runs: Math.ceil(high / d3),
+        lock: { kind: 'tier', tier: 2 },
+      },
+    ]);
+  });
+
+  it('niveau et or manquants listés dans l’ordre ; plus rien ne manque : éveil possible', () => {
+    const p = player();
+    const short: Profile = {
+      ...p,
+      gold: 10,
+      heroes: { ...p.heroes, ronce: { ...p.heroes.ronce!, level: rules.minLevel - 3 } },
+    };
+    const status = awakenStatus(content, short, 'ronce')!;
+    expect(status.missing[0]).toEqual({ kind: 'level', amount: 3 });
+    expect(status.missing.at(-1)).toEqual({ kind: 'gold', amount: rules.cost.gold - 10 });
+    expect(reason(awaken(content, short, 'ronce'))).toBe('level_too_low');
+    const full: Profile = {
+      ...p,
+      essences: { ...p.essences, nature: [...rules.cost.essences] },
+    };
+    const ready = awakenStatus(content, full, 'ronce')!;
+    expect(ready.missing).toEqual([]);
+    expect(ready.essences.every((e) => e.source?.runs === 0)).toBe(true);
+    expect(awaken(content, full, 'ronce').ok).toBe(true);
+  });
+
+  it('sanctuaires fermés : chaque palier attend le donjon `openAfter`', () => {
+    const fresh = newProfile(content, 3);
+    const status = awakenStatus(content, fresh, 'pyra')!;
+    for (const e of status.essences)
+      expect(e.source?.lock).toEqual({ kind: 'dungeon', dungeon: rules.openAfter });
+    expect(status.missing[0]).toEqual({ kind: 'level', amount: rules.minLevel - 1 });
+  });
+
+  it('héros inconnu : rien ; sans sanctuaire ni palier pour une qualité : pas de source', () => {
+    expect(awakenStatus(content, player(), 'nope')).toBeNull();
+    const none = awakenStatus({ ...content, essenceDungeons: [] }, player(), 'ronce')!;
+    expect(none.essences.map((e) => e.source)).toEqual([null, null, null]);
+    const twoTiers = {
+      ...content,
+      balance: { ...content.balance, tiers: { ...content.balance.tiers, count: 2 } },
+    };
+    const short = awakenStatus(twoTiers, player(), 'ronce')!;
+    expect(short.essences.map((e) => e.source?.tier ?? null)).toEqual([1, 2, null]);
   });
 });

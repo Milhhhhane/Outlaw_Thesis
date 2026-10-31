@@ -196,7 +196,11 @@ options de l'appareil (`heroView`).
 
 L'éveil et les donjons d'essence sont dans `packages/engine/src/awakening.ts` (`essencesOpen`,
 `essenceTierOpen`, `essenceEncounter`, `essenceDrop`, `enterEssence`, `completeEssence`,
-`awakenCost`, `awaken`, `setAwakened`) ; l'effet est appliqué par `compileHero` quand le build porte
+`awakenCost`, `awakenStatus`, `awaken`, `setAwakened`) ; `awakenStatus` chiffre chaque condition
+(niveau, essences par qualité, or : requis, possédé, manque), la liste de ce qui manque et, par
+qualité, le palier du sanctuaire qui la donne et ce qui l'ouvre : `awaken` en tire ses refus et
+l'onglet « Éveil » l'affiche tel quel (tableau des conditions, phrase du blocage reliée au bouton
+par `aria-describedby`). L'effet est appliqué par `compileHero` quand le build porte
 `awakened` (`heroBuild` le recopie du profil), par la même fonction que les objets pour le passif.
 `UnitDef.awakened` ne sert qu'à l'affichage (liseré, classe `actor--awakened`). Contenu :
 `content/essences.json` (schéma `schemas/essences.ts`, `content.essenceDungeons`), chiffres dans
