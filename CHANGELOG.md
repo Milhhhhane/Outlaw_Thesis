@@ -2,6 +2,17 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-10-31 — statistiques de fin de donjon
+
+### Ajouté
+
+- Écran de récompenses d'un donjon : bouton « Statistiques ». Pour chaque héros de l'équipe :
+  dégâts infligés (barre, valeur et part en %, dont brûlure), soins, boucliers donnés, dégâts
+  subis, dégâts bloqués par un bouclier et ennemis achevés, triés par dégâts ; un héros inactif
+  reste affiché à 0. Donjon entier ou salle par salle. Calcul par le moteur (`battleStats`), à
+  partir du journal des salles gagnées. Pas encore sur la tour, le boss de la semaine ni les
+  sanctuaires.
+
 ## [Non publié] — 2026-10-31 — éveil lisible
 
 ### Modifié

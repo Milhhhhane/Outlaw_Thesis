@@ -15,5 +15,5 @@
   "stats.col.kills": "Achevés",
   "stats.burn": "dont {n} de brûlure",
   "stats.none": "aucun dégât",
-  "stats.note": "Brûlure comptée à qui l'a posée. Bloqués : dégâts subis absorbés par un bouclier."
+  "stats.note": "Brûlure comptée au dernier héros qui l'a posée. Bloqués : coups absorbés par un bouclier, hors dégâts subis."
 }
