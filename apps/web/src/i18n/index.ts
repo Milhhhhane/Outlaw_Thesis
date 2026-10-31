@@ -13,6 +13,7 @@ import loot from './loot.fr.json';
 import pvp from './pvp.fr.json';
 import spellLevels from './spells.fr.json';
 import quests from './quests.fr.json';
+import stats from './stats.fr.json';
 import tiers from './tiers.fr.json';
 import tower from './tower.fr.json';
 import names from './content.fr.json';
@@ -33,10 +34,11 @@ export type TextKey =
   | keyof typeof pvp
   | keyof typeof quests
   | keyof typeof spellLevels
+  | keyof typeof stats
   | keyof typeof tiers
   | keyof typeof tower;
 
-/** Comptes (account.fr.json), administration (admin.fr.json), combat auto (auto.fr.json), éveil et sanctuaires (awakening.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), amis (friends.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), montée des sorts (spells.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
+/** Comptes (account.fr.json), administration (admin.fr.json), combat auto (auto.fr.json), éveil et sanctuaires (awakening.fr.json), boss de la semaine (boss.fr.json), coffres (chests.fr.json), confort de farm (farm.fr.json), amis (friends.fr.json), héros (heroes.fr.json), butin (loot.fr.json), PvP (pvp.fr.json), quêtes (quests.fr.json), montée des sorts (spells.fr.json), statistiques de combat (stats.fr.json), paliers (tiers.fr.json) et tour (tower.fr.json) vivent à part pour limiter les conflits d'édition. */
 const dictionary: Readonly<Record<TextKey, string>> = {
   ...fr,
   ...account,
@@ -52,6 +54,7 @@ const dictionary: Readonly<Record<TextKey, string>> = {
   ...pvp,
   ...spellLevels,
   ...quests,
+  ...stats,
   ...tiers,
   ...tower,
 };

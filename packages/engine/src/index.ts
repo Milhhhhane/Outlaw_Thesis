@@ -30,3 +30,4 @@ export * from './quests';
 export * from './tower';
 export * from './awakening';
 export * from './boss';
+export * from './battleStats';
