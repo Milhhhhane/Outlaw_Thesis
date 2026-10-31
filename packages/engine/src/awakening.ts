@@ -139,27 +139,134 @@ export function awakenCost(content: Content, heroId: string): AwakenCost | null 
   return { element: hero.element, essences: cost.essences, gold: cost.gold, minLevel };
 }
 
+/** Une condition chiffrée de l'éveil : ce qu'il faut, ce que le joueur a, ce qui manque (0 : remplie). */
+export interface AwakenNeed {
+  readonly need: number;
+  readonly have: number;
+  readonly missing: number;
+}
+
+/**
+ * Où gagner une qualité d'essence : le sanctuaire de l'élément, le premier palier qui la donne,
+ * les essences par victoire et les victoires qu'il faut pour combler le manque. `lock` dit ce qui
+ * ouvre ce palier s'il est fermé : terminer le donjon `openAfter` (sanctuaires fermés) ou gagner
+ * le palier précédent du sanctuaire ; null : le palier est ouvert.
+ */
+export interface EssenceSource {
+  readonly dungeon: string;
+  readonly tier: number;
+  readonly amount: number;
+  readonly runs: number;
+  readonly lock:
+    | { readonly kind: 'dungeon'; readonly dungeon: string }
+    | { readonly kind: 'tier'; readonly tier: number }
+    | null;
+}
+
+/** Essence d'une qualité (1 à 3) : besoin, stock, manque et où l'obtenir (null : nulle part). */
+export interface AwakenEssence extends AwakenNeed {
+  readonly quality: number;
+  readonly source: EssenceSource | null;
+}
+
+/** Un manque qui bloque l'éveil, dans l'ordre où l'écran les énumère. */
+export type AwakenMissing =
+  | { readonly kind: 'level'; readonly amount: number }
+  | { readonly kind: 'essence'; readonly quality: number; readonly amount: number }
+  | { readonly kind: 'gold'; readonly amount: number };
+
+/** Où en est un héros face à l'éveil : chaque condition et la liste de ce qui manque (vide : rien). */
+export interface AwakenStatus {
+  readonly element: Element;
+  readonly level: AwakenNeed;
+  readonly essences: readonly [AwakenEssence, AwakenEssence, AwakenEssence];
+  readonly gold: AwakenNeed;
+  readonly missing: readonly AwakenMissing[];
+}
+
+const need = (required: number, have: number): AwakenNeed => ({
+  need: required,
+  have,
+  missing: Math.max(0, required - have),
+});
+
+/** Premier palier d'un sanctuaire qui donne la qualité voulue, et ce qui l'ouvre. */
+function essenceSource(
+  content: Content,
+  profile: Profile,
+  element: Element,
+  quality: number,
+  missing: number,
+): EssenceSource | null {
+  const dungeon = content.essenceDungeons.find((d) => d.element === element);
+  const tier = Array.from({ length: tierCount(content) }, (_, i) => i + 1).find(
+    (k) => essenceDrop(content, k).quality === quality,
+  );
+  if (dungeon === undefined || tier === undefined) return null;
+  const { amount } = essenceDrop(content, tier);
+  const lock: EssenceSource['lock'] = !essencesOpen(content, profile)
+    ? { kind: 'dungeon', dungeon: content.balance.awakening.openAfter }
+    : essenceTierOpen(content, profile, dungeon.id, tier)
+      ? null
+      : { kind: 'tier', tier: tier - 1 };
+  return { dungeon: dungeon.id, tier, amount, runs: Math.ceil(missing / amount), lock };
+}
+
+/**
+ * Conditions de l'éveil d'un héros du profil, chiffrées (null : héros inconnu). C'est d'elles que
+ * `awaken` tire ses refus de niveau, d'essences et d'or ; l'écran les affiche telles quelles.
+ */
+export function awakenStatus(
+  content: Content,
+  profile: Profile,
+  heroId: string,
+): AwakenStatus | null {
+  const hero = profile.heroes[heroId];
+  const cost = awakenCost(content, heroId);
+  if (cost === null || hero === undefined) return null;
+  const stock = profile.essences[cost.element];
+  const essence = (q: 0 | 1 | 2): AwakenEssence => {
+    const n = need(cost.essences[q], stock[q]);
+    return {
+      ...n,
+      quality: q + 1,
+      source: essenceSource(content, profile, cost.element, q + 1, n.missing),
+    };
+  };
+  const level = need(cost.minLevel, hero.level);
+  const essences = [essence(0), essence(1), essence(2)] as const;
+  const gold = need(cost.gold, profile.gold);
+  const missing: AwakenMissing[] = [
+    ...(level.missing > 0 ? [{ kind: 'level', amount: level.missing } as const] : []),
+    ...essences
+      .filter((e) => e.missing > 0)
+      .map((e) => ({ kind: 'essence', quality: e.quality, amount: e.missing }) as const),
+    ...(gold.missing > 0 ? [{ kind: 'gold', amount: gold.missing } as const] : []),
+  ];
+  return { element: cost.element, level, essences, gold, missing };
+}
+
 /** Éveille un héros débloqué, au niveau requis, contre des essences de son élément et de l'or. */
 export function awaken(content: Content, profile: Profile, heroId: string): Outcome {
   const hero = profile.heroes[heroId];
-  const cost = awakenCost(content, heroId);
-  if (cost === null || hero === undefined || !profile.unlocked.includes(heroId))
+  const status = awakenStatus(content, profile, heroId);
+  if (status === null || hero === undefined || !profile.unlocked.includes(heroId))
     return refuse('locked_hero');
   if (profile.testMode) return refuse('test_mode');
   if (hero.awakened) return refuse('already_awakened');
-  if (hero.level < cost.minLevel) return refuse('level_too_low');
-  const stock = profile.essences[cost.element];
-  if (cost.essences.some((n, q) => (stock[q] ?? 0) < n)) return refuse('not_enough_essences');
-  if (profile.gold < cost.gold) return refuse('not_enough_gold');
+  if (status.level.missing > 0) return refuse('level_too_low');
+  if (status.essences.some((e) => e.missing > 0)) return refuse('not_enough_essences');
+  if (status.gold.missing > 0) return refuse('not_enough_gold');
+  const [low, mid, high] = status.essences;
   const left: Profile['essences']['fire'] = [
-    stock[0] - cost.essences[0],
-    stock[1] - cost.essences[1],
-    stock[2] - cost.essences[2],
+    low.have - low.need,
+    mid.have - mid.need,
+    high.have - high.need,
   ];
   return ok({
     ...profile,
-    gold: profile.gold - cost.gold,
-    essences: { ...profile.essences, [cost.element]: left },
+    gold: profile.gold - status.gold.need,
+    essences: { ...profile.essences, [status.element]: left },
     heroes: { ...profile.heroes, [heroId]: { ...hero, awakened: true } },
   });
 }
