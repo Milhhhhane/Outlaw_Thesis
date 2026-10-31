@@ -244,7 +244,7 @@ test('coffres : invocation, ouverture, tout tient dans la fenêtre', async ({ pa
   await noScroll(page);
 });
 
-test('récompenses : le bouton de sortie et toutes les cartes restent à l’écran', async ({
+test('récompenses : le bouton de sortie, toutes les cartes et les statistiques restent à l’écran', async ({
   page,
 }) => {
   test.skip(portrait(page), 'portrait');
@@ -301,6 +301,30 @@ test('récompenses : le bouton de sortie et toutes les cartes restent à l’éc
     return el === null ? 0 : el.scrollHeight - el.clientHeight;
   });
   expect(list).toBeLessThanOrEqual(1);
+  // Statistiques : une ligne par héros de l'équipe à la place des cartes, rien de coupé.
+  await page.getByRole('button', { name: 'Statistiques', exact: true }).click();
+  await expect(page.locator('.reward-cards')).toHaveCount(0);
+  await expect(page.locator('.battle-stats tbody tr')).toHaveCount(4);
+  for (const scope of ['Donjon entier', 'Salle 3']) {
+    await page.getByRole('button', { name: scope, exact: true }).click();
+    await expect(page.getByRole('button', { name: scope, exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await inView(page, '.battle-stats');
+    await inView(page, '.end__go');
+    await noScroll(page);
+    const cut = await page.evaluate(
+      () =>
+        Array.from(document.querySelectorAll('.battle-stats th, .battle-stats td')).filter(
+          (cell) =>
+            cell.scrollHeight > cell.clientHeight + 1 || cell.scrollWidth > cell.clientWidth + 1,
+        ).length,
+    );
+    expect(cut).toBe(0);
+  }
+  await page.getByRole('button', { name: 'Récompenses', exact: true }).click();
+  await expect(page.locator('.reward-card')).toHaveCount(8);
   await page.getByRole('button', { name: 'Retour au camp' }).click();
   await expect(page.getByRole('button', { name: /^Coffres/ })).toBeVisible();
 });
@@ -356,6 +380,8 @@ test('mode Auto : les salles s’enchaînent seules, puis le passage suivant de 
   }
   await expect(page.locator('.end--rewards')).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('.countdown')).toContainText(/Passage 2 dans [1-5] s/);
+  // Le bouton des statistiques est là, mais n'arrête rien tant qu'on n'y touche pas.
+  await expect(page.getByRole('button', { name: 'Statistiques', exact: true })).toBeVisible();
   await inView(page, '.countdown');
   await inView(page, '.end__go');
   await noScroll(page);

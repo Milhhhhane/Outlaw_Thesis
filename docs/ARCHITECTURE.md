@@ -19,17 +19,18 @@ packages/data ──(contenu validé)──▶ packages/engine ──(état + jo
 
 ## Moteur de combat (`packages/engine`)
 
-| Fichier       | Rôle                                                                         |
-| ------------- | ---------------------------------------------------------------------------- |
-| `types.ts`    | `UnitDef` (unité compilée, immuable), `BattleState`, `Action`, `BattleEvent` |
-| `battle.ts`   | `createBattle`, `step`, `legalActions`, `replay`, validation de la config    |
-| `effects.ts`  | les 8 briques d'effet, bouclier et altérations                               |
-| `triggers.ts` | déclencheurs : signaux de l'action, filtres, limites, pas de chaîne          |
-| `compile.ts`  | héros + niveau + talents + objets → unité ; ennemis ; modificateurs          |
-| `targets.ts`  | résolution des cibles des briques et des règles de cible des scripts         |
-| `queue.ts`    | ordre des tours et file d'initiative projetée                                |
-| `stats.ts`    | stats par niveau, délais, triangle des éléments, VIT plafonnée               |
-| `draft.ts`    | copie de travail d'un pas, réserve de points, fin de combat                  |
+| Fichier          | Rôle                                                                         |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `types.ts`       | `UnitDef` (unité compilée, immuable), `BattleState`, `Action`, `BattleEvent` |
+| `battle.ts`      | `createBattle`, `step`, `legalActions`, `replay`, validation de la config    |
+| `effects.ts`     | les 8 briques d'effet, bouclier et altérations                               |
+| `triggers.ts`    | déclencheurs : signaux de l'action, filtres, limites, pas de chaîne          |
+| `compile.ts`     | héros + niveau + talents + objets → unité ; ennemis ; modificateurs          |
+| `targets.ts`     | résolution des cibles des briques et des règles de cible des scripts         |
+| `queue.ts`       | ordre des tours et file d'initiative projetée                                |
+| `stats.ts`       | stats par niveau, délais, triangle des éléments, VIT plafonnée               |
+| `draft.ts`       | copie de travail d'un pas, réserve de points, fin de combat                  |
+| `battleStats.ts` | statistiques par unité tirées des journaux (`battleStats`), fin de donjon    |
 
 ### Déroulement
 
@@ -59,6 +60,14 @@ de la simulation (règle R1).
 `shield`, `tempo`, `stat_mod`, `status`, `trigger_added`, `points`, `expired`, `unit_down`,
 `turn_end`, `battle_end`. Un événement `points` n'est émis que si la réserve change réellement ;
 un soin nul n'est pas émis. `enemyIntent(state, id)` donne l'action annoncée d'un ennemi.
+
+`battleStats(journaux, camp)` (`battleStats.ts`) additionne un ou plusieurs journaux (les salles
+d'un donjon) en une ligne par unité du camp, triée par dégâts infligés : dégâts infligés (bouclier
+entamé et PV, sans le surplus au-delà de 0 PV ; directs et brûlure séparés, la brûlure comptée à
+l'unité qui l'a posée en dernier, `source` de l'événement), part du camp, soins, boucliers donnés,
+PV perdus, dégâts bloqués par bouclier et adversaires achevés. Toute unité du `battle_start`
+figure, même à 0. `DungeonRun` garde le journal de chaque salle gagnée et `Rewards` l'affiche
+(bouton « Statistiques », `screens/BattleStats.tsx`), donjon entier ou salle par salle.
 
 ### Tour d'une unité
 

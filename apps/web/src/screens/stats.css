@@ -1,0 +1,144 @@
+/* ===== Statistiques de fin de donjon : prend la place des cartes de récompenses ===== */
+.battle-stats {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  align-self: start;
+  width: 900px;
+  max-width: 100%;
+  min-height: 0;
+  padding: 4px 10px;
+  border: 8px solid transparent;
+  border-image: var(--frame) 4 fill / 8px / 0 stretch;
+  image-rendering: pixelated;
+  animation: fade-in 200ms ease-out;
+}
+
+.battle-stats__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.battle-stats__title {
+  margin: 0;
+  color: var(--bone-muted);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.battle-stats__scope .gbtn {
+  min-width: 0;
+}
+
+.battle-stats__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: var(--bone);
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Héros, dégâts infligés (le plus large), puis cinq colonnes de chiffres. */
+.battle-stats__table th:nth-child(1) {
+  width: 150px;
+}
+
+.battle-stats__table th:nth-child(n + 3) {
+  width: 92px;
+}
+
+.battle-stats__table thead th {
+  padding: 0 4px 4px;
+  color: var(--bone-muted);
+  font-size: 13px;
+  font-weight: 400;
+  vertical-align: bottom;
+}
+
+.battle-stats__table td,
+.battle-stats__table tbody th {
+  padding: 4px;
+  border-top: 2px solid var(--line);
+  font-family: var(--pixel);
+  font-size: 16px;
+}
+
+.battle-stats__hero {
+  font-weight: 400;
+  text-align: left;
+}
+
+.battle-stats__hero > span:last-child {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.battle-stats__hero .portrait {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.battle-stats__dealt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 44px;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Barre : la part du moteur, de 0 à 1. Fond visible même vide (héros à 0). */
+.battle-stats__bar {
+  position: relative;
+  height: 12px;
+  border: 2px solid var(--line);
+  background: #120e17;
+}
+
+.battle-stats__bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--share) * 100%);
+  background: var(--gold);
+}
+
+.battle-stats__value {
+  min-width: 48px;
+  text-align: right;
+}
+
+.battle-stats__share {
+  color: var(--bone-muted);
+  font-size: 14px;
+  text-align: right;
+}
+
+.battle-stats__sub {
+  display: block;
+  color: var(--bone-muted);
+  font-family: var(--text);
+  font-size: 12px;
+  text-align: left;
+}
+
+.battle-stats__row--idle .battle-stats__sub {
+  font-style: italic;
+}
+
+.battle-stats__note {
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Bouton « Statistiques » : en haut à gauche, hors du flux. Dans la rangée des boutons de fin, il
+   la ferait passer sur deux lignes en série et glisserait quand le décompte d'Auto disparaît au
+   premier appui (le clic tomberait alors à côté). */
+.end__stats {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+}

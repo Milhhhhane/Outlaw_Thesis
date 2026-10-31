@@ -1,5 +1,5 @@
 import { tierNumeral, type DungeonReport } from '@outlaw/engine';
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { backgroundUrl } from '../art';
 import { PixelSprite } from '../art/Pixel';
 import { Portrait } from '../combat/InitiativeTrack';
@@ -10,6 +10,7 @@ import { useGame } from '../game/nav';
 import { Button, Icon } from '../game/ui';
 import { describeItem } from '../i18n/describe';
 import { dungeonTitle, dustName, names, t, tk } from '../i18n';
+import { BattleStatsPanel, type RunStats } from './BattleStats';
 import { ChestArt } from './Chests';
 import { Glossed } from '../game/Glossed';
 
@@ -63,23 +64,28 @@ export interface SeriesStep {
 /**
  * Récompenses d'un donjon, sous forme de cartes. Dans une série, `onContinue` mène au bilan et le
  * décompte d'Auto lance le passage suivant (ou le bilan au dernier) ; tout clic ou touche
- * l'interrompt.
+ * l'interrompt. « Statistiques » remplace les cartes par la contribution de chaque héros
+ * (`stats`), sans rien changer à la suite : le décompte court tant que le joueur n'y touche pas.
  */
 export function Rewards({
   report,
   onContinue,
   onReplay,
   series,
+  stats,
 }: {
   readonly report: DungeonReport;
   readonly onContinue: () => void;
   /** Relance le même donjon (farm). */
   readonly onReplay: () => void;
   readonly series?: SeriesStep;
+  /** Statistiques du passage (`battleStats` du moteur) ; absentes, pas de bouton. */
+  readonly stats?: RunStats;
 }) {
   const { go } = useGame();
   const heading = useRef<HTMLHeadingElement>(null);
   const item = content.itemById.get(report.item.item);
+  const [showStats, setShowStats] = useState(false);
   useEscape(onContinue);
 
   useEffect(() => {
@@ -116,96 +122,114 @@ export function Rewards({
           </strong>
         )}
       </p>
-      <ul className="reward-cards" aria-label={t('reward.cards')}>
-        {item !== undefined && (
-          <Card
-            index={index++}
-            className={`reward-card--item reward-card--${item.rarity}`}
-            title={t('reward.itemCard')}
-          >
-            <Icon name={`item_${item.id}`} size={36} />
-            <h2 className="reward-card__name">{t('reward.item', { item: names.item(item.id) })}</h2>
-            <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
-            <ul className="reward-card__lines">
-              {describeItem(item).map((line, i) => (
-                <li key={i}>
-                  <Glossed text={line} />
-                </li>
-              ))}
-            </ul>
-            {report.item.isNew && <p className="reward-card__new">{t('reward.item.new')}</p>}
-            {!report.item.isNew && report.item.salvaged === null && (
-              <p className="hint">{t('reward.item.copy', { n: report.item.copies })}</p>
-            )}
-            {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
-            {report.item.salvaged !== null && (
-              <p className="hint">
-                {t('reward.salvaged', {
-                  amount: report.item.salvaged.amount,
-                  dust: dustName(report.item.salvaged.tier),
-                })}
-              </p>
-            )}
-          </Card>
-        )}
-        {report.chest !== null && (
-          <Card index={index++} className="reward-card--chest" title={t('reward.chestCard')}>
-            <ChestArt tier={report.chest} />
-            <h2 className="reward-card__name">
-              {t('reward.chest', { tier: tk(`chest.tier.${report.chest}`) })}
-            </h2>
-            <Button
-              size="small"
-              variant="quiet"
-              onClick={() => {
-                go({ name: 'chests' });
-              }}
+      {stats !== undefined && (
+        <Button
+          size="small"
+          variant="quiet"
+          className="end__stats"
+          onClick={() => {
+            setShowStats((on) => !on);
+          }}
+        >
+          {showStats ? t('stats.hide') : t('stats.show')}
+        </Button>
+      )}
+      {stats !== undefined && showStats ? (
+        <BattleStatsPanel stats={stats} />
+      ) : (
+        <ul className="reward-cards" aria-label={t('reward.cards')}>
+          {item !== undefined && (
+            <Card
+              index={index++}
+              className={`reward-card--item reward-card--${item.rarity}`}
+              title={t('reward.itemCard')}
             >
-              {t('reward.chest.open')}
-            </Button>
+              <Icon name={`item_${item.id}`} size={36} />
+              <h2 className="reward-card__name">
+                {t('reward.item', { item: names.item(item.id) })}
+              </h2>
+              <p className="hint">{tk(`item.rarity.${item.rarity}`)}</p>
+              <ul className="reward-card__lines">
+                {describeItem(item).map((line, i) => (
+                  <li key={i}>
+                    <Glossed text={line} />
+                  </li>
+                ))}
+              </ul>
+              {report.item.isNew && <p className="reward-card__new">{t('reward.item.new')}</p>}
+              {!report.item.isNew && report.item.salvaged === null && (
+                <p className="hint">{t('reward.item.copy', { n: report.item.copies })}</p>
+              )}
+              {report.item.guaranteed && <p className="hint">{t('reward.guaranteed')}</p>}
+              {report.item.salvaged !== null && (
+                <p className="hint">
+                  {t('reward.salvaged', {
+                    amount: report.item.salvaged.amount,
+                    dust: dustName(report.item.salvaged.tier),
+                  })}
+                </p>
+              )}
+            </Card>
+          )}
+          {report.chest !== null && (
+            <Card index={index++} className="reward-card--chest" title={t('reward.chestCard')}>
+              <ChestArt tier={report.chest} />
+              <h2 className="reward-card__name">
+                {t('reward.chest', { tier: tk(`chest.tier.${report.chest}`) })}
+              </h2>
+              <Button
+                size="small"
+                variant="quiet"
+                onClick={() => {
+                  go({ name: 'chests' });
+                }}
+              >
+                {t('reward.chest.open')}
+              </Button>
+            </Card>
+          )}
+          {report.unlockedHero !== null && (
+            <Card index={index++} className="reward-card--unlock" title={t('heroes.title')}>
+              <span className="reward-card__sprite">
+                <PixelSprite name={report.unlockedHero} idle />
+              </span>
+              <p className="reward-card__big">
+                {t('reward.unlocked', { hero: names.hero(report.unlockedHero) })}
+              </p>
+            </Card>
+          )}
+          {Object.entries(report.xp).map(([hero, gain]) => (
+            <Card key={hero} index={index++} title={t('reward.xpCard')}>
+              <Portrait kind={hero} size={48} />
+              <p className="reward-card__name">{names.hero(hero)}</p>
+              <p className="reward-card__big">{t('reward.xpShort', { xp: gain.gained })}</p>
+              {gain.ready && <p className="reward-card__level">{t('reward.levelReady')}</p>}
+              <span className="visually-hidden">
+                {t('reward.xp', { hero: names.hero(hero), xp: gain.gained })}
+              </span>
+            </Card>
+          ))}
+          <Card index={index++} title={t('reward.goldCard')}>
+            <Icon name="gold" size={36} />
+            <p className="reward-card__big gold-text">{t('reward.gold', { gold: report.gold })}</p>
           </Card>
-        )}
-        {report.unlockedHero !== null && (
-          <Card index={index++} className="reward-card--unlock" title={t('heroes.title')}>
-            <span className="reward-card__sprite">
-              <PixelSprite name={report.unlockedHero} idle />
-            </span>
+          {report.grimoires > 0 && (
+            <Card index={index++} title={t('reward.grimoiresCard')}>
+              <Icon name="trigger" size={36} />
+              <p className="reward-card__big">{t('reward.grimoires', { n: report.grimoires })}</p>
+            </Card>
+          )}
+          <Card index={index++} title={t('reward.materialsCard')}>
+            <Icon name="points" size={36} />
             <p className="reward-card__big">
-              {t('reward.unlocked', { hero: names.hero(report.unlockedHero) })}
+              {t('reward.materials', {
+                amount: report.materials.amount,
+                dust: dustName(report.materials.tier),
+              })}
             </p>
           </Card>
-        )}
-        {Object.entries(report.xp).map(([hero, gain]) => (
-          <Card key={hero} index={index++} title={t('reward.xpCard')}>
-            <Portrait kind={hero} size={48} />
-            <p className="reward-card__name">{names.hero(hero)}</p>
-            <p className="reward-card__big">{t('reward.xpShort', { xp: gain.gained })}</p>
-            {gain.ready && <p className="reward-card__level">{t('reward.levelReady')}</p>}
-            <span className="visually-hidden">
-              {t('reward.xp', { hero: names.hero(hero), xp: gain.gained })}
-            </span>
-          </Card>
-        ))}
-        <Card index={index++} title={t('reward.goldCard')}>
-          <Icon name="gold" size={36} />
-          <p className="reward-card__big gold-text">{t('reward.gold', { gold: report.gold })}</p>
-        </Card>
-        {report.grimoires > 0 && (
-          <Card index={index++} title={t('reward.grimoiresCard')}>
-            <Icon name="trigger" size={36} />
-            <p className="reward-card__big">{t('reward.grimoires', { n: report.grimoires })}</p>
-          </Card>
-        )}
-        <Card index={index++} title={t('reward.materialsCard')}>
-          <Icon name="points" size={36} />
-          <p className="reward-card__big">
-            {t('reward.materials', {
-              amount: report.materials.amount,
-              dust: dustName(report.materials.tier),
-            })}
-          </p>
-        </Card>
-      </ul>
+        </ul>
+      )}
       {series === undefined ? (
         <div className="outcome__buttons end__go">
           <Button size="large" variant={report.firstClear ? 'quiet' : 'primary'} onClick={onReplay}>

@@ -1,4 +1,5 @@
 import {
+  battleStats,
   compileEncounter,
   compileTeam,
   completeDungeon,
@@ -8,6 +9,7 @@ import {
   summarizeSeries,
   tierEncounterPct,
   tierLevel,
+  type BattleEvent,
   type DungeonReport,
   type FarmRuns,
   type SeriesStop,
@@ -18,6 +20,7 @@ import { content } from '../combat/session';
 import { useOptions } from '../game/options';
 import { dungeonTitle, t, tk } from '../i18n';
 import { useProfile } from '../state/profile';
+import type { RunStats } from './BattleStats';
 import { Recap } from './Recap';
 import { Rewards, RunEnd } from './Rewards';
 
@@ -40,6 +43,8 @@ type Phase =
       readonly report: DungeonReport;
       /** Série : raison de s'arrêter après ce passage, ou null pour continuer. */
       readonly stop: SeriesStop | null;
+      /** Contribution de chaque héros, salle par salle et sur le donjon (moteur). */
+      readonly stats: RunStats;
     }
   | { readonly kind: 'recap'; readonly stop: SeriesEnd };
 
@@ -74,10 +79,13 @@ export function DungeonRun({
   const series = target === null || target > 1;
   const [reports, setReports] = useState<readonly DungeonReport[]>([]);
   const [losses, setLosses] = useState(0);
+  // Journaux des salles gagnées de ce passage : les statistiques de fin en sont tirées.
+  const [journals, setJournals] = useState<readonly (readonly BattleEvent[])[]>([]);
   // Chaque passage recompile l'équipe : après des récompenses, les héros ont pu monter de niveau.
   const [run, setRun] = useState(0);
   const restart = (): void => {
     setRun((n) => n + 1);
+    setJournals([]);
     setPhase({ kind: 'fight', room: 0 });
   };
   const restartSeries = (): void => {
@@ -136,6 +144,7 @@ export function DungeonRun({
             : onExit
         }
         onReplay={restart}
+        stats={phase.stats}
         series={
           series
             ? {
@@ -192,7 +201,7 @@ export function DungeonRun({
       onExit={leave}
       finish={{
         label: (won) => (!won ? t('run.back') : last ? t('run.claim') : t('run.next')),
-        onClick: (won) => {
+        onClick: (won, journal) => {
           if (!won) {
             if (series) {
               setLosses((n) => n + 1);
@@ -202,6 +211,8 @@ export function DungeonRun({
             }
             return;
           }
+          const rooms = [...journals, journal];
+          setJournals(rooms);
           if (!last) {
             setPhase({ kind: 'fight', room: phase.room + 1 });
             return;
@@ -222,6 +233,10 @@ export function DungeonRun({
           setPhase({
             kind: 'done',
             report: outcome.value.report,
+            stats: {
+              total: battleStats(rooms),
+              rooms: rooms.map((room) => battleStats([room])),
+            },
             stop: series
               ? seriesNext(
                   content,

@@ -1,0 +1,19 @@
+{
+  "stats.show": "Statistiques",
+  "stats.hide": "Récompenses",
+  "stats.title": "Statistiques de l'équipe",
+  "stats.caption": "Contribution de chaque héros : {scope}",
+  "stats.scope": "Période affichée",
+  "stats.scope.all": "Donjon entier",
+  "stats.scope.room": "Salle {n}",
+  "stats.col.hero": "Héros",
+  "stats.col.dealt": "Dégâts infligés",
+  "stats.col.healing": "Soins",
+  "stats.col.shielding": "Boucliers donnés",
+  "stats.col.taken": "Dégâts subis",
+  "stats.col.blocked": "Bloqués",
+  "stats.col.kills": "Achevés",
+  "stats.burn": "dont {n} de brûlure",
+  "stats.none": "aucun dégât",
+  "stats.note": "Brûlure comptée à qui l'a posée. Bloqués : dégâts subis absorbés par un bouclier."
+}
