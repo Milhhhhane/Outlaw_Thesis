@@ -4,5 +4,5 @@
   "rarity.3": "Épique",
   "rarity.4": "Légendaire",
   "heroes.locked.summon": "Invocation : {n} fragments",
-  "heroes.count": "{n} héros sur {total}"
+  "heroes.count": "{n} obtenus sur {total}"
 }

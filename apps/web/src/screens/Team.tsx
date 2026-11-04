@@ -139,9 +139,9 @@ export function Team({ dungeon, tier }: { readonly dungeon?: string; readonly ti
                   data-hero={id}
                   {...bind(slot)}
                 >
-                  <PixelSprite name="pedestal" className="pedestal" />
                   <span className="team__pos">{label}</span>
                   <span className="team__sprite">
+                    <PixelSprite name="pedestal" className="pedestal" />
                     <HeroSprite name={id} idle />
                   </span>
                   <span className="team__name">
