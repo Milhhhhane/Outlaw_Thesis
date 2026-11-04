@@ -39,6 +39,20 @@ const GRIP: Readonly<
 };
 
 /**
+ * Largeur native du héros arme comprise (l'arme penche vers la droite, autour du bas de sa prise) :
+ * les cadres des cartes centrent cet ensemble, pas le seul corps (`--reach`).
+ */
+function reach(
+  w: number,
+  weapon: { readonly w: number; readonly h: number },
+  grip: { readonly x: number; readonly tilt: number },
+): number {
+  const tilt = (grip.tilt * Math.PI) / 180;
+  const right = w / 2 + grip.x + (weapon.w / 2) * Math.cos(tilt) + weapon.h * Math.sin(tilt);
+  return Math.max(w, Math.ceil(right));
+}
+
+/**
  * Un héros avec son arme en main. Même taille que le sprite seul : les écrans qui agrandissent
  * `.pixel` d'un héros agrandissent l'ensemble via `.hero-sprite`.
  */
@@ -55,7 +69,11 @@ export function HeroSprite({
   if (info === undefined) return null;
   const weapon = sprite(`weapon_${name}`);
   const grip = GRIP[name];
-  const style = { width: info.w, height: info.h } as CSSProperties;
+  const style = {
+    width: info.w,
+    height: info.h,
+    '--reach': weapon !== undefined && grip !== undefined ? reach(info.w, weapon, grip) : info.w,
+  } as CSSProperties;
   return (
     <span className={['hero-sprite', className ?? ''].join(' ')} style={style}>
       <PixelSprite name={name} idle={idle} />

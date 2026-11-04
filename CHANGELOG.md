@@ -2,6 +2,18 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Une entrée par sprint.
 
+## [Non publié] — 2026-11-04 — cartes de héros
+
+### Modifié
+
+- Cartes de héros (galerie, fiche, emplacements d'équipe, vivier) : la rareté se lit au cadre,
+  avec un liseré de sa couleur (I gris, II turquoise, III violet, IV or, halo pour III et IV), et
+  l'élément se voit à la lueur derrière le sprite. Le centre du cadre bois les recouvrait jusqu'ici.
+- Les sprites restent dans leur fenêtre et ne recouvrent plus ni texte ni bouton. Le badge des
+  points de talent devient une plaque sur le bas du cadre. Le compteur de la galerie dit
+  « 7 obtenus sur 25 ». Les héros sont plus petits dans la fiche (×2) et l'écran Équipe (×1),
+  pour que les armes et bâtons tiennent entiers.
+
 ## [Non publié] — 2026-10-31 — statistiques de fin de donjon
 
 ### Ajouté

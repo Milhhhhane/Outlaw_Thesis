@@ -714,8 +714,8 @@ export function HeroSheet({
       <div className="sheet__layout">
         <aside className={`sheet__id rarity-${String(def.tier)}`}>
           <Rarity tier={def.tier} />
-          <PixelSprite name="pedestal" className="pedestal" />
           <span className={`sheet__sprite${hero.awakened ? ' sheet__sprite--awakened' : ''}`}>
+            <PixelSprite name="pedestal" className="pedestal" />
             <HeroSprite name={heroId} idle />
           </span>
           <p className="sheet__level">

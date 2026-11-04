@@ -71,10 +71,14 @@ export function Heroes() {
                 {unlocked ? (
                   <>
                     <span className="hero-card__meta">
-                      {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)} ·{' '}
-                      {t('hero.starsShort', { n: heroStars(hero, content) })}
+                      <span>
+                        {t('hub.level', { level: hero.level })} · {tk(`element.${def.element}`)}
+                      </span>
+                      <span>{t('hero.starsShort', { n: heroStars(hero, content) })}</span>
                     </span>
-                    <span className="hero-card__thesis">{names.heroThesis(def.id)}</span>
+                    <span className="hero-card__thesis">
+                      <span>{names.heroThesis(def.id)}</span>
+                    </span>
                     {free > 0 ? (
                       <span className="hero-card__badge">{t('heroes.points', { n: free })}</span>
                     ) : (
@@ -85,9 +89,11 @@ export function Heroes() {
                   </>
                 ) : (
                   <span className="hero-card__thesis">
-                    {fromDungeon.has(def.id)
-                      ? t('heroes.locked', { n: summonCost(content, def.id) })
-                      : t('heroes.locked.summon', { n: summonCost(content, def.id) })}
+                    <span>
+                      {fromDungeon.has(def.id)
+                        ? t('heroes.locked', { n: summonCost(content, def.id) })
+                        : t('heroes.locked.summon', { n: summonCost(content, def.id) })}
+                    </span>
                   </span>
                 )}
               </button>
